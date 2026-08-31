@@ -305,8 +305,7 @@ pub fn build_type_info_index(
 }
 
 fn missing_fact(kind: string, index: TypeInfoIndex, node: syntax::NodeId) -> string {
-    "missing " + kind + " fact for package " + index.package_id.value.to_string() + " node "
-        + node.value.to_string()
+    f"missing {kind} fact for package {index.package_id.value} node {node.value}"
 }
 
 fn valid_index_node(index: TypeInfoIndex, node: syntax::NodeId) -> bool {

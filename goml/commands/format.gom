@@ -10,7 +10,7 @@ use std::process;
 fn canonical(value: string) -> Result[string, string] {
     match fs::canonicalize(value) {
         Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err("failed to resolve " + value + ": " + message.to_string()),
+        Err(message) => Result::Err(f"failed to resolve {value}: {message}"),
     }
 }
 
@@ -26,17 +26,13 @@ fn resolve_program(value: string) -> Result[string, string] {
 }
 
 fn default_formatter_candidate() -> string {
-    match env::current_exe_structured() {
-        Ok(value) => match path::parent(value) {
-            Some(parent) => {
-                let sibling = path::join(parent, "gomlfmt");
-                if fs::is_file(sibling) {
-                    return sibling
-                }
-            },
-            None => (),
-        },
-        Err(_) => (),
+    if let Ok(value) = env::current_exe_structured() {
+        if let Some(parent) = path::parent(value) {
+            let sibling = path::join(parent, "gomlfmt");
+            if fs::is_file(sibling) {
+                return sibling
+            }
+        }
     }
     match home_directory() {
         Ok(home) => {

@@ -27,9 +27,7 @@ fn invalid_import_character(value: string) -> Option[string] {
         if unicode::is_control(character) || unicode::is_whitespace(character)
             || illegal.contains(character.to_string()) {
             return Option::Some(
-                "invalid character U+" + import_character_code(character) + " '"
-                    + character.to_string()
-                    + "'",
+                "invalid character U+" + import_character_code(character) + f" '{character}'",
             )
         }
     }

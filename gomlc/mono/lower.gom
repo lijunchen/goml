@@ -109,7 +109,7 @@ fn unique_type_name(ctx: TypeCtx, base: string) -> string {
         let mut candidate = base + "__mono1";
         while type_name_is_used(ctx, candidate) {
             index += 1;
-            candidate = base + "__mono" + index.to_string();
+            candidate = f"{base}__mono{index}";
         }
         let _ = ctx.used_names.insert(candidate);
         candidate
@@ -128,12 +128,9 @@ fn ensure_type_instance(
     match find_type_instance(ctx, base_name, args) {
         Some(instance) => instance.name,
         None => {
-            match recursive_type_specialization_message(ctx, base_name, args) {
-                Some(message) => {
-                    ctx.error.set(Option::Some(message));
-                    return base_name
-                },
-                None => (),
+            if let Some(message) = recursive_type_specialization_message(ctx, base_name, args) {
+                ctx.error.set(Option::Some(message));
+                return base_name
             }
             let name = unique_type_name(ctx, type_instance_base_name(base_name, name_args));
             let instance = PendingTypeInstance { base_name, args, name };
@@ -324,7 +321,7 @@ fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[c
                     let parameter = if index < params.len() {
                         params[index]
                     } else {
-                        "#" + index.to_string()
+                        f"#{index}"
                     };
                     return Option::Some(
                         "Infinite monomorphization detected for generic type " + name
@@ -768,12 +765,9 @@ fn lower_static_trait_call(
 ) -> Expr {
     let params: Vec[Type] = Vec::new();
     let call_args: Vec[Expr] = Vec::new();
-    match receiver {
-        Some(value) => {
-            params.push(expr_type(value));
-            call_args.push(value)
-        },
-        None => (),
+    if let Some(value) = receiver {
+        params.push(expr_type(value));
+        call_args.push(value)
     }
     for arg in args {
         params.push(expr_type(arg));
@@ -1147,15 +1141,12 @@ fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
             collect_type_names(ctx, param.1)
         }
         collect_type_names(ctx, function.ret_ty);
-        match function.trait_impl {
-            Some(metadata) => {
-                collect_trait_ref_type_names(ctx, metadata.trait_ref);
-                collect_type_names(ctx, metadata.for_ty);
-                for associated in metadata.associated_types {
-                    collect_type_names(ctx, associated.1)
-                }
-            },
-            None => (),
+        if let Some(metadata) = function.trait_impl {
+            collect_trait_ref_type_names(ctx, metadata.trait_ref);
+            collect_type_names(ctx, metadata.for_ty);
+            for associated in metadata.associated_types {
+                collect_type_names(ctx, associated.1)
+            }
         }
         collect_block_type_names(ctx, function.body)
     }
@@ -1376,9 +1367,8 @@ fn materialize_definitions(ctx: TypeCtx) -> (Vec[EnumDef], Vec[StructDef]) {
 }
 
 pub fn lower_checked(value: core::File) -> LowerResult {
-    match core::validate(value) {
-        Ok(_) => (),
-        Err(message) => return LowerResult {
+    if let Err(message) = core::validate(value) {
+        return LowerResult {
             file: File {
                 functions: Vec::new(),
                 enums: Vec::new(),
@@ -1388,7 +1378,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
                 statics: Vec::new(),
             },
             error: Option::Some("invalid Core IR: " + message),
-        },
+        }
     }
     let constants = value.constants;
     let statics = value.statics;

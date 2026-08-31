@@ -187,16 +187,13 @@ fn collect_package_functions(values: Vec[hir::File]) -> PackageFunctions {
     let result = PackageFunctions { values: Vec::new(), positions: Vec::new() };
     for file in values {
         for item in file.items {
-            match item {
-                hir::Item::Function(value) => {
-                    let function = PackageFunction { source_path: file.source_path, value };
-                    while result.positions.len() <= value.def_id.index {
-                        result.positions.push(-1)
-                    }
-                    result.positions[value.def_id.index] = result.values.len();
-                    result.values.push(function)
-                },
-                _ => (),
+            if let hir::Item::Function(value) = item {
+                let function = PackageFunction { source_path: file.source_path, value };
+                while result.positions.len() <= value.def_id.index {
+                    result.positions.push(-1)
+                }
+                result.positions[value.def_id.index] = result.values.len();
+                result.values.push(function)
             }
         }
     }
@@ -252,15 +249,12 @@ fn warn_unused_functions(values: Vec[hir::File], diagnostics: Vec[Diagnostic]) -
             Some(value) => value,
             None => break,
         };
-        match package_function_by_def(functions, current) {
-            Some(function) => {
-                let references: Vec[hir::DefId] = Vec::new();
-                collect_unused_block(function.value.body, references);
-                for reference in references {
-                    push_reachable_unused_function(functions, reachable, pending, reference)
-                }
-            },
-            None => (),
+        if let Some(function) = package_function_by_def(functions, current) {
+            let references: Vec[hir::DefId] = Vec::new();
+            collect_unused_block(function.value.body, references);
+            for reference in references {
+                push_reachable_unused_function(functions, reachable, pending, reference)
+            }
         }
     }
     for function in functions.values {

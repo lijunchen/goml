@@ -34,9 +34,8 @@ fn parses_and_encodes_json_values() -> () {
 
 #[test]
 fn rejects_invalid_json() -> () {
-    match json::parse("{\"bad\": [1,]}") {
-        Ok(_) => testing::fail("expected invalid JSON"),
-        Err(_) => (),
+    if let Ok(_) = json::parse("{\"bad\": [1,]}") {
+        testing::fail("expected invalid JSON")
     }
     if let Ok(_) = json::parse("01") {
         testing::fail("expected invalid number")
@@ -57,9 +56,8 @@ fn converts_utf16_positions_and_file_uris() -> () {
     testing::assert_eq(position.line, 0);
     testing::assert_eq(position.character, 3);
     testing::assert_eq(position_to_offset(source, Position { line: 0, character: 3 }), 5);
-    match position_to_offset_checked(source, Position { line: 0, character: 2 }) {
-        Some(_) => testing::fail("expected invalid surrogate position"),
-        None => (),
+    if let Some(_) = position_to_offset_checked(source, Position { line: 0, character: 2 }) {
+        testing::fail("expected invalid surrogate position")
     }
     let uri = path_to_uri("/tmp/GoML 语言/main.gom");
     match uri_to_path(uri) {
@@ -98,7 +96,7 @@ fn frames_and_parses_json_rpc_metadata() -> () {
     let message = rpc_success(json::Value::Number("7"), json::Value::String("ok"));
     let framed = framed_json(message);
     let body = json::encode(message);
-    testing::assert_eq(framed, "Content-Length: " + body.byte_len().to_string() + "\r\n\r\n" + body);
+    testing::assert_eq(framed, f"Content-Length: {body.byte_len()}\r\n\r\n{body}");
     match content_length("Content-Length: 123\r\n") {
         Ok(value) => testing::assert_eq(value, 123),
         Err(error) => testing::fail(error.to_string()),

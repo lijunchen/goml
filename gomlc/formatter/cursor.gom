@@ -121,17 +121,15 @@ impl ChildCursor {
 
     fn consume_trivia(self: ChildCursor) -> Vec[LocatedToken] {
         let result: Vec[LocatedToken] = Vec::new();
-        loop {
-            match self.peek() {
-                Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {
-                    let _ = self.next();
-                    result.push(token)
-                } else {
-                    return result
-                },
-                _ => return result,
+        while let Some(Token(token)) = self.peek() {
+            if lexer::token_is_trivia(token.token.kind) {
+                let _ = self.next();
+                result.push(token)
+            } else {
+                return result
             }
         }
+        result
     }
 }
 
@@ -215,9 +213,8 @@ fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
     let result: Vec[LocatedNode] = Vec::new();
     let cursor = child_cursor(value);
     while cursor.remaining() > 0 {
-        match cursor.next() {
-            Some(Node(node)) => result.push(node),
-            _ => (),
+        if let Some(Node(node)) = cursor.next() {
+            result.push(node)
         }
     }
     result

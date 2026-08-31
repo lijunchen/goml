@@ -141,7 +141,7 @@ fn append_builtin_lang_item(
     methods: Vec[string],
     associated_types: Vec[string],
 ) -> Result[(), string] {
-    match builtin_lang_item_from_attrs(
+    if let Some(value) = builtin_lang_item_from_attrs(
         attrs,
         kind,
         short_name(name),
@@ -150,8 +150,7 @@ fn append_builtin_lang_item(
         methods,
         associated_types,
     )? {
-        Some(value) => result.push(value),
-        None => (),
+        result.push(value)
     }
     Result::Ok(())
 }
@@ -325,14 +324,12 @@ fn load_builtin_source_traits() -> FrozenVec[TraitInfo] {
     };
     let inputs = Vec::from_array([(ast::lower(parser::parse(source.source)), source.path)]);
     for lowered in hir::lower_package_files(inputs, "builtin") {
-        match lowered.hir {
-            Some(file) => for item in file.items {
-                match item {
-                    hir::Item::TraitDef(value) => result.push(collect_trait(builtin, value)),
-                    _ => (),
+        if let Some(file) = lowered.hir {
+            for item in file.items {
+                if let hir::Item::TraitDef(value) = item {
+                    result.push(collect_trait(builtin, value))
                 }
-            },
-            None => (),
+            }
         }
     }
     result.freeze()
@@ -366,14 +363,12 @@ fn load_builtin_source_enums() -> FrozenVec[EnumInfo] {
         inputs.push((ast::lower(parser::parse(source.source)), source.path))
     }
     for lowered in hir::lower_package_files(inputs, "builtin") {
-        match lowered.hir {
-            Some(file) => for item in file.items {
-                match item {
-                    hir::Item::EnumDef(value) => result.push(collect_enum(builtin, value)),
-                    _ => (),
+        if let Some(file) = lowered.hir {
+            for item in file.items {
+                if let hir::Item::EnumDef(value) = item {
+                    result.push(collect_enum(builtin, value))
                 }
-            },
-            None => (),
+            }
         }
     }
     result.freeze()
@@ -409,14 +404,12 @@ fn load_builtin_source_structs() -> FrozenVec[StructInfo] {
     };
     let inputs = Vec::from_array([(ast::lower(parser::parse(source.source)), source.path)]);
     for lowered in hir::lower_package_files(inputs, "builtin") {
-        match lowered.hir {
-            Some(file) => for item in file.items {
-                match item {
-                    hir::Item::StructDef(value) => result.push(collect_struct(builtin, value)),
-                    _ => (),
+        if let Some(file) = lowered.hir {
+            for item in file.items {
+                if let hir::Item::StructDef(value) = item {
+                    result.push(collect_struct(builtin, value))
                 }
-            },
-            None => (),
+            }
         }
     }
     result.freeze()
@@ -547,7 +540,7 @@ fn load_builtin_source_impls() -> FrozenVec[ImplInfo] {
                     trait_ref: value.trait_ref,
                     for_type: value.for_type,
                     associated_types: value.associated_types,
-                    origin: "builtin#source#" + result.len().to_string(),
+                    origin: f"builtin#source#{result.len()}",
                     span: value.span,
                 },
             )

@@ -545,14 +545,11 @@ fn add_standard_package_closure(result: Vec[string], package_name: string) -> ()
             return
         }
     }
-    match standard_package_spec(package_name) {
-        Some(spec) => {
-            for dependency in spec.dependencies {
-                add_standard_package_closure(result, dependency)
-            }
-            result.push(package_name)
-        },
-        None => (),
+    if let Some(spec) = standard_package_spec(package_name) {
+        for dependency in spec.dependencies {
+            add_standard_package_closure(result, dependency)
+        }
+        result.push(package_name)
     }
 }
 
@@ -570,14 +567,11 @@ fn add_standard_link_closure(result: Vec[string], package_name: string) -> () {
             return
         }
     }
-    match standard_package_spec(package_name) {
-        Some(spec) => {
-            for dependency in spec.link_dependencies {
-                add_standard_link_closure(result, dependency)
-            }
-            result.push(package_name)
-        },
-        None => (),
+    if let Some(spec) = standard_package_spec(package_name) {
+        for dependency in spec.link_dependencies {
+            add_standard_link_closure(result, dependency)
+        }
+        result.push(package_name)
     }
 }
 
@@ -615,7 +609,7 @@ fn read_sources_from_dir(lib_dir: string, category: string, relative_paths: Vec[
         match fs::read_file_structured(source_path) {
             Ok(source) => result.push(Source { path: source_path, source }),
             Err(error) => return Result::Err(
-                "could not read " + category + " resource " + source_path + ": " + error.to_string(),
+                f"could not read {category} resource {source_path}: {error}",
             ),
         }
     }

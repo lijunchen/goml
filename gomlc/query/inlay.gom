@@ -16,16 +16,13 @@ fn containing_node(syntax: SyntaxIndex, token: SyntaxToken, kind: cst::NodeKind)
 ] {
     let mut current = Option::Some(token.parent);
     while current.is_some() {
-        match current {
-            Some(id) => {
-                let node = syntax.nodes[id];
-                if cst::node_kind_equal(node.kind, kind) {
-                    return Option::Some(node)
-                } else {
-                    current = node.parent;
-                }
-            },
-            None => (),
+        if let Some(id) = current {
+            let node = syntax.nodes[id];
+            if cst::node_kind_equal(node.kind, kind) {
+                return Option::Some(node)
+            } else {
+                current = node.parent;
+            }
         }
     }
     Option::None
@@ -70,8 +67,8 @@ pub fn inlay_hints_in_range(value: Analysis, start: isize, end: isize) -> Vec[In
                 Some(statement) => Option::Some(statement),
                 None => containing_node(value.syntax, token, cst::NodeKind::CLOSURE_PARAM),
             };
-            match owner {
-                Some(node) => if let_has_annotation(value.syntax, node) {} else {
+            if let Some(node) = owner {
+                if let_has_annotation(value.syntax, node) {} else {
                     match tast::resolve_type(fact.ty) {
                         Error => (),
                         ty => hints.push(
@@ -82,8 +79,7 @@ pub fn inlay_hints_in_range(value: Analysis, start: isize, end: isize) -> Vec[In
                             },
                         ),
                     }
-                },
-                None => (),
+                }
             }
         }
     }

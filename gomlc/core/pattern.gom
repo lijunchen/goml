@@ -246,9 +246,8 @@ fn or_pattern_column_index(row: PatternRow, source: string) -> Option[isize] {
     for index in 0..row.columns.len() {
         let column = row.columns[index];
         if column.source == source {
-            match column.pattern {
-                Or { pats: _, ty: _ } => return Option::Some(index),
-                _ => (),
+            if let Or { pats: _, ty: _ } = column.pattern {
+                return Option::Some(index)
             }
         }
     }
@@ -540,13 +539,10 @@ fn enum_pattern_present(rows: Vec[PatternRow], source: string, constructor_name:
     for row in rows {
         for column in row.columns {
             if column.source == source {
-                match column.pattern {
-                    Constr { constructor, args: _, ty: _ } => {
-                        if constructor.name == constructor_name {
-                            return true
-                        }
-                    },
-                    _ => (),
+                if let Constr { constructor, args: _, ty: _ } = column.pattern {
+                    if constructor.name == constructor_name {
+                        return true
+                    }
                 }
             }
         }
@@ -745,14 +741,11 @@ fn primitive_pattern_cases(rows: Vec[PatternRow], source: string) -> Vec[Primiti
     for row in rows {
         for column in row.columns {
             if column.source == source {
-                match column.pattern {
-                    Prim { value, ty } => {
-                        let key = primitive_pattern_key(value, ty);
-                        if primitive_pattern_case_exists(result, key) {} else {
-                            result.push(PrimitivePatternCase { key, value, ty })
-                        }
-                    },
-                    _ => (),
+                if let Prim { value, ty } = column.pattern {
+                    let key = primitive_pattern_key(value, ty);
+                    if primitive_pattern_case_exists(result, key) {} else {
+                        result.push(PrimitivePatternCase { key, value, ty })
+                    }
                 }
             }
         }

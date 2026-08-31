@@ -440,7 +440,7 @@ fn dce_function_names_add(values: HashMap[string, Vec[string]], key: string, nam
 }
 
 fn dce_trait_method_key(trait_name: string, method_name: string) -> string {
-    trait_name.byte_len().to_string() + ":" + trait_name + method_name
+    f"{trait_name.byte_len()}:{trait_name}{method_name}"
 }
 
 fn dce_functions_context(value: File) -> DceFunctions {
@@ -492,11 +492,10 @@ fn dce_retain_indexed_functions(
     values: HashMap[string, Vec[string]],
     key: string,
 ) -> () {
-    match values[key] {
-        Some(names) => for name in names {
+    if let Some(names) = values[key] {
+        for name in names {
             dce_retain_function(ctx, name)
-        },
-        None => (),
+        }
     }
 }
 
@@ -564,12 +563,9 @@ fn dce_collect_type(ctx: DceFunctions, value: Type) -> () {
         },
         Projection { for_ty, name: _, trait_ref } => {
             dce_collect_type(ctx, for_ty);
-            match trait_ref {
-                Some(reference) => {
-                    dce_retain_trait_functions(ctx, reference.name);
-                    dce_collect_trait_ref_types(ctx, reference)
-                },
-                None => (),
+            if let Some(reference) = trait_ref {
+                dce_retain_trait_functions(ctx, reference.name);
+                dce_collect_trait_ref_types(ctx, reference)
             }
         },
         App { ty, args } => {
@@ -758,13 +754,10 @@ fn dce_collect_function(ctx: DceFunctions, value: Function) -> () {
     }
     dce_collect_type(ctx, value.ret_ty);
     dce_collect_function_predicates(ctx, value.predicates);
-    match value.trait_impl {
-        Some(metadata) => {
-            dce_collect_trait_ref_types(ctx, metadata.trait_ref);
-            dce_collect_type(ctx, metadata.for_ty);
-            dce_collect_named_types(ctx, metadata.associated_types)
-        },
-        None => (),
+    if let Some(metadata) = value.trait_impl {
+        dce_collect_trait_ref_types(ctx, metadata.trait_ref);
+        dce_collect_type(ctx, metadata.for_ty);
+        dce_collect_named_types(ctx, metadata.associated_types)
     }
     dce_collect_function_block(ctx, value.body)
 }

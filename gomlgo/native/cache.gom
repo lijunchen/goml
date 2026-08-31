@@ -256,11 +256,7 @@ fn execution_go_mod() -> string {
 }
 
 fn completion_metadata_prefix(key: string, native_manifest_hash: string) -> string {
-    "schema=" + NATIVE_CACHE_SCHEMA_VERSION.to_string() + "\nkey=" + key + "\nabi="
-        + NATIVE_BRIDGE_ABI_VERSION.to_string()
-        + "\nmanifest="
-        + native_manifest_hash
-        + "\nexecutable_sha256="
+    f"schema={NATIVE_CACHE_SCHEMA_VERSION}\nkey={key}\nabi={NATIVE_BRIDGE_ABI_VERSION}\nmanifest={native_manifest_hash}\nexecutable_sha256="
 }
 
 pub fn completion_metadata(plan: BuildPlan, executable_hash: string) -> Result[string, string] {

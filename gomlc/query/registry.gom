@@ -345,12 +345,11 @@ fn external_package_sources(
 ) -> Result[Vec[SourceFile], string] {
     let modules = resolve_external_modules(module_root)?;
     for module in modules {
-        match external_package_directory(module, package_name) {
-            Some(directory) => match collect_dependency_files(directory, overrides) {
+        if let Some(directory) = external_package_directory(module, package_name) {
+            match collect_dependency_files(directory, overrides) {
                 Ok(files) => return Result::Ok(source_files_with_package(files, package_name)),
                 Err(error) => return Result::Err(error),
-            },
-            None => (),
+            }
         }
     }
     Result::Err("package " + package_name + " is not provided by a resolved dependency")

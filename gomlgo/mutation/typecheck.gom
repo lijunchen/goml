@@ -221,9 +221,7 @@ pub fn run_typecheck(root: string, output: string, seed_limit: isize) -> Result[
                     let actual_ok = actual.diagnostics.is_empty();
                     if actual_ok != expected.ok {
                         failures += 1;
-                        let message = "seed=" + file + "\nactual_ok=" + actual_ok.to_string()
-                            + "\nexpected_ok="
-                            + expected.ok.to_string();
+                        let message = f"seed={file}\nactual_ok={actual_ok}\nexpected_ok={expected.ok}";
                         save_typecheck_failure(output, request, input, actual, expected, message)?
                     }
                 }

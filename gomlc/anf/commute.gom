@@ -43,7 +43,7 @@ struct CommuteDefault {
 fn fresh_commute(counter: Ref[isize], prefix: string) -> string {
     let value = counter.get();
     counter.set(value + 1);
-    prefix + value.to_string()
+    f"{prefix}{value}"
 }
 
 fn copy_commute_bindings(values: Vec[CommuteBinding]) -> Vec[CommuteBinding] {
@@ -321,21 +321,17 @@ fn collect_commute_value_fields(
     scrutinee: string,
     counter: Ref[isize],
 ) -> () {
-    match value {
-        ConstrGet { expr: Var { name, ty: _ }, constructor, field_index, ty } => {
-            if name == scrutinee
-                && find_commute_field(result, constructor, field_index, ty).is_none() {
-                result.push(
-                    CommuteField {
-                        index: field_index,
-                        ty,
-                        constructor,
-                        name: fresh_commute(counter, "commute_field"),
-                    },
-                )
-            }
-        },
-        _ => (),
+    if let ConstrGet { expr: Var { name, ty: _ }, constructor, field_index, ty } = value {
+        if name == scrutinee && find_commute_field(result, constructor, field_index, ty).is_none() {
+            result.push(
+                CommuteField {
+                    index: field_index,
+                    ty,
+                    constructor,
+                    name: fresh_commute(counter, "commute_field"),
+                },
+            )
+        }
     }
 }
 
@@ -1021,13 +1017,12 @@ fn rewrite_commute_block(
 }
 
 fn commute_scrutinee_param(params: Vec[(string, repr::Type)], value: Imm) -> Option[(string, isize)] {
-    match value {
-        Var { name, ty: _ } => for index in 0..params.len() {
+    if let Var { name, ty: _ } = value {
+        for index in 0..params.len() {
             if params[index].0 == name {
                 return Option::Some((name, index))
             }
-        },
-        _ => (),
+        }
     }
     Option::None
 }
@@ -1052,8 +1047,8 @@ fn prepend_commute_joins(
             ),
         )
     }
-    match default {
-        Some(value) => binds.push(
+    if let Some(value) = default {
+        binds.push(
             Bind::Join(
                 JoinBind {
                     name: value.target,
@@ -1063,8 +1058,7 @@ fn prepend_commute_joins(
                     body: value.body,
                 },
             ),
-        ),
-        None => (),
+        )
     }
     for bind in rest.binds {
         binds.push(bind)

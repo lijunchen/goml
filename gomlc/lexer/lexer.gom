@@ -1072,8 +1072,8 @@ pub fn lex(source: string) -> Vec[Token] {
                 },
             }
         } else if value == b'r' && starts_raw_string(source, start) {
-            match raw_string_hash_count(source, start) {
-                Some(hash_count) => match scan_raw_string_end(source, start, hash_count) {
+            if let Some(hash_count) = raw_string_hash_count(source, start) {
+                match scan_raw_string_end(source, start, hash_count) {
                     Some(end) => {
                         index = end;
                         push_token(tokens, source, TokenKind::RawStr, start, end)
@@ -1090,14 +1090,13 @@ pub fn lex(source: string) -> Vec[Token] {
                             source.byte_len(),
                         )
                     },
-                },
-                None => (),
+                }
             }
         } else if value == b'b' && start + 1 < source.byte_len()
             && byte_at(source, start + 1) == b'r'
             && starts_raw_string(source, start + 1) {
-            match raw_string_hash_count(source, start + 1) {
-                Some(hash_count) => match scan_raw_string_end(source, start + 1, hash_count) {
+            if let Some(hash_count) = raw_string_hash_count(source, start + 1) {
+                match scan_raw_string_end(source, start + 1, hash_count) {
                     Some(end) => {
                         index = end;
                         if raw_byte_string_is_ascii(source, start + 1, end, hash_count) {
@@ -1126,8 +1125,7 @@ pub fn lex(source: string) -> Vec[Token] {
                             source.byte_len(),
                         )
                     },
-                },
-                None => (),
+                }
             }
         } else if value == b'f' && start + 1 < source.byte_len()
             && byte_at(source, start + 1) == b'"' {

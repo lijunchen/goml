@@ -228,28 +228,24 @@ fn lower_ordered_array_pattern(
         Some((elem_ty, fixed_len)) => match ordered_len(value, container_ty) {
             Some(len_expr) => {
                 let mut next = success;
-                match rest {
-                    Some(rest_value) => match rest_value.binding {
-                        Some(binding) => {
-                            next = bind_ordered_value(
-                                binding,
-                                ordered_rest_value(
-                                    value,
-                                    container_ty,
-                                    elem_ty,
-                                    fixed_len,
-                                    prefix.len(),
-                                    suffix.len(),
-                                    len_expr,
-                                    rest_value.ty,
-                                ),
-                                next,
-                                result_ty,
-                            );
-                        },
-                        None => (),
-                    },
-                    None => (),
+                if let Some(rest_value) = rest {
+                    if let Some(binding) = rest_value.binding {
+                        next = bind_ordered_value(
+                            binding,
+                            ordered_rest_value(
+                                value,
+                                container_ty,
+                                elem_ty,
+                                fixed_len,
+                                prefix.len(),
+                                suffix.len(),
+                                len_expr,
+                                rest_value.ty,
+                            ),
+                            next,
+                            result_ty,
+                        );
+                    }
                 }
                 for offset in 0..suffix.len() {
                     let index = suffix.len() - 1 - offset;

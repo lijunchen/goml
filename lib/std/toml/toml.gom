@@ -19,7 +19,7 @@ struct FlatEntry {
 }
 
 fn toml_error(line: isize, message: string) -> string {
-    message + " at line " + line.to_string()
+    f"{message} at line {line}"
 }
 
 fn strip_comment(value: string) -> string {
@@ -175,18 +175,11 @@ fn top_level_separator(value: string, expected: byte) -> Option[isize] {
 fn split_top_level(value: string, separator: byte) -> Result[Vec[string], string] {
     let result: Vec[string] = Vec::new();
     let mut remaining = value;
-    loop {
-        match top_level_separator(remaining, separator) {
-            Some(index) => {
-                result.push(text::trim(remaining.byte_slice(0, index)));
-                remaining = remaining.byte_slice(index + 1, remaining.byte_len());
-            },
-            None => {
-                result.push(text::trim(remaining));
-                break
-            },
-        }
+    while let Some(index) = top_level_separator(remaining, separator) {
+        result.push(text::trim(remaining.byte_slice(0, index)));
+        remaining = remaining.byte_slice(index + 1, remaining.byte_len());
     }
+    result.push(text::trim(remaining));
     if !result.is_empty() && result[result.len() - 1] == "" {
         let _ = result.pop();
     }
@@ -548,13 +541,8 @@ fn write_table(builder: text::StringBuilder, path: Vec[string], fields: Vec[(str
         }
     }
     for field in fields {
-        match field.1 {
-            Value::Table(values) => write_table(
-                builder,
-                append_path(path, Vec::from_array([field.0])),
-                values,
-            )?,
-            _ => (),
+        if let Value::Table(values) = field.1 {
+            write_table(builder, append_path(path, Vec::from_array([field.0])), values)?
         }
     }
     Result::Ok(())

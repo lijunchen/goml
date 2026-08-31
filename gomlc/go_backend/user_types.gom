@@ -143,7 +143,7 @@ fn concrete_variant_go_name(
     enums: Vec[repr::EnumDef],
     function_names: FunctionNames,
 ) -> string {
-    let key = owner_name.byte_len().to_string() + ":" + owner_name + variant_name;
+    let key = f"{owner_name.byte_len()}:{owner_name}{variant_name}";
     match function_names.variant_names[key] {
         Some(name) => name,
         None => {
@@ -190,10 +190,10 @@ fn unique_variant_go_name(candidate: string, function_names: FunctionNames) -> s
             base
         } else {
             let mut index = 1;
-            let mut result = go_generated_ident(base + "__variant" + index.to_string());
+            let mut result = go_generated_ident(f"{base}__variant{index}");
             while variant_name_reserved(result, function_names) {
                 index += 1;
-                result = go_generated_ident(base + "__variant" + index.to_string());
+                result = go_generated_ident(f"{base}__variant{index}");
             }
             result
         }
@@ -348,7 +348,7 @@ fn builtin_sum_enum(
 }
 
 pub fn compact_variant_field_name(tag: isize, index: isize) -> string {
-    "_v" + tag.to_string() + "_" + index.to_string()
+    f"_v{tag}_{index}"
 }
 
 fn new_variant_infos() -> VariantInfos {
@@ -488,7 +488,7 @@ fn emit_enum_definition(
             let field_types = fields_by_variant[index];
             let fields: Vec[(string, Type)] = Vec::with_capacity(field_types.len());
             for field_index in 0..field_types.len() {
-                fields.push(("_" + field_index.to_string(), lower_type(field_types[field_index])))
+                fields.push((f"_{field_index}", lower_type(field_types[field_index])))
             }
             let variant_name = concrete_variant_go_name(
                 definition.name,
@@ -551,12 +551,9 @@ pub fn emit_user_type_items(
     }
     for instance in instances {
         if emitted.contains(instance.name) {} else {
-            match builtin_struct_instance(builtin, instance, instances) {
-                Some(definition) => {
-                    items.push(Item::Struct(definition));
-                    let _ = emitted.insert(instance.name);
-                },
-                None => (),
+            if let Some(definition) = builtin_struct_instance(builtin, instance, instances) {
+                items.push(Item::Struct(definition));
+                let _ = emitted.insert(instance.name);
             }
         }
     }

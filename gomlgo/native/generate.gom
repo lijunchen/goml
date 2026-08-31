@@ -43,7 +43,7 @@ fn function_package_paths(value: Manifest) -> Vec[string] {
 fn package_alias(paths: Vec[string], expected: string) -> string {
     for index in 0..paths.len() {
         if paths[index] == expected {
-            return "_gomlgo_nativepkg" + index.to_string()
+            return f"_gomlgo_nativepkg{index}"
         }
     }
     ""
@@ -70,7 +70,7 @@ fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_
         imports.push(
             RegistryImport {
                 import_path: function_paths[index],
-                alias: "_gomlgo_nativepkg" + index.to_string(),
+                alias: f"_gomlgo_nativepkg{index}",
             },
         )
     }

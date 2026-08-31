@@ -29,9 +29,8 @@ fn main() -> () {
     }
     match parser_diff::compare_tree(root, mode) {
         Ok(summary) => println(
-            parser_diff::mode_name(mode) + " zero diff: files=" + summary.files.to_string()
-                + " accepted="
-                + summary.accepted.to_string(),
+            parser_diff::mode_name(mode)
+                + f" zero diff: files={summary.files} accepted={summary.accepted}",
         ),
         Err(message) => {
             println(message);

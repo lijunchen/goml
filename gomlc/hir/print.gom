@@ -205,15 +205,15 @@ fn attributes_doc(values: Vec[ast::Attribute]) -> pretty::Doc {
 }
 
 fn local_debug_doc(value: LocalId) -> pretty::Doc {
-    pretty::text("local/" + value.pkg.to_string() + "/" + value.index.to_string())
+    pretty::text(f"local/{value.pkg}/{value.index}")
 }
 
 fn local_name_doc(value: LocalId) -> pretty::Doc {
-    pretty::text(value.hint + "/" + value.index.to_string())
+    pretty::text(f"{value.hint}/{value.index}")
 }
 
 fn def_doc(value: DefId) -> pretty::Doc {
-    pretty::text("def/" + value.pkg.to_string() + "/" + value.index.to_string())
+    pretty::text(f"def/{value.pkg}/{value.index}")
 }
 
 fn name_ref_doc(value: NameRef) -> pretty::Doc {
@@ -228,11 +228,7 @@ fn constructor_doc(value: ConstructorRef) -> pretty::Doc {
     match value {
         Resolved { enum_def: def_id, variant_index: variant } => pretty::concat(
             Vec::from_array(
-                [
-                    pretty::text("ctor("),
-                    def_doc(def_id),
-                    pretty::text("::v" + variant.to_string() + ")"),
-                ],
+                [pretty::text("ctor("), def_doc(def_id), pretty::text(f"::v{variant})")],
             ),
         ),
         Unresolved(name) => pretty::text(name),
@@ -925,7 +921,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             ),
         ),
         Proj { tuple: expr, index } => {
-            pretty::append(expr_doc(expr), pretty::text("." + index.to_string()))
+            pretty::append(expr_doc(expr), pretty::text(f".{index}"))
         },
         Field { expr, field_name: field, method_type_args } => {
             let base = pretty::append(expr_doc(expr), pretty::text("." + field));
@@ -1022,16 +1018,15 @@ fn pat_doc(value: Pat) -> pretty::Doc {
             for value in prefix {
                 values.push(pat_doc(value))
             }
-            match rest {
-                Some(value) => values.push(
+            if let Some(value) = rest {
+                values.push(
                     match value.binding {
                         Some(local) => {
                             pretty::append(local_debug_doc(local), pretty::text(" @ .."))
                         },
                         None => pretty::text(".."),
                     },
-                ),
-                None => (),
+                )
             }
             for value in suffix {
                 values.push(pat_doc(value))

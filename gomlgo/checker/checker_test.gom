@@ -763,8 +763,7 @@ fn deduplicates_type_facts_by_source_span() -> () {
     for fact in result.info.types {
         match syntax::get_node(result.syntax.arena, fact.node) {
             Some(node) => {
-                let key = node.file.value.to_string() + ":" + node.span.start.to_string() + ":"
-                    + node.span.end.to_string();
+                let key = f"{node.file.value}:{node.span.start}:{node.span.end}";
                 testing::assert(!positions.contains(key));
                 positions[key] = true;
             },

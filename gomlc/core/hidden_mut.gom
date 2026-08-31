@@ -154,14 +154,12 @@ fn collect_mutable_pattern(
             for item in prefix {
                 collect_mutable_pattern(item, inherited, result)
             }
-            match rest {
-                Some(value) => match value.binding {
-                    Some(name) => if inherited {
+            if let Some(value) = rest {
+                if let Some(name) = value.binding {
+                    if inherited {
                         push_mutable(result, name, value.ty)
-                    },
-                    None => (),
-                },
-                None => (),
+                    }
+                }
             }
             for item in suffix {
                 collect_mutable_pattern(item, inherited, result)
@@ -197,11 +195,10 @@ fn collect_pattern_names(value: tast::Pat, result: collections::IndexSet[string]
             for item in prefix {
                 collect_pattern_names(item, result)
             }
-            match rest {
-                Some(value) => if let Some(name) = value.binding {
+            if let Some(value) = rest {
+                if let Some(name) = value.binding {
                     push_name(result, name)
-                },
-                None => (),
+                }
             }
             for item in suffix {
                 collect_pattern_names(item, result)

@@ -201,11 +201,10 @@ fn world_sorted_packages(values: Vec[ToolchainPackage]) -> Result[Vec[ToolchainP
     let result: Vec[ToolchainPackage] = Vec::new();
     let mut previous: Option[string] = Option::None;
     for name in names {
-        match previous {
-            Some(value) => if value == name {
+        if let Some(value) = previous {
+            if value == name {
                 return Result::Err("world artifact contains duplicate package " + name)
-            },
-            None => (),
+            }
         }
         result.push(world_required_package(values, name)?);
         previous = Option::Some(name);
@@ -418,9 +417,7 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
 fn read_package_world(path: string) -> Result[PackageWorld, string] {
     let data = match fs::read_bytes_structured(path) {
         Ok(value) => value,
-        Err(error) => return Result::Err(
-            "failed to read compiler world " + path + ": " + error.to_string(),
-        ),
+        Err(error) => return Result::Err(f"failed to read compiler world {path}: {error}"),
     };
     match decode_package_world(data) {
         Ok(value) => Result::Ok(value),

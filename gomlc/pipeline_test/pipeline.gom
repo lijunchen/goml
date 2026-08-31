@@ -35,7 +35,7 @@ pub fn read_snapshot(base: string, extension: string) -> string {
     match fs::read_file_structured(file) {
         Ok(value) => value,
         Err(message) => {
-            testing::fail("failed to read " + file + ": " + message.to_string());
+            testing::fail(f"failed to read {file}: {message}");
             ""
         },
     }
@@ -48,9 +48,8 @@ fn update_expected() -> bool {
 fn assert_snapshot(base: string, extension: string, actual: string) -> () {
     let file = path::join(base, "main.gom." + extension);
     if update_expected() {
-        match fs::write_file_structured(file, actual) {
-            Ok(()) => (),
-            Err(message) => testing::fail("failed to write " + file + ": " + message.to_string()),
+        if let Err(message) = fs::write_file_structured(file, actual) {
+            testing::fail(f"failed to write {file}: {message}")
         }
     } else {
         testing::assert_eq(actual, read_snapshot(base, extension))
@@ -83,12 +82,9 @@ fn tmp_dir() -> string {
 
 fn execute_go_and_read_stdout(go_source: string, expected: string, name: string) -> string {
     let work_dir = path::join(path::join(tmp_dir(), "gomlc-pipeline-test"), name);
-    match fs::create_dir_all(work_dir) {
-        Ok(()) => (),
-        Err(message) => {
-            testing::fail(f"failed to create Go work dir: {message}");
-            return ""
-        },
+    if let Err(message) = fs::create_dir_all(work_dir) {
+        testing::fail(f"failed to create Go work dir: {message}");
+        return ""
     }
     let main_file = path::join(work_dir, "main.go");
     let executable = path::join(work_dir, "main");
@@ -101,20 +97,14 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
         false
     };
     if source_current {} else {
-        match fs::write_file_structured(main_file, go_source) {
-            Ok(()) => (),
-            Err(message) => {
-                testing::fail(f"failed to write Go source: {message}");
-                return ""
-            },
+        if let Err(message) = fs::write_file_structured(main_file, go_source) {
+            testing::fail(f"failed to write Go source: {message}");
+            return ""
         }
         if fs::is_file(executable) {
-            match fs::remove_file(executable) {
-                Ok(()) => (),
-                Err(message) => {
-                    testing::fail(f"failed to remove stale executable: {message}");
-                    return ""
-                },
+            if let Err(message) = fs::remove_file(executable) {
+                testing::fail(f"failed to remove stale executable: {message}");
+                return ""
             }
         }
     }
@@ -226,7 +216,7 @@ fn test_one_case_with_go(compiler: compiler_driver::SourceCompiler, name: string
     let source = match fs::read_file_structured(source_path) {
         Ok(value) => value,
         Err(message) => {
-            testing::fail("failed to read " + source_path + ": " + message.to_string());
+            testing::fail(f"failed to read {source_path}: {message}");
             ""
         },
     };

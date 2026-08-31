@@ -37,26 +37,8 @@ fn assert_scan_matches_bytes(source: bytes::Bytes) -> () {
             || actual_token.end != expected_token.end
             || actual_token.synthetic != expected_token.synthetic {
             testing::fail(
-                "scanner mismatch at token " + index.to_string() + ": actual="
-                    + token::name(actual_token.kind)
-                    + " "
-                    + actual_token.literal
-                    + " "
-                    + actual_token.start.to_string()
-                    + ".."
-                    + actual_token.end.to_string()
-                    + " synthetic="
-                    + actual_token.synthetic.to_string()
-                    + ", expected="
-                    + expected_token.kind
-                    + " "
-                    + expected_token.literal
-                    + " "
-                    + expected_token.start.to_string()
-                    + ".."
-                    + expected_token.end.to_string()
-                    + " synthetic="
-                    + expected_token.synthetic.to_string(),
+                f"scanner mismatch at token {index}: actual=" + token::name(actual_token.kind)
+                    + f" {actual_token.literal} {actual_token.start}..{actual_token.end} synthetic={actual_token.synthetic}, expected={expected_token.kind} {expected_token.literal} {expected_token.start}..{expected_token.end} synthetic={expected_token.synthetic}",
             )
         }
     }

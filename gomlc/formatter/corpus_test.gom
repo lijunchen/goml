@@ -14,7 +14,7 @@ fn collect_corpus(directory: string, result: Vec[string]) -> () {
     let names = match fs::read_dir(directory) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(directory + ": " + error.to_string());
+            testing::fail(f"{directory}: {error}");
             Vec::new()
         },
     };
@@ -54,8 +54,7 @@ fn formats_repository_corpus_without_semantic_changes() -> () {
             }
         },
     );
-    match completed {
-        Ok(()) => (),
-        Err(errors) => testing::fail(errors[0].error),
+    if let Err(errors) = completed {
+        testing::fail(errors[0].error)
     }
 }

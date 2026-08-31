@@ -15,7 +15,7 @@ struct InlineJoin {
 fn fresh_inline(counter: Ref[isize], prefix: string) -> string {
     let value = counter.get();
     counter.set(value + 1);
-    prefix + value.to_string()
+    f"{prefix}{value}"
 }
 
 fn find_inline_name(values: Vec[InlineName], name: string) -> Option[Imm] {

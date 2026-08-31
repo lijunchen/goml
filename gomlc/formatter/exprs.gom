@@ -5,11 +5,10 @@ use module::lexer;
 fn direct_operator(node: LocatedNode) -> Option[LocatedToken] {
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
-        match cursor.next() {
-            Some(Token(token)) => if !lexer::token_is_trivia(token.token.kind) {
+        if let Some(Token(token)) = cursor.next() {
+            if !lexer::token_is_trivia(token.token.kind) {
                 return Option::Some(token)
-            },
-            _ => (),
+            }
         }
     }
     Option::None

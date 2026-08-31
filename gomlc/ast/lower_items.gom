@@ -224,12 +224,9 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                         if !types.is_empty() {
                                             let ty = types[0];
                                             field_type_spans.push(type_head_span(ty));
-                                            match lower_ty(ctx, ty) {
-                                                Some(value) => {
-                                                    lowered.push(value);
-                                                    field_attrs.push(lower_attributes(field))
-                                                },
-                                                None => (),
+                                            if let Some(value) = lower_ty(ctx, ty) {
+                                                lowered.push(value);
+                                                field_attrs.push(lower_attributes(field))
                                             }
                                         }
                                     }
@@ -257,17 +254,12 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                             let types = type_children(field);
                                             match field_name {
                                                 Some(name) => if !types.is_empty() {
-                                                    match lower_ty(ctx, types[0]) {
-                                                        Some(ty) => {
-                                                            field_type_spans.push(
-                                                                type_head_span(types[0]),
-                                                            );
-                                                            named.push((name.token.text, ty));
-                                                            field_attrs.push(
-                                                                lower_attributes(field),
-                                                            )
-                                                        },
-                                                        None => (),
+                                                    if let Some(ty) = lower_ty(ctx, types[0]) {
+                                                        field_type_spans.push(
+                                                            type_head_span(types[0]),
+                                                        );
+                                                        named.push((name.token.text, ty));
+                                                        field_attrs.push(lower_attributes(field))
                                                     }
                                                 } else {
                                                     push_error(
@@ -333,51 +325,40 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
             let field_attrs: Vec[Vec[Attribute]] = Vec::new();
             let public_fields: Vec[string] = Vec::new();
             let newtype = first_child(node, cst::NodeKind::NEWTYPE_FIELD).is_some();
-            match first_child(node, cst::NodeKind::NEWTYPE_FIELD) {
-                Some(field) => {
-                    let types = type_children(field);
-                    if !types.is_empty() {
-                        let type_node = types[0];
-                        match lower_ty(ctx, type_node) {
-                            Some(ty) => {
-                                field_type_spans.push(type_head_span(type_node));
-                                fields.push(("_0", ty));
-                                field_attrs.push(lower_attributes(field));
-                                match lower_visibility(field) {
-                                    Public => public_fields.push("_0"),
-                                    Private => (),
-                                }
-                            },
-                            None => (),
+            if let Some(field) = first_child(node, cst::NodeKind::NEWTYPE_FIELD) {
+                let types = type_children(field);
+                if !types.is_empty() {
+                    let type_node = types[0];
+                    if let Some(ty) = lower_ty(ctx, type_node) {
+                        field_type_spans.push(type_head_span(type_node));
+                        fields.push(("_0", ty));
+                        field_attrs.push(lower_attributes(field));
+                        match lower_visibility(field) {
+                            Public => public_fields.push("_0"),
+                            Private => (),
                         }
                     }
-                },
-                None => (),
+                }
             }
-            match first_child(node, cst::NodeKind::STRUCT_FIELD_LIST) {
-                Some(list) => for field in children_of_kind(list, cst::NodeKind::STRUCT_FIELD) {
+            if let Some(list) = first_child(node, cst::NodeKind::STRUCT_FIELD_LIST) {
+                for field in children_of_kind(list, cst::NodeKind::STRUCT_FIELD) {
                     let field_name = first_token(field, lexer::TokenKind::Ident);
                     let types = type_children(field);
-                    match field_name {
-                        Some(name) => if !types.is_empty() {
+                    if let Some(name) = field_name {
+                        if !types.is_empty() {
                             let type_node = types[0];
-                            match lower_ty(ctx, type_node) {
-                                Some(ty) => {
-                                    field_type_spans.push(type_head_span(type_node));
-                                    fields.push((name.token.text, ty));
-                                    field_attrs.push(lower_attributes(field));
-                                    match lower_visibility(field) {
-                                        Public => public_fields.push(name.token.text),
-                                        Private => (),
-                                    }
-                                },
-                                None => (),
+                            if let Some(ty) = lower_ty(ctx, type_node) {
+                                field_type_spans.push(type_head_span(type_node));
+                                fields.push((name.token.text, ty));
+                                field_attrs.push(lower_attributes(field));
+                                match lower_visibility(field) {
+                                    Public => public_fields.push(name.token.text),
+                                    Private => (),
+                                }
                             }
-                        },
-                        None => (),
+                        }
                     }
-                },
-                None => (),
+                }
             }
             Option::Some(
                 StructDef {
@@ -499,17 +480,17 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
             match first_child(node, cst::NodeKind::TRAIT_METHOD_SIG_LIST) {
                 Some(list) => {
                     for associated in children_of_kind(list, cst::NodeKind::TRAIT_ASSOCIATED_TYPE) {
-                        match first_token(associated, lexer::TokenKind::Ident) {
-                            Some(associated_name) => {
-                                let bounds = match first_child(associated, cst::NodeKind::TRAIT_SET) {
-                                    Some(set) => lower_trait_set(ctx, set),
-                                    None => Vec::new(),
-                                };
-                                associated_types.push(
-                                    AssociatedType { name: associated_name.token.text, bounds },
-                                )
-                            },
-                            None => (),
+                        if let Some(associated_name) = first_token(
+                            associated,
+                            lexer::TokenKind::Ident,
+                        ) {
+                            let bounds = match first_child(associated, cst::NodeKind::TRAIT_SET) {
+                                Some(set) => lower_trait_set(ctx, set),
+                                None => Vec::new(),
+                            };
+                            associated_types.push(
+                                AssociatedType { name: associated_name.token.text, bounds },
+                            )
                         }
                     }
                     for method in children_of_kind(list, cst::NodeKind::TRAIT_METHOD_SIG) {
@@ -593,31 +574,27 @@ fn lower_params(ctx: LowerCtx, node: LocatedNode, shorthand_self_ty: Option[Type
     (string, TypeExpr),
 ] {
     let result: Vec[(string, TypeExpr)] = Vec::new();
-    match first_child(node, cst::NodeKind::PARAM_LIST) {
-        Some(list) => {
-            let mut index = 0;
-            for param in children_of_kind(list, cst::NodeKind::PARAM) {
-                if let Some(value) = lower_param(ctx, param, index, shorthand_self_ty) {
-                    result.push(value)
-                }
-                index += 1;
+    if let Some(list) = first_child(node, cst::NodeKind::PARAM_LIST) {
+        let mut index = 0;
+        for param in children_of_kind(list, cst::NodeKind::PARAM) {
+            if let Some(value) = lower_param(ctx, param, index, shorthand_self_ty) {
+                result.push(value)
             }
-        },
-        None => (),
+            index += 1;
+        }
     }
     result
 }
 
 fn lower_param_type_spans(node: LocatedNode) -> Vec[Span] {
     let result: Vec[Span] = Vec::new();
-    match first_child(node, cst::NodeKind::PARAM_LIST) {
-        Some(list) => for param in children_of_kind(list, cst::NodeKind::PARAM) {
+    if let Some(list) = first_child(node, cst::NodeKind::PARAM_LIST) {
+        for param in children_of_kind(list, cst::NodeKind::PARAM) {
             let types = type_children(param);
             if !types.is_empty() {
                 result.push(type_head_span(types[0]))
             }
-        },
-        None => (),
+        }
     }
     result
 }
@@ -709,34 +686,29 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                 for associated in children_of_kind(node, cst::NodeKind::IMPL_ASSOCIATED_TYPE) {
                     let name = first_token(associated, lexer::TokenKind::Ident);
                     let associated_ty = type_children(associated);
-                    match name {
-                        Some(name_token) => if !associated_ty.is_empty() {
+                    if let Some(name_token) = name {
+                        if !associated_ty.is_empty() {
                             if let Some(ty) = lower_ty(ctx, associated_ty[0]) {
                                 associated_types.push((name_token.token.text, ty))
                             }
-                        },
-                        None => (),
+                        }
                     }
                 }
                 let methods: Vec[Function] = Vec::new();
                 for method in children_of_kind(node, cst::NodeKind::FN) {
-                    match lower_function(ctx, method, Option::Some(for_type)) {
-                        Some(value) => {
-                            match trait_ref {
-                                Some(_) => match value.visibility {
-                                    Public => push_error(
-                                        ctx,
-                                        node_span(node),
-                                        "Trait implementation method " + value.name
-                                            + " must not use `pub`",
-                                    ),
-                                    Private => (),
-                                },
-                                None => (),
+                    if let Some(value) = lower_function(ctx, method, Option::Some(for_type)) {
+                        if let Some(_) = trait_ref {
+                            match value.visibility {
+                                Public => push_error(
+                                    ctx,
+                                    node_span(node),
+                                    "Trait implementation method " + value.name
+                                        + " must not use `pub`",
+                                ),
+                                Private => (),
                             }
-                            methods.push(value)
-                        },
-                        None => (),
+                        }
+                        methods.push(value)
                     }
                 }
                 Option::Some(

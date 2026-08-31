@@ -355,12 +355,9 @@ impl Parser {
     pub fn advance_with_error(self: Parser, message: string) -> () {
         if self.depth_limit_hit.get() {} else {
             let marker = self.open();
-            match current_lex_error(self) {
-                Some(_) => (),
-                None => {
-                    let (start, end) = current_range(self);
-                    self.events.push(Event::Error { message, start, end })
-                },
+            if let None = current_lex_error(self) {
+                let (start, end) = current_range(self);
+                self.events.push(Event::Error { message, start, end })
             }
             self.advance();
             let _ = self.close(marker, cst::NodeKind::ErrorTree);
@@ -446,12 +443,11 @@ impl Parser {
 impl MarkerClosed {
     pub fn precede(self: MarkerClosed, parser: Parser) -> MarkerOpened {
         let marker = parser.open();
-        match parser.events[self.index] {
-            Open { kind, forward_parent: _ } => parser.events.set(
+        if let Open { kind, forward_parent: _ } = parser.events[self.index] {
+            parser.events.set(
                 self.index,
                 Event::Open { kind, forward_parent: Option::Some(marker.index - self.index) },
-            ),
-            _ => (),
+            )
         }
         marker
     }

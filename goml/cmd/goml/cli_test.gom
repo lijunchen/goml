@@ -11,7 +11,7 @@ use std::text;
 
 fn cli_deep_ref_type(depth: isize) -> string {
     let result = Ref::new("i32");
-    for _ in range(0, depth) {
+    for _ in 0..depth {
         result.set("Ref[" + result.get() + "]")
     }
     result.get()
@@ -544,9 +544,8 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> () {
     let initial = test_support::read_file(fingerprint);
     test_support::assert_success(cli_check(root));
     testing::assert_eq(test_support::read_file(fingerprint), initial);
-    match fs::write_bytes_structured(artifact, bytes::Bytes::from_string("corrupt")) {
-        Ok(()) => (),
-        Err(message) => testing::fail(message.to_string()),
+    if let Err(message) = fs::write_bytes_structured(artifact, bytes::Bytes::from_string("corrupt")) {
+        testing::fail(message.to_string())
     }
     test_support::assert_success(cli_check(root));
     let restored = match fs::read_bytes_structured(artifact) {
@@ -558,9 +557,8 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> () {
     };
     testing::assert(restored.len() > 8);
     testing::assert_eq(test_support::read_file(fingerprint), initial);
-    match fs::remove_file(artifact) {
-        Ok(()) => (),
-        Err(message) => testing::fail(message.to_string()),
+    if let Err(message) = fs::remove_file(artifact) {
+        testing::fail(message.to_string())
     }
     test_support::assert_success(cli_check(root));
     testing::assert(fs::is_file(artifact));
@@ -949,32 +947,32 @@ fn project_test_dry_run_and_invalid_signature_diagnostics() -> () {
 
 fn cli_wide_fields(count: isize) -> string {
     let parts = Vec::new();
-    for idx in range(0, count) {
-        parts.push("field" + idx.to_string() + ": i32")
+    for idx in 0..count {
+        parts.push(f"field{idx}: i32")
     }
     text::join(parts, ", ")
 }
 
 fn cli_wide_values(count: isize) -> string {
     let parts = Vec::new();
-    for idx in range(0, count) {
-        parts.push("field" + idx.to_string() + ": " + idx.to_string())
+    for idx in 0..count {
+        parts.push(f"field{idx}: {idx}")
     }
     text::join(parts, ", ")
 }
 
 fn cli_wide_pattern(count: isize) -> string {
     let parts = Vec::new();
-    for idx in range(0, count) {
-        parts.push("field" + idx.to_string() + ": x" + idx.to_string())
+    for idx in 0..count {
+        parts.push(f"field{idx}: x{idx}")
     }
     text::join(parts, ", ")
 }
 
 fn cli_wide_sum(count: isize) -> string {
     let parts = Vec::new();
-    for idx in range(0, count) {
-        parts.push("x" + idx.to_string())
+    for idx in 0..count {
+        parts.push(f"x{idx}")
     }
     text::join(parts, " + ")
 }

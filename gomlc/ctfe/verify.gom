@@ -751,14 +751,11 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
             for arm in arms {
                 verify_origin(ctx, arm.origin)?;
                 verify_pattern(ctx, arm.pattern, source.ty)?;
-                match arm.guard {
-                    Some(guard) => {
-                        verify_expr(ctx, guard)?;
-                        if !expression_type_matches(ctir::CtType::Bool, guard.ty) {
-                            return Result::Err("CTIR match guard is not bool")
-                        }
-                    },
-                    None => (),
+                if let Some(guard) = arm.guard {
+                    verify_expr(ctx, guard)?;
+                    if !expression_type_matches(ctir::CtType::Bool, guard.ty) {
+                        return Result::Err("CTIR match guard is not bool")
+                    }
                 }
                 verify_expr(ctx, arm.body)?;
                 if !expression_type_matches(value.ty, arm.body.ty) {
@@ -866,21 +863,18 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
             }
         },
         ctir::CtExprKind::Call { target, args } => {
-            match target {
-                ctir::CtCallTarget::Intrinsic(name) => {
-                    let signature = match value_intrinsic_signature(ctx.module.target, name) {
-                        Some(value) => Option::Some(value),
-                        None => derive_intrinsic_signature(ctx.module, name),
-                    };
-                    let Some(signature) = signature else {
-                        return Result::Err("unknown CTIR intrinsic")
-                    };
-                    if !types_equal(value.ty, signature.1) {
-                        return Result::Err("CTIR intrinsic return type mismatch")
-                    }
-                    return verify_expr_list(ctx, args, signature.0)
-                },
-                _ => (),
+            if let ctir::CtCallTarget::Intrinsic(name) = target {
+                let signature = match value_intrinsic_signature(ctx.module.target, name) {
+                    Some(value) => Option::Some(value),
+                    None => derive_intrinsic_signature(ctx.module, name),
+                };
+                let Some(signature) = signature else {
+                    return Result::Err("unknown CTIR intrinsic")
+                };
+                if !types_equal(value.ty, signature.1) {
+                    return Result::Err("CTIR intrinsic return type mismatch")
+                }
+                return verify_expr_list(ctx, args, signature.0)
             }
             let Some(function) = call_function(ctx, target) else {
                 return Result::Err("unresolved CTIR call target")

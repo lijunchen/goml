@@ -95,13 +95,10 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                     first_deleted = position;
                 }
             } else {
-                match self.entries.get()[dense_index] {
-                    Some(entry) => {
-                        if entry.hash == hash && PartialEq::eq(entry.key, key) {
-                            return IndexMapProbe::Found(position, dense_index)
-                        }
-                    },
-                    None => (),
+                if let Some(entry) = self.entries.get()[dense_index] {
+                    if entry.hash == hash && PartialEq::eq(entry.key, key) {
+                        return IndexMapProbe::Found(position, dense_index)
+                    }
                 }
             }
             position = ((position.to_u64() * 5 + perturb + 1) & mask.to_u64()).to_isize();
@@ -110,16 +107,15 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     }
 
     fn place_entry_index(self: IndexMap[K, V], dense_index: isize) -> () {
-        match self.entries.get()[dense_index] {
-            Some(entry) => match self.probe(entry.key, entry.hash) {
+        if let Some(entry) = self.entries.get()[dense_index] {
+            match self.probe(entry.key, entry.hash) {
                 Found(slot, _) => {
                     self.indices.get()[slot] = dense_index;
                 },
                 Vacant(slot) => {
                     self.indices.get()[slot] = dense_index;
                 },
-            },
-            None => (),
+            }
         }
     }
 
@@ -295,11 +291,8 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                 while index < entries_len {
                     let current = index;
                     index += 1;
-                    match self.entries.get()[current] {
-                        Some(entry) => {
-                            return Option::Some((entry.key, entry.value))
-                        },
-                        None => (),
+                    if let Some(entry) = self.entries.get()[current] {
+                        return Option::Some((entry.key, entry.value))
                     }
                 }
                 Option::None

@@ -73,8 +73,8 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             if option_string_present(format) {
                 return Result::Err(repeated_argument_error(VERSION_COMMAND, "--format <FORMAT>"))
             } else {
-                match inline_cli_value(argument, "--format") {
-                    Some(value) => if value == "" {
+                if let Some(value) = inline_cli_value(argument, "--format") {
+                    if value == "" {
                         return Result::Err(
                             value_required_error("--format <FORMAT>", Option::Some("text, json")),
                         )
@@ -85,8 +85,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                             },
                             Err(error) => return Result::Err(error),
                         }
-                    },
-                    None => (),
+                    }
                 }
                 index += 1;
             }

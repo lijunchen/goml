@@ -124,9 +124,8 @@ fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
 fn write_files(values: Vec[FormattedFile]) -> Result[(), string] {
     for value in values {
         if value.source != value.formatted {
-            match fs::write_file_structured(value.path, value.formatted) {
-                Ok(_) => (),
-                Err(error) => return Result::Err(f"{value.path}: {error}"),
+            if let Err(error) = fs::write_file_structured(value.path, value.formatted) {
+                return Result::Err(f"{value.path}: {error}")
             }
         }
     }
@@ -151,12 +150,9 @@ fn run(options: Options) -> isize {
         }
     }
     if options.write {
-        match write_files(files) {
-            Ok(_) => (),
-            Err(error) => {
-                io::eprintln(error);
-                return 2
-            },
+        if let Err(error) = write_files(files) {
+            io::eprintln(error);
+            return 2
         }
     } else if !options.list && !options.check {
         io::print(files[0].formatted)

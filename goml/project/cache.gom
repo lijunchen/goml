@@ -37,9 +37,7 @@ fn absolute_from_module(module_dir: string, value: string) -> string {
 fn file_digest(module_dir: string, value: string) -> Result[string, string] {
     match fs::sha256_file(absolute_from_module(module_dir, value)) {
         Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(
-            "failed to read cache input " + value + ": " + message.to_string(),
-        ),
+        Err(message) => Result::Err(f"failed to read cache input {value}: {message}"),
     }
 }
 
@@ -86,11 +84,8 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                 inputs.push(value)
             }
             let outputs = Vec::from_array([path::with_extension(output, "interface")]);
-            match subcommand {
-                BUILD_SUBCOMMAND | TEST_BUILD_SUBCOMMAND => {
-                    outputs.push(path::with_extension(output, "core"))
-                },
-                _ => (),
+            if let BUILD_SUBCOMMAND | TEST_BUILD_SUBCOMMAND = subcommand {
+                outputs.push(path::with_extension(output, "core"))
             }
             Option::Some(
                 CacheSpec {

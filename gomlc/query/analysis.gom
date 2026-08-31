@@ -190,13 +190,12 @@ fn environments_with_builtin_and_comptime(
 fn package_has_comptime(files: Vec[hir::File]) -> bool {
     for file in files {
         for item in file.items {
-            match item {
-                hir::Item::Function(value) => for attribute in value.attrs {
+            if let hir::Item::Function(value) = item {
+                for attribute in value.attrs {
                     if attribute.name == "comptime" || attribute.name == "comptime_derive" {
                         return true
                     }
-                },
-                _ => (),
+                }
             }
         }
     }

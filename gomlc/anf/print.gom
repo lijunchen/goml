@@ -71,7 +71,7 @@ fn imm_doc(value: Imm) -> pretty::Doc {
         Var { name, ty: _ } => pretty::text(name),
         Callable { callable, ty: _ } => callable_doc(callable),
         Prim { value, ty: _ } => repr::primitive_doc(value),
-        Tag { index, ty: _ } => pretty::text("Tag_" + index.to_string()),
+        Tag { index, ty: _ } => pretty::text(f"Tag_{index}"),
     }
 }
 
@@ -149,7 +149,7 @@ fn value_doc(value: Value) -> pretty::Doc {
             let field = if constructor.is_struct && index < constructor.fields.len() {
                 constructor.fields[index]
             } else {
-                "_" + index.to_string()
+                f"_{index}"
             };
             pretty::concat(
                 Vec::from_array(
@@ -230,7 +230,7 @@ fn value_doc(value: Value) -> pretty::Doc {
             ),
         ),
         Proj { tuple, index, ty: _ } => {
-            pretty::append(imm_doc(tuple), pretty::text("." + index.to_string()))
+            pretty::append(imm_doc(tuple), pretty::text(f".{index}"))
         },
     }
 }
@@ -391,14 +391,13 @@ fn term_doc(value: Term) -> pretty::Doc {
             for arm in arms {
                 values.push(arm_doc(arm))
             }
-            match default {
-                Some(value) => values.push(
+            if let Some(value) = default {
+                values.push(
                     pretty::append(
                         pretty::block(pretty::text("_ =>"), block_docs(value)),
                         pretty::text(","),
                     ),
-                ),
-                None => (),
+                )
             }
             pretty::block(pretty::append(pretty::text("match "), imm_doc(scrutinee)), values)
         },
@@ -414,14 +413,13 @@ fn term_doc(value: Term) -> pretty::Doc {
             for arm in arms {
                 values.push(select_arm_doc(arm))
             }
-            match default {
-                Some(value) => values.push(
+            if let Some(value) = default {
+                values.push(
                     pretty::append(
                         pretty::block(pretty::text("default =>"), block_docs(value)),
                         pretty::text(","),
                     ),
-                ),
-                None => (),
+                )
             }
             pretty::block(
                 pretty::text(

@@ -317,15 +317,9 @@ fn validate_call(value: NativeCallSpec) -> Result[(), string] {
     } else if !valid_exported_symbol(value.symbol) {
         return Result::Err("native call has invalid exported symbol " + value.symbol)
     }
-    validate_emitted_types(
-        value.type_argument_keys,
-        "native call " + value.call_id.to_string() + " type arguments",
-    )?;
-    validate_types(
-        value.parameter_type_keys,
-        "native call " + value.call_id.to_string() + " parameters",
-    )?;
-    validate_types(value.result_type_keys, "native call " + value.call_id.to_string() + " results")?;
+    validate_emitted_types(value.type_argument_keys, f"native call {value.call_id} type arguments")?;
+    validate_types(value.parameter_type_keys, f"native call {value.call_id} parameters")?;
+    validate_types(value.result_type_keys, f"native call {value.call_id} results")?;
     match value.binding {
         NativeBindingKind::Function => if value.receiver_name != "" || value.receiver_pointer {
             Result::Err("native function binding has a receiver")
@@ -437,9 +431,7 @@ fn call_uses_package(calls: Vec[NativeCallSpec], import_path: string) -> bool {
 
 pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
     if value.abi_version != NATIVE_BRIDGE_ABI_VERSION {
-        return Result::Err(
-            "native manifest ABI " + value.abi_version.to_string() + " is unsupported",
-        )
+        return Result::Err(f"native manifest ABI {value.abi_version} is unsupported")
     }
     let calls: Vec[NativeCallSpec] = Vec::with_capacity(value.calls.len());
     for call in value.calls {
@@ -449,9 +441,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
     collections::sort_by(calls, compare_call);
     for index in 1..calls.len() {
         if calls[index - 1].call_id == calls[index].call_id {
-            return Result::Err(
-                "native call ID " + calls[index].call_id.to_string() + " is registered twice",
-            )
+            return Result::Err(f"native call ID {calls[index].call_id} is registered twice")
         }
     }
     let types: Vec[NativeTypeSpec] = Vec::with_capacity(value.types.len());

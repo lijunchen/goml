@@ -144,24 +144,20 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 index += 1;
             }
         } else if !positional && inline_dump_argument_present(inline_dump_argument(argument)) {
-            match inline_dump_argument(argument) {
-                Some((name, value)) => return Result::Err(
+            if let Some((name, value)) = inline_dump_argument(argument) {
+                return Result::Err(
                     unexpected_value_error(RUN_SINGLE_COMMAND, value, name, f"{name} <FILE>"),
-                ),
-                None => (),
+                )
             }
         } else if !positional && cli_option(argument) {
-            match similar_cli_argument(RUN_SINGLE_COMMAND, argument) {
-                Some(similar) => {
-                    let usage = if similar == "--help" {
-                        "gomlc run-single --help <FILE>"
-                    } else {
-                        let _ = used_dumps.insert(similar);
-                        selected_run_usage(used_dumps)
-                    };
-                    return Result::Err(unexpected_similar_argument_error(argument, similar, usage))
-                },
-                None => (),
+            if let Some(similar) = similar_cli_argument(RUN_SINGLE_COMMAND, argument) {
+                let usage = if similar == "--help" {
+                    "gomlc run-single --help <FILE>"
+                } else {
+                    let _ = used_dumps.insert(similar);
+                    selected_run_usage(used_dumps)
+                };
+                return Result::Err(unexpected_similar_argument_error(argument, similar, usage))
             }
             let usage = if !used_dumps.is_empty() || file.is_some() {
                 selected_run_usage(used_dumps)

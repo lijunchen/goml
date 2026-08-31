@@ -264,15 +264,12 @@ fn free_vars_in_block(value: Block) -> DceNames {
                     }
                     add_names(used, case_uses)
                 }
-                match default {
-                    Some(body) => {
-                        let default_uses = free_vars_in_block(body);
-                        if let Some(name) = bind {
-                            remove_name(default_uses, name)
-                        }
-                        add_names(used, default_uses)
-                    },
-                    None => (),
+                if let Some(body) = default {
+                    let default_uses = free_vars_in_block(body);
+                    if let Some(name) = bind {
+                        remove_name(default_uses, name)
+                    }
+                    add_names(used, default_uses)
                 }
             },
             Select { cases, default } => {
@@ -481,14 +478,11 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                         None => output.push(Stmt::Var { name, ty, value: Option::None }),
                     }
                 } else {
-                    match initial {
-                        Some(expr) => {
-                            if expr_has_side_effects(expr) {
-                                add_expr_uses(live, expr);
-                                output.push(emit_side_effect(expr))
-                            }
-                        },
-                        None => (),
+                    if let Some(expr) = initial {
+                        if expr_has_side_effects(expr) {
+                            add_expr_uses(live, expr);
+                            output.push(emit_side_effect(expr))
+                        }
                     }
                 }
             },
@@ -612,12 +606,9 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 let lowered_cases: Vec[TypeSwitchCase] = Vec::with_capacity(cases.len());
                 for case in cases {
                     let result = dce_block_with_live(case.body, live);
-                    match bind {
-                        Some(name) => {
-                            remove_name(result.live, name);
-                            remove_name(result.needs_decl, name)
-                        },
-                        None => (),
+                    if let Some(name) = bind {
+                        remove_name(result.live, name);
+                        remove_name(result.needs_decl, name)
                     }
                     add_names(live, result.live);
                     add_names(needs_decl, result.needs_decl);
@@ -626,12 +617,9 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 let lowered_default = match default {
                     Some(body) => {
                         let result = dce_block_with_live(body, live);
-                        match bind {
-                            Some(name) => {
-                                remove_name(result.live, name);
-                                remove_name(result.needs_decl, name)
-                            },
-                            None => (),
+                        if let Some(name) = bind {
+                            remove_name(result.live, name);
+                            remove_name(result.needs_decl, name)
                         }
                         add_names(live, result.live);
                         add_names(needs_decl, result.needs_decl);

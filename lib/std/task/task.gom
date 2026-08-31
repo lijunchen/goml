@@ -219,11 +219,8 @@ impl[T] Task[T] {
     pub fn join(self: Task[T]) -> T {
         loop {
             let _ = self.ready.recv();
-            match self.result.get() {
-                Some(value) => {
-                    break value;
-                },
-                None => (),
+            if let Some(value) = self.result.get() {
+                break value;
             }
         }
     }
@@ -287,14 +284,10 @@ fn concurrent_worker[T, E](
 }
 
 fn record_concurrent_result[E](ordered: Vec[Option[E]], received: Option[(isize, Result[(), E])]) -> () {
-    match received {
-        Some(item) => match item.1 {
-            Ok(()) => (),
-            Err(error) => {
-                ordered[item.0] = Option::Some(error);
-            },
-        },
-        None => (),
+    if let Some(item) = received {
+        if let Err(error) = item.1 {
+            ordered[item.0] = Option::Some(error);
+        }
     }
 }
 
@@ -349,9 +342,8 @@ pub fn for_each_concurrent[T, E](
             results.close();
             let errors: Vec[IndexedError[E]] = Vec::new();
             for index in 0..total {
-                match ordered[index] {
-                    Some(error) => errors.push(IndexedError { index, error }),
-                    None => (),
+                if let Some(error) = ordered[index] {
+                    errors.push(IndexedError { index, error })
                 }
             }
             if errors.is_empty() {

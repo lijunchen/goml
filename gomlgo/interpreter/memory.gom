@@ -138,11 +138,10 @@ fn projection_count(value: Option[Vec[Projection]]) -> isize {
 }
 
 fn append_projections(target: Vec[Projection], value: Option[Vec[Projection]]) -> () {
-    match value {
-        Some(values) => for projection in values {
+    if let Some(values) = value {
+        for projection in values {
             target.push(projection)
-        },
-        None => (),
+        }
     }
 }
 
@@ -166,9 +165,7 @@ pub fn index_place(base: Place, index: isize) -> Place {
 
 fn slice_element_place(value: SliceValue, index: isize) -> Result[Place, string] {
     if index < 0 || index >= value.length {
-        return Result::Err(
-            "index out of range [" + index.to_string() + "] with length " + value.length.to_string(),
-        )
+        return Result::Err(f"index out of range [{index}] with length {value.length}")
     }
     let base = value.backing.ok_or("index of nil slice")?;
     Result::Ok(index_place(base, value.offset + index))

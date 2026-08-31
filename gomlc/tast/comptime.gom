@@ -106,17 +106,19 @@ fn comptime_error_text(
     for frame in error.stack {
         builder.write_string("\n  at ");
         builder.write_string(frame.function_name);
-        match comptime_error_origin(module, dependencies, frame.package_name, frame.origin) {
-            Some(origin) => {
-                builder.write_string(" (");
-                builder.write_string(origin.source_path);
-                builder.write_char(':');
-                builder.write_string(origin.start.to_string());
-                builder.write_string("..");
-                builder.write_string(origin.end.to_string());
-                builder.write_char(')')
-            },
-            None => (),
+        if let Some(origin) = comptime_error_origin(
+            module,
+            dependencies,
+            frame.package_name,
+            frame.origin,
+        ) {
+            builder.write_string(" (");
+            builder.write_string(origin.source_path);
+            builder.write_char(':');
+            builder.write_string(origin.start.to_string());
+            builder.write_string("..");
+            builder.write_string(origin.end.to_string());
+            builder.write_char(')')
         }
     }
     builder.finish()
@@ -851,9 +853,8 @@ fn ct_builtin_equality_type(ty: Type) -> bool {
 }
 
 fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, string] {
-    match value {
-        Closure { .. } => return Result::Err("closures are not available in comptime"),
-        _ => (),
+    if let Closure { .. } = value {
+        return Result::Err("closures are not available in comptime")
     }
     let ty = lower_ct_type(ctx, expr_type(value))?;
     let kind = match value {
@@ -1484,8 +1485,8 @@ fn constant_candidates(
             origin_cursor: Ref::new(0),
             derive: false,
         };
-        match lower_const_expr(ctx, value.value) {
-            Ok(expression) => result.push(
+        if let Ok(expression) = lower_const_expr(ctx, value.value) {
+            result.push(
                 CtConstantCandidate {
                     name: value.name,
                     ty: value.ty,
@@ -1496,8 +1497,7 @@ fn constant_candidates(
                     end: 0,
                     pending: false,
                 },
-            ),
-            Err(_) => (),
+            )
         }
     }
     for value in pending {
@@ -2767,11 +2767,8 @@ pub fn finalize_comptime(
         )
     }
     if diagnostics.is_empty() {
-        match ctfe::verify_module(module, dependencies) {
-            Ok(()) => (),
-            Err(message) => diagnostics.push(
-                comptime_diagnostic(message, "<" + package_name + ">", 0, 0),
-            ),
+        if let Err(message) = ctfe::verify_module(module, dependencies) {
+            diagnostics.push(comptime_diagnostic(message, "<" + package_name + ">", 0, 0))
         }
     }
     module.sites.truncate(0);

@@ -2486,9 +2486,7 @@ fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(u64, isiz
                 Result::Ok((bits, width, signed))
             },
             Some(value) => integer_bits(value),
-            None => Result::Err(
-                "register " + id.value.to_string() + " is undefined in " + frame.name,
-            ),
+            None => Result::Err(f"register {id.value} is undefined in {frame.name}"),
         }
     }
     if id.value >= 0 && id.value < frame.registers.len() {
@@ -2500,7 +2498,7 @@ fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(u64, isiz
     }
     match frame.registers[id.value] {
         Some(value) => integer_bits(value),
-        None => Result::Err("register " + id.value.to_string() + " is undefined in " + frame.name),
+        None => Result::Err(f"register {id.value} is undefined in {frame.name}"),
     }
 }
 
@@ -2562,9 +2560,7 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
         }
         match frame.registers[id.value] {
             Some(value) => Result::Ok(value),
-            None => Result::Err(
-                "register " + id.value.to_string() + " is undefined in " + frame.name,
-            ),
+            None => Result::Err(f"register {id.value} is undefined in {frame.name}"),
         }
     }
 }
@@ -3002,7 +2998,7 @@ fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
                         index: value.index,
                     },
                 ),
-                None => Result::Err("place " + id.value.to_string() + " is undefined"),
+                None => Result::Err(f"place {id.value} is undefined"),
             },
         }
     }
@@ -3018,7 +3014,7 @@ fn root_frame_place(frame: Frame, id: bytecode::PlaceId) -> Result[Option[CellId
             Some(_) => Result::Ok(Option::None),
             None => match frame.bool_places[id.value] {
                 Some(_) => Result::Ok(Option::None),
-                None => Result::Err("place " + id.value.to_string() + " is undefined"),
+                None => Result::Err(f"place {id.value} is undefined"),
             },
         }
     }
@@ -3659,14 +3655,13 @@ fn hash_mix(seed: u64, value: u64) -> u64 {
 
 fn hash_place(value: Place) -> u64 {
     let mut result = hash_mix(1469598103934665603.to_u64(), value.root.value.to_u64());
-    match value.projections {
-        Some(projections) => for projection in projections {
+    if let Some(projections) = value.projections {
+        for projection in projections {
             result = match projection {
                 Projection::Field(index) => hash_mix(hash_mix(result, 1.to_u64()), index.to_u64()),
                 Projection::Index(index) => hash_mix(hash_mix(result, 2.to_u64()), index.to_u64()),
             };
-        },
-        None => (),
+        }
     }
     result
 }
@@ -4142,7 +4137,7 @@ fn execute_builtin(
         } else {
             Result::Err("clear has an invalid call shape")
         },
-        _ => Result::Err("builtin " + kind.to_string() + " is not implemented"),
+        _ => Result::Err(f"builtin {kind} is not implemented"),
     }
 }
 
@@ -4246,10 +4241,7 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
         Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             let index = integer_index(index)?;
             if index < 0 || index >= elements.len() {
-                Result::Err(
-                    "index out of range [" + index.to_string() + "] with length "
-                        + elements.len().to_string(),
-                )
+                Result::Err(f"index out of range [{index}] with length {elements.len()}")
             } else {
                 Result::Ok((copy_value(elements[index]), true))
             }
@@ -4257,10 +4249,7 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
         Value::Local(LocalValue::Slice(slice)) => {
             let index = integer_index(index)?;
             if index < 0 || index >= slice.length {
-                return Result::Err(
-                    "index out of range [" + index.to_string() + "] with length "
-                        + slice.length.to_string(),
-                )
+                return Result::Err(f"index out of range [{index}] with length {slice.length}")
             }
             let backing = slice.backing.ok_or("index of nil slice")?;
             match bool_backing(state.memory, backing) {
@@ -4282,10 +4271,7 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
         Value::Local(LocalValue::String(value)) => {
             let index = integer_index(index)?;
             if index < 0 || index >= value.len() {
-                Result::Err(
-                    "index out of range [" + index.to_string() + "] with length "
-                        + value.len().to_string(),
-                )
+                Result::Err(f"index out of range [{index}] with length {value.len()}")
             } else {
                 Result::Ok(
                     (
@@ -4313,20 +4299,14 @@ fn indexed_integer_value(state: VmState, value: Value, index: isize) -> Result[
     match value {
         Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             if index < 0 || index >= elements.len() {
-                Result::Err(
-                    "index out of range [" + index.to_string() + "] with length "
-                        + elements.len().to_string(),
-                )
+                Result::Err(f"index out of range [{index}] with length {elements.len()}")
             } else {
                 Result::Ok((copy_value(elements[index]), true))
             }
         },
         Value::Local(LocalValue::Slice(slice)) => {
             if index < 0 || index >= slice.length {
-                return Result::Err(
-                    "index out of range [" + index.to_string() + "] with length "
-                        + slice.length.to_string(),
-                )
+                return Result::Err(f"index out of range [{index}] with length {slice.length}")
             }
             let backing = slice.backing.ok_or("index of nil slice")?;
             match bool_backing(state.memory, backing) {
@@ -4346,10 +4326,7 @@ fn indexed_integer_value(state: VmState, value: Value, index: isize) -> Result[
             }
         },
         Value::Local(LocalValue::String(value)) => if index < 0 || index >= value.len() {
-            Result::Err(
-                "index out of range [" + index.to_string() + "] with length "
-                    + value.len().to_string(),
-            )
+            Result::Err(f"index out of range [{index}] with length {value.len()}")
         } else {
             Result::Ok(
                 (
@@ -4921,10 +4898,7 @@ fn set_indexed_runtime_place(
     match load_place(state.memory, base) {
         Ok(Value::Local(LocalValue::Slice(slice))) => {
             if index < 0 || index >= slice.length {
-                return Result::Err(
-                    "index out of range [" + index.to_string() + "] with length "
-                        + slice.length.to_string(),
-                )
+                return Result::Err(f"index out of range [{index}] with length {slice.length}")
             }
             let backing = slice.backing.ok_or("index of nil slice")?;
             let index = slice.offset + index;
@@ -5107,7 +5081,7 @@ fn native_runtime_type_key(world: go_types::World, type_id: go_types::TypeId) ->
         } else {
             match go_types::type_data(world, go_types::underlying(world, underlying)) {
                 go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields: _ } } => Result::Ok(
-                    "gomlgo-type-" + resolved.value.to_string(),
+                    f"gomlgo-type-{resolved.value}",
                 ),
                 _ => native_runtime_type_key(world, underlying),
             }
@@ -5266,9 +5240,7 @@ fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type
                         element_key,
                     )?;
                     if !set_native_slice_value(host, index, element) {
-                        return Result::Err(
-                            "native slice element " + index.to_string() + " could not be converted",
-                        )
+                        return Result::Err(f"native slice element {index} could not be converted")
                     }
                 }
             }
@@ -5549,14 +5521,13 @@ fn dynamic_native_prepared(
 
 fn pointer_projection_key(value: Place) -> string {
     let mut result = "";
-    match value.projections {
-        Some(projections) => for projection in projections {
+    if let Some(projections) = value.projections {
+        for projection in projections {
             result += match projection {
-                Projection::Field(index) => "f" + index.to_string() + ";",
-                Projection::Index(index) => "i" + index.to_string() + ";",
+                Projection::Field(index) => f"f{index};",
+                Projection::Index(index) => f"i{index};",
             };
-        },
-        None => (),
+        }
     }
     result
 }
@@ -7620,8 +7591,7 @@ fn execute_sequential_index_place(
                                     state,
                                     frame,
                                     instruction.location,
-                                    "index out of range [" + index.to_string() + "] with length "
-                                        + slice.length.to_string(),
+                                    f"index out of range [{index}] with length {slice.length}",
                                 )
                             }
                             match slice.backing {
@@ -7832,8 +7802,7 @@ fn execute_sequential_boolean_index(
                             state,
                             frame,
                             instruction.location,
-                            "index out of range [" + index.to_string() + "] with length "
-                                + slice.length.to_string(),
+                            f"index out of range [{index}] with length {slice.length}",
                         )
                     }
                     match slice.backing {
@@ -7982,7 +7951,7 @@ fn execute_sequential_bool_slice_index(
             state,
             frame,
             block.instructions[instruction_index + 4].location,
-            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+            f"index out of range [{index}] with length {slice.length}",
         )
     }
     let backing = match slice.backing {
@@ -8114,7 +8083,7 @@ fn execute_sequential_bool_slice_store(
             state,
             frame,
             block.instructions[instruction_index + 3].location,
-            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+            f"index out of range [{index}] with length {slice.length}",
         )
     }
     let backing = match slice.backing {
@@ -8197,7 +8166,7 @@ fn execute_fast_bool_slice_index(
             state,
             frame,
             block.instructions[instruction_index + 4].location,
-            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+            f"index out of range [{index}] with length {slice.length}",
         )
     }
     let backing = match slice.backing {
@@ -8295,7 +8264,7 @@ fn execute_fast_bool_slice_store(
             state,
             frame,
             block.instructions[instruction_index + 3].location,
-            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+            f"index out of range [{index}] with length {slice.length}",
         )
     }
     let backing = match slice.backing {
@@ -8378,7 +8347,7 @@ fn execute_bool_slice_update_effect(
             state,
             frame,
             block.instructions[instruction_index + 3].location,
-            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+            f"index out of range [{index}] with length {slice.length}",
         )
     }
     let backing = match slice.backing {
@@ -8566,7 +8535,7 @@ fn execute_fast_bool_slice_branch(
             state,
             frame,
             block.instructions[instruction_index + 4].location,
-            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+            f"index out of range [{index}] with length {slice.length}",
         )
     }
     let backing = match slice.backing {
@@ -8868,7 +8837,7 @@ fn execute_sequential_root_store(
                 state,
                 frame,
                 block.instructions[index + 1].location,
-                "register " + value.to_string() + " is undefined in " + frame.name,
+                f"register {value} is undefined in {frame.name}",
             ),
         }
     }
@@ -8931,7 +8900,7 @@ fn execute_sequential_root_store(
                 state,
                 frame,
                 block.instructions[index + 1].location,
-                "register " + value.to_string() + " is undefined in " + frame.name,
+                f"register {value} is undefined in {frame.name}",
             ),
         },
     }
@@ -9264,9 +9233,7 @@ fn frame_for_call(
 ) -> FrameCallResult {
     if arguments.len() != function.parameters.len() {
         return failed_frame_call(
-            "function " + function.name + " received " + arguments.len().to_string()
-                + " arguments, expected "
-                + function.parameters.len().to_string(),
+            f"function {function.name} received {arguments.len()} arguments, expected {function.parameters.len()}",
         )
     }
     if captures.len() != function.captures.len() {

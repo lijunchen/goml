@@ -278,13 +278,7 @@ pub fn run(root: string, output: string, seed_limit: isize) -> Result[Summary, s
                         && first_actual_offset(actual) != first_oracle_offset(expected);
                     if actual_ok != expected.ok || offset_mismatch {
                         failures += 1;
-                        let message = "seed=" + file + "\nactual_ok=" + actual_ok.to_string()
-                            + "\nexpected_ok="
-                            + expected.ok.to_string()
-                            + "\nactual_first_offset="
-                            + first_actual_offset(actual).to_string()
-                            + "\nexpected_first_offset="
-                            + first_oracle_offset(expected).to_string();
+                        let message = f"seed={file}\nactual_ok={actual_ok}\nexpected_ok={expected.ok}\nactual_first_offset={first_actual_offset(actual)}\nexpected_first_offset={first_oracle_offset(expected)}";
                         save_failure(output, input, actual, expected, message)?
                     }
                 }

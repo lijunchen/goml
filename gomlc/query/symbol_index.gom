@@ -47,17 +47,14 @@ fn token_is_inside_node(token: SyntaxToken, node: SyntaxNode) -> bool {
 fn token_is_inside_attribute(syntax: SyntaxIndex, token: SyntaxToken) -> bool {
     let mut current = Option::Some(token.parent);
     while current.is_some() {
-        match current {
-            Some(id) => {
-                let node = syntax.nodes[id];
-                if cst::node_kind_equal(node.kind, cst::NodeKind::ATTRIBUTE)
-                    || cst::node_kind_equal(node.kind, cst::NodeKind::ATTRIBUTE_LIST) {
-                    return true
-                } else {
-                    current = node.parent;
-                }
-            },
-            None => (),
+        if let Some(id) = current {
+            let node = syntax.nodes[id];
+            if cst::node_kind_equal(node.kind, cst::NodeKind::ATTRIBUTE)
+                || cst::node_kind_equal(node.kind, cst::NodeKind::ATTRIBUTE_LIST) {
+                return true
+            } else {
+                current = node.parent;
+            }
         }
     }
     false
@@ -177,17 +174,13 @@ fn parent_with_kind(
 ) -> Option[SyntaxNode] {
     let mut current = node.parent;
     while current.is_some() {
-        match current {
-            Some(id) => {
-                let parent = syntax.nodes[id];
-                if cst::node_kind_equal(parent.kind, first)
-                    || cst::node_kind_equal(parent.kind, second) {
-                    return Option::Some(parent)
-                } else {
-                    current = parent.parent;
-                }
-            },
-            None => (),
+        if let Some(id) = current {
+            let parent = syntax.nodes[id];
+            if cst::node_kind_equal(parent.kind, first) || cst::node_kind_equal(parent.kind, second) {
+                return Option::Some(parent)
+            } else {
+                current = parent.parent;
+            }
         }
     }
     Option::None
@@ -313,9 +306,9 @@ fn symbol_method_origin(syntax: SyntaxIndex, node: SyntaxNode, kind: SymbolKind)
 
 fn index_source_syntax(source: SourceFile, syntax: SyntaxIndex, symbols: Vec[Symbol]) -> () {
     for node in syntax.nodes {
-        match symbol_kind(syntax, node) {
-            Some(kind) => match first_identifier(syntax, node) {
-                Some(token) => symbols.push(
+        if let Some(kind) = symbol_kind(syntax, node) {
+            if let Some(token) = first_identifier(syntax, node) {
+                symbols.push(
                     Symbol {
                         name: token.text,
                         qualified_name: qualified_symbol_name(
@@ -334,10 +327,8 @@ fn index_source_syntax(source: SourceFile, syntax: SyntaxIndex, symbols: Vec[Sym
                         has_receiver: symbol_has_receiver(syntax, node, kind),
                         method_origin: symbol_method_origin(syntax, node, kind),
                     },
-                ),
-                None => (),
-            },
-            None => (),
+                )
+            }
         }
     }
 }
@@ -357,20 +348,16 @@ fn ast_type_owner_name(value: ast::TypeExpr) -> Option[string] {
 fn collection_lang_method(attrs: Vec[ast::Attribute], item: string) -> Option[string] {
     for attribute in attrs {
         if attribute.name == "lang" && !attribute.args.is_empty() {
-            match attribute.args[0] {
-                ast::AttributeArg::String(name) => if name == item {
+            if let ast::AttributeArg::String(name) = attribute.args[0] {
+                if name == item {
                     for argument in attribute.args {
-                        match argument {
-                            ast::AttributeArg::Named { name, value_kind, value } => if name
-                                == "from_array"
-                                && value_kind == "string" {
+                        if let ast::AttributeArg::Named { name, value_kind, value } = argument {
+                            if name == "from_array" && value_kind == "string" {
                                 return Option::Some(value)
-                            },
-                            _ => (),
+                            }
                         }
                     }
-                },
-                _ => (),
+                }
             }
         }
     }
@@ -382,35 +369,30 @@ fn index_builtin_collection_methods(source: SourceFile, symbols: Vec[Symbol]) ->
         return
     }
     let lowered = ast::lower(parser::parse(source.source));
-    match lowered.ast {
-        Some(file) => for item in file.items {
-            match item {
-                ImplBlock(block) => {
-                    let method = match collection_lang_method(block.attrs, "vec") {
-                        Some(value) => Option::Some(value),
-                        None => collection_lang_method(block.attrs, "hashmap"),
-                    };
-                    match (ast_type_owner_name(block.for_type), method) {
-                        (Some(owner), Some(name)) => symbols.push(
-                            Symbol {
-                                name,
-                                qualified_name: source.package_name + "::" + owner + "::" + name,
-                                package_name: source.package_name,
-                                source_path: source.path,
-                                span: block.for_type_span,
-                                kind: SymbolKind::Method,
-                                public: true,
-                                has_receiver: false,
-                                method_origin: MethodOrigin::Inherent,
-                            },
-                        ),
-                        _ => (),
-                    }
-                },
-                _ => (),
+    if let Some(file) = lowered.ast {
+        for item in file.items {
+            if let ImplBlock(block) = item {
+                let method = match collection_lang_method(block.attrs, "vec") {
+                    Some(value) => Option::Some(value),
+                    None => collection_lang_method(block.attrs, "hashmap"),
+                };
+                if let (Some(owner), Some(name)) = (ast_type_owner_name(block.for_type), method) {
+                    symbols.push(
+                        Symbol {
+                            name,
+                            qualified_name: source.package_name + "::" + owner + "::" + name,
+                            package_name: source.package_name,
+                            source_path: source.path,
+                            span: block.for_type_span,
+                            kind: SymbolKind::Method,
+                            public: true,
+                            has_receiver: false,
+                            method_origin: MethodOrigin::Inherent,
+                        },
+                    )
+                }
             }
-        },
-        None => (),
+        }
     }
 }
 

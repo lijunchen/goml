@@ -485,13 +485,10 @@ fn collect_type_parameters(values: Vec[string], value: Type) -> () {
         },
         Projection { for_ty, trait_ref, .. } => {
             collect_type_parameters(values, for_ty);
-            match trait_ref {
-                Some(reference) => {
-                    for arg in reference.args {
-                        collect_type_parameters(values, arg)
-                    }
-                },
-                None => (),
+            if let Some(reference) = trait_ref {
+                for arg in reference.args {
+                    collect_type_parameters(values, arg)
+                }
             }
         },
         App { ty, args } => {

@@ -455,11 +455,7 @@ fn check_builtin_count(
             state,
             node,
             position,
-            "invalid operation: " + amount + " arguments for " + call + " (expected "
-                + expected.to_string()
-                + ", found "
-                + actual.to_string()
-                + ")",
+            f"invalid operation: {amount} arguments for {call} (expected {expected}, found {actual})",
             false,
         );
         false
@@ -475,9 +471,8 @@ fn check_builtin_raw_arity(
     name: string,
     arguments: Vec[syntax::NodeId],
 ) -> bool {
-    match name {
-        MAKE_BUILTIN | NEW_BUILTIN | UNSAFE_OFFSETOF_BUILTIN => return true,
-        _ => (),
+    if let MAKE_BUILTIN | NEW_BUILTIN | UNSAFE_OFFSETOF_BUILTIN = name {
+        return true
     }
     let minimum = match name {
         APPEND_BUILTIN | MAKE_BUILTIN | MIN_BUILTIN | MAX_BUILTIN => 1,
@@ -1104,12 +1099,8 @@ fn check_make_builtin(
         diagnostic(
             state,
             node,
-            "invalid operation: " + expression_source_text(state, node) + " expects "
-                + minimum.to_string()
-                + " or "
-                + maximum.to_string()
-                + " arguments; found "
-                + arguments.len().to_string(),
+            "invalid operation: " + expression_source_text(state, node)
+                + f" expects {minimum} or {maximum} arguments; found {arguments.len()}",
             false,
         );
         return invalid_operand(state)
@@ -1677,7 +1668,7 @@ fn check_append_builtin(
                 state,
                 node,
                 ellipsis,
-                "cannot use ... with " + values.len().to_string() + "-valued "
+                f"cannot use ... with {values.len()}-valued "
                     + expression_source_text(state, arguments[0]),
                 false,
             );

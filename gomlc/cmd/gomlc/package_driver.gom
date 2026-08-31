@@ -336,13 +336,12 @@ fn public_ast_item_name(package_name: string, value: ast::Item) -> Option[string
 fn public_item_names(values: Vec[ast::LowerResult], package_name: string) -> Vec[string] {
     let result: Vec[string] = Vec::new();
     for value in values {
-        match value.ast {
-            Some(file) => for item in file.items {
+        if let Some(file) = value.ast {
+            for item in file.items {
                 if let Some(name) = public_ast_item_name(package_name, item) {
                     result.push(name)
                 }
-            },
-            None => (),
+            }
         }
     }
     result
@@ -482,11 +481,10 @@ fn trait_impl_exposed_private_names(
     public_names: Vec[string],
 ) -> Vec[string] {
     let result: Vec[string] = Vec::new();
-    match value.trait_ref {
-        Some(trait_ref) => for arg in trait_ref.args {
+    if let Some(trait_ref) = value.trait_ref {
+        for arg in trait_ref.args {
             collect_private_type_names(result, package_name, public_names, arg)
-        },
-        None => (),
+        }
     }
     collect_private_bounds_names(result, package_name, public_names, value.generic_bounds);
     for predicate in value.predicates {
@@ -526,9 +524,9 @@ fn validate_public_trait_impls(value: hir::File, package_name: string, public_na
     string,
 ] {
     for item in value.items {
-        match item {
-            ImplBlock(value) => match value.trait_ref {
-                Some(trait_ref) => if trait_impl_header_is_public(value, package_name, public_names) {
+        if let ImplBlock(value) = item {
+            if let Some(trait_ref) = value.trait_ref {
+                if trait_impl_header_is_public(value, package_name, public_names) {
                     let private_names = wire::sort_artifact_names(
                         trait_impl_exposed_private_names(value, package_name, public_names),
                     );
@@ -539,10 +537,8 @@ fn validate_public_trait_impls(value: hir::File, package_name: string, public_na
                                 + join_artifact_names(private_names),
                         )
                     }
-                },
-                None => (),
-            },
-            _ => (),
+                }
+            }
         }
     }
     Result::Ok(())
@@ -946,7 +942,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> () {
             }
         },
     };
-    match output_transaction(
+    if let Err(error) = output_transaction(
         command.output,
         || {
             ensure_parent(interface_output_path(command.output))?;
@@ -958,8 +954,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> () {
             Result::Ok(())
         },
     ) {
-        Ok(()) => (),
-        Err(error) => fail(error),
+        fail(error)
     }
 }
 
@@ -1001,9 +996,8 @@ fn run_link_command(args: Vec[string]) -> () {
             Vec::new()
         },
     };
-    match artifact_validate_link_core_units(world, core_units) {
-        Ok(()) => (),
-        Err(error) => fail(COMPILE_ERROR_PREFIX + error),
+    if let Err(error) = artifact_validate_link_core_units(world, core_units) {
+        fail(COMPILE_ERROR_PREFIX + error)
     }
     artifact_prepare_core_units(world, core_units);
     match artifact_find_core_unit(core_units, command.entry) {
@@ -1107,9 +1101,8 @@ fn run_test_link_command(args: Vec[string]) -> () {
             Vec::new()
         },
     };
-    match artifact_validate_link_core_units(world, core_units) {
-        Ok(()) => (),
-        Err(error) => fail(COMPILE_ERROR_PREFIX + error),
+    if let Err(error) = artifact_validate_link_core_units(world, core_units) {
+        fail(COMPILE_ERROR_PREFIX + error)
     }
     artifact_prepare_core_units(world, core_units);
     let package_cores: Vec[core::File] = Vec::new();
@@ -1147,7 +1140,7 @@ fn run_test_link_command(args: Vec[string]) -> () {
     let go_source = go_backend::encode(
         lower_go_or_fail(go_backend::lower_tests(anf_value, test_link_cases(tests))),
     );
-    match output_transaction(
+    if let Err(error) = output_transaction(
         command.output,
         || {
             ensure_parent(command.output)?;
@@ -1156,7 +1149,6 @@ fn run_test_link_command(args: Vec[string]) -> () {
             atomic_write_text(command.manifest, encode_test_manifest(tests))
         },
     ) {
-        Ok(()) => (),
-        Err(error) => fail(error),
+        fail(error)
     }
 }

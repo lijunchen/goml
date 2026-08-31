@@ -74,7 +74,7 @@ fn read_source(file: string) -> bytes::Bytes {
 
 fn print_diagnostics(result: parser::ParseResult) -> () {
     for value in result.diagnostics {
-        println(value.offset.to_string() + "\t" + value.message)
+        println(f"{value.offset}\t{value.message}")
     }
 }
 
@@ -82,14 +82,12 @@ fn scan_file(file: string) -> () {
     let result = scanner::scan_bytes(read_source(file));
     for value in result.tokens {
         println(
-            token::name(value.kind) + "\t" + value.literal + "\t" + value.start.to_string() + "\t"
-                + value.end.to_string()
-                + "\t"
-                + value.synthetic.to_string(),
+            token::name(value.kind)
+                + f"\t{value.literal}\t{value.start}\t{value.end}\t{value.synthetic}",
         )
     }
     for value in result.diagnostics {
-        println(value.offset.to_string() + "\t" + value.message)
+        println(f"{value.offset}\t{value.message}")
     }
     if !result.diagnostics.is_empty() {
         process::exit(1)
@@ -122,12 +120,7 @@ fn check_files(files: Vec[string], package_path: string) -> () {
                     }
                     if !fallback {
                         for value in result.diagnostics {
-                            println(
-                                value.file + ":" + value.start.to_string() + ":"
-                                    + value.end.to_string()
-                                    + ": "
-                                    + value.message,
-                            )
+                            println(f"{value.file}:{value.start}:{value.end}: {value.message}")
                         }
                         if result.program.is_none() || !result.diagnostics.is_empty() {
                             process::exit(1)
@@ -155,10 +148,7 @@ fn check_files(files: Vec[string], package_path: string) -> () {
         },
     };
     for value in result.diagnostics {
-        println(
-            value.file + ":" + value.start.to_string() + ":" + value.end.to_string() + ": "
-                + value.message,
-        )
+        println(f"{value.file}:{value.start}:{value.end}: {value.message}")
     }
     if !result.diagnostics.is_empty() {
         process::exit(1)
@@ -359,10 +349,7 @@ fn execute_loaded(
     vm_config: interpreter::VmConfig,
 ) -> () {
     for value in result.diagnostics {
-        write_stderr(
-            value.file + ":" + value.start.to_string() + ":" + value.end.to_string() + ": "
-                + value.message,
-        )
+        write_stderr(f"{value.file}:{value.start}:{value.end}: {value.message}")
     }
     let Some(program) = result.program else {
         process::exit(1);
@@ -371,7 +358,7 @@ fn execute_loaded(
     let toolchain = program.toolchain;
     let lowered = bytecode::lower_unverified(program);
     for value in lowered.diagnostics {
-        write_stderr(value.start.to_string() + ":" + value.end.to_string() + ": " + value.message)
+        write_stderr(f"{value.start}:{value.end}: {value.message}")
     }
     let Some(program) = lowered.program else {
         process::exit(1);

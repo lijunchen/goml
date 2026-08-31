@@ -174,13 +174,11 @@ impl Parts {
             Nil => (),
             _ => {
                 let current_first = value.first;
-                match (self.last.get(), current_first) {
-                    (Some(previous), Some(current)) => if self.trailing_lines.get() == 0
-                        && !value.starts_with_line
+                if let (Some(previous), Some(current)) = (self.last.get(), current_first) {
+                    if self.trailing_lines.get() == 0 && !value.starts_with_line
                         && needs_space(previous, current) {
                         self.values.push(text(" "))
-                    },
-                    _ => (),
+                    }
                 }
                 if self.values.is_empty() && value.starts_with_line {
                     self.starts_with_line.set(true)

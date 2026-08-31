@@ -88,11 +88,10 @@ fn artifact_binary_sort_sections(values: Vec[ArtifactBinarySection]) -> Vec[Arti
 fn artifact_binary_sections_valid(values: Vec[ArtifactBinarySection]) -> bool {
     let mut previous: Option[u16] = Option::None;
     for value in values {
-        match previous {
-            Some(id) => if id == value.id {
+        if let Some(id) = previous {
+            if id == value.id {
                 return false
-            },
-            None => (),
+            }
         }
         previous = Option::Some(value.id);
     }

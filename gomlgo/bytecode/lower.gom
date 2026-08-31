@@ -450,7 +450,7 @@ fn collect_function_sources(
                                 let object = go_types::add_object(
                                     program.world,
                                     go_types::ObjectKind::Func,
-                                    "$func_lit_" + node.id.value.to_string(),
+                                    f"$func_lit_{node.id.value}",
                                     Option::Some(package_value.package_id),
                                     Option::Some(node.file),
                                     Option::Some(node.id),
@@ -459,8 +459,7 @@ fn collect_function_sources(
                                 );
                                 object_functions.push(Option::Some(function));
                                 object_globals.push(Option::None);
-                                literal_functions[package_value.package_id.value.to_string() + ":"
-                                    + node.id.value.to_string()] = sources.len();
+                                literal_functions[f"{package_value.package_id.value}:{node.id.value}"] = sources.len();
                                 sources.push(
                                     FunctionSource {
                                         template: sources.len(),
@@ -572,18 +571,16 @@ fn nearest_function_scope(world: go_types::World, scope: go_types::ScopeId) -> O
     go_types::ScopeId,
 ] {
     let mut current = Option::Some(scope);
-    loop {
-        match current {
-            Some(value) => if value.value < 0 || value.value >= world.scopes.len() {
-                return Option::None
-            } else if world.scopes[value.value].kind == go_types::ScopeKind::Function {
-                return Option::Some(value)
-            } else {
-                current = world.scopes[value.value].parent;
-            },
-            None => return Option::None,
+    while let Some(value) = current {
+        if value.value < 0 || value.value >= world.scopes.len() {
+            return Option::None
+        } else if world.scopes[value.value].kind == go_types::ScopeKind::Function {
+            return Option::Some(value)
+        } else {
+            current = world.scopes[value.value].parent;
         }
     }
+    Option::None
 }
 
 fn scope_is_ancestor(
@@ -592,18 +589,16 @@ fn scope_is_ancestor(
     descendant: go_types::ScopeId,
 ) -> bool {
     let mut current = Option::Some(descendant);
-    loop {
-        match current {
-            Some(value) => if value.value == ancestor.value {
-                return true
-            } else if value.value < 0 || value.value >= world.scopes.len() {
-                return false
-            } else {
-                current = world.scopes[value.value].parent;
-            },
-            None => return false,
+    while let Some(value) = current {
+        if value.value == ancestor.value {
+            return true
+        } else if value.value < 0 || value.value >= world.scopes.len() {
+            return false
+        } else {
+            current = world.scopes[value.value].parent;
         }
     }
+    false
 }
 
 fn analyze_function_capture_objects(
@@ -896,8 +891,7 @@ fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -
             None => node.value.to_string(),
         };
         return Result::Err(
-            "cannot emit " + description + " after block " + builder.current.get().value.to_string()
-                + " was terminated",
+            f"cannot emit {description} after block {builder.current.get().value} was terminated",
         )
     }
     let Some(value) = syntax::get_node(builder.syntax.arena, node) else {
@@ -1336,7 +1330,7 @@ fn lower_short_circuit(
 }
 
 fn literal_function_key(package_id: go_types::PackageId, node: syntax::NodeId) -> string {
-    package_id.value.to_string() + ":" + node.value.to_string()
+    f"{package_id.value}:{node.value}"
 }
 
 fn function_instance_matches(
@@ -1491,8 +1485,7 @@ fn instantiate_function(
     let source = builder.function_templates[template];
     if source.type_parameters.len() != arguments.len() {
         return Result::Err(
-            "function instance has " + arguments.len().to_string() + " type arguments but requires "
-                + source.type_parameters.len().to_string(),
+            f"function instance has {arguments.len()} type arguments but requires {source.type_parameters.len()}",
         )
     }
     for instance_index in builder.function_instance_indices[template] {
@@ -3007,9 +3000,7 @@ fn lower_single_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Re
     if values.len() == 1 {
         Result::Ok(values[0])
     } else {
-        Result::Err(
-            "expression produced " + values.len().to_string() + " values where one was required",
-        )
+        Result::Err(f"expression produced {values.len()} values where one was required")
     }
 }
 
@@ -3099,11 +3090,7 @@ fn store_assignment_values(
     values: Vec[RegisterId],
 ) -> Result[(), string] {
     if targets.len() != values.len() {
-        return Result::Err(
-            "assignment has " + targets.len().to_string() + " targets and "
-                + values.len().to_string()
-                + " values",
-        )
+        return Result::Err(f"assignment has {targets.len()} targets and {values.len()} values")
     }
     for index in 0..targets.len() {
         match targets[index] {
@@ -3138,11 +3125,7 @@ fn store_values(
     values: Vec[RegisterId],
 ) -> Result[(), string] {
     if places.len() != values.len() {
-        return Result::Err(
-            "assignment has " + places.len().to_string() + " targets and "
-                + values.len().to_string()
-                + " values",
-        )
+        return Result::Err(f"assignment has {places.len()} targets and {values.len()} values")
     }
     for index in 0..places.len() {
         match places[index] {
@@ -5433,11 +5416,7 @@ fn verifier_lower_diagnostic(value: VerifyDiagnostic) -> LowerDiagnostic {
         file: Option::None,
         start: -1,
         end: -1,
-        message: "bytecode verification failed at function " + function + ", block " + block
-            + ", instruction "
-            + value.instruction.to_string()
-            + ": "
-            + value.message,
+        message: f"bytecode verification failed at function {function}, block {block}, instruction {value.instruction}: {value.message}",
     }
 }
 

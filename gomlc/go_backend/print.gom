@@ -111,7 +111,7 @@ fn type_doc(value: Type) -> pretty::Doc {
         Named { name } => pretty::text(name),
         Pointer { elem: inner } => pretty::append(pretty::text("*"), type_doc(inner)),
         Array { len: length, elem: inner } => {
-            pretty::append(pretty::text("[" + length.to_string() + "]"), type_doc(inner))
+            pretty::append(pretty::text(f"[{length}]"), type_doc(inner))
         },
         Slice { elem: inner } => pretty::append(pretty::text("[]"), type_doc(inner)),
         Map { key, value } => pretty::concat(

@@ -91,16 +91,13 @@ fn path_prefix(values: Vec[SyntaxToken], end: isize) -> string {
 fn containing_use(value: Analysis, node: SyntaxNode) -> bool {
     let mut current = node.parent;
     while current.is_some() {
-        match current {
-            Some(id) => {
-                let parent = value.syntax.nodes[id];
-                if cst::node_kind_equal(parent.kind, cst::NodeKind::USE) {
-                    return true
-                } else {
-                    current = parent.parent;
-                }
-            },
-            None => (),
+        if let Some(id) = current {
+            let parent = value.syntax.nodes[id];
+            if cst::node_kind_equal(parent.kind, cst::NodeKind::USE) {
+                return true
+            } else {
+                current = parent.parent;
+            }
         }
     }
     false
@@ -205,44 +202,35 @@ fn identifier_index_at(identifiers: Vec[SyntaxToken], offset: isize) -> Option[i
 
 fn path_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let result: Vec[DefinitionResult] = Vec::new();
-    match path_node_at(value, offset) {
-        Some(node) => {
-            let identifiers = node_identifiers(value, node);
-            match identifier_index_at(identifiers, offset) {
-                Some(index) => {
-                    let canonical = canonical_path_at(value, node, identifiers, index);
-                    match longest_package_prefix(value, canonical) {
-                        Some(package_name) => if canonical == package_name {
-                            match package_definition(value, package_name) {
-                                Some(definition) => {
-                                    result.push(definition)
-                                },
-                                None => (),
-                            }
-                        } else {
-                            for definition in symbol_definitions(
-                                value,
-                                canonical,
-                                identifiers[index].text,
-                                false,
-                            ) {
-                                result.push(definition)
-                            }
-                        },
-                        None => for definition in symbol_definitions(
-                            value,
-                            canonical,
-                            identifiers[index].text,
-                            true,
-                        ) {
-                            result.push(definition)
-                        },
+    if let Some(node) = path_node_at(value, offset) {
+        let identifiers = node_identifiers(value, node);
+        if let Some(index) = identifier_index_at(identifiers, offset) {
+            let canonical = canonical_path_at(value, node, identifiers, index);
+            match longest_package_prefix(value, canonical) {
+                Some(package_name) => if canonical == package_name {
+                    if let Some(definition) = package_definition(value, package_name) {
+                        result.push(definition)
+                    }
+                } else {
+                    for definition in symbol_definitions(
+                        value,
+                        canonical,
+                        identifiers[index].text,
+                        false,
+                    ) {
+                        result.push(definition)
                     }
                 },
-                None => (),
+                None => for definition in symbol_definitions(
+                    value,
+                    canonical,
+                    identifiers[index].text,
+                    true,
+                ) {
+                    result.push(definition)
+                },
             }
-        },
-        None => (),
+        }
     }
     result
 }
@@ -281,40 +269,35 @@ fn member_definitions(value: Analysis, offset: isize, target: Option[tast::Refer
 ] {
     let exact: Vec[DefinitionResult] = Vec::new();
     let fallback: Vec[DefinitionResult] = Vec::new();
-    match token_at(value.syntax, offset) {
-        Some(token) => match member_access_dot(value, offset) {
-            Some(dot) => match receiver_type(value, dot) {
-                Some(receiver) => {
-                    let owner = type_owner_name(receiver);
-                    for symbol in build_symbol_index(value).symbols {
-                        if symbol.name == token.text
-                            && match symbol.kind {
-                                Field | Method => true,
-                                _ => false,
-                            }
-                            && match symbol.kind {
-                                Method => member_method_target_matches(symbol, target),
-                                _ => true,
-                            }
-                            && (symbol.package_name == value.package_name || symbol.public) {
-                            let definition = DefinitionResult {
-                                source_path: symbol.source_path,
-                                span: symbol.span,
-                            };
-                            let owner_name = symbol_owner(symbol.qualified_name);
-                            if owner_name == owner {
-                                push_definition(exact, definition)
-                            } else if symbol_owner_matches(symbol, owner) {
-                                push_definition(fallback, definition)
-                            }
+    if let Some(token) = token_at(value.syntax, offset) {
+        if let Some(dot) = member_access_dot(value, offset) {
+            if let Some(receiver) = receiver_type(value, dot) {
+                let owner = type_owner_name(receiver);
+                for symbol in build_symbol_index(value).symbols {
+                    if symbol.name == token.text
+                        && match symbol.kind {
+                            Field | Method => true,
+                            _ => false,
+                        }
+                        && match symbol.kind {
+                            Method => member_method_target_matches(symbol, target),
+                            _ => true,
+                        }
+                        && (symbol.package_name == value.package_name || symbol.public) {
+                        let definition = DefinitionResult {
+                            source_path: symbol.source_path,
+                            span: symbol.span,
+                        };
+                        let owner_name = symbol_owner(symbol.qualified_name);
+                        if owner_name == owner {
+                            push_definition(exact, definition)
+                        } else if symbol_owner_matches(symbol, owner) {
+                            push_definition(fallback, definition)
                         }
                     }
-                },
-                None => (),
-            },
-            None => (),
-        },
-        None => (),
+                }
+            }
+        }
     }
     if !exact.is_empty() {
         exact
@@ -352,10 +335,10 @@ fn struct_literal_owner(value: Analysis, literal: SyntaxNode) -> Option[string] 
 fn struct_field_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let exact: Vec[DefinitionResult] = Vec::new();
     let fallback: Vec[DefinitionResult] = Vec::new();
-    match token_at(value.syntax, offset) {
-        Some(token) => match containing_struct_literal(value, offset) {
-            Some(literal) => match struct_literal_owner(value, literal) {
-                Some(owner) => for symbol in build_symbol_index(value).symbols {
+    if let Some(token) = token_at(value.syntax, offset) {
+        if let Some(literal) = containing_struct_literal(value, offset) {
+            if let Some(owner) = struct_literal_owner(value, literal) {
+                for symbol in build_symbol_index(value).symbols {
                     if symbol.name == token.text
                         && match symbol.kind {
                             Field => true,
@@ -373,12 +356,9 @@ fn struct_field_definitions(value: Analysis, offset: isize) -> Vec[DefinitionRes
                             push_definition(fallback, definition)
                         }
                     }
-                },
-                None => (),
-            },
-            None => (),
-        },
-        None => (),
+                }
+            }
+        }
     }
     if !exact.is_empty() {
         exact
@@ -435,23 +415,24 @@ fn local_definition_span_from_fact(value: Analysis, fact: tast::LocalFact) -> Op
                 None => Option::None,
             };
             while current.is_some() {
-                match current {
-                    Some(id) => {
-                        let node = syntax.nodes[id];
-                        if node.start <= span.start && node.end >= span.end {
-                            match local_name_token(syntax, node.start, node.end, fact.local.hint) {
-                                Some(token) => return Option::Some(
-                                    DefinitionResult {
-                                        source_path: fact.source_path,
-                                        span: ast::span(token.start, token.end),
-                                    },
-                                ),
-                                None => (),
-                            }
+                if let Some(id) = current {
+                    let node = syntax.nodes[id];
+                    if node.start <= span.start && node.end >= span.end {
+                        if let Some(token) = local_name_token(
+                            syntax,
+                            node.start,
+                            node.end,
+                            fact.local.hint,
+                        ) {
+                            return Option::Some(
+                                DefinitionResult {
+                                    source_path: fact.source_path,
+                                    span: ast::span(token.start, token.end),
+                                },
+                            )
                         }
-                        current = node.parent;
-                    },
-                    None => (),
+                    }
+                    current = node.parent;
                 }
             }
             Option::None

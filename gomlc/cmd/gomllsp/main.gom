@@ -5,11 +5,8 @@ use std::io;
 use std::process;
 
 fn main() -> () {
-    match lsp::run_server() {
-        Ok(_) => (),
-        Err(message) => {
-            io::eprintln(message);
-            process::exit(1)
-        },
+    if let Err(message) = lsp::run_server() {
+        io::eprintln(message);
+        process::exit(1)
     }
 }

@@ -756,11 +756,10 @@ fn selected_standard_core(ast_value: ast::LowerResult, standard: StandardLibrary
 
 fn source_hir_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Vec[hir::File] {
     let result = Vec::from_array([compiler.prelude.hir_file]);
-    match compiler.standard {
-        Some(value) => for dependency in selected_standard_hir(ast_value, value) {
+    if let Some(value) = compiler.standard {
+        for dependency in selected_standard_hir(ast_value, value) {
             result.push(dependency)
-        },
-        None => (),
+        }
     }
     result
 }
@@ -781,11 +780,10 @@ fn source_core_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResul
     core::File,
 ] {
     let result = Vec::from_array([compiler.prelude.core_value]);
-    match compiler.standard {
-        Some(value) => for dependency in selected_standard_core(ast_value, value) {
+    if let Some(value) = compiler.standard {
+        for dependency in selected_standard_core(ast_value, value) {
             result.push(dependency)
-        },
-        None => (),
+        }
     }
     result
 }
@@ -983,12 +981,9 @@ fn render_diagnostic_label(
         builder.write_string(span.start.to_string());
         builder.write_string("..");
         builder.write_string(span.end.to_string());
-        match message {
-            Some(value) => {
-                builder.write_string(": ");
-                builder.write_string(value)
-            },
-            None => (),
+        if let Some(value) = message {
+            builder.write_string(": ");
+            builder.write_string(value)
         }
     } else {
         let start = source_position(source, span.start);
@@ -1002,12 +997,9 @@ fn render_diagnostic_label(
             builder.write_char(':');
             builder.write_string((end.column + 1).to_string())
         }
-        match message {
-            Some(value) => {
-                builder.write_string(": ");
-                builder.write_string(value)
-            },
-            None => (),
+        if let Some(value) = message {
+            builder.write_string(": ");
+            builder.write_string(value)
         }
         let line_number = (start.line + 1).to_string();
         let gutter = line_number.len();
@@ -1177,15 +1169,12 @@ fn compact_diagnostic_line(
     span: Option[ast::Span],
     source: string,
 ) -> () {
-    match span {
-        Some(value) => {
-            let position = source_position(source, value.start);
-            builder.write_string((position.line + 1).to_string());
-            builder.write_char(':');
-            builder.write_string((position.column + 1).to_string());
-            builder.write_string(": ")
-        },
-        None => (),
+    if let Some(value) = span {
+        let position = source_position(source, value.start);
+        builder.write_string((position.line + 1).to_string());
+        builder.write_char(':');
+        builder.write_string((position.column + 1).to_string());
+        builder.write_string(": ")
     }
     builder.write_string(message);
     builder.write_char('\n')
@@ -1334,11 +1323,8 @@ fn diagnostic_output_optional(
     if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
     }
-    match single_file_project_import(ast_value) {
-        Some(package_path) => return "single-file compilation cannot use project package "
-            + package_path
-            + "\n",
-        None => (),
+    if let Some(package_path) = single_file_project_import(ast_value) {
+        return "single-file compilation cannot use project package " + package_path + "\n"
     }
     let compiler = select_source_compiler(compiler_value, ast_value);
     let ast_value = expand_builtin_derives_with_compiler(compiler, ast_value);
@@ -1448,11 +1434,10 @@ fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
     match value.tast {
         Some(file) => {
             for item in file.items {
-                match item {
-                    Function(function) => if function.name == "main" {
+                if let Function(function) = item {
+                    if function.name == "main" {
                         return true
-                    },
-                    _ => (),
+                    }
                 }
             }
             false
@@ -1476,11 +1461,8 @@ fn compile_source_optional(
     fail_on_ast_diagnostics(parsed.diagnostics, "parser", source_path, source);
     let source_ast_value = ast::lower(parsed);
     fail_on_ast_diagnostics(source_ast_value.diagnostics, "lower", source_path, source);
-    match single_file_project_import(source_ast_value) {
-        Some(package_path) => fail(
-            "error[compile]: single-file compilation cannot use project package " + package_path,
-        ),
-        None => (),
+    if let Some(package_path) = single_file_project_import(source_ast_value) {
+        fail("error[compile]: single-file compilation cannot use project package " + package_path)
     }
     let compiler = select_source_compiler(compiler_value, source_ast_value);
     let ast_value = expand_builtin_derives_with_compiler(compiler, source_ast_value);
@@ -1553,11 +1535,10 @@ fn compile_source_or_diagnostics_optional(
             compact_ast_diagnostics(source_ast_value.diagnostics, source, false),
         )
     }
-    match single_file_project_import(source_ast_value) {
-        Some(package_path) => return SourceCompilation::Diagnostics(
+    if let Some(package_path) = single_file_project_import(source_ast_value) {
+        return SourceCompilation::Diagnostics(
             "single-file compilation cannot use project package " + package_path + "\n",
-        ),
-        None => (),
+        )
     }
     let compiler = select_source_compiler(compiler_value, source_ast_value);
     let ast_value = expand_builtin_derives_with_compiler(compiler, source_ast_value);
@@ -1713,9 +1694,8 @@ fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> ()
 }
 
 fn write_stdout(data: bytes::Bytes) -> () {
-    match io::write_stdout_structured(data) {
-        Ok(()) => (),
-        Err(error) => fail(error.to_string()),
+    if let Err(error) = io::write_stdout_structured(data) {
+        fail(error.to_string())
     }
 }
 
@@ -1756,14 +1736,13 @@ fn temp_root() -> string {
 
 fn temp_go_path(source_path: string, source: string) -> string {
     let root = path::join(temp_root(), "gomlc-selfhost");
-    match fs::create_dir_all(root) {
-        Ok(()) => (),
-        Err(error) => fail(error.to_string()),
+    if let Err(error) = fs::create_dir_all(root) {
+        fail(error.to_string())
     }
     let prefix = Hash::hash(source_path + "\n" + source).to_string();
     let mut suffix = 0;
     loop {
-        let directory = path::join(root, prefix + "-" + suffix.to_string());
+        let directory = path::join(root, f"{prefix}-{suffix}");
         match fs::create_dir(directory) {
             Ok(()) => break path::join(directory, "main.go"),
             Err(error) => if error.kind() == io::ErrorKind::AlreadyExists {
@@ -1780,11 +1759,8 @@ fn command_succeeded(output: process::Output) -> bool {
 }
 
 fn cleanup_temp_directory(go_file: string) -> () {
-    match path::parent(go_file) {
-        Some(directory) => {
-            let _ = fs::remove_dir_all(directory);
-        },
-        None => (),
+    if let Some(directory) = path::parent(go_file) {
+        let _ = fs::remove_dir_all(directory);
     }
 }
 

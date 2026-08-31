@@ -81,7 +81,7 @@ pub fn escape_default(value: byte) -> string {
             let (_, result) = string_from_utf8(Vec::from_array([value]));
             result
         } else {
-            "\\x" + hex_digit(value >> 4).to_string() + hex_digit(value & 15).to_string()
+            f"\\x{hex_digit(value >> 4)}{hex_digit(value & 15)}"
         },
     }
 }

@@ -41,7 +41,7 @@ fn main_string_contains(value: string, expected: string) -> bool {
         false
     } else {
         let found = Ref::new(false);
-        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
+        for index in 0..value.byte_len() - expected.byte_len() + 1 {
             if value.byte_slice(index, index + expected.byte_len()) == expected {
                 found.set(true)
             }
@@ -89,15 +89,14 @@ fn publishes_stable_output_transaction_snapshots() -> () {
     let anchor = path::join(directory, "package");
     let interface_path = path::join(directory, "package.interface");
     let core_path = path::join(directory, "package.core");
-    match output_transaction(
+    if let Err(error) = output_transaction(
         anchor,
         || {
             atomic_write_text(interface_path, "interface")?;
             atomic_write_text(core_path, "core")
         },
     ) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+        testing::fail(error.to_string())
     }
     testing::assert(!fs::exists(output_lock_path(anchor)));
     let first_epoch = match fs::read_file_structured(output_epoch_path(anchor)) {
@@ -120,9 +119,8 @@ fn publishes_stable_output_transaction_snapshots() -> () {
         Ok(value) => testing::assert_eq(value, "interface:core"),
         Err(error) => testing::fail(error.to_string()),
     }
-    match output_transaction(anchor, || atomic_write_text(interface_path, "updated")) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = output_transaction(anchor, || atomic_write_text(interface_path, "updated")) {
+        testing::fail(error.to_string())
     }
     match fs::read_file_structured(output_epoch_path(anchor)) {
         Ok(value) => {
@@ -162,9 +160,8 @@ fn rejects_and_repairs_incomplete_output_transactions() -> () {
         Ok(_) => testing::fail("incomplete transaction was readable"),
         Err(error) => testing::assert(error.contains("incomplete output transaction")),
     }
-    match output_transaction(anchor, || atomic_write_text(output, "complete")) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = output_transaction(anchor, || atomic_write_text(output, "complete")) {
+        testing::fail(error.to_string())
     }
     match output_snapshot(
         anchor,
@@ -225,7 +222,7 @@ fn assert_parse_error(values: Vec[string], expected: string) -> () {
 
 fn core_function_index(value: core::File, expected: string) -> isize {
     let result = Ref::new(-1);
-    for index in range(0, value.functions.len()) {
+    for index in 0..value.functions.len() {
         if value.functions.get(index).name == expected {
             result.set(index)
         }
@@ -885,7 +882,7 @@ fn collects_all_invalid_test_attribute_diagnostics() -> () {
     expected.push("`#[ignore]` accepts either no arguments or one string reason");
     expected.push("test attributes can only be applied to top-level functions, not struct");
     expected.push("`#[ignore]` requires a top-level `#[test]` function");
-    for index in range(0, collected.diagnostics.len()) {
+    for index in 0..collected.diagnostics.len() {
         let diagnostic = collected.diagnostics.get(index);
         testing::assert_eq(diagnostic.stage, "attribute");
         testing::assert_eq(diagnostic.message, expected.get(index));
@@ -1078,11 +1075,10 @@ fn rejects_project_imports_in_single_file_mode() -> () {
         Some(value) => testing::assert_eq(value, "packages_basic::Lib"),
         None => testing::fail("expected project import"),
     }
-    match single_file_project_import(
+    if let Some(_) = single_file_project_import(
         ast::lower(parser::parse("use std::fs; use std::io; fn main() -> () {}")),
     ) {
-        Some(_) => testing::fail("expected standard imports to be accepted"),
-        None => (),
+        testing::fail("expected standard imports to be accepted")
     }
 }
 
@@ -1766,9 +1762,8 @@ fn validates_artifact_main_entrypoints() -> () {
         Err(error) => testing::assert_eq(error, "main function must not have parameters"),
         Ok(()) => testing::fail("expected parameterized main error"),
     }
-    match artifact_validate_entrypoint("example::lib", "lib", exports) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = artifact_validate_entrypoint("example::lib", "lib", exports) {
+        testing::fail(error.to_string())
     }
 }
 
@@ -1955,9 +1950,8 @@ fn parses_artifact_json_values() -> () {
     if let Ok(_) = json::parse("[01]") {
         testing::fail("expected invalid JSON number")
     }
-    match json::parse("{} trailing") {
-        Err(_) => (),
-        Ok(_) => testing::fail("expected trailing JSON error"),
+    if let Ok(_) = json::parse("{} trailing") {
+        testing::fail("expected trailing JSON error")
     }
 }
 
@@ -2656,8 +2650,8 @@ fn preserves_generic_trait_methods_in_artifacts() -> () {
     let exported = Ref::new(false);
     for implementation in exports.trait_impls {
         if implementation.trait_ref.name == "std::serde::Deserialize" {
-            match implementation.for_ty {
-                tast::Type::Con { name } => if name == "std::toml::Value" {
+            if let tast::Type::Con { name } = implementation.for_ty {
+                if name == "std::toml::Value" {
                     for method in implementation.definition.methods {
                         if method.name == "deserialize" {
                             match method.body {
@@ -2667,8 +2661,7 @@ fn preserves_generic_trait_methods_in_artifacts() -> () {
                             exported.set(true)
                         }
                     }
-                },
-                _ => (),
+                }
             }
         }
     }

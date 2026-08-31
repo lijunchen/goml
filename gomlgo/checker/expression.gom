@@ -563,13 +563,7 @@ fn constant_index(
 }
 
 fn report_index_out_of_bounds(state: CheckState, node: syntax::NodeId, value: isize, length: i64) -> () {
-    diagnostic(
-        state,
-        node,
-        "invalid argument: index " + value.to_string() + " out of bounds [0:" + length.to_string()
-            + "]",
-        false,
-    )
+    diagnostic(state, node, f"invalid argument: index {value} out of bounds [0:{length}]", false)
 }
 
 fn check_sequence_literal(
@@ -615,9 +609,7 @@ fn check_sequence_literal(
                         None => diagnostic(
                             state,
                             element,
-                            "index " + next_index.to_string() + " is out of bounds (>= "
-                                + length.to_string()
-                                + ")",
+                            f"index {next_index} is out of bounds (>= {length})",
                             false,
                         ),
                     }
@@ -657,7 +649,7 @@ fn check_sequence_literal(
                     } else {
                         element
                     },
-                    "duplicate index " + next_index.to_string() + " in array or slice literal",
+                    f"duplicate index {next_index} in array or slice literal",
                     false,
                 )
             } else {
@@ -1210,23 +1202,13 @@ fn check_slice_bounds(
     }
     match (low, high_node, high) {
         (Some(low), Some(node), Some(high)) => if high < low {
-            diagnostic(
-                state,
-                node,
-                "invalid slice indices: " + high.to_string() + " < " + low.to_string(),
-                false,
-            )
+            diagnostic(state, node, f"invalid slice indices: {high} < {low}", false)
         },
         _ => {},
     }
     match (high, max_node, max) {
         (Some(high), Some(node), Some(max)) => if max < high {
-            diagnostic(
-                state,
-                node,
-                "invalid slice indices: " + max.to_string() + " < " + high.to_string(),
-                false,
-            )
+            diagnostic(state, node, f"invalid slice indices: {max} < {high}", false)
         },
         _ => {},
     }

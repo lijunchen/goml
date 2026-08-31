@@ -55,9 +55,10 @@ fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
     for element in cst::node_children(value.node) {
         match element {
             Node(child) => {
-                match first_significant_token_span(LocatedNode { node: child, start: cursor }) {
-                    Some(value) => return Option::Some(value),
-                    None => (),
+                if let Some(value) = first_significant_token_span(
+                    LocatedNode { node: child, start: cursor },
+                ) {
+                    return Option::Some(value)
                 }
             },
             Token(token) => if lexer::token_is_trivia(token.kind) {} else {

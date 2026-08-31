@@ -211,9 +211,9 @@ fn large_struct_source(body: string) -> string {
     let mut fields = "";
     let mut values = "";
     for index in 0..64 {
-        let name = "field" + index.to_string();
+        let name = f"field{index}";
         fields += name + ": i32,";
-        values += name + ": " + index.to_string() + ",";
+        values += f"{name}: {index},";
     }
     "struct Large {" + fields + "} " + body + " fn main() -> () { let value = Large {" + values
         + "}; println(run(value, 1)); }"
@@ -223,7 +223,7 @@ fn string_struct_source(field_count: isize, body: string) -> string {
     let mut fields = "";
     let mut values = "";
     for index in 0..field_count {
-        let name = "field" + index.to_string();
+        let name = f"field{index}";
         fields += name + ": string,";
         values += name + ": \"\",";
     }

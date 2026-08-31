@@ -94,11 +94,10 @@ fn constructors_equal(left: repr::Constructor, right: repr::Constructor) -> bool
 
 fn imms_stable(values: Vec[Imm], assigned: collections::HashSet[string]) -> bool {
     for value in values {
-        match value {
-            Var { name, ty: _ } => if assigned.contains(name) {
+        if let Var { name, ty: _ } = value {
+            if assigned.contains(name) {
                 return false
-            },
-            _ => (),
+            }
         }
     }
     true
@@ -247,11 +246,8 @@ fn simplify_known_value(value: Value, known: Vec[KnownBinding]) -> Value {
 }
 
 fn collect_assigned_value(result: collections::HashSet[string], value: Value) -> () {
-    match value {
-        Assign { name, .. } => {
-            let _ = result.insert(name);
-        },
-        _ => (),
+    if let Assign { name, .. } = value {
+        let _ = result.insert(name);
     }
 }
 

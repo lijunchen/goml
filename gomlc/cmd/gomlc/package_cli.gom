@@ -257,18 +257,15 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 index += 1;
             }
         } else {
-            match similar_cli_argument(command, argument) {
-                Some(similar) => {
-                    let usage = if similar == "--interface-path" && interface_paths.is_empty() {
-                        required_command_usage(command) + " --interface-path <INTERFACE_FILE>"
-                    } else if similar == "--help" {
-                        selected_package_usage(command, interface_paths) + " --help"
-                    } else {
-                        selected_package_usage(command, interface_paths)
-                    };
-                    return Result::Err(unexpected_similar_argument_error(argument, similar, usage))
-                },
-                None => (),
+            if let Some(similar) = similar_cli_argument(command, argument) {
+                let usage = if similar == "--interface-path" && interface_paths.is_empty() {
+                    required_command_usage(command) + " --interface-path <INTERFACE_FILE>"
+                } else if similar == "--help" {
+                    selected_package_usage(command, interface_paths) + " --help"
+                } else {
+                    selected_package_usage(command, interface_paths)
+                };
+                return Result::Err(unexpected_similar_argument_error(argument, similar, usage))
             }
             let usage = if cli_option(argument)
                 && (option_string_present(package_name) || option_string_present(output)

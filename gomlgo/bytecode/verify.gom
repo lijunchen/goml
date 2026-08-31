@@ -780,10 +780,7 @@ fn check_call_arguments(
             Option::Some(function.id),
             Option::Some(block),
             instruction,
-            "call to " + target_name + " in " + function.name + " has "
-                + arguments.len().to_string()
-                + " arguments, expected "
-                + parameters.len().to_string(),
+            f"call to {target_name} in {function.name} has {arguments.len()} arguments, expected {parameters.len()}",
         );
         return
     }
@@ -864,9 +861,7 @@ fn check_call_results(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "call to " + target_name + " in " + function.name + " result "
-                        + index.to_string()
-                        + " has type "
+                    f"call to {target_name} in {function.name} result {index} has type "
                         + go_types::format_type(program.world, actual)
                         + ", expected "
                         + go_types::format_type(program.world, expected[index]),
@@ -1020,13 +1015,9 @@ fn check_call_shape(
                         Option::Some(function.id),
                         Option::Some(block),
                         instruction,
-                        "dynamic call target is not function typed: register "
-                            + target.value.to_string()
-                            + " has type "
+                        f"dynamic call target is not function typed: register {target.value} has type "
                             + go_types::format_type(program.world, type_id)
-                            + " ("
-                            + type_id.value.to_string()
-                            + ")",
+                            + f" ({type_id.value})",
                     )
                 }
             },
@@ -2241,9 +2232,7 @@ fn check_function(
                 Option::Some(function.id),
                 Option::None,
                 -1,
-                "function register type contains a type parameter: register "
-                    + type_id.value.to_string()
-                    + " has type "
+                f"function register type contains a type parameter: register {type_id.value} has type "
                     + go_types::format_type(program.world, type_id),
             )
         }
@@ -2281,9 +2270,7 @@ fn check_function(
                 -1,
                 "function local " + local.name + " has type containing a type parameter: "
                     + go_types::format_type(program.world, local.type_id)
-                    + " ("
-                    + local.type_id.value.to_string()
-                    + ")",
+                    + f" ({local.type_id.value})",
             )
         }
         if !valid_type(program, local.type_id) {

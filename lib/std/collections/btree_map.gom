@@ -126,17 +126,11 @@ fn btree_borrow_from_previous[K, V](parent: BTreeNode[K, V], index: isize) -> ()
             child.children.insert(0, value)
         }
     }
-    match sibling.keys.pop() {
-        Some(value) => {
-            parent.keys[index - 1] = value;
-        },
-        None => (),
+    if let Some(value) = sibling.keys.pop() {
+        parent.keys[index - 1] = value;
     }
-    match sibling.values.pop() {
-        Some(value) => {
-            parent.values[index - 1] = value;
-        },
-        None => (),
+    if let Some(value) = sibling.values.pop() {
+        parent.values[index - 1] = value;
     }
 }
 
@@ -236,21 +230,17 @@ impl[K: cmp::Ord, V] BTreeMap[K, V] {
 
     pub fn get(self: BTreeMap[K, V], key: K) -> Option[V] {
         let mut current = self.root.get();
-        loop {
-            match current {
-                Some(node) => {
-                    let index = btree_node_lower_bound(node, key);
-                    if index < node.keys.len() && cmp::Ord::cmp(node.keys[index], key).is_eq() {
-                        return Option::Some(node.values[index])
-                    } else if node.leaf {
-                        return Option::None
-                    } else {
-                        current = Option::Some(node.children[index]);
-                    }
-                },
-                None => return Option::None,
+        while let Some(node) = current {
+            let index = btree_node_lower_bound(node, key);
+            if index < node.keys.len() && cmp::Ord::cmp(node.keys[index], key).is_eq() {
+                return Option::Some(node.values[index])
+            } else if node.leaf {
+                return Option::None
+            } else {
+                current = Option::Some(node.children[index]);
             }
         }
+        Option::None
     }
 
     pub fn contains_key(self: BTreeMap[K, V], key: K) -> bool {
@@ -326,9 +316,8 @@ impl[K: cmp::Ord, V] BTreeMap[K, V] {
 
     pub fn iter(self: BTreeMap[K, V]) -> FnIterator[(K, V)] {
         let stack: Vec[BTreeIterFrame[K, V]] = Vec::new();
-        match self.root.get() {
-            Some(root) => stack.push(BTreeIterFrame { node: root, position: 0 }),
-            None => (),
+        if let Some(root) = self.root.get() {
+            stack.push(BTreeIterFrame { node: root, position: 0 })
         }
         FnIterator::from_fn(
             || loop {

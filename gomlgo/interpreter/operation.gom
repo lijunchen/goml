@@ -1112,10 +1112,7 @@ pub fn output_bytes(value: Value) -> Result[bytes::Bytes, string] {
         Value::Local(LocalValue::String(value)) => Result::Ok(value),
         Value::Local(LocalValue::Pointer(None)) => Result::Ok(bytes::Bytes::from_string("<nil>")),
         Value::Local(LocalValue::Slice(value)) => Result::Ok(
-            bytes::Bytes::from_string(
-                "[slice len=" + value.length.to_string() + " cap=" + value.capacity.to_string()
-                    + "]",
-            ),
+            bytes::Bytes::from_string(f"[slice len={value.length} cap={value.capacity}]"),
         ),
         Value::Host { type_id: _, value } => {
             Result::Ok(bytes::Bytes::from_string(native_value_text(value)))

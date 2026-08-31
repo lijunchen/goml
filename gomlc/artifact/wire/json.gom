@@ -121,18 +121,16 @@ pub fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> Art
 }
 
 fn artifact_binary_stream_before_value(value: ArtifactJsonWriter) -> () {
-    match value.binary_scopes.peek() {
-        Some(scope) => if scope.object {} else {
+    if let Some(scope) = value.binary_scopes.peek() {
+        if scope.object {} else {
             scope.count.set(scope.count.get() + 1)
-        },
-        None => (),
+        }
     }
 }
 
 fn artifact_binary_stream_error(value: ArtifactJsonWriter, result: Result[(), string]) -> () {
-    match result {
-        Ok(()) => (),
-        Err(error) => value.binary_error.set(Option::Some(error)),
+    if let Err(error) = result {
+        value.binary_error.set(Option::Some(error))
     }
 }
 
@@ -147,16 +145,15 @@ fn artifact_binary_stream_begin_container(value: ArtifactJsonWriter, tag: u8, ob
 }
 
 fn artifact_binary_stream_end_container(value: ArtifactJsonWriter) -> () {
-    match value.binary_scopes.pop() {
-        Some(scope) => artifact_binary_stream_error(
+    if let Some(scope) = value.binary_scopes.pop() {
+        artifact_binary_stream_error(
             value,
             artifact_binary_patch_u32(
                 value.binary_writer,
                 scope.count_offset,
                 scope.count.get().to_u32(),
             ),
-        ),
-        None => (),
+        )
     }
 }
 
@@ -179,12 +176,9 @@ fn artifact_captured_push(writer: ArtifactJsonWriter, value: ArtifactValue) -> (
     match writer.captured_containers.peek() {
         Some(container) => match container {
             Object { fields, name } => {
-                match name.get() {
-                    Some(name_value) => {
-                        fields.push((name_value, value));
-                        name.set(Option::None)
-                    },
-                    None => (),
+                if let Some(name_value) = name.get() {
+                    fields.push((name_value, value));
+                    name.set(Option::None)
                 }
             },
             Array(values) => values.push(value),
@@ -222,16 +216,13 @@ fn artifact_json_before_value(value: ArtifactJsonWriter) -> () {
     if value.after_name.get() {
         value.after_name.set(false)
     } else {
-        match value.first_values.peek() {
-            Some(first) => {
-                if first.get() {
-                    first.set(false)
-                } else {
-                    value.builder.write_char(',')
-                }
-                artifact_json_line(value)
-            },
-            None => (),
+        if let Some(first) = value.first_values.peek() {
+            if first.get() {
+                first.set(false)
+            } else {
+                value.builder.write_char(',')
+            }
+            artifact_json_line(value)
         }
     }
 }
@@ -378,13 +369,12 @@ pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> () {
             Some(Array(_)) | None => (),
         }
     } else {
-        match value.first_values.peek() {
-            Some(first) => if first.get() {
+        if let Some(first) = value.first_values.peek() {
+            if first.get() {
                 first.set(false)
             } else {
                 value.builder.write_char(',')
-            },
-            None => (),
+            }
         }
         artifact_json_line(value);
         artifact_json_write_quoted(value, name);

@@ -537,12 +537,11 @@ fn resolve_numeric_literal_constraints(ctx: Checker) -> () {
 }
 
 fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
-    match (prune(expr_type(value)), prune(expected)) {
-        (Error, Var(variable)) => match variable.get() {
+    if let (Error, Var(variable)) = (prune(expr_type(value)), prune(expected)) {
+        match variable.get() {
             Unbound { id: _, kind: _ } => variable.set(TypeVar::Link(Type::Error)),
             Link(_) => (),
-        },
-        _ => (),
+        }
     }
     match value {
         Prim { value: Int { value: raw }, ty: _ } => {
@@ -677,13 +676,12 @@ fn contains_unbound_type_variable(value: Type) -> bool {
             if contains_unbound_type_variable(base) {
                 true
             } else {
-                match reference {
-                    Some(reference) => for arg in reference.args {
+                if let Some(reference) = reference {
+                    for arg in reference.args {
                         if contains_unbound_type_variable(arg) {
                             return true
                         }
-                    },
-                    None => (),
+                    }
                 }
                 false
             }
@@ -753,13 +751,12 @@ fn contains_unresolved_inference(ctx: Checker, value: Type) -> bool {
             if contains_unresolved_inference(ctx, base) {
                 true
             } else {
-                match reference {
-                    Some(value) => for argument in value.args {
+                if let Some(value) = reference {
+                    for argument in value.args {
                         if contains_unresolved_inference(ctx, argument) {
                             return true
                         }
-                    },
-                    None => (),
+                    }
                 }
                 false
             }
@@ -800,9 +797,8 @@ fn contains_unresolved_inference(ctx: Checker, value: Type) -> bool {
 
 fn fresh_unresolved_inference(ctx: Checker) -> Type {
     let value = fresh_type(ctx.counter, VarKind::Any);
-    match value {
-        Var(variable) => ctx.unresolved_inference_vars.push(variable),
-        _ => (),
+    if let Var(variable) = value {
+        ctx.unresolved_inference_vars.push(variable)
     }
     value
 }
@@ -824,13 +820,12 @@ fn has_unresolved_projection(value: Type) -> bool {
             if contains_unbound_type_variable(base) {
                 true
             } else {
-                match reference {
-                    Some(reference) => for arg in reference.args {
+                if let Some(reference) = reference {
+                    for arg in reference.args {
                         if contains_unbound_type_variable(arg) {
                             return true
                         }
-                    },
-                    None => (),
+                    }
                 }
                 false
             }
@@ -878,17 +873,13 @@ fn has_unresolved_projection(value: Type) -> bool {
 }
 
 fn constrain_callable_return(ctx: Checker, callable_ty: Type, expected: Option[Type]) -> () {
-    match propagated_expected(expected) {
-        Some(expected_ty) => match prune(callable_ty) {
-            Func { params: _, ret_ty } => {
-                let ret_ty = normalize_type(ctx, ret_ty);
-                if has_unresolved_projection(ret_ty) {} else {
-                    expect_type(ctx, ret_ty, expected_ty)
-                }
-            },
-            _ => (),
-        },
-        None => (),
+    if let Some(expected_ty) = propagated_expected(expected) {
+        if let Func { params: _, ret_ty } = prune(callable_ty) {
+            let ret_ty = normalize_type(ctx, ret_ty);
+            if has_unresolved_projection(ret_ty) {} else {
+                expect_type(ctx, ret_ty, expected_ty)
+            }
+        }
     }
 }
 
@@ -1029,13 +1020,12 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
 
 fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
     let result = check_name_ref_inner(ctx, value);
-    match value {
-        Local(local) => if contains_local(ctx.unresolved_locals, local)
+    if let Local(local) = value {
+        if contains_local(ctx.unresolved_locals, local)
             && ctx.suppress_unresolved_ref_diagnostic.get() == 0
             && contains_unresolved_inference(ctx, expr_type(result)) {
             push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE)
-        },
-        _ => (),
+        }
     }
     result
 }
@@ -1047,7 +1037,7 @@ fn resolved_constructor_value_expr(ctx: Checker, info: ResolvedConstructor) -> E
         let params: Vec[ClosureParam] = Vec::new();
         let args: Vec[Expr] = Vec::new();
         for index in 0..info.fields.len() {
-            let name = "ctor_arg_" + index.to_string();
+            let name = f"ctor_arg_{index}";
             let ty = info.fields[index];
             params.push(ClosureParam { name, ty });
             args.push(Expr::Var { name, ty })
@@ -1227,10 +1217,8 @@ fn check_resolved_constructor_expr(
     if arity_mismatch {
         push_diagnostic(
             ctx,
-            "Constructor " + short_name(info.constructor.name) + " expects "
-                + info.fields.len().to_string()
-                + " arguments, but got "
-                + args.len().to_string(),
+            "Constructor " + short_name(info.constructor.name)
+                + f" expects {info.fields.len()} arguments, but got {args.len()}",
         )
     }
     let values: Vec[Expr] = Vec::new();
@@ -1348,8 +1336,7 @@ fn check_struct_update_expr(
                     },
                 };
                 let value = check_expr(ctx, provided.1, Option::Some(field_ty));
-                let local_name = "struct_update_field/" + value_span.start.to_string() + "/"
-                    + index.to_string();
+                let local_name = f"struct_update_field/{value_span.start}/{index}";
                 stmts.push(
                     Stmt::Let {
                         is_mut: false,
@@ -1369,7 +1356,7 @@ fn check_struct_update_expr(
                 report_error_inference(ctx, expected);
                 Expr::Prim { value: Primitive::Unit, ty: Type::Error }
             } else {
-                let base_name = "struct_update_base/" + value_span.start.to_string();
+                let base_name = f"struct_update_base/{value_span.start}";
                 stmts.push(
                     Stmt::Let {
                         is_mut: false,
@@ -1558,10 +1545,8 @@ fn check_positional_struct_expr(
     if arity_mismatch {
         push_diagnostic(
             ctx,
-            "Constructor " + short_name(info.constructor.name) + " expects "
-                + info.fields.len().to_string()
-                + " arguments, but got "
-                + args.len().to_string(),
+            "Constructor " + short_name(info.constructor.name)
+                + f" expects {info.fields.len()} arguments, but got {args.len()}",
         )
     }
     let values: Vec[Expr] = Vec::new();
@@ -1591,9 +1576,8 @@ fn check_tuple_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]
     for _ in values {
         types.push(fresh_type(ctx.counter, VarKind::Any))
     }
-    match propagated_expected(expected) {
-        Some(ty) => expect_type(ctx, Type::Tuple { items: types }, ty),
-        None => (),
+    if let Some(ty) = propagated_expected(expected) {
+        expect_type(ctx, Type::Tuple { items: types }, ty)
     }
     for index in 0..values.len() {
         items.push(check_expr(ctx, values[index], Option::Some(types[index])))
@@ -1624,12 +1608,10 @@ fn check_byte_string_expr(
     for value in values {
         items.push(hir::Expr { kind: hir::ExprKind::Byte { value }, span: value_span })
     }
-    match expected {
-        Some(ty) => match prune(ty) {
-            Array { len: _, elem: _ } => return check_array_expr(ctx, items, expected),
-            _ => (),
-        },
-        None => (),
+    if let Some(ty) = expected {
+        if let Array { len: _, elem: _ } = prune(ty) {
+            return check_array_expr(ctx, items, expected)
+        }
     }
     let byte_vec = Type::VecType { elem: Type::Uint8 };
     coerce_expr(ctx, Expr::Prim { value: Primitive::Bytes { values }, ty: byte_vec }, expected)
@@ -1755,9 +1737,8 @@ fn check_closure_expr(
         param_types.push(ty)
     }
     let typed_body = check_expr(closure_ctx, body, Option::Some(ret_ty));
-    match (prune(ret_ty), prune(expr_type(typed_body))) {
-        (Var(_), Never) => expect_type(ctx, ret_ty, Type::Unit),
-        _ => (),
+    if let (Var(_), Never) = (prune(ret_ty), prune(expr_type(typed_body))) {
+        expect_type(ctx, ret_ty, Type::Unit)
     }
     Expr::Closure {
         params: typed_params,
@@ -1804,13 +1785,13 @@ fn array_wildcard_length(params: Vec[Type], values: Vec[Expr]) -> Option[isize] 
     for offset in 0..params.len() {
         let index = params.len() - 1 - offset;
         if index < values.len() {
-            match (prune(params[index]), prune(expr_type(values[index]))) {
-                (Array { len: expected, elem: _ }, Array { len: actual, elem: _ }) => if expected
-                    < 0
-                    && actual >= 0 {
+            if let (Array { len: expected, elem: _ }, Array { len: actual, elem: _ }) = (
+                prune(params[index]),
+                prune(expr_type(values[index])),
+            ) {
+                if expected < 0 && actual >= 0 {
                     return Option::Some(actual)
-                },
-                _ => (),
+                }
             }
         }
     }
@@ -1870,13 +1851,13 @@ fn specialize_array_callable_expected(function: Expr, expected: Option[Type]) ->
             let mut length = -1;
             for index in 0..params.len() {
                 if index < expected_params.len() {
-                    match (prune(params[index]), prune(expected_params[index])) {
-                        (Array { len: wildcard, elem: _ }, Array { len: actual, elem: _ }) => if wildcard
-                            < 0
-                            && actual >= 0 {
+                    if let (Array { len: wildcard, elem: _ }, Array { len: actual, elem: _ }) = (
+                        prune(params[index]),
+                        prune(expected_params[index]),
+                    ) {
+                        if wildcard < 0 && actual >= 0 {
                             length = actual;
-                        },
-                        _ => (),
+                        }
                     }
                 }
             }
@@ -2035,10 +2016,8 @@ fn apply_typed_call(
         match dyn_method {
             Some(value) => push_diagnostic(
                 ctx,
-                "Trait method " + short_name(value.0) + "::" + value.1 + " expects "
-                    + params.len().to_string()
-                    + " arguments but got "
-                    + values.len().to_string(),
+                "Trait method " + short_name(value.0)
+                    + f"::{value.1} expects {params.len()} arguments but got {values.len()}",
             ),
             None => if trait_method {
                 let expected_params = arity_diagnostic_types(actual_params);
@@ -2069,11 +2048,11 @@ fn apply_typed_call(
             },
         };
     }
-    match function {
-        Callable {
-            callable: TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver },
-            ty: _,
-        } => if is_static {
+    if let Callable {
+        callable: TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver },
+        ty: _,
+    } = function {
+        if is_static {
             if has_receiver && !values.is_empty() {
                 let _ = unify(for_ty, expr_type(values[0]));
             }
@@ -2108,8 +2087,7 @@ fn apply_typed_call(
                     ),
                 )
             }
-        },
-        _ => (),
+        }
     }
     let function = specialize_array_callable(function, values);
     let function = if is_static && !values.is_empty() && trait_has_receiver {
@@ -2572,11 +2550,8 @@ fn check_call_expr(
                             ctx.defer_coercion_depth.set(ctx.defer_coercion_depth.get() - 1)
                         }
                         if member == "new" {
-                            match resolve_type(expr_type(result)) {
-                                HashMap { key: _, value: _ } => {
-                                    require_hashmap_type(ctx, expr_type(result))
-                                },
-                                _ => (),
+                            if let HashMap { key: _, value: _ } = resolve_type(expr_type(result)) {
+                                require_hashmap_type(ctx, expr_type(result))
                             }
                         }
                         result
@@ -2601,16 +2576,15 @@ fn check_call_expr(
         _ => typed_call_target(result, "<call>"),
     };
     let call_capability = call_comptime_capability(ctx, result);
-    match call_capability {
-        ComptimeCapability::Derive => match ctx.comptime_capability {
+    if let ComptimeCapability::Derive = call_capability {
+        match ctx.comptime_capability {
             ComptimeCapability::Derive => (),
             _ => push_diagnostic_at(
                 ctx,
                 "#[comptime_derive] function is only callable from another derive handler",
                 Option::Some(call_span),
             ),
-        },
-        _ => (),
+        }
     }
     match result {
         Call {
@@ -2814,14 +2788,11 @@ fn check_binary_expr(
         };
         let left = operands.0;
         let right = operands.1;
-        match right_source.kind {
-            NameRef { name_ref: Local(local) } => {
-                if contains_local(ctx.unresolved_locals, local)
-                    && contains_unbound_type_variable(expr_type(right)) {
-                    push_inference_diagnostic_at(ctx, right_source.span, 0)
-                }
-            },
-            _ => (),
+        if let NameRef { name_ref: Local(local) } = right_source.kind {
+            if contains_local(ctx.unresolved_locals, local)
+                && contains_unbound_type_variable(expr_type(right)) {
+                push_inference_diagnostic_at(ctx, right_source.span, 0)
+            }
         }
         if is_comparison_op(op) {
             expect_type_at(ctx, expr_type(left), expr_type(right), Option::Some(left_source.span))
@@ -2995,11 +2966,10 @@ fn hir_pattern_locals(value: hir::Pat) -> Vec[hir::LocalId] {
                     }
                 }
             }
-            match rest {
-                Some(value) => if let Some(local) = value.binding {
+            if let Some(value) = rest {
+                if let Some(local) = value.binding {
                     result.push(local)
-                },
-                None => (),
+                }
             }
             for arg in suffix {
                 for local in hir_pattern_locals(arg) {
@@ -3106,11 +3076,10 @@ fn collect_or_pattern_bindings(values: Vec[OrPatternBinding], value: Pat) -> () 
             for value in prefix {
                 collect_or_pattern_bindings(values, value)
             }
-            match rest {
-                Some(value) => if let Some(name) = value.binding {
+            if let Some(value) = rest {
+                if let Some(name) = value.binding {
                     push_or_pattern_binding(values, name, false, value.ty)
-                },
-                None => (),
+                }
             }
             for value in suffix {
                 collect_or_pattern_bindings(values, value)
@@ -3153,31 +3122,28 @@ fn validate_or_pattern_bindings(ctx: Checker, values: Vec[Pat]) -> () {
     for index in 1..values.len() {
         let actual = or_pattern_bindings(values[index]);
         for binding in expected {
-            match find_or_pattern_binding(actual, binding.name) {
-                Some(value) => {
-                    let expected_ty = normalize_type(ctx, binding.ty);
-                    let actual_ty = normalize_type(ctx, value.ty);
-                    let expected_text = diagnostic_type_text(expected_ty);
-                    let actual_text = diagnostic_type_text(actual_ty);
-                    if unify(actual_ty, expected_ty) {} else {
-                        push_diagnostic(
-                            ctx,
-                            "Or-pattern binding `" + or_pattern_binding_hint(binding.name)
-                                + "` has inconsistent types: expected "
-                                + expected_text
-                                + ", found "
-                                + actual_text,
-                        )
-                    }
-                    if binding.is_mut == value.is_mut {} else {
-                        push_diagnostic(
-                            ctx,
-                            "Or-pattern binding `" + or_pattern_binding_hint(binding.name)
-                                + "` has inconsistent mutability",
-                        )
-                    }
-                },
-                None => (),
+            if let Some(value) = find_or_pattern_binding(actual, binding.name) {
+                let expected_ty = normalize_type(ctx, binding.ty);
+                let actual_ty = normalize_type(ctx, value.ty);
+                let expected_text = diagnostic_type_text(expected_ty);
+                let actual_text = diagnostic_type_text(actual_ty);
+                if unify(actual_ty, expected_ty) {} else {
+                    push_diagnostic(
+                        ctx,
+                        "Or-pattern binding `" + or_pattern_binding_hint(binding.name)
+                            + "` has inconsistent types: expected "
+                            + expected_text
+                            + ", found "
+                            + actual_text,
+                    )
+                }
+                if binding.is_mut == value.is_mut {} else {
+                    push_diagnostic(
+                        ctx,
+                        "Or-pattern binding `" + or_pattern_binding_hint(binding.name)
+                            + "` has inconsistent mutability",
+                    )
+                }
             }
         }
     }
@@ -3201,14 +3167,10 @@ fn tast_pattern_binding_count(value: Pat) -> isize {
             for arg in prefix {
                 count = count + tast_pattern_binding_count(arg);
             }
-            match rest {
-                Some(value) => match value.binding {
-                    Some(_) => {
-                        count += 1;
-                    },
-                    None => (),
-                },
-                None => (),
+            if let Some(value) = rest {
+                if let Some(_) = value.binding {
+                    count += 1;
+                }
             }
             for arg in suffix {
                 count = count + tast_pattern_binding_count(arg);
@@ -3592,7 +3554,7 @@ fn check_option_try(ctx: Checker, index: isize, inner: Expr, name: string, args:
         )
     }
     let inner_ty = expr_type(inner);
-    let value_name = "try_value/" + index.to_string();
+    let value_name = f"try_value/{index}";
     let success_args: Vec[Pat] = Vec::new();
     success_args.push(Pat::Var { name: value_name, is_mut: false, ty: ok_ty });
     let success = Arm {
@@ -3651,8 +3613,8 @@ fn check_result_try(ctx: Checker, index: isize, inner: Expr, name: string, args:
         )
     }
     let inner_ty = expr_type(inner);
-    let value_name = "try_value/" + index.to_string();
-    let residual_name = "try_residual/" + index.to_string();
+    let value_name = f"try_value/{index}";
+    let residual_name = f"try_residual/{index}";
     let success_args: Vec[Pat] = Vec::new();
     success_args.push(Pat::Var { name: value_name, is_mut: false, ty: ok_ty });
     let success = Arm {
@@ -4032,14 +3994,14 @@ fn check_projection_expr(ctx: Checker, source: hir::Expr, index: isize) -> Expr 
             } else {
                 push_diagnostic(
                     ctx,
-                    "Tuple index " + index.to_string() + " out of bounds for type "
+                    f"Tuple index {index} out of bounds for type "
                         + type_text(arity_diagnostic_type(expr_type(value))),
                 );
                 push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE);
                 Expr::Proj { tuple: value, index, ty: fresh_unresolved_inference(ctx) }
             },
-            _ => match resolve_field_type(ctx, expr_type(value), "_" + index.to_string()) {
-                Some(ty) => Expr::Field { expr: value, field_name: "_" + index.to_string(), ty },
+            _ => match resolve_field_type(ctx, expr_type(value), f"_{index}") {
+                Some(ty) => Expr::Field { expr: value, field_name: f"_{index}", ty },
                 None => {
                     push_diagnostic(ctx, "tuple or tuple struct required");
                     Expr::Proj { tuple: value, index, ty: Type::Error }
@@ -4089,22 +4051,19 @@ fn check_assign_target(ctx: Checker, target: hir::Expr, compound: bool) -> (Expr
                 hir::NameRef::Other(name) => find_constant_by_name(ctx, name),
                 hir::NameRef::Local(_) => Option::None,
             };
-            match static_value {
-                Some(value) => {
-                    push_diagnostic_at(
-                        ctx,
-                        "cannot assign to "
-                            + if once_cell_type(ctx.builtin, value.ty) {
-                                "static binding `"
-                            } else {
-                                "constant `"
-                            }
-                            + value.name
-                            + "`",
-                        Option::Some(target_span),
-                    )
-                },
-                None => (),
+            if let Some(value) = static_value {
+                push_diagnostic_at(
+                    ctx,
+                    "cannot assign to "
+                        + if once_cell_type(ctx.builtin, value.ty) {
+                            "static binding `"
+                        } else {
+                            "constant `"
+                        }
+                        + value.name
+                        + "`",
+                    Option::Some(target_span),
+                )
             }
             let typed = check_name_ref(ctx, reference);
             (typed, expr_type(typed))
@@ -4447,13 +4406,10 @@ fn loop_target(ctx: Checker, label: Option[string]) -> Option[isize] {
             let mut index = ctx.loop_results.len();
             while index > 0 {
                 index -= 1;
-                match ctx.loop_results[index].label {
-                    Some(value) => {
-                        if value == expected {
-                            return Option::Some(target)
-                        }
-                    },
-                    None => (),
+                if let Some(value) = ctx.loop_results[index].label {
+                    if value == expected {
+                        return Option::Some(target)
+                    }
                 }
                 target += 1;
             }
@@ -4464,16 +4420,14 @@ fn loop_target(ctx: Checker, label: Option[string]) -> Option[isize] {
 }
 
 fn push_loop_result(ctx: Checker, value: LoopResult) -> () {
-    match value.label {
-        Some(label) => for active in ctx.loop_results {
-            match active.label {
-                Some(existing) => if existing == label {
+    if let Some(label) = value.label {
+        for active in ctx.loop_results {
+            if let Some(existing) = active.label {
+                if existing == label {
                     push_diagnostic(ctx, "Loop label '" + label + "' is already active")
-                },
-                None => (),
+                }
             }
-        },
-        None => (),
+        }
     }
     ctx.loop_results.push(value)
 }
@@ -4543,13 +4497,12 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
         None => match value.kind {
             NameRef { name_ref: reference } => {
                 let result = check_name_ref_inner(ctx, reference);
-                match reference {
-                    Local(local) => if contains_local(ctx.unresolved_locals, local)
+                if let Local(local) = reference {
+                    if contains_local(ctx.unresolved_locals, local)
                         && ctx.suppress_unresolved_ref_diagnostic.get() == 0
                         && contains_unresolved_inference(ctx, expr_type(result)) {
                         push_inference_diagnostic_at(ctx, value_span, 0)
-                    },
-                    _ => (),
+                    }
                 }
                 result
             },
@@ -4972,25 +4925,22 @@ fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
     let result = check_expr_inner(ctx, value, expected);
     let ty = expr_type(result);
     ctx.typeck_results.exprs.push(ExprFact { source_path: ctx.source_path, span: value.span, ty });
-    match value.kind {
-        NameRef { name_ref: reference } => {
-            let target = match reference {
-                Local(local) => ReferenceTarget::Local(local),
-                Def(definition) => {
-                    ReferenceTarget::Definition(definition)
+    if let NameRef { name_ref: reference } = value.kind {
+        let target = match reference {
+            Local(local) => ReferenceTarget::Local(local),
+            Def(definition) => {
+                ReferenceTarget::Definition(definition)
+            },
+            Other(name) => match result {
+                Callable { callable, ty: _ } => {
+                    ReferenceTarget::Callable(callable)
                 },
-                Other(name) => match result {
-                    Callable { callable, ty: _ } => {
-                        ReferenceTarget::Callable(callable)
-                    },
-                    _ => ReferenceTarget::Unresolved(name),
-                },
-            };
-            ctx.typeck_results.references.push(
-                ReferenceFact { source_path: ctx.source_path, span: value.span, target, ty },
-            )
-        },
-        _ => (),
+                _ => ReferenceTarget::Unresolved(name),
+            },
+        };
+        ctx.typeck_results.references.push(
+            ReferenceFact { source_path: ctx.source_path, span: value.span, target, ty },
+        )
     }
     ctx.current_span.set(previous);
     result
@@ -5099,10 +5049,8 @@ fn check_constructor_pattern(
                 }
                 push_diagnostic(
                     ctx,
-                    "Constructor " + short_name(info.constructor.name) + " expects "
-                        + info.fields.len().to_string()
-                        + " arguments, but got "
-                        + args.len().to_string(),
+                    "Constructor " + short_name(info.constructor.name)
+                        + f" expects {info.fields.len()} arguments, but got {args.len()}",
                 )
             } else {
                 for index in 0..args.len() {
@@ -5377,12 +5325,10 @@ fn check_array_pattern(
     expected: Type,
 ) -> Pat {
     let fixed_count = prefix.len() + suffix.len();
-    match prune(expected) {
-        Array { len: length, elem } => if (rest.is_some() && fixed_count > length)
-            || (rest.is_none() && fixed_count != length) {
+    if let Array { len: length, elem } = prune(expected) {
+        if (rest.is_some() && fixed_count > length) || (rest.is_none() && fixed_count != length) {
             expect_type(ctx, expected, Type::Array { len: fixed_count, elem })
-        },
-        _ => (),
+        }
     }
     let (elem, rest_ty) = array_pattern_types(ctx, expected, fixed_count);
     let typed_prefix: Vec[Pat] = Vec::new();
@@ -5516,8 +5462,8 @@ fn checked_pattern_primitive(ctx: Checker, value: Primitive, expected: Type) -> 
 }
 
 fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
-    match prune(expected) {
-        Dyn { trait_name: name, .. } => match value.kind {
+    if let Dyn { trait_name: name, .. } = prune(expected) {
+        match value.kind {
             Var { name: _, is_mut: _ } | Wild => (),
             _ => {
                 push_diagnostic(
@@ -5526,8 +5472,7 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 );
                 return Pat::Wild { ty: expected }
             },
-        },
-        _ => (),
+        }
     }
     match primitive_pattern(ctx, value) {
         Some(result) => {
@@ -5800,11 +5745,10 @@ fn hir_block_contains_defer_control(value: hir::Block) -> bool {
                 if hir_expr_contains_defer_control(value) {
                     return true
                 }
-                match else_branch {
-                    Some(value) => if hir_expr_contains_defer_control(value) {
+                if let Some(value) = else_branch {
+                    if hir_expr_contains_defer_control(value) {
                         return true
-                    },
-                    None => (),
+                    }
                 }
             },
             Assign { target, op: _, value } => if hir_expr_contains_defer_control(target)
@@ -5875,11 +5819,10 @@ fn hir_expr_contains_defer_control(value: hir::Expr) -> bool {
                 return true
             }
             for arm in arms {
-                match arm.guard {
-                    Some(guard) => if hir_expr_contains_defer_control(guard) {
+                if let Some(guard) = arm.guard {
+                    if hir_expr_contains_defer_control(guard) {
                         return true
-                    },
-                    None => (),
+                    }
                 }
                 if hir_expr_contains_defer_control(arm.body) {
                     return true
@@ -5913,11 +5856,10 @@ fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> () {
             for value in prefix {
                 mark_mutable_pattern(ctx, value)
             }
-            match rest {
-                Some(value) => if let Some(local) = value.binding {
+            if let Some(value) = rest {
+                if let Some(local) = value.binding {
                     mark_mutable_local(ctx, local)
-                },
-                None => (),
+                }
             }
             for value in suffix {
                 mark_mutable_pattern(ctx, value)
@@ -5955,9 +5897,8 @@ fn hir_fields_any_exit_loop_control(values: Vec[(string, hir::Expr)]) -> bool {
 
 fn hir_match_has_catch_all(arms: Vec[hir::Arm]) -> bool {
     for arm in arms {
-        match arm.pat.kind {
-            Var { name: _, is_mut: _ } | Wild => return true,
-            _ => (),
+        if let Var { name: _, is_mut: _ } | Wild = arm.pat.kind {
+            return true
         }
     }
     false

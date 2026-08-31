@@ -151,7 +151,7 @@ fn format_type_inner(world: World, id: TypeId, visited: Vec[isize]) -> string {
                 name
             },
             TypeKind::Array { length, element } => {
-                "[" + length.to_string() + "]" + format_type_inner(world, element, next)
+                f"[{length}]" + format_type_inner(world, element, next)
             },
             TypeKind::Slice { element } => "[]" + format_type_inner(world, element, next),
             TypeKind::Struct { fields } => {

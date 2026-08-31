@@ -545,7 +545,7 @@ fn lowers_gomlc_lexical_task_scope_product_with_native_methods() -> () {
         }
     }
     if methods.get() < 5 {
-        testing::fail("native method count is " + methods.get().to_string())
+        testing::fail(f"native method count is {methods.get()}")
     } else if !mutex.get() {
         testing::fail("sync.Mutex native type is missing")
     } else if !wait_group.get() {

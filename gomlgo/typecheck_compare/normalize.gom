@@ -79,12 +79,8 @@ fn object_position(value: checker::CheckResult, object: go_types::Object) -> (st
 
 fn object_key(value: checker::CheckResult, object: go_types::Object) -> string {
     let position = object_position(value, object);
-    package_path(value.world, object.owner) + "|" + go_types::object_kind_name(object.kind) + "|"
-        + object.name
-        + "|"
-        + position.0
-        + "|"
-        + position.1.to_string()
+    package_path(value.world, object.owner) + "|" + go_types::object_kind_name(object.kind)
+        + f"|{object.name}|{position.0}|{position.1}"
 }
 
 fn normalize_constant(kind: string, exact: Option[string]) -> json::Value {

@@ -69,7 +69,7 @@ pub fn rpc_notification(method: string, params: json::Value) -> json::Value {
 
 pub fn framed_json(value: json::Value) -> string {
     let body = json::encode(value);
-    "Content-Length: " + body.byte_len().to_string() + "\r\n\r\n" + body
+    f"Content-Length: {body.byte_len()}\r\n\r\n{body}"
 }
 
 fn ascii_prefix_equal_case_insensitive(value: string, expected: string) -> bool {

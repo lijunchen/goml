@@ -421,8 +421,7 @@ fn checker_failure(result: checker::CheckResult) -> string {
     if result.diagnostics.is_empty() {
         "type checking failed"
     } else {
-        result.diagnostics[0].file + ":" + result.diagnostics[0].start.to_string() + ": "
-            + result.diagnostics[0].message
+        f"{result.diagnostics[0].file}:{result.diagnostics[0].start}: {result.diagnostics[0].message}"
     }
 }
 

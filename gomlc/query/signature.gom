@@ -308,26 +308,19 @@ fn symbol_parameter_names(
 }
 
 fn unresolved_parameter_names(value: Analysis, expected: string) -> Option[Vec[string]] {
-    match value.lowered.ast {
-        Some(file) => if let Some(names) = file_parameter_names(file, expected, Option::None, true) {
+    if let Some(file) = value.lowered.ast {
+        if let Some(names) = file_parameter_names(file, expected, Option::None, true) {
             return Option::Some(names)
-        },
-        None => (),
+        }
     }
     let mut source_index = value.sources.len() - 1;
     while source_index >= 0 {
         let source = value.sources[source_index];
         if source.path == value.source_path {} else {
-            match ast::lower(parser::parse(source.source)).ast {
-                Some(file) => if let Some(names) = file_parameter_names(
-                    file,
-                    expected,
-                    Option::None,
-                    true,
-                ) {
+            if let Some(file) = ast::lower(parser::parse(source.source)).ast {
+                if let Some(names) = file_parameter_names(file, expected, Option::None, true) {
                     return Option::Some(names)
-                },
-                None => (),
+                }
             }
         }
         source_index -= 1;
@@ -336,11 +329,10 @@ fn unresolved_parameter_names(value: Analysis, expected: string) -> Option[Vec[s
 }
 
 fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Vec[string]] {
-    match fact.target {
-        Callable(Intrinsic(name)) => if name == "vec.from_array" || name == "hashmap.from_array" {
+    if let Callable(Intrinsic(name)) = fact.target {
+        if name == "vec.from_array" || name == "hashmap.from_array" {
             return Option::Some(Vec::from_array(["values"]))
-        },
-        _ => (),
+        }
     }
     let expected = short_type_name(call_target_name(value, fact));
     let expected_owner = signature_target_owner(fact.target);

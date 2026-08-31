@@ -61,7 +61,7 @@ fn raw_text(value: string) -> Doc {
 pub fn text(value: string) -> Doc {
     let pieces: Vec[Doc] = Vec::new();
     let start = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == b'\n' {
             pieces.push(raw_text(value.byte_slice(start.get(), index)));
             pieces.push(line());
@@ -442,7 +442,7 @@ fn fits(initial: isize, initial_tasks: Tasks) -> bool {
 
 fn write_line(output: std_text::StringBuilder, indentation: isize) -> () {
     output.write_char('\n');
-    for _ in range(0, indentation) {
+    for _ in 0..indentation {
         output.write_char(' ')
     }
 }

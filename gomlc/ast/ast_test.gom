@@ -35,7 +35,7 @@ fn has_diagnostic(values: Vec[cst::Diagnostic], expected: string) -> bool {
 #[test]
 fn rejects_deeply_nested_patterns_without_overflowing() -> () {
     let pattern = Ref::new("_");
-    for _ in range(0, 150) {
+    for _ in 0..150 {
         pattern.set("(" + pattern.get() + ", _)")
     }
     let result = lower(parser::parse("fn main() -> () { let " + pattern.get() + " = (); }"));
@@ -45,7 +45,7 @@ fn rejects_deeply_nested_patterns_without_overflowing() -> () {
 #[test]
 fn rejects_deeply_nested_expressions_without_overflowing() -> () {
     let expression = Ref::new("1");
-    for _ in range(0, 600) {
+    for _ in 0..600 {
         expression.set("(" + expression.get() + ")")
     }
     let result = lower(

@@ -302,15 +302,11 @@ pub fn prune_functions(value: File) -> File {
     loop {
         let previous_len = expanded.len();
         for item in value.items {
-            match item {
-                Function(function) => {
-                    if name_present(reachable, function.name)
-                        && !name_present(expanded, function.name) {
-                        add_reachable(expanded, function.name);
-                        collect_block_names(reachable, function.body);
-                    }
-                },
-                _ => (),
+            if let Function(function) = item {
+                if name_present(reachable, function.name) && !name_present(expanded, function.name) {
+                    add_reachable(expanded, function.name);
+                    collect_block_names(reachable, function.body);
+                }
             }
         }
         if expanded.len() == previous_len {
@@ -320,13 +316,11 @@ pub fn prune_functions(value: File) -> File {
     loop {
         let previous_len = expanded.len();
         for item in value.items {
-            match item {
-                Global(global) => if name_present(reachable, global.name)
-                    && !name_present(expanded, global.name) {
+            if let Global(global) = item {
+                if name_present(reachable, global.name) && !name_present(expanded, global.name) {
                     add_reachable(expanded, global.name);
                     collect_expr_names(reachable, global.value)
-                },
-                _ => (),
+                }
             }
         }
         if expanded.len() == previous_len {
@@ -336,14 +330,13 @@ pub fn prune_functions(value: File) -> File {
     loop {
         let previous_len = expanded.len();
         for item in value.items {
-            match item {
-                ConstGroup(group) => for spec in group.specs {
+            if let ConstGroup(group) = item {
+                for spec in group.specs {
                     if name_present(reachable, spec.name) && !name_present(expanded, spec.name) {
                         add_reachable(expanded, spec.name);
                         collect_expr_names(reachable, spec.value)
                     }
-                },
-                _ => (),
+                }
             }
         }
         if expanded.len() == previous_len {

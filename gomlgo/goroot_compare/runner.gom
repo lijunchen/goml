@@ -125,8 +125,7 @@ fn first_oracle_diagnostic(value: typecheck_diff::CheckResponse) -> string {
     if value.diagnostics.is_empty() {
         "none"
     } else {
-        value.diagnostics[0].file + ":" + value.diagnostics[0].start.to_string() + ": "
-            + value.diagnostics[0].message
+        f"{value.diagnostics[0].file}:{value.diagnostics[0].start}: {value.diagnostics[0].message}"
     }
 }
 
@@ -183,11 +182,7 @@ fn compare_package(
                     Err(message) => " " + message,
                 };
                 return Result::Err(
-                    import_path + ": package acceptance mismatch\nactual=" + actual_ok.to_string()
-                        + actual_detail
-                        + "\nexpected="
-                        + expected.ok.to_string()
-                        + " "
+                    f"{import_path}: package acceptance mismatch\nactual={actual_ok}{actual_detail}\nexpected={expected.ok} "
                         + first_oracle_diagnostic(expected),
                 )
             } else {
@@ -211,11 +206,7 @@ fn compare_package(
             Err(message) => " " + message,
         };
         return Result::Err(
-            import_path + ": package acceptance mismatch\nactual=" + actual_ok.to_string()
-                + actual_detail
-                + "\nexpected="
-                + expected.ok.to_string()
-                + " "
+            f"{import_path}: package acceptance mismatch\nactual={actual_ok}{actual_detail}\nexpected={expected.ok} "
                 + first_oracle_diagnostic(expected),
         )
     } else if actual_ok {

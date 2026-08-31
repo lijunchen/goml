@@ -766,7 +766,7 @@ fn handle_argument(values: Vec[ctir::CtValue], index: isize, kind: string) -> Re
 
 fn checked_index(index: isize, len: isize, description: string) -> Result[isize, string] {
     if index < 0 || index >= len {
-        Result::Err(description + " index " + index.to_string() + " is out of bounds")
+        Result::Err(f"{description} index {index} is out of bounds")
     } else {
         Result::Ok(index)
     }
@@ -1357,9 +1357,7 @@ fn input_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -
     } else if name == "derive_fresh_name" {
         let id = state.fresh.get();
         state.fresh.set(id + 1);
-        return Result::Ok(
-            ctir::CtValue::String("#derive" + id.to_string() + "_" + string_argument(args, 1)?),
-        )
+        return Result::Ok(ctir::CtValue::String(f"#derive{id}_" + string_argument(args, 1)?))
     } else {
         Result::Err("unknown derive input intrinsic `" + name + "`")
     }

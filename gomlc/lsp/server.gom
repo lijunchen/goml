@@ -285,12 +285,9 @@ fn completion_response(server: Server, params: json::Value) -> Result[json::Valu
         push_json_field(fields, "label", json::Value::String(item.label));
         push_json_field(fields, "detail", json::Value::String(item.detail));
         push_json_field(fields, "kind", json::Value::Number(completion_kind(item.kind).to_string()));
-        match completion_snippet(item) {
-            Some(value) => {
-                push_json_field(fields, "insertText", json::Value::String(value));
-                push_json_field(fields, "insertTextFormat", json::Value::Number("2"))
-            },
-            None => (),
+        if let Some(value) = completion_snippet(item) {
+            push_json_field(fields, "insertText", json::Value::String(value));
+            push_json_field(fields, "insertTextFormat", json::Value::Number("2"))
         }
         result.push(json::Value::Object(fields))
     }
@@ -364,29 +361,26 @@ fn definition_response(server: Server, params: json::Value) -> Result[json::Valu
     let offset = request_offset(document, position)?;
     let locations: Vec[json::Value] = Vec::new();
     for definition in query::goto_definitions(analysis, offset) {
-        match source_for_path(analysis, definition.source_path) {
-            Some(source) => {
-                let source_index = source_line_index(server, definition.source_path, source);
-                let location: Vec[(string, json::Value)] = Vec::new();
-                push_json_field(
-                    location,
-                    "uri",
-                    json::Value::String(path_to_uri(definition.source_path)),
-                );
-                push_json_field(
-                    location,
-                    "range",
-                    range_json(
-                        offsets_to_range_with_index(
-                            source_index,
-                            definition.span.start,
-                            definition.span.end,
-                        ),
+        if let Some(source) = source_for_path(analysis, definition.source_path) {
+            let source_index = source_line_index(server, definition.source_path, source);
+            let location: Vec[(string, json::Value)] = Vec::new();
+            push_json_field(
+                location,
+                "uri",
+                json::Value::String(path_to_uri(definition.source_path)),
+            );
+            push_json_field(
+                location,
+                "range",
+                range_json(
+                    offsets_to_range_with_index(
+                        source_index,
+                        definition.span.start,
+                        definition.span.end,
                     ),
-                );
-                locations.push(json::Value::Object(location))
-            },
-            None => (),
+                ),
+            );
+            locations.push(json::Value::Object(location))
         }
     }
     if locations.is_empty() {
@@ -481,16 +475,14 @@ fn code_action_response(params: json::Value) -> Result[json::Value, string] {
     };
     let actions: Vec[json::Value] = Vec::new();
     for diagnostic in diagnostics {
-        match json::field(diagnostic, "data") {
-            Some(data) => match json::field(data, "fixes") {
-                Some(Array(fixes)) => for fix in fixes {
+        if let Some(data) = json::field(diagnostic, "data") {
+            if let Some(Array(fixes)) = json::field(data, "fixes") {
+                for fix in fixes {
                     if let Some(action) = fix_action(diagnostic, fix) {
                         actions.push(action)
                     }
-                },
-                _ => (),
-            },
-            None => (),
+                }
+            }
         }
     }
     if actions.is_empty() {
@@ -532,28 +524,21 @@ fn diagnostic_json(
     push_json_field(fields, "message", json::Value::String(diagnostic_text(value)));
     let related: Vec[json::Value] = Vec::new();
     for label in value.secondary_labels {
-        match source_for_path(analysis, label.source_path) {
-            Some(source) => {
-                let source_index = source_line_index(server, label.source_path, source);
-                let location: Vec[(string, json::Value)] = Vec::new();
-                push_json_field(
-                    location,
-                    "uri",
-                    json::Value::String(path_to_uri(label.source_path)),
-                );
-                push_json_field(
-                    location,
-                    "range",
-                    range_json(
-                        offsets_to_range_with_index(source_index, label.span.start, label.span.end),
-                    ),
-                );
-                let information: Vec[(string, json::Value)] = Vec::new();
-                push_json_field(information, "location", json::Value::Object(location));
-                push_json_field(information, "message", json::Value::String(label.message));
-                related.push(json::Value::Object(information))
-            },
-            None => (),
+        if let Some(source) = source_for_path(analysis, label.source_path) {
+            let source_index = source_line_index(server, label.source_path, source);
+            let location: Vec[(string, json::Value)] = Vec::new();
+            push_json_field(location, "uri", json::Value::String(path_to_uri(label.source_path)));
+            push_json_field(
+                location,
+                "range",
+                range_json(
+                    offsets_to_range_with_index(source_index, label.span.start, label.span.end),
+                ),
+            );
+            let information: Vec[(string, json::Value)] = Vec::new();
+            push_json_field(information, "location", json::Value::Object(location));
+            push_json_field(information, "message", json::Value::String(label.message));
+            related.push(json::Value::Object(information))
         }
     }
     if !related.is_empty() {

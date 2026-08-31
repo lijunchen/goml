@@ -52,9 +52,7 @@ fn artifact_read_interface_unit(path_value: string) -> Result[
         || {
             let source = match fs::read_bytes_structured(path_value) {
                 Ok(value) => value,
-                Err(error) => return Result::Err(
-                    "failed to read interface " + path_value + ": " + error.to_string(),
-                ),
+                Err(error) => return Result::Err(f"failed to read interface {path_value}: {error}"),
             };
             match decode_artifact_interface_bytes(source) {
                 Ok(value) => Result::Ok(value),
@@ -277,11 +275,10 @@ fn artifact_verify_comptime_modules(comptime_modules: Vec[ctir::CtModule]) -> Re
                 dependencies.push(candidate)
             }
         }
-        match ctfe::verify_module(module, dependencies) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(
+        if let Err(message) = ctfe::verify_module(module, dependencies) {
+            return Result::Err(
                 "invalid comptime interface for " + module.package_name + ": " + message,
-            ),
+            )
         }
     }
     Result::Ok(())
@@ -403,8 +400,8 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
     let mut name: Option[string] = Option::None;
     for index in 0..values.len() {
         let value = values[index];
-        match value.ast {
-            Some(file) => if !file.package_explicit {
+        if let Some(file) = value.ast {
+            if !file.package_explicit {
                 return Result::Err(paths[index] + " must declare `package <name>;`")
             } else {
                 match name {
@@ -419,8 +416,7 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
                         name = Option::Some(file.package_name);
                     },
                 }
-            },
-            None => (),
+            }
         }
     }
     match name {
@@ -457,11 +453,10 @@ fn artifact_entrypoint_diagnostics(
             if !function.type_params.is_empty() {
                 diagnostics.push("main function must not have type parameters")
             }
-            match tast::resolve_type(function.ty) {
-                Func { params, ret_ty: _ } => if !params.is_empty() {
+            if let Func { params, ret_ty: _ } = tast::resolve_type(function.ty) {
+                if !params.is_empty() {
                     diagnostics.push("main function must not have parameters")
-                },
-                _ => (),
+                }
             }
         },
         None => diagnostics.push("main function is required"),
@@ -529,12 +524,11 @@ fn artifact_apply_declared_package_aliases(
         for alias_index in 0..file.import_aliases.len() {
             let alias = file.import_aliases[alias_index];
             if artifact_use_has_explicit_alias(sources[file_index], alias.package_name) {} else {
-                match artifact_declared_package_alias(units, alias.package_name) {
-                    Some(name) => file.import_aliases.set(
+                if let Some(name) = artifact_declared_package_alias(units, alias.package_name) {
+                    file.import_aliases.set(
                         alias_index,
                         hir::ImportAlias { alias: name, package_name: alias.package_name },
-                    ),
-                    None => (),
+                    )
                 }
             }
         }
@@ -562,8 +556,8 @@ fn standard_internal_import_diagnostics(
 ) -> Vec[tast::Diagnostic] {
     let diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for index in 0..values.len() {
-        match values[index].ast {
-            Some(file) => for use_decl in file.uses {
+        if let Some(file) = values[index].ast {
+            for use_decl in file.uses {
                 let import_name = import_path_text(use_decl.path);
                 if disallowed_standard_internal_import(package_name, import_name) {
                     diagnostics.push(
@@ -592,8 +586,7 @@ fn standard_internal_import_diagnostics(
                         },
                     )
                 }
-            },
-            None => (),
+            }
         }
     }
     diagnostics
@@ -810,13 +803,15 @@ fn compile_artifact_package(
         }
     }
     fail_on_typer_diagnostics(checked.diagnostics, "", "");
-    match validate_public_trait_impls(hir_file, command.package_name, public_names) {
-        Ok(()) => (),
-        Err(error) => return Result::Err("error[typer]: " + error),
+    if let Err(error) = validate_public_trait_impls(hir_file, command.package_name, public_names) {
+        return Result::Err("error[typer]: " + error)
     }
-    match validate_public_fields_and_inherent_methods(hir_file, command.package_name, public_names) {
-        Ok(()) => (),
-        Err(error) => return Result::Err("error[typer]: " + error),
+    if let Err(error) = validate_public_fields_and_inherent_methods(
+        hir_file,
+        command.package_name,
+        public_names,
+    ) {
+        return Result::Err("error[typer]: " + error)
     }
     let deps = artifact_direct_dependency_hashes(world, dependency_names, dependency_units)?;
     let generated_interface = interface_codec::new_unit_with_comptime(
@@ -870,9 +865,7 @@ fn artifact_read_core_unit(path_value: string) -> Result[artifact::ArtifactCoreU
         || {
             let source = match fs::read_bytes_structured(path_value) {
                 Ok(value) => value,
-                Err(error) => return Result::Err(
-                    "failed to read core " + path_value + ": " + error.to_string(),
-                ),
+                Err(error) => return Result::Err(f"failed to read core {path_value}: {error}"),
             };
             match decode_artifact_core_bytes(source) {
                 Ok(value) => Result::Ok(value),

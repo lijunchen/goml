@@ -404,11 +404,8 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
                     ),
                 )
             }
-            match base {
-                Some(value) => {
-                    values.push(doc::append(doc::text(".."), pretty_expr_doc(value)))
-                },
-                None => (),
+            if let Some(value) = base {
+                values.push(doc::append(doc::text(".."), pretty_expr_doc(value)))
             }
             pretty_record_doc(pretty_path_doc(path), values)
         },
@@ -573,7 +570,7 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
             ),
         ),
         Proj { tuple: expr, index, span: _ } => {
-            doc::append(pretty_expr_doc(expr), doc::text("." + index.to_string()))
+            doc::append(pretty_expr_doc(expr), doc::text(f".{index}"))
         },
         Field { expr, field_name: field, method_type_args, span: _ } => {
             let base = doc::append(pretty_expr_doc(expr), doc::text("." + field));
@@ -677,14 +674,13 @@ fn pretty_pat_doc(value: Pat) -> doc::Doc {
             for value in prefix {
                 values.push(pretty_pat_doc(value))
             }
-            match rest {
-                Some(value) => values.push(
+            if let Some(value) = rest {
+                values.push(
                     match value.binding {
                         Some(name) => doc::text(name + " @ .."),
                         None => doc::text(".."),
                     },
-                ),
-                None => (),
+                )
             }
             for value in suffix {
                 values.push(pretty_pat_doc(value))

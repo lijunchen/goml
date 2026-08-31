@@ -152,9 +152,7 @@ pub fn type_doc(value: Type) -> pretty::Doc {
             pretty::append(pretty::text("dyn "), pretty::join(pretty::text(" + "), values))
         },
         Array { len, elem } => pretty::concat(
-            Vec::from_array(
-                [pretty::text("["), type_doc(elem), pretty::text("; " + len.to_string() + "]")],
-            ),
+            Vec::from_array([pretty::text("["), type_doc(elem), pretty::text(f"; {len}]")]),
         ),
         Slice { elem } => pretty::append(
             pretty::text("Slice"),

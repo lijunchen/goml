@@ -31,10 +31,7 @@ fn main() -> () {
     };
     match mutation::run(root, output, limit) {
         Ok(summary) => println(
-            "mutation differential: seeds=" + summary.seeds.to_string() + " cases="
-                + summary.cases.to_string()
-                + " failures="
-                + summary.failures.to_string(),
+            f"mutation differential: seeds={summary.seeds} cases={summary.cases} failures={summary.failures}",
         ),
         Err(message) => {
             println(message);

@@ -82,11 +82,8 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                         Some(value) => {
                             let mut op = AssignmentOp::Plain;
                             for token in direct_tokens(node) {
-                                match compound_assignment_operator(token.token.kind) {
-                                    Some(value) => {
-                                        op = AssignmentOp::Compound(value);
-                                    },
-                                    None => (),
+                                if let Some(value) = compound_assignment_operator(token.token.kind) {
+                                    op = AssignmentOp::Compound(value);
                                 }
                             }
                             Option::Some(Stmt::Assign { target, op, value, span: node_span(node) })
@@ -204,11 +201,8 @@ fn unescape_string(value: string) -> string {
                 102 => builder.write_string("\f"),
                 47 => builder.write_string("/"),
                 117 => {
-                    match unicode_escape_character(value, index + 2) {
-                        Some(character) => {
-                            builder.write_string(character.to_string())
-                        },
-                        None => (),
+                    if let Some(character) = unicode_escape_character(value, index + 2) {
+                        builder.write_string(character.to_string())
                     }
                     index += 4;
                 },
@@ -276,11 +270,8 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
                     ) {
                         let values = expr_children(located);
                         if !values.is_empty() {
-                            match lower_expr(ctx, values[0]) {
-                                Some(value) => {
-                                    parts.push(InterpolatedStringPart::Expr(value))
-                                },
-                                None => (),
+                            if let Some(value) = lower_expr(ctx, values[0]) {
+                                parts.push(InterpolatedStringPart::Expr(value))
                             }
                         } else {
                             push_error(
@@ -516,41 +507,29 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             Some(path_node) => match lower_path(ctx, path_node) {
                 Some(path) => {
                     let fields: Vec[(string, Expr)] = Vec::new();
-                    match first_child(node, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST) {
-                        Some(list) => for field in children_of_kind(
-                            list,
-                            cst::NodeKind::STRUCT_LITERAL_FIELD,
-                        ) {
-                            match first_token(field, lexer::TokenKind::Ident) {
-                                Some(name_token) => {
-                                    let values = expr_children(field);
-                                    if !values.is_empty() {
-                                        match lower_expr(ctx, values[0]) {
-                                            Some(value) => fields.push(
-                                                (name_token.token.text, value),
-                                            ),
-                                            None => (),
-                                        }
-                                    } else {
-                                        fields.push(
-                                            (
-                                                name_token.token.text,
-                                                Expr::Path {
-                                                    path: path_from_single_ident(
-                                                        name_token.token.text,
-                                                    ),
-                                                    owner_type_args: Vec::new(),
-                                                    member_type_args: Vec::new(),
-                                                    span: node_span(field),
-                                                },
-                                            ),
-                                        )
+                    if let Some(list) = first_child(node, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST) {
+                        for field in children_of_kind(list, cst::NodeKind::STRUCT_LITERAL_FIELD) {
+                            if let Some(name_token) = first_token(field, lexer::TokenKind::Ident) {
+                                let values = expr_children(field);
+                                if !values.is_empty() {
+                                    if let Some(value) = lower_expr(ctx, values[0]) {
+                                        fields.push((name_token.token.text, value))
                                     }
-                                },
-                                None => (),
+                                } else {
+                                    fields.push(
+                                        (
+                                            name_token.token.text,
+                                            Expr::Path {
+                                                path: path_from_single_ident(name_token.token.text),
+                                                owner_type_args: Vec::new(),
+                                                member_type_args: Vec::new(),
+                                                span: node_span(field),
+                                            },
+                                        ),
+                                    )
+                                }
                             }
-                        },
-                        None => (),
+                        }
                     }
                     let base = match first_child(node, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST) {
                         Some(list) => match first_child(list, cst::NodeKind::STRUCT_LITERAL_UPDATE) {

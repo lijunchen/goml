@@ -118,8 +118,8 @@ fn load_index(root: string) -> Result[collections::IndexMap[string, RegistryEntr
                 );
             }
         } else {
-            match current {
-                Some(name) => if line.starts_with("latest") {
+            if let Some(name) = current {
+                if line.starts_with("latest") {
                     let values = quoted_values(line);
                     if values.len() != 1 {
                         return Result::Err("invalid registry latest value")
@@ -148,8 +148,7 @@ fn load_index(root: string) -> Result[collections::IndexMap[string, RegistryEntr
                             versions: quoted_values(line),
                         },
                     );
-                },
-                None => (),
+                }
             }
         }
     }

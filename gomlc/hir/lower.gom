@@ -177,9 +177,8 @@ fn prospective_use_aliases(file: ast::File) -> Vec[AliasEntry] {
                 Some(value) => Option::Some(value),
                 None => last_string(target),
             };
-            match alias {
-                Some(value) => result.push(AliasEntry { alias: value, target, item: false }),
-                None => (),
+            if let Some(value) = alias {
+                result.push(AliasEntry { alias: value, target, item: false })
             }
         }
     }
@@ -245,11 +244,8 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
                             None => "",
                         },
                     };
-                    match use_decl.alias {
-                        Some(alias) => aliases.push(
-                            AliasEntry { alias, target: expanded, item: true },
-                        ),
-                        None => (),
+                    if let Some(alias) = use_decl.alias {
+                        aliases.push(AliasEntry { alias, target: expanded, item: true })
                     }
                     traits.push(join_segments(expanded));
                     match use_decl.visibility {
@@ -926,11 +922,8 @@ fn lower_pattern_inner(
                     for binding_index in base_seen.len()..branch_state.seen.len() {
                         actual.push(branch_state.seen[binding_index])
                     }
-                    match pattern_binding_mismatch(expected, actual) {
-                        Some(message) => ctx.diagnostics.push(
-                            Diagnostic { message, span: Option::Some(span) },
-                        ),
-                        None => (),
+                    if let Some(message) = pattern_binding_mismatch(expected, actual) {
+                        ctx.diagnostics.push(Diagnostic { message, span: Option::Some(span) })
                     }
                 }
                 PatKind::Or { pats: result }
@@ -1086,11 +1079,8 @@ fn lower_expr_value(
                     Some(constructor) => ExprKind::ConstructorValue { constructor },
                     None => {
                         if path.segments.len() == 1 {
-                            match find_binding(env, path.segments[0].ident) {
-                                Some(local) => return ExprKind::NameRef {
-                                    name_ref: NameRef::Local(local),
-                                },
-                                None => (),
+                            if let Some(local) = find_binding(env, path.segments[0].ident) {
+                                return ExprKind::NameRef { name_ref: NameRef::Local(local) }
                             }
                         }
                         let parts = qualified_segments(ctx, path);

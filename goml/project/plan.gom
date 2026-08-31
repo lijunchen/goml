@@ -755,12 +755,9 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             }
             args.push("--output");
             args.push(output);
-            match world {
-                Some(value) => {
-                    args.push("--world");
-                    args.push(value)
-                },
-                None => (),
+            if let Some(value) = world {
+                args.push("--world");
+                args.push(value)
             };
             (GOMLC_PROGRAM, args)
         },
@@ -781,12 +778,9 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             if without_roots {
                 args.push("--without-roots")
             }
-            match counter_output {
-                Some(value) => {
-                    args.push("--counter-output");
-                    args.push(value)
-                },
-                None => (),
+            if let Some(value) = counter_output {
+                args.push("--counter-output");
+                args.push(value)
             }
             args.push("--package");
             args.push(package_name);
@@ -831,12 +825,9 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             args.push(output);
             args.push("--entry");
             args.push(entry_package);
-            match world {
-                Some(value) => {
-                    args.push("--world");
-                    args.push(value)
-                },
-                None => (),
+            if let Some(value) = world {
+                args.push("--world");
+                args.push(value)
             };
             (GOMLC_PROGRAM, args)
         },
@@ -855,12 +846,9 @@ fn command_args(value: Command) -> (string, Vec[string]) {
                 args.push("--package");
                 args.push(package_name)
             }
-            match world {
-                Some(value) => {
-                    args.push("--world");
-                    args.push(value)
-                },
-                None => (),
+            if let Some(value) = world {
+                args.push("--world");
+                args.push(value)
             };
             (GOMLC_PROGRAM, args)
         },
@@ -995,11 +983,8 @@ fn execute_prepared_command(
     match execute_command(cancel, context, command) {
         Ok(()) => Result::Ok(()),
         Err(message) => {
-            match cache {
-                Some(value) => {
-                    let _ = prepare_cache_execution(context, value.spec);
-                },
-                None => (),
+            if let Some(value) = cache {
+                let _ = prepare_cache_execution(context, value.spec);
             }
             Result::Err(message)
         },
@@ -1019,68 +1004,59 @@ fn finish_prepared_command(
 }
 
 fn abandon_prepared_command(context: Context, cache: Option[PreparedCache]) -> () {
-    match cache {
-        Some(value) => {
-            let _ = prepare_cache_execution(context, value.spec);
-        },
-        None => (),
+    if let Some(value) = cache {
+        let _ = prepare_cache_execution(context, value.spec);
     }
 }
 
 fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
     let producers: HashMap[string, Vec[isize]] = HashMap::new();
     for index in 0..commands.len() {
-        match cache_spec(commands[index]) {
-            Some(spec) => for output in spec.outputs {
+        if let Some(spec) = cache_spec(commands[index]) {
+            for output in spec.outputs {
                 producers.entry(output).or_insert_with(|| Vec::new()).push(index)
-            },
-            None => (),
+            }
         }
     }
     let result: Vec[BuildNode] = Vec::new();
     for index in 0..commands.len() {
         let command = commands[index];
         let dependencies: collections::IndexSet[isize] = collections::IndexSet::new();
-        match cache_spec(command) {
-            Some(spec) => {
-                for input in spec.inputs {
-                    let mut previous = -1;
-                    let mut following = -1;
-                    match producers[input] {
-                        Some(values) => for candidate in values {
-                            if candidate < index && candidate > previous {
-                                previous = candidate;
-                            } else if candidate > index && following < 0 {
-                                following = candidate;
-                            }
-                        },
-                        None => (),
-                    }
-                    let producer = if previous >= 0 {
-                        previous
-                    } else {
-                        following
-                    };
-                    if producer >= 0 {
-                        let _ = dependencies.insert(producer);
+        if let Some(spec) = cache_spec(command) {
+            for input in spec.inputs {
+                let mut previous = -1;
+                let mut following = -1;
+                if let Some(values) = producers[input] {
+                    for candidate in values {
+                        if candidate < index && candidate > previous {
+                            previous = candidate;
+                        } else if candidate > index && following < 0 {
+                            following = candidate;
+                        }
                     }
                 }
-                for output in spec.outputs {
-                    let mut previous = -1;
-                    match producers[output] {
-                        Some(values) => for candidate in values {
-                            if candidate < index && candidate > previous {
-                                previous = candidate;
-                            }
-                        },
-                        None => (),
-                    }
-                    if previous >= 0 {
-                        let _ = dependencies.insert(previous);
+                let producer = if previous >= 0 {
+                    previous
+                } else {
+                    following
+                };
+                if producer >= 0 {
+                    let _ = dependencies.insert(producer);
+                }
+            }
+            for output in spec.outputs {
+                let mut previous = -1;
+                if let Some(values) = producers[output] {
+                    for candidate in values {
+                        if candidate < index && candidate > previous {
+                            previous = candidate;
+                        }
                     }
                 }
-            },
-            None => (),
+                if previous >= 0 {
+                    let _ = dependencies.insert(previous);
+                }
+            }
         }
         result.push(BuildNode { index, command, dependencies })
     }
@@ -1381,11 +1357,8 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: isize) ->
                 completed,
             ),
         );
-        match execution {
-            Ok(()) => (),
-            Err(message) => {
-                return Result::Err(message)
-            },
+        if let Err(message) = execution {
+            return Result::Err(message)
         }
     }
     if dry_run {} else {

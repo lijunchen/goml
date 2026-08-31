@@ -57,59 +57,53 @@ pub fn encode_type(value: repr::Type) -> string {
         Float64 => "float64",
         String => "string",
         Char => "char",
-        Tuple { items: values } => "Tuple" + values.len().to_string() + "_"
-            + join_type_parts(values),
+        Tuple { items: values } => f"Tuple{values.len()}_" + join_type_parts(values),
         Named { name } | ClosureEnvironment { name } => name,
         Dyn { trait_name: name, .. } => "Dyn_" + name,
         Array { len: length, elem } => {
             let encoded = encode_type(elem);
-            "Array_" + length.to_string() + "_" + encoded.byte_len().to_string() + encoded
+            f"Array_{length}_{encoded.byte_len()}{encoded}"
         },
         Slice { elem } => {
             let encoded = encode_type(elem);
-            "Slice_" + encoded.byte_len().to_string() + encoded
+            f"Slice_{encoded.byte_len()}{encoded}"
         },
         MutSlice { elem } => {
             let encoded = encode_type(elem);
-            "MutSlice_" + encoded.byte_len().to_string() + encoded
+            f"MutSlice_{encoded.byte_len()}{encoded}"
         },
         VecType { elem } => {
             let encoded = encode_type(elem);
-            "Vec_" + encoded.byte_len().to_string() + encoded
+            f"Vec_{encoded.byte_len()}{encoded}"
         },
         RefType { elem } => {
             let encoded = encode_type(elem);
-            "Ref_" + encoded.byte_len().to_string() + encoded
+            f"Ref_{encoded.byte_len()}{encoded}"
         },
         HashMap { key, value } => {
             let key_name = encode_type(key);
             let value_name = encode_type(value);
-            "HashMap_" + key_name.byte_len().to_string() + key_name + "_"
-                + value_name.byte_len().to_string()
-                + value_name
+            f"HashMap_{key_name.byte_len()}{key_name}_{value_name.byte_len()}{value_name}"
         },
         Channel { elem, direction } => {
             let encoded = encode_type(elem);
-            match direction {
+            let prefix = match direction {
                 ast::ChannelDirection::Both => "Channel_",
                 ast::ChannelDirection::Send => "Sender_",
                 ast::ChannelDirection::Receive => "Receiver_",
-            }
-                + encoded.byte_len().to_string()
-                + encoded
+            };
+            f"{prefix}{encoded.byte_len()}{encoded}"
         },
         Func { params, ret_ty } => {
             let ret_name = encode_type(ret_ty);
-            "Fn" + params.len().to_string() + "_" + join_type_parts(params) + "_to_"
-                + ret_name.byte_len().to_string()
-                + ret_name
+            f"Fn{params.len()}_{join_type_parts(params)}_to_{ret_name.byte_len()}{ret_name}"
         },
     }
 }
 
 fn type_name_part(value: repr::Type) -> string {
     let name = type_name(value);
-    name.byte_len().to_string() + name
+    f"{name.byte_len()}{name}"
 }
 
 pub fn type_name(value: repr::Type) -> string {
@@ -144,7 +138,7 @@ pub fn type_name(value: repr::Type) -> string {
         Named { name } | ClosureEnvironment { name } => go_user_type_name(name),
         Dyn { trait_name: name, .. } => go_dyn_struct_name(name),
         Array { len: length, elem } => {
-            go_generated_ident("Array" + length.to_string() + "_" + type_name_part(elem))
+            go_generated_ident(f"Array{length}_" + type_name_part(elem))
         },
         Slice { elem } => go_generated_ident("Slice_" + type_name_part(elem)),
         MutSlice { elem } => go_generated_ident("MutSlice_" + type_name_part(elem)),

@@ -142,13 +142,12 @@ pub fn node_at(index: SyntaxIndex, offset: isize) -> Option[SyntaxNode] {
 pub fn node_at_kind(index: SyntaxIndex, offset: isize, kind: cst::NodeKind) -> Option[SyntaxNode] {
     let mut current = node_at(index, offset);
     while current.is_some() {
-        match current {
-            Some(node) => if cst::node_kind_equal(node.kind, kind) {
+        if let Some(node) = current {
+            if cst::node_kind_equal(node.kind, kind) {
                 return Option::Some(node)
             } else {
                 current = parent_node(index, node);
-            },
-            None => (),
+            }
         }
     }
     Option::None

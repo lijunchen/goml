@@ -84,26 +84,17 @@ pub fn artifact_json_callable_body(writer: wire::ArtifactJsonWriter, value: Arti
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "kind");
     wire::artifact_json_string(writer, value.kind);
-    match value.id {
-        Some(value) => {
-            wire::artifact_json_name(writer, "id");
-            wire::artifact_json_string(writer, value)
-        },
-        None => (),
+    if let Some(value) = value.id {
+        wire::artifact_json_name(writer, "id");
+        wire::artifact_json_string(writer, value)
     }
-    match value.import_path {
-        Some(value) => {
-            wire::artifact_json_name(writer, "import_path");
-            wire::artifact_json_string(writer, value)
-        },
-        None => (),
+    if let Some(value) = value.import_path {
+        wire::artifact_json_name(writer, "import_path");
+        wire::artifact_json_string(writer, value)
     }
-    match value.symbol {
-        Some(value) => {
-            wire::artifact_json_name(writer, "symbol");
-            wire::artifact_json_string(writer, value)
-        },
-        None => (),
+    if let Some(value) = value.symbol {
+        wire::artifact_json_name(writer, "symbol");
+        wire::artifact_json_string(writer, value)
     }
     wire::artifact_json_end_object(writer)
 }

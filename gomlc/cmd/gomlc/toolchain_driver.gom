@@ -163,11 +163,10 @@ fn toolchain_sorted_interfaces(values: Vec[artifact::ArtifactInterfaceUnit]) -> 
     let result: Vec[artifact::ArtifactInterfaceUnit] = Vec::new();
     let mut previous: Option[string] = Option::None;
     for name in names {
-        match previous {
-            Some(value) => if value == name {
+        if let Some(value) = previous {
+            if value == name {
                 return Result::Err("duplicate toolchain dependency " + name)
-            },
-            None => (),
+            }
         }
         match toolchain_find_interface(values, name) {
             Some(value) => result.push(value),
@@ -236,13 +235,12 @@ fn toolchain_derive_environment(values: Vec[artifact::ArtifactInterfaceUnit]) ->
     let reexports: Vec[(string, string)] = Vec::new();
     let mut builtin: Option[ctir::CtModule] = Option::None;
     for value in values {
-        match value.comptime {
-            Some(comptime) => if value.package_name == "builtin" {
+        if let Some(comptime) = value.comptime {
+            if value.package_name == "builtin" {
                 builtin = Option::Some(comptime.module);
             } else {
                 dependencies.push(comptime.module)
-            },
-            None => (),
+            }
         }
         for reexport in value.exports.reexports {
             reexports.push(reexport)
@@ -400,12 +398,9 @@ fn write_toolchain_package(
     output_snapshot(
         command.output,
         || {
-            match counter_output {
-                Some((path, value)) => {
-                    ensure_parent(path)?;
-                    atomic_write_text(path, value)?
-                },
-                None => (),
+            if let Some((path, value)) = counter_output {
+                ensure_parent(path)?;
+                atomic_write_text(path, value)?
             }
             ensure_parent(interface_output_path(command.output))?;
             write_artifact_interface(
@@ -434,7 +429,7 @@ fn run_toolchain_build(args: Vec[string]) -> () {
     let request = match parse_toolchain_build_args(args) {
         Ok(value) => value,
         Err(error) => {
-            fail(COMPILE_ERROR_PREFIX + error.to_string());
+            fail(f"{COMPILE_ERROR_PREFIX}{error}");
             return
         },
     };
@@ -458,9 +453,8 @@ fn run_toolchain_build(args: Vec[string]) -> () {
             Err(error) => Result::Err(error),
         }
     };
-    match result {
-        Ok(()) => (),
-        Err(error) => fail(COMPILE_ERROR_PREFIX + error),
+    if let Err(error) = result {
+        fail(COMPILE_ERROR_PREFIX + error)
     }
 }
 
@@ -580,7 +574,7 @@ fn run_pack_toolchain_world(args: Vec[string]) -> () {
     let request = match parse_toolchain_pack_args(args) {
         Ok(value) => value,
         Err(error) => {
-            fail(COMPILE_ERROR_PREFIX + error.to_string());
+            fail(f"{COMPILE_ERROR_PREFIX}{error}");
             return
         },
     };
@@ -603,7 +597,7 @@ fn run_pack_toolchain_world(args: Vec[string]) -> () {
             },
         },
         Err(error) => {
-            fail(COMPILE_ERROR_PREFIX + error.to_string());
+            fail(f"{COMPILE_ERROR_PREFIX}{error}");
             return
         },
     };

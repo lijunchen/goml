@@ -8,20 +8,17 @@ fn direct_delimiter_tokens(node: LocatedNode) -> Option[(LocatedToken, LocatedTo
     let last: Ref[Option[LocatedToken]] = Ref::new(Option::None);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
-        match cursor.next() {
-            Some(Token(token)) => {
-                let delimiter = match token.token.kind {
-                    LParen | RParen | LBracket | RBracket | LBrace | RBrace | Pipe => true,
-                    _ => false,
-                };
-                if delimiter {
-                    if first.get().is_none() {
-                        first.set(Option::Some(token))
-                    }
-                    last.set(Option::Some(token))
+        if let Some(Token(token)) = cursor.next() {
+            let delimiter = match token.token.kind {
+                LParen | RParen | LBracket | RBracket | LBrace | RBrace | Pipe => true,
+                _ => false,
+            };
+            if delimiter {
+                if first.get().is_none() {
+                    first.set(Option::Some(token))
                 }
-            },
-            _ => (),
+                last.set(Option::Some(token))
+            }
         }
     }
     match (first.get(), last.get()) {
@@ -46,12 +43,10 @@ fn direct_prefix_doc(node: LocatedNode, open: LocatedToken) -> Doc {
     let values: Vec[Doc] = Vec::new();
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
-        match cursor.next() {
-            Some(Token(token)) => if token.start < open.start
-                && !lexer::token_is_trivia(token.token.kind) {
+        if let Some(Token(token)) = cursor.next() {
+            if token.start < open.start && !lexer::token_is_trivia(token.token.kind) {
                 values.push(token_doc(token))
-            },
-            _ => (),
+            }
         }
     }
     concat(values)

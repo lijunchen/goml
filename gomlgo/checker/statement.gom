@@ -1008,12 +1008,12 @@ fn assign_existing(
 }
 
 fn assignment_count_text(count: isize, singular: string, plural: string) -> string {
-    count.to_string() + " "
-        + if count == 1 {
-            singular
-        } else {
-            plural
-        }
+    let value = if count == 1 {
+        singular
+    } else {
+        plural
+    };
+    f"{count} {value}"
 }
 
 fn report_assignment_count(
@@ -4069,11 +4069,7 @@ fn check_statement(
             };
             if operand.type_id.value != state.world.invalid.value
                 && go_types::is_numeric(state.world, operand.type_id) {
-                let key = file + ":$unknown[*ast.BasicLit:"
-                    + node_start(state, expression).to_string()
-                    + ":"
-                    + (node_start(state, expression) + 1).to_string()
-                    + "]";
+                let key = f"{file}:$unknown[*ast.BasicLit:{node_start(state, expression)}:{node_start(state, expression) + 1}]";
                 let mut exists = false;
                 for fact in state.info.types {
                     match type_fact_key(fact) {
@@ -4659,8 +4655,7 @@ fn check_goto_restrictions(state: CheckState, body: syntax::NodeId) -> () {
                             diagnostic(
                                 state,
                                 value.node,
-                                "goto " + value.name + " jumps over variable declaration at line "
-                                    + source_line(state, declaration.node).to_string(),
+                                f"goto {value.name} jumps over variable declaration at line {source_line(state, declaration.node)}",
                                 true,
                             );
                         },

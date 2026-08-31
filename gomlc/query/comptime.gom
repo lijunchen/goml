@@ -26,19 +26,16 @@ fn comptime_derive_name(value: ctir::CtDeriveEntry) -> string {
 }
 
 fn derive_attribute_at(value: Analysis, offset: isize) -> bool {
-    match node_at_kind(value.syntax, offset, cst::NodeKind::ATTRIBUTE) {
-        Some(node) => {
-            let mut index = token_index_at_or_after(value.syntax, node.start);
-            while index < value.syntax.tokens.len() && value.syntax.tokens[index].start < node.end {
-                let token = value.syntax.tokens[index];
-                if token.end <= node.end && token.text == "derive" {
-                    return true
-                } else {
-                    index += 1;
-                }
+    if let Some(node) = node_at_kind(value.syntax, offset, cst::NodeKind::ATTRIBUTE) {
+        let mut index = token_index_at_or_after(value.syntax, node.start);
+        while index < value.syntax.tokens.len() && value.syntax.tokens[index].start < node.end {
+            let token = value.syntax.tokens[index];
+            if token.end <= node.end && token.text == "derive" {
+                return true
+            } else {
+                index += 1;
             }
-        },
-        None => (),
+        }
     }
     false
 }

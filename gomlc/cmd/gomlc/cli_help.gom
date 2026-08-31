@@ -518,11 +518,10 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
     candidates.push(HELP_COMMAND);
     let similar: Vec[CliSimilarity] = Vec::new();
     for candidate in candidates {
-        match cli_jaro_similarity(command, candidate) {
-            Some(value) => if value.numerator * 10 >= value.denominator * 7 {
+        if let Some(value) = cli_jaro_similarity(command, candidate) {
+            if value.numerator * 10 >= value.denominator * 7 {
                 similar.push(value)
-            },
-            None => (),
+            }
         }
     }
     collections::sort_by_ordering(similar, cli_similarity_compare);

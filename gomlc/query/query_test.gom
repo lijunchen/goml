@@ -71,9 +71,8 @@ fn completion_labels(values: Vec[CompletionItem]) -> string {
 }
 
 fn write_query_fixture(path: string, source: string) -> () {
-    match fs::write_file_structured(path, source) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = fs::write_file_structured(path, source) {
+        testing::fail(error.to_string())
     }
 }
 
@@ -345,8 +344,7 @@ fn navigates_hovers_and_completes_comptime_derives() -> () {
                     let definitions = goto_definitions(analysis, offset);
                     if definitions.len() != 1 {
                         testing::fail(
-                            "expected one qualified comptime derive definition, found "
-                                + definitions.len().to_string(),
+                            f"expected one qualified comptime derive definition, found {definitions.len()}",
                         )
                     }
                     testing::assert(definitions[0].source_path.ends_with("/macros/macros.gom"));
@@ -378,8 +376,7 @@ fn navigates_hovers_and_completes_comptime_derives() -> () {
                     let definitions = goto_definitions(analysis, offset);
                     if definitions.len() != 1 {
                         testing::fail(
-                            "expected one reexported comptime derive definition, found "
-                                + definitions.len().to_string(),
+                            f"expected one reexported comptime derive definition, found {definitions.len()}",
                         )
                     }
                     testing::assert(definitions[0].source_path.ends_with("/macros/macros.gom"))
@@ -852,9 +849,8 @@ fn keeps_signature_names_for_canonical_cross_package_targets() -> () {
     let left_dir = root + "/left";
     let right_dir = root + "/right";
     for directory in Vec::from_array([root, left_dir, right_dir]) {
-        match fs::create_dir_all(directory) {
-            Ok(()) => (),
-            Err(error) => testing::fail(error.to_string()),
+        if let Err(error) = fs::create_dir_all(directory) {
+            testing::fail(error.to_string())
         }
     }
     let left_path = left_dir + "/item.gom";
@@ -1023,9 +1019,8 @@ fn separates_members_for_same_named_types_across_packages() -> () {
     let left_dir = root + "/left";
     let right_dir = root + "/right";
     for directory in Vec::from_array([root, left_dir, right_dir]) {
-        match fs::create_dir_all(directory) {
-            Ok(()) => (),
-            Err(error) => testing::fail(error.to_string()),
+        if let Err(error) = fs::create_dir_all(directory) {
+            testing::fail(error.to_string())
         }
     }
     let left_path = left_dir + "/item.gom";
@@ -1100,9 +1095,8 @@ fn filters_member_completion_visibility_and_receivers() -> () {
     let root = "/tmp/goml-query-member-visibility";
     let lib_dir = root + "/lib";
     for directory in Vec::from_array([root, lib_dir]) {
-        match fs::create_dir_all(directory) {
-            Ok(()) => (),
-            Err(error) => testing::fail(error.to_string()),
+        if let Err(error) = fs::create_dir_all(directory) {
+            testing::fail(error.to_string())
         }
     }
     let lib_path = lib_dir + "/lib.gom";
@@ -1590,9 +1584,8 @@ fn keeps_hover_types_for_canonical_declarations() -> () {
     let left_dir = root + "/left";
     let right_dir = root + "/right";
     for directory in Vec::from_array([root, left_dir, right_dir]) {
-        match fs::create_dir_all(directory) {
-            Ok(()) => (),
-            Err(error) => testing::fail(error.to_string()),
+        if let Err(error) = fs::create_dir_all(directory) {
+            testing::fail(error.to_string())
         }
     }
     let left_path = left_dir + "/left.gom";
@@ -1718,12 +1711,11 @@ fn external_package_sources_at(
 ) -> Result[Vec[SourceFile], string] {
     let modules = resolve_external_modules_at(module_root, registry)?;
     for module in modules {
-        match external_package_directory(module, package_name) {
-            Some(directory) => match collect_dependency_files(directory, overrides) {
+        if let Some(directory) = external_package_directory(module, package_name) {
+            match collect_dependency_files(directory, overrides) {
                 Ok(files) => return Result::Ok(source_files_with_package(files, package_name)),
                 Err(error) => return Result::Err(error),
-            },
-            None => (),
+            }
         }
     }
     Result::Err("package " + package_name + " is not provided by a resolved dependency")
@@ -1738,9 +1730,8 @@ fn resolves_external_registry_packages_with_mvs() -> () {
     let shared_one = registry + "/alice/shared/1.0.0";
     let shared_two = registry + "/alice/shared/2.0.0";
     for directory in Vec::from_array([project, http, shared_one, shared_two]) {
-        match fs::create_dir_all(directory) {
-            Ok(()) => (),
-            Err(error) => testing::fail(error.to_string()),
+        if let Err(error) = fs::create_dir_all(directory) {
+            testing::fail(error.to_string())
         }
     }
     write_query_fixture(

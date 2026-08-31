@@ -1031,11 +1031,10 @@ fn eval_function(
             )
         }
     }
-    match state.derive_state {
-        Some(_) => (),
-        None => if let Some(value) = find_memoized(state, module.package_name, function.id, args) {
+    if let None = state.derive_state {
+        if let Some(value) = find_memoized(state, module.package_name, function.id, args) {
             return Result::Ok(value)
-        },
+        }
     }
     state.call_depth.set(state.call_depth.get() + 1);
     state.stack.push(
@@ -1064,16 +1063,15 @@ fn eval_function(
     state.call_depth.set(state.call_depth.get() - 1);
     match result {
         Ok(EvalFlow::Value(value)) | Ok(EvalFlow::Return(value)) => {
-            match state.derive_state {
-                Some(_) => (),
-                None => state.memo.push(
+            if let None = state.derive_state {
+                state.memo.push(
                     CtMemoEntry {
                         package_name: module.package_name,
                         function_id: function.id,
                         args,
                         value,
                     },
-                ),
+                )
             }
             Result::Ok(value)
         },
@@ -1510,44 +1508,33 @@ fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: 
         },
         ctir::CtExprKind::Call { target, args } => {
             let args = eval_values(state, module, frame, args)?;
-            match target {
-                ctir::CtCallTarget::Intrinsic(name) => {
-                    match call_value_intrinsic(module.target, name, args) {
-                        Some(result) => return match result {
-                            Ok(result) => Result::Ok(
-                                EvalFlow::Value(
-                                    allocate_value(state, module, value.origin, result)?,
-                                ),
-                            ),
-                            Err(message) => {
-                                Result::Err(ct_error(state, module, value.origin, message))
-                            },
-                        },
-                        None => (),
-                    }
-                    let Some(derive_state) = state.derive_state else {
-                        return Result::Err(
-                            ct_error(
-                                state,
-                                module,
-                                value.origin,
-                                "derive intrinsic is unavailable in value comptime",
-                            ),
-                        )
-                    };
-                    return match derive::call_intrinsic(
-                        derive_state,
-                        module.package_name,
-                        name,
-                        args,
-                    ) {
-                        Ok(result) => Result::Ok(EvalFlow::Value(result)),
+            if let ctir::CtCallTarget::Intrinsic(name) = target {
+                if let Some(result) = call_value_intrinsic(module.target, name, args) {
+                    return match result {
+                        Ok(result) => Result::Ok(
+                            EvalFlow::Value(allocate_value(state, module, value.origin, result)?),
+                        ),
                         Err(message) => {
                             Result::Err(ct_error(state, module, value.origin, message))
                         },
                     }
-                },
-                _ => (),
+                }
+                let Some(derive_state) = state.derive_state else {
+                    return Result::Err(
+                        ct_error(
+                            state,
+                            module,
+                            value.origin,
+                            "derive intrinsic is unavailable in value comptime",
+                        ),
+                    )
+                };
+                return match derive::call_intrinsic(derive_state, module.package_name, name, args) {
+                    Ok(result) => Result::Ok(EvalFlow::Value(result)),
+                    Err(message) => {
+                        Result::Err(ct_error(state, module, value.origin, message))
+                    },
+                }
             }
             let Some((target_module, function)) = call_target(state, module, target) else {
                 return Result::Err(
@@ -1760,9 +1747,8 @@ pub fn evaluate_site(
     site_id: isize,
     limits: EvalLimits,
 ) -> Result[ctir::CtValue, CtError] {
-    match verify_module(module, dependencies) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(invalid_ctir_error(module, message)),
+    if let Err(message) = verify_module(module, dependencies) {
+        return Result::Err(invalid_ctir_error(module, message))
     }
     let modules: Vec[ctir::CtModule] = Vec::with_capacity(dependencies.len() + 1);
     modules.push(module);
@@ -1790,9 +1776,8 @@ pub fn evaluate_entry(
     args: Vec[ctir::CtValue],
     limits: EvalLimits,
 ) -> Result[ctir::CtValue, CtError] {
-    match verify_module(module, dependencies) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(invalid_ctir_error(module, message)),
+    if let Err(message) = verify_module(module, dependencies) {
+        return Result::Err(invalid_ctir_error(module, message))
     }
     let modules: Vec[ctir::CtModule] = Vec::with_capacity(dependencies.len() + 1);
     modules.push(module);
@@ -1818,9 +1803,8 @@ pub fn evaluate_derive_entry(
     request: derive::DeriveRequest,
     limits: EvalLimits,
 ) -> Result[ast::ImplBlock, CtError] {
-    match verify_module(module, dependencies) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(invalid_ctir_error(module, message)),
+    if let Err(message) = verify_module(module, dependencies) {
+        return Result::Err(invalid_ctir_error(module, message))
     }
     let modules: Vec[ctir::CtModule] = Vec::with_capacity(dependencies.len() + 1);
     modules.push(module);

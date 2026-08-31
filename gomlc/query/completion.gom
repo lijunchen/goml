@@ -448,17 +448,19 @@ fn complete_local_package_children(
     namespace: string,
     prefix: string,
 ) -> () {
-    match local_package_directory(project.module_root, project.module_path, namespace) {
-        Some(directory) => match fs::read_dir(directory) {
-            Ok(names) => for name in names {
+    if let Some(directory) = local_package_directory(
+        project.module_root,
+        project.module_path,
+        namespace,
+    ) {
+        if let Ok(names) = fs::read_dir(directory) {
+            for name in names {
                 let candidate = path::join(directory, name);
                 if fs::is_dir(candidate) && package_directory_has_source(candidate) {
                     push_package_completion(result, name, namespace + "::" + name, prefix)
                 }
-            },
-            Err(_) => (),
-        },
-        None => (),
+            }
+        }
     }
 }
 
@@ -499,40 +501,26 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
         },
         Ok(None) | Err(_) => (),
     }
-    match discover_project(value.source_path, value.source, value.overrides) {
-        Ok(Some(project)) => {
-            if context.namespace == "" {
-                push_package_completion(result, "module", project.module_path, context.prefix)
+    if let Ok(Some(project)) = discover_project(value.source_path, value.source, value.overrides) {
+        if context.namespace == "" {
+            push_package_completion(result, "module", project.module_path, context.prefix)
+        }
+        let namespace = expand_module_namespace(project.module_path, context.namespace);
+        if let Some(segment) = namespace_next_segment(project.module_path, namespace) {
+            push_package_completion(result, segment, project.module_path, context.prefix)
+        }
+        if namespace == project.module_path || namespace.starts_with(project.module_path + "::") {
+            complete_local_package_children(result, project, namespace, context.prefix)
+        }
+        if let Ok(manifest) = fs::read_file_structured(
+            path::join(project.module_root, MANIFEST_FILENAME),
+        ) {
+            for dependency in manifest_dependencies(manifest) {
+                if let Some(segment) = namespace_next_segment(dependency.name, namespace) {
+                    push_package_completion(result, segment, dependency.name, context.prefix)
+                }
             }
-            let namespace = expand_module_namespace(project.module_path, context.namespace);
-            match namespace_next_segment(project.module_path, namespace) {
-                Some(segment) => push_package_completion(
-                    result,
-                    segment,
-                    project.module_path,
-                    context.prefix,
-                ),
-                None => (),
-            }
-            if namespace == project.module_path || namespace.starts_with(project.module_path + "::") {
-                complete_local_package_children(result, project, namespace, context.prefix)
-            }
-            match fs::read_file_structured(path::join(project.module_root, MANIFEST_FILENAME)) {
-                Ok(manifest) => for dependency in manifest_dependencies(manifest) {
-                    match namespace_next_segment(dependency.name, namespace) {
-                        Some(segment) => push_package_completion(
-                            result,
-                            segment,
-                            dependency.name,
-                            context.prefix,
-                        ),
-                        None => (),
-                    }
-                },
-                Err(_) => (),
-            }
-        },
-        _ => (),
+        }
     }
     result
 }
@@ -652,11 +640,10 @@ fn local_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[tast::
     for distance in 0..facts.len() {
         let fact = facts[facts.len() - 1 - distance];
         if fact.source_path == value.source_path && fact.local.hint == token.text {
-            match fact.span {
-                Some(span) => if span.start < token.start {
+            if let Some(span) = fact.span {
+                if span.start < token.start {
                     return Option::Some(fact.ty)
-                },
-                None => (),
+                }
             }
         }
     }
@@ -927,8 +914,8 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                         )
                     }
                 }
-                match tast::resolve_type(receiver) {
-                    Dyn { trait_name, .. } => for definition in environment.traits {
+                if let Dyn { trait_name, .. } = tast::resolve_type(receiver) {
+                    for definition in environment.traits {
                         if completion_owner_matches(value, definition.name, trait_name) {
                             for method in definition.methods {
                                 if visible_trait_method(value, definition.name, method, true) {
@@ -949,18 +936,13 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                                 }
                             }
                         }
-                    },
-                    _ => (),
+                    }
                 }
             }
-            match tast::resolve_type(receiver) {
-                Error => match explicit_receiver_type(value, dot) {
-                    Some(receiver_name) => {
-                        complete_named_methods(result, value, receiver_name, prefix)
-                    },
-                    None => (),
-                },
-                _ => (),
+            if let Error = tast::resolve_type(receiver) {
+                if let Some(receiver_name) = explicit_receiver_type(value, dot) {
+                    complete_named_methods(result, value, receiver_name, prefix)
+                }
             }
         },
         None => if let Some(receiver_name) = explicit_receiver_type(value, dot) {
@@ -983,16 +965,13 @@ fn containing_completion_scope(syntax: SyntaxIndex, span: ast::Span) -> Option[S
         None => Option::None,
     };
     while current.is_some() {
-        match current {
-            Some(id) => {
-                let node = syntax.nodes[id];
-                if completion_scope_kind(node.kind) {
-                    return Option::Some(node)
-                } else {
-                    current = node.parent;
-                }
-            },
-            None => (),
+        if let Some(id) = current {
+            let node = syntax.nodes[id];
+            if completion_scope_kind(node.kind) {
+                return Option::Some(node)
+            } else {
+                current = node.parent;
+            }
         }
     }
     Option::None
@@ -1086,8 +1065,8 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
     let locals: collections::IndexMap[string, CompletionItem] = collections::IndexMap::new();
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
-            match fact.span {
-                Some(span) => if local_visible_at(value.syntax, span, offset) {
+            if let Some(span) = fact.span {
+                if local_visible_at(value.syntax, span, offset) {
                     push_local_completion(
                         locals,
                         CompletionItem {
@@ -1097,8 +1076,7 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
                         },
                         prefix,
                     )
-                },
-                None => (),
+                }
             }
         }
     }
@@ -1119,8 +1097,8 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
     }
     append_prelude_scope_completions(result, value, prefix);
     let lowered = value.lowered;
-    match lowered.ast {
-        Some(file) => for import in file.uses {
+    if let Some(file) = lowered.ast {
+        for import in file.uses {
             let package_name = expand_module_namespace(value.module_path, path_text(import.path));
             if analysis_has_package(value, package_name) {
                 let alias = match import.alias {
@@ -1137,8 +1115,7 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
                     prefix,
                 )
             }
-        },
-        None => (),
+        }
     }
     let keywords = Vec::from_array(
         [
@@ -1330,28 +1307,25 @@ fn append_select_completions(
     if completion_word_before(source, start) == "select" {
         push_contextual_completion(result, "priority", "priority select", prefix)
     }
-    match select_completion_open(source, start) {
-        Some(open) => {
-            let content = source.byte_slice(open + 1, start);
-            push_contextual_completion(result, "recv", "select receive arm", prefix);
-            push_contextual_completion(result, "send", "select send arm", prefix);
-            if !content.contains("default") {
-                push_contextual_completion(result, "default", "select default arm", prefix)
-            }
-            let mut arm_start = content.byte_len();
-            while arm_start > 0 && content.byte_get(arm_start - 1) != b',' {
-                arm_start -= 1;
-            }
-            let arm = content.byte_slice(arm_start, content.byte_len());
-            if arm.contains("recv(") && arm.contains(")") && !arm.contains("=>") {
-                push_contextual_completion(result, "when", "select guard", prefix);
-                push_contextual_completion(result, "as", "receive binding", prefix);
-                push_contextual_completion(result, "match", "receive match", prefix)
-            } else if arm.contains("send(") && arm.contains(")") && !arm.contains("=>") {
-                push_contextual_completion(result, "when", "select guard", prefix)
-            }
-        },
-        None => (),
+    if let Some(open) = select_completion_open(source, start) {
+        let content = source.byte_slice(open + 1, start);
+        push_contextual_completion(result, "recv", "select receive arm", prefix);
+        push_contextual_completion(result, "send", "select send arm", prefix);
+        if !content.contains("default") {
+            push_contextual_completion(result, "default", "select default arm", prefix)
+        }
+        let mut arm_start = content.byte_len();
+        while arm_start > 0 && content.byte_get(arm_start - 1) != b',' {
+            arm_start -= 1;
+        }
+        let arm = content.byte_slice(arm_start, content.byte_len());
+        if arm.contains("recv(") && arm.contains(")") && !arm.contains("=>") {
+            push_contextual_completion(result, "when", "select guard", prefix);
+            push_contextual_completion(result, "as", "receive binding", prefix);
+            push_contextual_completion(result, "match", "receive match", prefix)
+        } else if arm.contains("send(") && arm.contains(")") && !arm.contains("=>") {
+            push_contextual_completion(result, "when", "select guard", prefix)
+        }
     }
 }
 

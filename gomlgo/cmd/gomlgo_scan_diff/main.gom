@@ -12,10 +12,7 @@ fn main() -> () {
         "/usr/lib/go-1.26/src"
     };
     match scanner_diff::compare_tree(root) {
-        Ok(summary) => println(
-            "scanner zero diff: files=" + summary.files.to_string() + " tokens="
-                + summary.tokens.to_string(),
-        ),
+        Ok(summary) => println(f"scanner zero diff: files={summary.files} tokens={summary.tokens}"),
         Err(message) => {
             println(message);
             process::exit(1)

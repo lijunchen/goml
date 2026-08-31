@@ -18,8 +18,7 @@ fn assert_valid_file(source: string) -> ast::Node {
     testing::assert(expected.ok);
     if !actual.diagnostics.is_empty() {
         testing::fail(
-            "unexpected parser diagnostic at " + actual.diagnostics[0].offset.to_string() + ": "
-                + actual.diagnostics[0].message,
+            f"unexpected parser diagnostic at {actual.diagnostics[0].offset}: {actual.diagnostics[0].message}",
         )
     }
     match actual.root {

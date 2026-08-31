@@ -186,10 +186,10 @@ fn entry_wrapper_name(
         "main0"
     } else {
         let mut index = 1;
-        let mut result = "main0__" + index.to_string();
+        let mut result = f"main0__{index}";
         while name_present(used, result) {
             index += 1;
-            result = "main0__" + index.to_string();
+            result = f"main0__{index}";
         }
         result
     }
@@ -425,7 +425,7 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
             let params: Vec[(string, Type)] = Vec::new();
             let args: Vec[Expr] = Vec::new();
             for index in 0..param_types.len() {
-                let name = "arg" + index.to_string();
+                let name = f"arg{index}";
                 params.push((name, lower_type(param_types[index])));
                 args.push(go_foreign_argument(name, param_types[index]))
             }
@@ -440,12 +440,12 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
                     let names: Vec[string] = Vec::new();
                     let fields: Vec[(string, Expr)] = Vec::new();
                     for index in 0..values.len() {
-                        let name = "result" + index.to_string();
+                        let name = f"result{index}";
                         stmts.push(
                             Stmt::Var { name, ty: lower_type(values[index]), value: Option::None },
                         );
                         names.push(name);
-                        fields.push(("_" + index.to_string(), Expr::Var { name }))
+                        fields.push((f"_{index}", Expr::Var { name }))
                     }
                     stmts.push(Stmt::MultiAssign { names, value: call });
                     stmts.push(
@@ -538,7 +538,7 @@ fn compact_go_float_literal(value: string) -> string {
     if end == start || end == value.byte_len() {
         value
     } else {
-        value.byte_slice(0, end) + "e" + (value.byte_len() - end).to_string()
+        f"{value.byte_slice(0, end)}e{value.byte_len() - end}"
     }
 }
 
@@ -611,9 +611,7 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
         Tuple { items, ty } => {
             let fields: Vec[(string, Expr)] = Vec::with_capacity(items.len());
             for index in 0..items.len() {
-                fields.push(
-                    ("_" + index.to_string(), compile_constant_expr(variants, items[index])),
-                )
+                fields.push((f"_{index}", compile_constant_expr(variants, items[index])))
             }
             Expr::StructLiteral { ty: lower_type(ty), fields }
         },
@@ -630,11 +628,10 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
                 Some(tag) => find_variant_info(variants, ty, tag),
                 None => Option::None,
             };
-            match info {
-                Some(value) => if value.compact {
+            if let Some(value) = info {
+                if value.compact {
                     fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
-                },
-                None => (),
+                }
             }
             for index in 0..args.len() {
                 fields.push(
@@ -653,7 +650,7 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
                                 index,
                             )
                         } else {
-                            "_" + index.to_string()
+                            f"_{index}"
                         },
                         compile_constant_expr(variants, args[index]),
                     ),
@@ -842,7 +839,7 @@ fn compile_closure_function(
             let args: Vec[Expr] = Vec::new();
             args.push(compile_imm(env, environment));
             for index in 0..param_types.len() {
-                let name = "p" + index.to_string();
+                let name = f"p{index}";
                 params.push((name, lower_type(param_types[index])));
                 args.push(Expr::Var { name })
             }
@@ -1065,7 +1062,7 @@ fn compile_slice_callable(key: string, function_ty: repr::Type) -> Expr {
             let params: Vec[(string, Type)] = Vec::new();
             let vars: Vec[Expr] = Vec::new();
             for index in 0..param_types.len() {
-                let name = "p" + index.to_string();
+                let name = f"p{index}";
                 params.push((name, lower_type(param_types[index])));
                 vars.push(Expr::Var { name })
             }
@@ -1168,7 +1165,7 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
             let params: Vec[(string, Type)] = Vec::new();
             let vars: Vec[Expr] = Vec::new();
             for index in 0..param_types.len() {
-                let name = "p" + index.to_string();
+                let name = f"p{index}";
                 params.push((name, lower_type(param_types[index])));
                 vars.push(Expr::Var { name })
             }
@@ -1365,7 +1362,7 @@ fn compile_dynamic_priority_select_callable(function_ty: repr::Type) -> Expr {
         Func { params: param_types, ret_ty } => {
             let params: Vec[(string, Type)] = Vec::new();
             for index in 0..param_types.len() {
-                params.push(("p" + index.to_string(), lower_type(param_types[index])))
+                params.push((f"p{index}", lower_type(param_types[index])))
             }
             let elem = match repr::resolve_type(ret_ty) {
                 Tuple { items } => items[2],
@@ -1665,7 +1662,7 @@ fn compile_dynamic_reflect_select_callable(key: string, function_ty: repr::Type)
         Func { params: param_types, ret_ty } => {
             let params: Vec[(string, Type)] = Vec::new();
             for index in 0..param_types.len() {
-                params.push(("p" + index.to_string(), lower_type(param_types[index])))
+                params.push((f"p{index}", lower_type(param_types[index])))
             }
             let elem = match repr::resolve_type(ret_ty) {
                 Tuple { items } => items[2],
@@ -2120,8 +2117,8 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
         _ => Vec::new(),
     };
     let compiled = compile_imms_expected(env, args, expected);
-    match direct_function_name(func) {
-        Some(name) => for index in 0..compiled.len() {
+    if let Some(name) = direct_function_name(func) {
+        for index in 0..compiled.len() {
             if pointer_param_enabled(env.pointer_params, name, index) {
                 compiled[index] = match args[index] {
                     Var { name, ty: _ } if env.pointer_vars.contains(name) => {
@@ -2130,8 +2127,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
                     _ => Expr::Unary { op: UnaryOp::Address, expr: compiled[index] },
                 };
             }
-        },
-        None => (),
+        }
     }
     match func {
         Callable { callable: Intrinsic(key), ty: _ } => {
@@ -2217,14 +2213,10 @@ fn append_struct_field_types(result: Vec[repr::Type], definition: repr::StructDe
 
 fn struct_field_types(env: LowerEnv, value: repr::Type) -> Vec[repr::Type] {
     let result: Vec[repr::Type] = Vec::new();
-    match repr::resolve_type(value) {
-        Named { name } | ClosureEnvironment { name } => if let Some(definition) = find_struct(
-            env.structs,
-            name,
-        ) {
+    if let Named { name } | ClosureEnvironment { name } = repr::resolve_type(value) {
+        if let Some(definition) = find_struct(env.structs, name) {
             append_struct_field_types(result, definition)
-        },
-        _ => (),
+        }
     }
     result
 }
@@ -2249,24 +2241,19 @@ fn compile_constructor(
             expected.push(field_ty)
         }
     } else {
-        match constructor.tag {
-            Some(tag) => match find_variant_info(env.variants, ty, tag) {
-                Some(info) => {
-                    for field_ty in info.field_types {
-                        expected.push(field_ty)
-                    }
-                },
-                None => (),
-            },
-            None => (),
+        if let Some(tag) = constructor.tag {
+            if let Some(info) = find_variant_info(env.variants, ty, tag) {
+                for field_ty in info.field_types {
+                    expected.push(field_ty)
+                }
+            }
         }
     }
     let fields: Vec[(string, Expr)] = Vec::new();
-    match info {
-        Some(value) => if value.compact {
+    if let Some(value) = info {
+        if value.compact {
             fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
-        },
-        None => (),
+        }
     }
     for index in 0..args.len() {
         let name = if constructor.is_struct && index < constructor.fields.len() {
@@ -2283,7 +2270,7 @@ fn compile_constructor(
                 index,
             )
         } else {
-            "_" + index.to_string()
+            f"_{index}"
         };
         let compiled = if index < expected.len() {
             compile_imm_expected(env, args[index], expected[index])
@@ -2319,7 +2306,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                     for index in 0..items.len() {
                         fields.push(
                             (
-                                "_" + index.to_string(),
+                                f"_{index}",
                                 compile_imm_expected(env, items[index], item_types[index]),
                             ),
                         )
@@ -2327,7 +2314,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                 },
                 _ => {
                     for index in 0..items.len() {
-                        fields.push(("_" + index.to_string(), compile_imm(env, items[index])))
+                        fields.push((f"_{index}", compile_imm(env, items[index])))
                     }
                 },
             }
@@ -2369,7 +2356,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                     index,
                 )
             } else {
-                "_" + index.to_string()
+                f"_{index}"
             };
             let target = if constructor.is_struct {
                 compile_imm(env, expr)
@@ -2502,7 +2489,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             compile_closure_function(env, environment, apply, ty)
         },
         Proj { tuple, index, ty: _ } => {
-            Expr::Field { expr: compile_imm(env, tuple), field_name: "_" + index.to_string() }
+            Expr::Field { expr: compile_imm(env, tuple), field_name: f"_{index}" }
         },
     };
     CompiledValue { stmts, expr }
@@ -2688,11 +2675,10 @@ fn collect_collection_arrays(result: HashMap[string, anf::Value], value: anf::Bl
         match value.binds[index] {
             Let(bind) => match bind.value {
                 Array { items, ty } if index + 1 < value.binds.len() => {
-                    match collection_array_consumer(value.binds[index + 1]) {
-                        Some(consumer) => if consumer.1 == bind.name {
+                    if let Some(consumer) = collection_array_consumer(value.binds[index + 1]) {
+                        if consumer.1 == bind.name {
                             result[consumer.0] = anf::Value::Array { items, ty };
-                        },
-                        None => (),
+                        }
                     }
                 },
                 _ => (),
@@ -2801,14 +2787,13 @@ fn match_block_target(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Optio
             None => return Option::None,
         }
     }
-    match default {
-        Some(body) => match block_target(body) {
+    if let Some(body) = default {
+        match block_target(body) {
             Some(value) => if value == expected {} else {
                 return Option::None
             },
             None => return Option::None,
-        },
-        None => (),
+        }
     }
     Option::Some(expected)
 }
@@ -2835,14 +2820,13 @@ fn select_block_target(arms: Vec[anf::SelectArm], default: Option[anf::Block]) -
             None => return Option::None,
         }
     }
-    match default {
-        Some(body) => match block_target(body) {
+    if let Some(body) = default {
+        match block_target(body) {
             Some(value) => if value == expected {} else {
                 return Option::None
             },
             None => return Option::None,
-        },
-        None => (),
+        }
     }
     Option::Some(expected)
 }
@@ -3029,9 +3013,8 @@ fn compile_match_leaf(
     } else if match_uses_types(env, arms) {
         let cases: Vec[TypeSwitchCase] = Vec::new();
         for arm in arms {
-            match arm_type(env, arm.lhs) {
-                Some(ty) => cases.push(TypeSwitchCase { ty, body: compile_block(env, arm.body) }),
-                None => (),
+            if let Some(ty) = arm_type(env, arm.lhs) {
+                cases.push(TypeSwitchCase { ty, body: compile_block(env, arm.body) })
             }
         }
         let lowered_default = match default {
@@ -3201,10 +3184,7 @@ fn compile_select(
                     Some(value) => {
                         let name = protect_local_ident(
                             env.top_level_names,
-                            go_generated_ident(
-                                "select_channel_" + select_index.to_string() + "_"
-                                    + arm_index.to_string(),
-                            ),
+                            go_generated_ident(f"select_channel_{select_index}_{arm_index}"),
                         );
                         result.push(
                             Stmt::Var {
@@ -3245,10 +3225,7 @@ fn compile_select(
                     Some(guard_value) => {
                         let name = protect_local_ident(
                             env.top_level_names,
-                            go_generated_ident(
-                                "select_channel_" + select_index.to_string() + "_"
-                                    + arm_index.to_string(),
-                            ),
+                            go_generated_ident(f"select_channel_{select_index}_{arm_index}"),
                         );
                         result.push(
                             Stmt::Var {
@@ -3381,14 +3358,13 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
             } else if match_uses_types(env, arms) {
                 let cases: Vec[TypeSwitchCase] = Vec::new();
                 for arm in arms {
-                    match arm_type(env, arm.lhs) {
-                        Some(ty) => cases.push(
+                    if let Some(ty) = arm_type(env, arm.lhs) {
+                        cases.push(
                             TypeSwitchCase {
                                 ty,
                                 body: compile_branch_to_join(env, arm.body, target, join),
                             },
-                        ),
-                        None => (),
+                        )
                     }
                 }
                 let lowered_default = match default {
@@ -3466,7 +3442,7 @@ fn fresh_loop_label_with_suffix(emitted: collections::IndexSet[string], base: st
     let candidate = if suffix == 1 {
         base
     } else {
-        base + "__" + suffix.to_string()
+        f"{base}__{suffix}"
     };
     if emitted.contains(candidate) {
         fresh_loop_label_with_suffix(emitted, base, suffix + 1)
@@ -3604,14 +3580,13 @@ fn match_tail_target_through_joins(
             None => return Option::None,
         }
     }
-    match default {
-        Some(body) => match block_tail_target_through_joins(body, joins, visited) {
+    if let Some(body) = default {
+        match block_tail_target_through_joins(body, joins, visited) {
             Some(value) => if value == expected {} else {
                 return Option::None
             },
             None => return Option::None,
-        },
-        None => (),
+        }
     }
     Option::Some(expected)
 }
@@ -3643,14 +3618,13 @@ fn select_tail_target_through_joins(
             None => return Option::None,
         }
     }
-    match default {
-        Some(body) => match block_tail_target_through_joins(body, joins, visited) {
+    if let Some(body) = default {
+        match block_tail_target_through_joins(body, joins, visited) {
             Some(value) => if value == expected {} else {
                 return Option::None
             },
             None => return Option::None,
-        },
-        None => (),
+        }
     }
     Option::Some(expected)
 }
@@ -4022,22 +3996,19 @@ fn term_loop_outcomes(
                 );
                 branches += 1;
             }
-            match default {
-                Some(body) => {
-                    result = merge_loop_outcomes(
-                        result,
-                        block_loop_outcomes(
-                            body,
-                            loop_name,
-                            external_exit,
-                            joins,
-                            internal_joins,
-                            visited,
-                        ),
-                    );
-                    branches += 1;
-                },
-                None => (),
+            if let Some(body) = default {
+                result = merge_loop_outcomes(
+                    result,
+                    block_loop_outcomes(
+                        body,
+                        loop_name,
+                        external_exit,
+                        joins,
+                        internal_joins,
+                        visited,
+                    ),
+                );
+                branches += 1;
             }
             if branches == 0 {
                 result.valid = false;
@@ -4063,22 +4034,19 @@ fn term_loop_outcomes(
                 );
                 branches += 1;
             }
-            match default {
-                Some(body) => {
-                    result = merge_loop_outcomes(
-                        result,
-                        block_loop_outcomes(
-                            body,
-                            loop_name,
-                            external_exit,
-                            joins,
-                            internal_joins,
-                            visited,
-                        ),
-                    );
-                    branches += 1;
-                },
-                None => (),
+            if let Some(body) = default {
+                result = merge_loop_outcomes(
+                    result,
+                    block_loop_outcomes(
+                        body,
+                        loop_name,
+                        external_exit,
+                        joins,
+                        internal_joins,
+                        visited,
+                    ),
+                );
+                branches += 1;
             }
             if branches == 0 {
                 result.valid = false;
@@ -4125,13 +4093,12 @@ fn find_loop_exit(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBin
         Some(target) => Option::Some(target),
         None => {
             for bind in value.binds {
-                match bind {
-                    Join(dispatch) => if all_paths_reach_or_terminate(value, dispatch.name) {
+                if let Join(dispatch) = bind {
+                    if all_paths_reach_or_terminate(value, dispatch.name) {
                         if let Some(target) = find_loop_exit(dispatch.body, loop_name, joins) {
                             return Option::Some(target)
                         }
-                    },
-                    _ => (),
+                    }
                 }
             }
             Option::None
@@ -4281,11 +4248,8 @@ fn compile_loop_term_leaf(
             } else {
                 match find_join(env.joins, target) {
                     Some(join) => {
-                        match value {
-                            Jump { target: _, args, ret_ty: _ } => {
-                                append_stmts(result, compile_jump_args(env, join, args))
-                            },
-                            _ => (),
+                        if let Jump { target: _, args, ret_ty: _ } = value {
+                            append_stmts(result, compile_jump_args(env, join, args))
                         }
                         append_stmts(
                             result,
@@ -4315,14 +4279,13 @@ fn compile_loop_term_leaf(
             } else if match_uses_types(env, arms) {
                 let cases: Vec[TypeSwitchCase] = Vec::new();
                 for arm in arms {
-                    match arm_type(env, arm.lhs) {
-                        Some(ty) => cases.push(
+                    if let Some(ty) = arm_type(env, arm.lhs) {
+                        cases.push(
                             TypeSwitchCase {
                                 ty,
                                 body: compile_loop_block(env, arm.body, loop_name, exit_name, label),
                             },
-                        ),
-                        None => (),
+                        )
                     }
                 }
                 let lowered_default = match default {
@@ -4440,8 +4403,8 @@ fn compile_loop_term_to_join(
             } else if match_uses_types(env, arms) {
                 let cases: Vec[TypeSwitchCase] = Vec::new();
                 for arm in arms {
-                    match arm_type(env, arm.lhs) {
-                        Some(ty) => cases.push(
+                    if let Some(ty) = arm_type(env, arm.lhs) {
+                        cases.push(
                             TypeSwitchCase {
                                 ty,
                                 body: compile_loop_branch_to_join(
@@ -4454,8 +4417,7 @@ fn compile_loop_term_to_join(
                                     label,
                                 ),
                             },
-                        ),
-                        None => (),
+                        )
                     }
                 }
                 let lowered_default = match default {
@@ -4652,20 +4614,17 @@ fn compile_joinrec_in_loop(
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_active_loop_block(env, value.body, value.name, exit_name, label);
                 stmts.push(loop_stmt(label, body));
-                match find_join(env.joins, exit_name) {
-                    Some(exit) => {
-                        append_stmts(
-                            stmts,
-                            compile_loop_block(
-                                env,
-                                exit.body,
-                                outer_loop_name,
-                                outer_exit_name,
-                                outer_label,
-                            ).stmts,
-                        )
-                    },
-                    None => (),
+                if let Some(exit) = find_join(env.joins, exit_name) {
+                    append_stmts(
+                        stmts,
+                        compile_loop_block(
+                            env,
+                            exit.body,
+                            outer_loop_name,
+                            outer_exit_name,
+                            outer_label,
+                        ).stmts,
+                    )
                 }
                 loop_names.push(value.name)
             },
@@ -4781,11 +4740,8 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_active_loop_block(env, value.body, value.name, exit_name, label);
                 stmts.push(loop_stmt(label, body));
-                match find_join(env.joins, exit_name) {
-                    Some(exit) => {
-                        append_stmts(stmts, compile_block(env, exit.body).stmts)
-                    },
-                    None => (),
+                if let Some(exit) = find_join(env.joins, exit_name) {
+                    append_stmts(stmts, compile_block(env, exit.body).stmts)
                 }
                 loop_names.push(value.name)
             },
@@ -4945,9 +4901,8 @@ fn collect_runtime_imm(
                 intrinsics.push(key)
             }
             if key == "compiler.missing" {
-                match repr::resolve_type(function_ty) {
-                    Func { params: _, ret_ty } => add_collected_type(missing_types, ret_ty),
-                    _ => (),
+                if let Func { params: _, ret_ty } = repr::resolve_type(function_ty) {
+                    add_collected_type(missing_types, ret_ty)
                 }
             }
         },
@@ -5064,11 +5019,8 @@ fn collect_runtime_block(
                 collect_runtime_imm(result, missing_types, intrinsics, go_foreign, arm.lhs);
                 collect_runtime_block(result, missing_types, intrinsics, go_foreign, arm.body)
             }
-            match default {
-                Some(body) => {
-                    collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
-                },
-                None => (),
+            if let Some(body) = default {
+                collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
             }
         },
         Select { arms, default, .. } => {
@@ -5076,44 +5028,35 @@ fn collect_runtime_block(
                 match arm {
                     Receive { channel, guard, binding: _, binding_ty: _, body } => {
                         collect_runtime_imm(result, missing_types, intrinsics, go_foreign, channel);
-                        match guard {
-                            Some(value) => collect_runtime_imm(
+                        if let Some(value) = guard {
+                            collect_runtime_imm(
                                 result,
                                 missing_types,
                                 intrinsics,
                                 go_foreign,
                                 value,
-                            ),
-                            None => (),
+                            )
                         }
                         collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
                     },
                     Send { channel, value, guard, body } => {
                         collect_runtime_imm(result, missing_types, intrinsics, go_foreign, channel);
                         collect_runtime_imm(result, missing_types, intrinsics, go_foreign, value);
-                        match guard {
-                            Some(value) => collect_runtime_imm(
+                        if let Some(value) = guard {
+                            collect_runtime_imm(
                                 result,
                                 missing_types,
                                 intrinsics,
                                 go_foreign,
                                 value,
-                            ),
-                            None => (),
+                            )
                         }
                         collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
                     },
                 }
             }
-            match default {
-                Some(body) => collect_runtime_block(
-                    result,
-                    missing_types,
-                    intrinsics,
-                    go_foreign,
-                    body,
-                ),
-                None => (),
+            if let Some(body) = default {
+                collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
             }
         },
         Unreachable { ty: _ } => (),
@@ -5273,7 +5216,7 @@ fn runtime_struct(value: repr::Type) -> StructDef {
         Tuple { items: values } => {
             let fields: Vec[(string, Type)] = Vec::new();
             for index in 0..values.len() {
-                fields.push(("_" + index.to_string(), lower_type(values[index])))
+                fields.push((f"_{index}", lower_type(values[index])))
             }
             StructDef { name: type_name(value), fields }
         },
@@ -5307,11 +5250,8 @@ fn add_dyn_coercion(result: Vec[DynCoercion], trait_name: string, for_ty: repr::
 }
 
 fn collect_dyn_value(result: Vec[DynCoercion], value: anf::Value) -> () {
-    match value {
-        ToDyn { trait_name, for_ty, expr: _, ty: _ } => {
-            add_dyn_coercion(result, trait_name, for_ty)
-        },
-        _ => (),
+    if let ToDyn { trait_name, for_ty, expr: _, ty: _ } = value {
+        add_dyn_coercion(result, trait_name, for_ty)
     }
 }
 
@@ -5614,11 +5554,10 @@ fn inspect_pointer_calls(
                         if imm_uses_function(channel, target) {
                             valid.set(false)
                         }
-                        match guard {
-                            Some(value) => if imm_uses_function(value, target) {
+                        if let Some(value) = guard {
+                            if imm_uses_function(value, target) {
                                 valid.set(false)
-                            },
-                            None => (),
+                            }
                         }
                         inspect_pointer_calls(body, target, parameter, valid, calls)
                     },
@@ -5626,11 +5565,10 @@ fn inspect_pointer_calls(
                         if imm_uses_function(channel, target) || imm_uses_function(value, target) {
                             valid.set(false)
                         }
-                        match guard {
-                            Some(value) => if imm_uses_function(value, target) {
+                        if let Some(value) = guard {
+                            if imm_uses_function(value, target) {
                                 valid.set(false)
-                            },
-                            None => (),
+                            }
                         }
                         inspect_pointer_calls(body, target, parameter, valid, calls)
                     },

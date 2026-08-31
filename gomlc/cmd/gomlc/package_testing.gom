@@ -318,8 +318,8 @@ fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: V
         } else {
             UNKNOWN_SOURCE_PATH
         };
-        match files[file_index].ast {
-            Some(file) => for item in file.items {
+        if let Some(file) = files[file_index].ast {
+            for item in file.items {
                 match item {
                     Function(function) => collect_function_test(
                         source_path,
@@ -386,8 +386,7 @@ fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: V
                         diagnostics,
                     ),
                 }
-            },
-            None => (),
+            }
         }
     }
     TestCandidateCollection { candidates, diagnostics }
@@ -513,10 +512,7 @@ fn validate_package_tests(
                             if candidate.arguments.is_empty() {
                                 "test function `" + candidate.name + "` must not have parameters"
                             } else {
-                                "test function `" + candidate.name + "` expects "
-                                    + params.len().to_string()
-                                    + " parameters but the case provides "
-                                    + candidate.arguments.len().to_string()
+                                f"test function `{candidate.name}` expects {params.len()} parameters but the case provides {candidate.arguments.len()}"
                             },
                             candidate.source_path,
                             span,

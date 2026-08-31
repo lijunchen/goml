@@ -17,9 +17,8 @@ fn channel_round_trip() -> () {
         Option::Some(value) => testing::assert_eq(value, "ok"),
         Option::None => testing::fail("channel closed early"),
     };
-    match channel.recv() {
-        Option::Some(_) => testing::fail("closed channel produced a value"),
-        Option::None => (),
+    if let Option::Some(_) = channel.recv() {
+        testing::fail("closed channel produced a value")
     }
 }
 

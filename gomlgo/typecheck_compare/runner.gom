@@ -59,8 +59,7 @@ fn first_checker_diagnostic(result: checker::CheckResult) -> string {
     if result.diagnostics.is_empty() {
         "none"
     } else {
-        result.diagnostics[0].file + ":" + result.diagnostics[0].start.to_string() + ": "
-            + result.diagnostics[0].message
+        f"{result.diagnostics[0].file}:{result.diagnostics[0].start}: {result.diagnostics[0].message}"
     }
 }
 
@@ -68,8 +67,7 @@ fn first_oracle_diagnostic(result: typecheck_diff::CheckResponse) -> string {
     if result.diagnostics.is_empty() {
         "none"
     } else {
-        result.diagnostics[0].file + ":" + result.diagnostics[0].start.to_string() + ": "
-            + result.diagnostics[0].message
+        f"{result.diagnostics[0].file}:{result.diagnostics[0].start}: {result.diagnostics[0].message}"
     }
 }
 
@@ -164,37 +162,13 @@ fn compare_diagnostics(
             || left.soft != right.soft
             || left.secondary != right.secondary {
             return Result::Err(
-                file + ": diagnostic mismatch at " + index.to_string() + "\nactual=" + left.file
-                    + ":"
-                    + left.start.to_string()
-                    + "-"
-                    + left.end.to_string()
-                    + " soft="
-                    + left.soft.to_string()
-                    + " secondary="
-                    + left.secondary.to_string()
-                    + " "
-                    + left.message
-                    + "\nexpected="
-                    + right.file
-                    + ":"
-                    + right.start.to_string()
-                    + "-"
-                    + right.end.to_string()
-                    + " soft="
-                    + right.soft.to_string()
-                    + " secondary="
-                    + right.secondary.to_string()
-                    + " "
-                    + right.message,
+                f"{file}: diagnostic mismatch at {index}\nactual={left.file}:{left.start}-{left.end} soft={left.soft} secondary={left.secondary} {left.message}\nexpected={right.file}:{right.start}-{right.end} soft={right.soft} secondary={right.secondary} {right.message}",
             )
         }
     }
     if actual_diagnostics.len() != expected_diagnostics.len() {
         return Result::Err(
-            file + ": diagnostics length mismatch\nactual=" + actual_diagnostics.len().to_string()
-                + "\nexpected="
-                + expected_diagnostics.len().to_string(),
+            f"{file}: diagnostics length mismatch\nactual={actual_diagnostics.len()}\nexpected={expected_diagnostics.len()}",
         )
     }
     Result::Ok(())
@@ -266,7 +240,7 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
                 parser_diff::Mode::Position,
             ) {
                 Some(difference) => return Result::Err(
-                    file + ": " + name + " mismatch at $[" + index.to_string() + "]"
+                    f"{file}: {name} mismatch at $[{index}]"
                         + difference.path.byte_slice(1, difference.path.byte_len())
                         + "\nactual="
                         + difference.actual
@@ -311,16 +285,7 @@ pub fn compare_info(
         || actual_package.name != expected.package_info.name
         || actual_package.complete != expected.package_info.complete {
         return Result::Err(
-            file + ": package metadata mismatch\nactual=" + actual_package.path + " "
-                + actual_package.name
-                + " complete="
-                + actual_package.complete.to_string()
-                + "\nexpected="
-                + expected.package_info.path
-                + " "
-                + expected.package_info.name
-                + " complete="
-                + expected.package_info.complete.to_string(),
+            f"{file}: package metadata mismatch\nactual={actual_package.path} {actual_package.name} complete={actual_package.complete}\nexpected={expected.package_info.path} {expected.package_info.name} complete={expected.package_info.complete}",
         )
     }
     let normalized = normalize_result(actual);
@@ -372,12 +337,7 @@ fn compare_file(file: string, mode: CompareMode) -> Result[(bool, bool), string]
             Err(message) => message,
         };
         return Result::Err(
-            file + ": type-check acceptance mismatch\nactual ok=" + actual_ok.to_string()
-                + " first diagnostic="
-                + actual_diagnostic
-                + "\nexpected ok="
-                + expected.ok.to_string()
-                + " first diagnostic="
+            f"{file}: type-check acceptance mismatch\nactual ok={actual_ok} first diagnostic={actual_diagnostic}\nexpected ok={expected.ok} first diagnostic="
                 + first_oracle_diagnostic(expected),
         )
     } else if actual_ok {

@@ -21,23 +21,20 @@ fn write_file(value: string, content: string) -> Result[(), string] {
 }
 
 pub fn home_directory() -> Result[string, string] {
-    match env::var_structured("GOML_HOME") {
-        Ok(value) => if value != "" {
+    if let Ok(value) = env::var_structured("GOML_HOME") {
+        if value != "" {
             return Result::Ok(value)
-        },
-        Err(_) => (),
+        }
     }
-    match env::var_structured("HOME") {
-        Ok(value) => if value != "" {
+    if let Ok(value) = env::var_structured("HOME") {
+        if value != "" {
             return Result::Ok(path::join(value, ".goml"))
-        },
-        Err(_) => (),
+        }
     }
-    match env::var_structured("USERPROFILE") {
-        Ok(value) => if value != "" {
+    if let Ok(value) = env::var_structured("USERPROFILE") {
+        if value != "" {
             return Result::Ok(path::join(value, ".goml"))
-        },
-        Err(_) => (),
+        }
     }
     Result::Err("failed to determine home directory")
 }

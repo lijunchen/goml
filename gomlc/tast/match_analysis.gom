@@ -206,7 +206,7 @@ fn coverage_owner(value: string) -> string {
 }
 
 fn coverage_enum_key(name: string, tag: isize) -> string {
-    "enum:" + name + ":" + tag.to_string()
+    f"enum:{name}:{tag}"
 }
 
 fn coverage_value_key(value: Constructor) -> string {
@@ -242,7 +242,7 @@ fn coverage_primitive_value(value: Primitive) -> string {
         Float32 { value } => "f32:" + value,
         Float64 { value } => "f64:" + value,
         String { value } => "string:" + value,
-        Char { value } => "char:" + (value.to_u32()).to_string(),
+        Char { value } => f"char:{value.to_u32()}",
         Bytes { values: _ } => "bytes",
     }
 }
@@ -526,7 +526,7 @@ fn coverage_fixed_array(prefix: Vec[Pat], suffix: Vec[Pat], length: isize, eleme
                 CoveragePat {
                     constructor: Option::Some(
                         CoverageConstructor {
-                            key: "array:" + length.to_string(),
+                            key: f"array:{length}",
                             fields: coverage_repeat(element, length),
                         },
                     ),
@@ -561,10 +561,7 @@ fn coverage_sequence_patterns(
                 CoveragePat {
                     constructor: Option::Some(
                         CoverageConstructor {
-                            key: "sequence:" + prefix_values.len().to_string() + ":"
-                                + suffix_values.len().to_string()
-                                + ":"
-                                + has_rest.to_string(),
+                            key: f"sequence:{prefix_values.len()}:{suffix_values.len()}:{has_rest}",
                             fields: field_types,
                         },
                     ),
@@ -645,7 +642,7 @@ fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
                     CoveragePat {
                         constructor: Option::Some(
                             CoverageConstructor {
-                                key: "tuple:" + fields.len().to_string(),
+                                key: f"tuple:{fields.len()}",
                                 fields: field_types,
                             },
                         ),
@@ -744,15 +741,13 @@ fn coverage_domain_uncached(ctx: CoverageContext, ty: Type) -> Option[Vec[Covera
             ),
         ),
         Tuple { items: values } => Option::Some(
-            Vec::from_array(
-                [CoverageConstructor { key: "tuple:" + values.len().to_string(), fields: values }],
-            ),
+            Vec::from_array([CoverageConstructor { key: f"tuple:{values.len()}", fields: values }]),
         ),
         Array { len: length, elem: element } => Option::Some(
             Vec::from_array(
                 [
                     CoverageConstructor {
-                        key: "array:" + length.to_string(),
+                        key: f"array:{length}",
                         fields: coverage_repeat(element, length),
                     },
                 ],
@@ -882,11 +877,8 @@ fn coverage_present(matrix: Vec[Vec[CoveragePat]]) -> Vec[string] {
     let result = collections::IndexSet::new();
     for row in matrix {
         if !row.is_empty() {
-            match row[0].constructor {
-                Some(value) => {
-                    let _ = result.insert(value.key);
-                },
-                None => (),
+            if let Some(value) = row[0].constructor {
+                let _ = result.insert(value.key);
             }
         }
     }
@@ -935,9 +927,8 @@ fn coverage_default(matrix: Vec[Vec[CoveragePat]]) -> Vec[Vec[CoveragePat]] {
     let result: Vec[Vec[CoveragePat]] = Vec::new();
     for row in matrix {
         if !row.is_empty() {
-            match row[0].constructor {
-                None => result.push(coverage_tail(row)),
-                Some(_) => (),
+            if let None = row[0].constructor {
+                result.push(coverage_tail(row))
             }
         }
     }
@@ -974,19 +965,16 @@ fn coverage_sequence_specialize_pattern(pattern: CoveragePat, length: isize, ele
         for _ in 0..length {
             fields.push(coverage_wild(element))
         }
-        match pattern.sequence {
-            Some(shape) => {
-                for index in 0..shape.prefix {
-                    fields[index] = pattern.fields[index];
-                }
-                for offset in 0..shape.suffix {
-                    fields.set(
-                        length - offset - 1,
-                        pattern.fields[shape.prefix + shape.suffix - offset - 1],
-                    )
-                }
-            },
-            None => (),
+        if let Some(shape) = pattern.sequence {
+            for index in 0..shape.prefix {
+                fields[index] = pattern.fields[index];
+            }
+            for offset in 0..shape.suffix {
+                fields.set(
+                    length - offset - 1,
+                    pattern.fields[shape.prefix + shape.suffix - offset - 1],
+                )
+            }
         }
         Option::Some(fields)
     }
@@ -1018,8 +1006,8 @@ fn coverage_useful_sequence(
     let exact_lengths = collections::IndexSet::new();
     for row in matrix {
         if !row.is_empty() {
-            match row[0].sequence {
-                Some(shape) => if shape.has_rest {
+            if let Some(shape) = row[0].sequence {
+                if shape.has_rest {
                     if shape.prefix > max_prefix {
                         max_prefix = shape.prefix;
                     }
@@ -1028,13 +1016,12 @@ fn coverage_useful_sequence(
                     }
                 } else {
                     let _ = exact_lengths.insert(shape.prefix + shape.suffix);
-                },
-                None => (),
+                }
             }
         }
     }
-    match head.sequence {
-        Some(shape) => if shape.has_rest {
+    if let Some(shape) = head.sequence {
+        if shape.has_rest {
             if shape.prefix > max_prefix {
                 max_prefix = shape.prefix;
             }
@@ -1043,8 +1030,7 @@ fn coverage_useful_sequence(
             }
         } else {
             let _ = exact_lengths.insert(shape.prefix + shape.suffix);
-        },
-        None => (),
+        }
     }
     let stable_length = max_prefix + max_suffix;
     let mut large_length = stable_length + 1;
@@ -1068,11 +1054,10 @@ fn coverage_useful_sequence(
                     specialized.push(row)
                 }
             }
-            match coverage_sequence_specialize_pattern(head, length, element) {
-                Some(fields) => if coverage_useful(ctx, specialized, coverage_join(fields, tail)) {
+            if let Some(fields) = coverage_sequence_specialize_pattern(head, length, element) {
+                if coverage_useful(ctx, specialized, coverage_join(fields, tail)) {
                     return true
-                },
-                None => (),
+                }
             }
         }
     }
@@ -1087,15 +1072,11 @@ fn coverage_scalar_boundaries(matrix: Vec[Vec[CoveragePat]], interval: CoverageS
     );
     for row in matrix {
         if !row.is_empty() {
-            match row[0].scalar {
-                Some(value) => match coverage_scalar_intersection(value, interval) {
-                    Some(value) => {
-                        boundaries.push(value.lo);
-                        boundaries.push(coverage_number_increment(value.hi));
-                    },
-                    None => (),
-                },
-                None => (),
+            if let Some(value) = row[0].scalar {
+                if let Some(value) = coverage_scalar_intersection(value, interval) {
+                    boundaries.push(value.lo);
+                    boundaries.push(coverage_number_increment(value.hi));
+                }
             }
         }
     }
@@ -1304,8 +1285,12 @@ fn coverage_find_scalar_witness(
                 hi: coverage_number_decrement(boundaries[index + 1]),
             };
             if coverage_number_compare(atom.lo, atom.hi).is_le() {
-                match coverage_find_witness(ctx, coverage_scalar_specialize(matrix, atom), tail) {
-                    Some(tail_witnesses) => return Option::Some(
+                if let Some(tail_witnesses) = coverage_find_witness(
+                    ctx,
+                    coverage_scalar_specialize(matrix, atom),
+                    tail,
+                ) {
+                    return Option::Some(
                         coverage_prepend_witness(
                             CoverageWitness {
                                 constructor: Option::Some(
@@ -1320,8 +1305,7 @@ fn coverage_find_scalar_witness(
                             },
                             tail_witnesses,
                         ),
-                    ),
-                    None => (),
+                    )
                 }
             }
         }
@@ -1382,7 +1366,7 @@ fn coverage_find_witness(
                             let present = coverage_present(matrix);
                             if coverage_domain_complete(domain, present) {
                                 for constructor in domain {
-                                    match coverage_find_witness(
+                                    if let Some(values) = coverage_find_witness(
                                         ctx,
                                         coverage_specialize(matrix, constructor),
                                         coverage_join(
@@ -1390,24 +1374,18 @@ fn coverage_find_witness(
                                             tail,
                                         ),
                                     ) {
-                                        Some(values) => {
-                                            let count = constructor.fields.len();
-                                            return Option::Some(
-                                                coverage_prepend_witness(
-                                                    CoverageWitness {
-                                                        constructor: Option::Some(constructor),
-                                                        scalar: Option::None,
-                                                        fields: coverage_witness_prefix(
-                                                            values,
-                                                            count,
-                                                        ),
-                                                        ty: head.ty,
-                                                    },
-                                                    coverage_witness_suffix(values, count),
-                                                ),
-                                            )
-                                        },
-                                        None => (),
+                                        let count = constructor.fields.len();
+                                        return Option::Some(
+                                            coverage_prepend_witness(
+                                                CoverageWitness {
+                                                    constructor: Option::Some(constructor),
+                                                    scalar: Option::None,
+                                                    fields: coverage_witness_prefix(values, count),
+                                                    ty: head.ty,
+                                                },
+                                                coverage_witness_suffix(values, count),
+                                            ),
+                                        )
                                     }
                                 }
                                 Option::None
@@ -1479,7 +1457,7 @@ fn coverage_char_text(value: CoverageNumber) -> string {
         "'\\u0000'"
     } else {
         match char_from_u32(code) {
-            Some(value) => "'" + value.to_string() + "'",
+            Some(value) => f"'{value}'",
             None => "'\\u0000'",
         }
     }
@@ -1938,17 +1916,8 @@ fn append_finalized_match_block_diagnostics(
             },
         }
     }
-    match value.tail {
-        Some(value) => {
-            append_finalized_match_expr_diagnostics(
-                context,
-                module,
-                dependencies,
-                value,
-                diagnostics,
-            )
-        },
-        None => (),
+    if let Some(value) = value.tail {
+        append_finalized_match_expr_diagnostics(context, module, dependencies, value, diagnostics)
     }
 }
 
@@ -2000,15 +1969,14 @@ fn append_finalized_match_expr_diagnostics(
                 diagnostics,
             );
             for arm in arms {
-                match arm.guard {
-                    Some(guard) => append_finalized_match_expr_diagnostics(
+                if let Some(guard) = arm.guard {
+                    append_finalized_match_expr_diagnostics(
                         context,
                         module,
                         dependencies,
                         guard,
                         diagnostics,
-                    ),
-                    None => (),
+                    )
                 }
                 append_finalized_match_expr_diagnostics(
                     context,
@@ -2018,8 +1986,8 @@ fn append_finalized_match_expr_diagnostics(
                     diagnostics,
                 )
             }
-            match coverage {
-                Some(value) => for diagnostic in match_coverage_diagnostics(
+            if let Some(value) = coverage {
+                for diagnostic in match_coverage_diagnostics(
                     context,
                     value,
                     expr_type(expr),
@@ -2028,8 +1996,7 @@ fn append_finalized_match_expr_diagnostics(
                     dependencies,
                 ) {
                     diagnostics.push(diagnostic)
-                },
-                None => (),
+                }
             }
         },
         Select { arms, .. } => for arm in arms {
@@ -2049,15 +2016,14 @@ fn append_finalized_match_expr_diagnostics(
                         body,
                         diagnostics,
                     );
-                    match guard {
-                        Some(value) => append_finalized_match_expr_diagnostics(
+                    if let Some(value) = guard {
+                        append_finalized_match_expr_diagnostics(
                             context,
                             module,
                             dependencies,
                             value,
                             diagnostics,
-                        ),
-                        None => (),
+                        )
                     }
                 },
                 Send { channel, value, guard, body } => {
@@ -2068,15 +2034,14 @@ fn append_finalized_match_expr_diagnostics(
                         channel,
                         diagnostics,
                     );
-                    match guard {
-                        Some(value) => append_finalized_match_expr_diagnostics(
+                    if let Some(value) = guard {
+                        append_finalized_match_expr_diagnostics(
                             context,
                             module,
                             dependencies,
                             value,
                             diagnostics,
-                        ),
-                        None => (),
+                        )
                     }
                     append_finalized_match_expr_diagnostics(
                         context,

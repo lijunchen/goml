@@ -26,10 +26,7 @@ impl BoundsError {
 
 impl ToString for BoundsError {
     fn to_string(self: BoundsError) -> string {
-        "byte range at offset " + self.offset_value.to_string() + " needs "
-            + self.needed_value.to_string()
-            + " bytes in buffer of length "
-            + self.length_value.to_string()
+        f"byte range at offset {self.offset_value} needs {self.needed_value} bytes in buffer of length {self.length_value}"
     }
 }
 

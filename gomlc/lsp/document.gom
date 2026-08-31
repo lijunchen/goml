@@ -63,11 +63,8 @@ pub fn invalidate_analyses(value: Server) -> () {
 fn invalidate_other_analyses(value: Server, path: string) -> () {
     let current = value.analyses.get(path);
     value.analyses.clear();
-    match current {
-        Some(cached) => {
-            let _ = value.analyses.insert(path, cached);
-        },
-        None => (),
+    if let Some(cached) = current {
+        let _ = value.analyses.insert(path, cached);
     }
     advance_generation(value)
 }
@@ -87,13 +84,10 @@ fn source_line_index(value: Server, source_path: string, source: string) -> text
             document_cursor -= 1;
         }
     }
-    match value.line_indexes.get(source_path) {
-        Some(cached) => {
-            if cached.path == source_path && cached.generation == value.generation.get() {
-                return cached.index
-            }
-        },
-        None => (),
+    if let Some(cached) = value.line_indexes.get(source_path) {
+        if cached.path == source_path && cached.generation == value.generation.get() {
+            return cached.index
+        }
     }
     let index = line_index(source);
     let _ = value.line_indexes.insert(
@@ -110,30 +104,24 @@ pub fn open_document(value: Server, document: Document) -> () {
 }
 
 pub fn change_document(value: Server, uri: string, text: string, version: isize) -> () {
-    match value.documents.get(uri) {
-        Some(current) => {
-            let _ = value.documents.insert(
-                uri,
-                Document {
-                    uri: current.uri,
-                    path: current.path,
-                    text,
-                    version,
-                    line_index: line_index(text),
-                },
-            );
-            invalidate_other_analyses(value, current.path)
-        },
-        None => (),
+    if let Some(current) = value.documents.get(uri) {
+        let _ = value.documents.insert(
+            uri,
+            Document {
+                uri: current.uri,
+                path: current.path,
+                text,
+                version,
+                line_index: line_index(text),
+            },
+        );
+        invalidate_other_analyses(value, current.path)
     }
 }
 
 pub fn close_document(value: Server, uri: string) -> () {
-    match value.documents.remove(uri) {
-        Some(_) => {
-            invalidate_analyses(value)
-        },
-        None => (),
+    if let Some(_) = value.documents.remove(uri) {
+        invalidate_analyses(value)
     }
 }
 
@@ -153,13 +141,10 @@ fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
 }
 
 pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
-    match value.analyses.get(document.path) {
-        Some(cached) => {
-            if cached.path == document.path && cached.generation == value.generation.get() {
-                return cached.analysis
-            }
-        },
-        None => (),
+    if let Some(cached) = value.analyses.get(document.path) {
+        if cached.path == document.path && cached.generation == value.generation.get() {
+            return cached.analysis
+        }
     }
     let analysis = query::analyze_with_context(
         value.analysis_context,

@@ -30,10 +30,8 @@ impl DecodeError {
 impl ToString for DecodeError {
     fn to_string(self: DecodeError) -> string {
         match self.kind_value {
-            DecodeErrorKind::OddLength => "odd hexadecimal length at byte "
-                + self.index_value.to_string(),
-            DecodeErrorKind::InvalidByte => "invalid hexadecimal digit at byte "
-                + self.index_value.to_string(),
+            DecodeErrorKind::OddLength => f"odd hexadecimal length at byte {self.index_value}",
+            DecodeErrorKind::InvalidByte => f"invalid hexadecimal digit at byte {self.index_value}",
         }
     }
 }

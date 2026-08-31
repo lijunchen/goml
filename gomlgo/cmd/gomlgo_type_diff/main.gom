@@ -29,12 +29,7 @@ fn main() -> () {
     }
     match typecheck_compare::compare_tree_mode(root, mode) {
         Ok(summary) => println(
-            "type-check acceptance zero diff: files=" + summary.files.to_string() + " accepted="
-                + summary.accepted.to_string()
-                + " rejected="
-                + summary.rejected.to_string()
-                + " info_compared="
-                + summary.info_compared.to_string(),
+            f"type-check acceptance zero diff: files={summary.files} accepted={summary.accepted} rejected={summary.rejected} info_compared={summary.info_compared}",
         ),
         Err(message) => {
             println(message);

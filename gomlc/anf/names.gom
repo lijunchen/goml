@@ -62,11 +62,10 @@ fn trailing_number(value: string) -> Option[isize] {
 }
 
 fn observe_name(maximum: Ref[isize], name: string) -> () {
-    match trailing_number(name) {
-        Some(value) => if value > maximum.get() {
+    if let Some(value) = trailing_number(name) {
+        if value > maximum.get() {
             maximum.set(value)
-        },
-        None => (),
+        }
     }
 }
 

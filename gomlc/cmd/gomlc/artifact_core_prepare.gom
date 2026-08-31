@@ -84,8 +84,8 @@ fn artifact_prepare_core_function_metadata(
                     );
                     generic_count = implementation.definition.params.len();
                     predicate_count = implementation.definition.constraints.len();
-                    match method_name {
-                        Some(method_name) => for method in implementation.definition.methods {
+                    if let Some(method_name) = method_name {
+                        for method in implementation.definition.methods {
                             if method.name == method_name
                                 && artifact_core_function_matches_scheme(value, method) {
                                 predicates = artifact_core_predicates(
@@ -93,8 +93,7 @@ fn artifact_prepare_core_function_metadata(
                                     method.constraints,
                                 );
                             }
-                        },
-                        None => (),
+                        }
                     }
                 }
             }
@@ -110,8 +109,8 @@ fn artifact_prepare_core_function_metadata(
         },
         None => {
             let method_name = artifact_core_method_name(value);
-            match method_name {
-                Some(method_name) => for implementation in exports.inherent_impls {
+            if let Some(method_name) = method_name {
+                for implementation in exports.inherent_impls {
                     if implementation.definition.valid {
                         for method in implementation.definition.methods {
                             if method.name == method_name
@@ -123,8 +122,7 @@ fn artifact_prepare_core_function_metadata(
                             }
                         }
                     }
-                },
-                None => (),
+                }
             }
             Option::None
         },

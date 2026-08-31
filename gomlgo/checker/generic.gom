@@ -415,12 +415,7 @@ fn type_argument_count_message(
         } else {
             "too many"
         }
-            + " type arguments for type "
-            + name
-            + ": have "
-            + have.to_string()
-            + ", want "
-            + want.to_string(),
+            + f" type arguments for type {name}: have {have}, want {want}",
         None => "wrong number of type arguments",
     }
 }
@@ -3973,8 +3968,7 @@ fn check_explicit_instance(
         diagnostic(
             state,
             argument_nodes[arguments.len() - 1],
-            "got " + arguments.len().to_string() + " type arguments but want "
-                + parameter_count.to_string(),
+            f"got {arguments.len()} type arguments but want {parameter_count}",
             false,
         );
         let _ = state.failed_inference_nodes.insert(node.value);

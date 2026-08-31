@@ -95,8 +95,8 @@ fn push_attribute_arg(args: Vec[AttributeArg], value: Option[AttributeArg], name
 
 fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
     let attrs: Vec[Attribute] = Vec::new();
-    match first_child(node, cst::NodeKind::ATTRIBUTE_LIST) {
-        Some(list) => for attr in children_of_kind(list, cst::NodeKind::ATTRIBUTE) {
+    if let Some(list) = first_child(node, cst::NodeKind::ATTRIBUTE_LIST) {
+        for attr in children_of_kind(list, cst::NodeKind::ATTRIBUTE) {
             let mut name = "";
             let args: Vec[AttributeArg] = Vec::new();
             let path_segments: Vec[string] = Vec::new();
@@ -140,15 +140,12 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                             take_attribute_path(path_segments),
                             named_arg,
                         );
-                        match strip_delimiters(token.token.text) {
-                            Some(value) => {
-                                named_arg = push_attribute_arg(
-                                    args,
-                                    Option::Some(AttributeArg::String(unescape_string(value))),
-                                    named_arg,
-                                );
-                            },
-                            None => (),
+                        if let Some(value) = strip_delimiters(token.token.text) {
+                            named_arg = push_attribute_arg(
+                                args,
+                                Option::Some(AttributeArg::String(unescape_string(value))),
+                                named_arg,
+                            );
                         }
                     },
                     lexer::TokenKind::Comma => if in_args {
@@ -159,11 +156,8 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                         );
                     },
                     lexer::TokenKind::Eq => if in_args {
-                        match take_attribute_path(path_segments) {
-                            Some(value) => {
-                                named_arg = Option::Some(attribute_arg_text(value));
-                            },
-                            None => (),
+                        if let Some(value) = take_attribute_path(path_segments) {
+                            named_arg = Option::Some(attribute_arg_text(value));
                         }
                     },
                     _ => (),
@@ -178,8 +172,7 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                     args,
                 },
             )
-        },
-        None => (),
+        }
     }
     attrs
 }
@@ -278,15 +271,14 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
             TYPE_TAPP => match first_child(node, cst::NodeKind::PATH) {
                 Some(path_node) => match lower_path(ctx, path_node) {
                     Some(path) => {
-                        match path_last(path) {
-                            Some(name) => if !ident_starts_upper(name) && name != "byte" {
+                        if let Some(name) = path_last(path) {
+                            if !ident_starts_upper(name) && name != "byte" {
                                 push_error(
                                     ctx,
                                     node_span(node),
                                     "type, trait, and generic names must start with an uppercase letter",
                                 )
-                            },
-                            None => (),
+                            }
                         }
                         let args = match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
                             Some(list) => lower_type_list(ctx, list),
@@ -306,45 +298,35 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
             TYPE_DYN => {
                 let bounds: Vec[DynTraitBound] = Vec::new();
                 for bound in children_of_kind(node, cst::NodeKind::DYN_BOUND) {
-                    match first_child(bound, cst::NodeKind::PATH) {
-                        Some(path_node) => match lower_path(ctx, path_node) {
-                            Some(trait_path) => {
-                                let args: Vec[TypeExpr] = Vec::new();
-                                let associated_types: Vec[(string, TypeExpr)] = Vec::new();
-                                match first_child(bound, cst::NodeKind::DYN_ARG_LIST) {
-                                    Some(list) => {
-                                        for ty_node in type_children(list) {
-                                            if let Some(ty) = lower_ty(ctx, ty_node) {
-                                                args.push(ty)
-                                            }
-                                        }
-                                        for binding in children_of_kind(
-                                            list,
-                                            cst::NodeKind::DYN_ASSOC_BINDING,
-                                        ) {
-                                            match first_token(binding, lexer::TokenKind::Ident) {
-                                                Some(name) => {
-                                                    let types = type_children(binding);
-                                                    if !types.is_empty() {
-                                                        match lower_ty(ctx, types[0]) {
-                                                            Some(ty) => associated_types.push(
-                                                                (name.token.text, ty),
-                                                            ),
-                                                            None => (),
-                                                        }
-                                                    }
-                                                },
-                                                None => (),
-                                            }
-                                        }
-                                    },
-                                    None => (),
+                    if let Some(path_node) = first_child(bound, cst::NodeKind::PATH) {
+                        if let Some(trait_path) = lower_path(ctx, path_node) {
+                            let args: Vec[TypeExpr] = Vec::new();
+                            let associated_types: Vec[(string, TypeExpr)] = Vec::new();
+                            if let Some(list) = first_child(bound, cst::NodeKind::DYN_ARG_LIST) {
+                                for ty_node in type_children(list) {
+                                    if let Some(ty) = lower_ty(ctx, ty_node) {
+                                        args.push(ty)
+                                    }
                                 }
-                                bounds.push(DynTraitBound { trait_path, args, associated_types })
-                            },
-                            None => (),
-                        },
-                        None => (),
+                                for binding in children_of_kind(
+                                    list,
+                                    cst::NodeKind::DYN_ASSOC_BINDING,
+                                ) {
+                                    if let Some(name) = first_token(
+                                        binding,
+                                        lexer::TokenKind::Ident,
+                                    ) {
+                                        let types = type_children(binding);
+                                        if !types.is_empty() {
+                                            if let Some(ty) = lower_ty(ctx, types[0]) {
+                                                associated_types.push((name.token.text, ty))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            bounds.push(DynTraitBound { trait_path, args, associated_types })
+                        }
                     }
                 }
                 Option::Some(TypeExpr::Dyn { bounds })
@@ -452,41 +434,36 @@ fn lower_trait_set(ctx: LowerCtx, node: LocatedNode) -> Vec[TraitRef] {
 fn lower_generics(ctx: LowerCtx, node: LocatedNode) -> (Vec[string], Vec[(string, Vec[TraitRef])]) {
     let generics: Vec[string] = Vec::new();
     let bounds: Vec[(string, Vec[TraitRef])] = Vec::new();
-    match first_child(node, cst::NodeKind::GENERIC_LIST) {
-        Some(list) => for generic in children_of_kind(list, cst::NodeKind::GENERIC) {
-            match first_token(generic, lexer::TokenKind::Ident) {
-                Some(token) => {
-                    let name = token.token.text;
-                    generics.push(name);
-                    if let Some(set) = first_child(generic, cst::NodeKind::TRAIT_SET) {
-                        bounds.push((name, lower_trait_set(ctx, set)))
-                    }
-                },
-                None => (),
+    if let Some(list) = first_child(node, cst::NodeKind::GENERIC_LIST) {
+        for generic in children_of_kind(list, cst::NodeKind::GENERIC) {
+            if let Some(token) = first_token(generic, lexer::TokenKind::Ident) {
+                let name = token.token.text;
+                generics.push(name);
+                if let Some(set) = first_child(generic, cst::NodeKind::TRAIT_SET) {
+                    bounds.push((name, lower_trait_set(ctx, set)))
+                }
             }
-        },
-        None => (),
+        }
     };
     (generics, bounds)
 }
 
 fn lower_where_clause(ctx: LowerCtx, node: LocatedNode) -> Vec[Predicate] {
     let result: Vec[Predicate] = Vec::new();
-    match first_child(node, cst::NodeKind::WHERE_CLAUSE) {
-        Some(clause) => for predicate in children_of_kind(clause, cst::NodeKind::WHERE_PREDICATE) {
+    if let Some(clause) = first_child(node, cst::NodeKind::WHERE_CLAUSE) {
+        for predicate in children_of_kind(clause, cst::NodeKind::WHERE_PREDICATE) {
             let types = type_children(predicate);
             if types.is_empty() {
                 push_error(ctx, node_span(predicate), "Where predicate is missing a type")
             } else {
-                match lower_ty(ctx, types[0]) {
-                    Some(lhs) => match first_child(predicate, cst::NodeKind::TRAIT_SET) {
+                if let Some(lhs) = lower_ty(ctx, types[0]) {
+                    match first_child(predicate, cst::NodeKind::TRAIT_SET) {
                         Some(set) => for trait_ref in lower_trait_set(ctx, set) {
                             result.push(Predicate::Trait { ty: lhs, trait_ref })
                         },
                         None => if types.len() > 1 {
-                            match lower_ty(ctx, types[1]) {
-                                Some(rhs) => result.push(Predicate::Equality { lhs, rhs }),
-                                None => (),
+                            if let Some(rhs) = lower_ty(ctx, types[1]) {
+                                result.push(Predicate::Equality { lhs, rhs })
                             }
                         } else {
                             push_error(
@@ -495,12 +472,10 @@ fn lower_where_clause(ctx: LowerCtx, node: LocatedNode) -> Vec[Predicate] {
                                 "Equality predicate is missing its right-hand type",
                             )
                         },
-                    },
-                    None => (),
+                    }
                 }
             }
-        },
-        None => (),
+        }
     }
     result
 }
@@ -518,8 +493,8 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
                     Option::None
                 };
                 let items: Vec[UseItem] = Vec::new();
-                match first_child(node, cst::NodeKind::USE_ITEM_LIST) {
-                    Some(list) => for item in children_of_kind(list, cst::NodeKind::USE_ITEM) {
+                if let Some(list) = first_child(node, cst::NodeKind::USE_ITEM_LIST) {
+                    for item in children_of_kind(list, cst::NodeKind::USE_ITEM) {
                         let names = tokens_of_kind(item, lexer::TokenKind::Ident);
                         if !names.is_empty() {
                             items.push(
@@ -534,8 +509,7 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
                                 },
                             )
                         }
-                    },
-                    None => (),
+                    }
                 }
                 Option::Some(UseDecl { visibility: lower_visibility(node), path, alias, items })
             },

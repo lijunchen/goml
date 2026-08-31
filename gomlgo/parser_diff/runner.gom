@@ -33,23 +33,14 @@ fn compare_diagnostics(
 ) -> Result[(), string] {
     if actual.diagnostics.len() != expected.diagnostics.len() {
         Result::Err(
-            file + ": diagnostic count mismatch\nexpected=" + expected.diagnostics.len().to_string()
-                + "\nactual="
-                + actual.diagnostics.len().to_string(),
+            f"{file}: diagnostic count mismatch\nexpected={expected.diagnostics.len()}\nactual={actual.diagnostics.len()}",
         )
     } else {
         for index in 0..expected.diagnostics.len() {
             if actual.diagnostics[index].offset != expected.diagnostics[index].offset
                 || actual.diagnostics[index].message != expected.diagnostics[index].message {
                 return Result::Err(
-                    file + ": diagnostic mismatch at index " + index.to_string() + "\nexpected="
-                        + expected.diagnostics[index].offset.to_string()
-                        + ": "
-                        + expected.diagnostics[index].message
-                        + "\nactual="
-                        + actual.diagnostics[index].offset.to_string()
-                        + ": "
-                        + actual.diagnostics[index].message,
+                    f"{file}: diagnostic mismatch at index {index}\nexpected={expected.diagnostics[index].offset}: {expected.diagnostics[index].message}\nactual={actual.diagnostics[index].offset}: {actual.diagnostics[index].message}",
                 )
             }
         }
@@ -66,21 +57,15 @@ fn compare_file(file: string, mode: Mode) -> Result[bool, string] {
         let actual_diagnostic = if actual.diagnostics.is_empty() {
             "none"
         } else {
-            actual.diagnostics[0].offset.to_string() + ": " + actual.diagnostics[0].message
+            f"{actual.diagnostics[0].offset}: {actual.diagnostics[0].message}"
         };
         let expected_diagnostic = if expected.diagnostics.is_empty() {
             "none"
         } else {
-            expected.diagnostics[0].offset.to_string() + ": " + expected.diagnostics[0].message
+            f"{expected.diagnostics[0].offset}: {expected.diagnostics[0].message}"
         };
         return Result::Err(
-            file + ": parse acceptance mismatch\nactual ok=" + actual_ok.to_string()
-                + " first diagnostic="
-                + actual_diagnostic
-                + "\nexpected ok="
-                + expected.ok.to_string()
-                + " first diagnostic="
-                + expected_diagnostic,
+            f"{file}: parse acceptance mismatch\nactual ok={actual_ok} first diagnostic={actual_diagnostic}\nexpected ok={expected.ok} first diagnostic={expected_diagnostic}",
         )
     }
     if mode == Mode::Diagnostics {
@@ -92,12 +77,8 @@ fn compare_file(file: string, mode: Mode) -> Result[bool, string] {
         };
         match compare_ast(actual_ast, expected.ast, mode) {
             Some(value) => return Result::Err(
-                file + ": " + mode_name(mode) + " mismatch\npath=" + value.path + "\noffset="
-                    + value.offset.to_string()
-                    + "\nexpected="
-                    + value.expected
-                    + "\nactual="
-                    + value.actual,
+                file + ": " + mode_name(mode)
+                    + f" mismatch\npath={value.path}\noffset={value.offset}\nexpected={value.expected}\nactual={value.actual}",
             ),
             None => {},
         }

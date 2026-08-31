@@ -97,15 +97,12 @@ fn projection_binding_name(base: core::Type, name: string, reference: Option[cor
     builder.write_string("projection#");
     builder.write_string(compact_type(base));
     builder.write_char('#');
-    match reference {
-        Some(reference) => {
-            builder.write_string(reference.name);
-            for arg in reference.args {
-                builder.write_char('#');
-                builder.write_string(compact_type(arg))
-            }
-        },
-        None => (),
+    if let Some(reference) = reference {
+        builder.write_string(reference.name);
+        for arg in reference.args {
+            builder.write_char('#');
+            builder.write_string(compact_type(arg))
+        }
     }
     builder.write_char('#');
     builder.write_string(name);
@@ -563,7 +560,7 @@ fn structural_hash_body(builtin: tast::BuiltinContract, ty: core::Type) -> core:
             Vec::new(),
             core::Type::Uint64,
         );
-        let next = "_structural_hash_" + (index + 1).to_string();
+        let next = f"_structural_hash_{index + 1}";
         stmts.push(
             core::LetStmt {
                 name: next,
@@ -750,7 +747,7 @@ fn structural_ord_body(
     let mut index = left.len();
     while index > 0 {
         index -= 1;
-        let name = "_structural_ordering_" + index.to_string();
+        let name = f"_structural_ordering_{index}";
         let comparison = core_trait_call(
             reference,
             builtin.ordering.cmp,
@@ -815,7 +812,7 @@ fn structural_partial_ord_body(
     let mut index = left.len();
     while index > 0 {
         index -= 1;
-        let comparison_name = "_structural_partial_ordering_" + index.to_string();
+        let comparison_name = f"_structural_partial_ordering_{index}";
         let ordering_name = comparison_name + "_value";
         let comparison = core_trait_call(
             reference,
@@ -963,8 +960,14 @@ fn register_structural_trait_function(
     for_ty: core::Type,
     ret_ty: core::Type,
 ) -> () {
-    match synthetic_structural_trait_function(ctx.builtin, reference, method_name, for_ty, ret_ty) {
-        Some(function) => if ctx.function_index.contains(function.name) {} else {
+    if let Some(function) = synthetic_structural_trait_function(
+        ctx.builtin,
+        reference,
+        method_name,
+        for_ty,
+        ret_ty,
+    ) {
+        if ctx.function_index.contains(function.name) {} else {
             ctx.functions.push(function);
             ctx.function_index[function.name] = function;
             add_indexed_function(ctx.trait_function_index, reference.name, function);
@@ -975,8 +978,7 @@ fn register_structural_trait_function(
                 function,
             );
             let _ = ctx.used_names.insert(function.name);
-        },
-        None => (),
+        }
     }
 }
 
@@ -987,20 +989,17 @@ fn find_inherent_function(
     callable_ty: core::Type,
 ) -> Option[core::Function] {
     for function in indexed_functions(ctx.inherent_method_index, method_name) {
-        match function.origin {
-            core::FunctionOrigin::Inherent { owner: template, method_name: _ } => {
-                let bindings: Vec[TypeBinding] = Vec::new();
-                let owner_matches = unify_type(
-                    canonical_inherent_owner_type(ctx.builtin, template),
-                    canonical_inherent_owner_type(ctx.builtin, owner),
-                    bindings,
-                );
-                let callable_matches = unify_type(function_type(function), callable_ty, Vec::new());
-                if owner_matches || callable_matches {
-                    return Option::Some(function)
-                }
-            },
-            _ => (),
+        if let core::FunctionOrigin::Inherent { owner: template, method_name: _ } = function.origin {
+            let bindings: Vec[TypeBinding] = Vec::new();
+            let owner_matches = unify_type(
+                canonical_inherent_owner_type(ctx.builtin, template),
+                canonical_inherent_owner_type(ctx.builtin, owner),
+                bindings,
+            );
+            let callable_matches = unify_type(function_type(function), callable_ty, Vec::new());
+            if owner_matches || callable_matches {
+                return Option::Some(function)
+            }
         }
     }
     Option::None
@@ -1102,7 +1101,7 @@ fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
         let mut candidate = base + "__mono1";
         while name_is_used(ctx, candidate) {
             index += 1;
-            candidate = base + "__mono" + index.to_string();
+            candidate = f"{base}__mono{index}";
         }
         let _ = ctx.used_names.insert(candidate);
         candidate
@@ -1113,12 +1112,9 @@ fn ensure_instance(ctx: SpecializeCtx, original_name: string, bindings: Vec[Type
     match find_instance(ctx, original_name, bindings) {
         Some(instance) => instance.name,
         None => {
-            match recursive_specialization_message(ctx, original_name, bindings) {
-                Some(message) => {
-                    ctx.error.set(Option::Some(message));
-                    return original_name
-                },
-                None => (),
+            if let Some(message) = recursive_specialization_message(ctx, original_name, bindings) {
+                ctx.error.set(Option::Some(message));
+                return original_name
             }
             let base = instance_base_name(ctx, original_name, bindings);
             let name = if bindings.is_empty() {
@@ -1248,21 +1244,21 @@ fn specialization_growth_message(
     match find_function(ctx, name) {
         Some(function) => {
             for generic in function.generics {
-                match (find_binding(previous, generic), find_binding(next, generic)) {
-                    (Some(old_ty), Some(new_ty)) => {
-                        if mono_type_contains_recursive_growth(new_ty, old_ty) {
-                            return Option::Some(
-                                "Infinite monomorphization detected for generic function " + name
-                                    + ": recursive specialization grows type parameter "
-                                    + generic
-                                    + " from "
-                                    + mono_type_text(old_ty)
-                                    + " to "
-                                    + mono_type_text(new_ty),
-                            )
-                        }
-                    },
-                    _ => (),
+                if let (Some(old_ty), Some(new_ty)) = (
+                    find_binding(previous, generic),
+                    find_binding(next, generic),
+                ) {
+                    if mono_type_contains_recursive_growth(new_ty, old_ty) {
+                        return Option::Some(
+                            "Infinite monomorphization detected for generic function " + name
+                                + ": recursive specialization grows type parameter "
+                                + generic
+                                + " from "
+                                + mono_type_text(old_ty)
+                                + " to "
+                                + mono_type_text(new_ty),
+                        )
+                    }
                 }
             }
             for new_binding in next {
@@ -1364,8 +1360,8 @@ fn matching_trait_selections(
     let selections: Vec[TraitSelection] = Vec::new();
     let keys: collections::HashSet[string] = collections::HashSet::new();
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
-        match function.trait_impl {
-            Some(metadata) => if metadata.trait_ref.name == reference.name
+        if let Some(metadata) = function.trait_impl {
+            if metadata.trait_ref.name == reference.name
                 && metadata.trait_ref.args.len() == reference.args.len() {
                 let impl_bindings: Vec[TypeBinding] = Vec::new();
                 if unify_type(metadata.for_ty, for_ty, impl_bindings) {
@@ -1400,8 +1396,7 @@ fn matching_trait_selections(
                         }
                     }
                 }
-            },
-            None => (),
+            }
         }
     }
     selections
@@ -1452,33 +1447,30 @@ fn matching_projection_types(
     let result: Vec[core::Type] = Vec::new();
     let keys: collections::HashSet[string] = collections::HashSet::new();
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
-        match function.trait_impl {
-            Some(metadata) => {
-                if metadata.trait_ref.name == reference.name
-                    && metadata.trait_ref.args.len() == reference.args.len() {
-                    let bindings: Vec[TypeBinding] = Vec::new();
-                    if unify_type(metadata.for_ty, base, bindings)
-                        && unify_types(metadata.trait_ref.args, reference.args, bindings)
-                        && complete_bindings_up_to(
-                            ctx,
-                            function,
-                            bindings,
-                            metadata.generic_count,
-                            metadata.predicate_count,
-                        ) {
-                        for associated in metadata.associated_types {
-                            if associated.0 == name {
-                                let value = substitute_type(associated.1, bindings);
-                                let key = compact_type(value);
-                                if !keys.insert(key) {} else {
-                                    result.push(value)
-                                }
+        if let Some(metadata) = function.trait_impl {
+            if metadata.trait_ref.name == reference.name
+                && metadata.trait_ref.args.len() == reference.args.len() {
+                let bindings: Vec[TypeBinding] = Vec::new();
+                if unify_type(metadata.for_ty, base, bindings)
+                    && unify_types(metadata.trait_ref.args, reference.args, bindings)
+                    && complete_bindings_up_to(
+                        ctx,
+                        function,
+                        bindings,
+                        metadata.generic_count,
+                        metadata.predicate_count,
+                    ) {
+                    for associated in metadata.associated_types {
+                        if associated.0 == name {
+                            let value = substitute_type(associated.1, bindings);
+                            let key = compact_type(value);
+                            if !keys.insert(key) {} else {
+                                result.push(value)
                             }
                         }
                     }
                 }
-            },
-            None => (),
+            }
         }
     }
     result
@@ -2080,19 +2072,23 @@ fn ensure_trait_method_instance(
         ctx.trait_method_index,
         lookup_pair_key(reference.name, method_name),
     ) {
-        match trait_method_bindings(function, reference, for_ty, actual_types, ret_ty) {
-            Some(bindings) => if complete_bindings(ctx, function, bindings) {
+        if let Some(bindings) = trait_method_bindings(
+            function,
+            reference,
+            for_ty,
+            actual_types,
+            ret_ty,
+        ) {
+            if complete_bindings(ctx, function, bindings) {
                 let base_name = trait_instance_name(ctx, function, bindings);
                 let name = ensure_instance(ctx, function.name, bindings);
-                match base_name {
-                    Some(base) => if base != name {
+                if let Some(base) = base_name {
+                    if base != name {
                         instance_name = Option::Some(name);
-                    },
-                    None => (),
+                    }
                 }
                 resolved = specialize_trait_ref(ctx, reference, bindings);
-            },
-            None => (),
+            }
         }
     };
     (resolved, instance_name)
@@ -2111,15 +2107,12 @@ fn ensure_trait_call_instance(
 
 fn ensure_dyn_trait_impls(ctx: SpecializeCtx, trait_name: string, for_ty: core::Type) -> () {
     for function in indexed_functions(ctx.trait_function_index, trait_name) {
-        match function.trait_impl {
-            Some(metadata) => {
-                let bindings: Vec[TypeBinding] = Vec::new();
-                if unify_type(metadata.for_ty, for_ty, bindings)
-                    && complete_bindings(ctx, function, bindings) {
-                    ensure_instance(ctx, function.name, bindings);
-                }
-            },
-            None => (),
+        if let Some(metadata) = function.trait_impl {
+            let bindings: Vec[TypeBinding] = Vec::new();
+            if unify_type(metadata.for_ty, for_ty, bindings)
+                && complete_bindings(ctx, function, bindings) {
+                ensure_instance(ctx, function.name, bindings);
+            }
         }
     }
 }
@@ -2454,11 +2447,8 @@ fn ensure_runtime_trait_impls_for_type(ctx: SpecializeCtx, value: core::Type) ->
         Tuple { items } => ensure_runtime_trait_impls_for_types(ctx, items),
         Projection { for_ty: base, name: _, trait_ref: reference } => {
             ensure_runtime_trait_impls_for_type(ctx, base);
-            match reference {
-                Some(reference) => {
-                    ensure_runtime_trait_impls_for_types(ctx, reference.args)
-                },
-                None => (),
+            if let Some(reference) = reference {
+                ensure_runtime_trait_impls_for_types(ctx, reference.args)
             }
         },
         App { ty: base, args } => {
@@ -2681,22 +2671,16 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
         if let Some(method_name) = inherent_function_method(function) {
             add_indexed_function(inherent_method_index, method_name, function)
         }
-        match function.trait_impl {
-            Some(metadata) => {
-                add_indexed_function(trait_function_index, metadata.trait_ref.name, function);
-                match trait_impl_method(function) {
-                    Some(method_name) => {
-                        trait_method_names[function.name] = method_name;
-                        add_indexed_function(
-                            trait_method_index,
-                            lookup_pair_key(metadata.trait_ref.name, method_name),
-                            function,
-                        )
-                    },
-                    None => (),
-                }
-            },
-            None => (),
+        if let Some(metadata) = function.trait_impl {
+            add_indexed_function(trait_function_index, metadata.trait_ref.name, function);
+            if let Some(method_name) = trait_impl_method(function) {
+                trait_method_names[function.name] = method_name;
+                add_indexed_function(
+                    trait_method_index,
+                    lookup_pair_key(metadata.trait_ref.name, method_name),
+                    function,
+                )
+            }
         }
     }
     let ctx = SpecializeCtx {

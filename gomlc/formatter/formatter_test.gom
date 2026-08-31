@@ -45,7 +45,7 @@ fn literal_signature(source: string) -> string {
 }
 
 fn has_trailing_space(source: string) -> bool {
-    for index in range(0, source.byte_len()) {
+    for index in 0..source.byte_len() {
         let byte = source.byte_get(index);
         if byte == 10 && index > 0 {
             let previous = source.byte_get(index - 1);
@@ -58,7 +58,7 @@ fn has_trailing_space(source: string) -> bool {
 }
 
 fn has_carriage_return(source: string) -> bool {
-    for index in range(0, source.byte_len()) {
+    for index in 0..source.byte_len() {
         if source.byte_get(index) == 13 {
             return true
         }
@@ -91,7 +91,7 @@ fn read_fixture(path_value: string) -> string {
     match fs::read_file_structured(path_value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(path_value + ": " + error.to_string());
+            testing::fail(f"{path_value}: {error}");
             ""
         },
     }

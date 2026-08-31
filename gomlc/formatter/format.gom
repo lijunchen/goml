@@ -107,9 +107,8 @@ fn collect_format_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> (
     } else {
         let cursor = child_cursor(node);
         while cursor.remaining() > 0 {
-            match cursor.next() {
-                Some(Node(child)) => collect_format_omissions(child, result),
-                _ => (),
+            if let Some(Node(child)) = cursor.next() {
+                collect_format_omissions(child, result)
             }
         }
     }

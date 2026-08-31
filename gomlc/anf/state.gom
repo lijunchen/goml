@@ -26,7 +26,7 @@ struct State {
 fn fresh(state: State, prefix: string) -> string {
     let index = state.counter.get();
     state.counter.set(index + 1);
-    prefix + index.to_string()
+    f"{prefix}{index}"
 }
 
 fn unit_imm() -> Imm {
@@ -111,9 +111,8 @@ fn match_has_catch_all(arms: Vec[lift::Arm], default: Option[lift::Expr]) -> boo
         return true
     }
     for arm in arms {
-        match arm.lhs {
-            Var { name: _, ty: _ } => return true,
-            _ => (),
+        if let Var { name: _, ty: _ } = arm.lhs {
+            return true
         }
     }
     false
@@ -139,11 +138,10 @@ fn expr_always_exits(value: lift::Expr) -> bool {
                     return false
                 }
             }
-            match default {
-                Some(value) => if expr_always_exits(value) {} else {
+            if let Some(value) = default {
+                if expr_always_exits(value) {} else {
                     return false
-                },
-                None => (),
+                }
             }
             true
         },

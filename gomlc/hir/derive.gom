@@ -344,8 +344,8 @@ fn derive_imports(file: ast::File, environment: DeriveEnvironment) -> Vec[Import
                 )
             }
         } else {
-            match expand_use_alias(aliases, target) {
-                Some(expanded) => if expanded.len() > 1 {
+            if let Some(expanded) = expand_use_alias(aliases, target) {
+                if expanded.len() > 1 {
                     let package_segments: Vec[string] = Vec::new();
                     for index in 0..expanded.len() - 1 {
                         package_segments.push(expanded[index])
@@ -361,8 +361,7 @@ fn derive_imports(file: ast::File, environment: DeriveEnvironment) -> Vec[Import
                             None => export_name,
                         },
                     )
-                },
-                None => (),
+                }
             }
         }
     }
@@ -374,11 +373,10 @@ fn resolve_bare_derive(file: ast::File, environment: DeriveEnvironment, name: st
     string,
 ] {
     let candidates: Vec[ResolvedDerive] = Vec::new();
-    match environment.builtin {
-        Some(module) => for entry in module_derive_exports(module, name) {
+    if let Some(module) = environment.builtin {
+        for entry in module_derive_exports(module, name) {
             candidates.push(ResolvedDerive::Handler { module, entry })
-        },
-        None => (),
+        }
     }
     for imported in derive_imports(file, environment) {
         if imported.local_name == name {

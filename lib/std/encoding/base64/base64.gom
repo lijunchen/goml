@@ -43,14 +43,10 @@ impl DecodeError {
 impl ToString for DecodeError {
     fn to_string(self: DecodeError) -> string {
         match self.kind_value {
-            DecodeErrorKind::InvalidLength => "invalid base64 length at byte "
-                + self.index_value.to_string(),
-            DecodeErrorKind::InvalidByte => "invalid base64 digit at byte "
-                + self.index_value.to_string(),
-            DecodeErrorKind::InvalidPadding => "invalid base64 padding at byte "
-                + self.index_value.to_string(),
-            DecodeErrorKind::NonCanonical => "non-canonical base64 trailing bits at byte "
-                + self.index_value.to_string(),
+            DecodeErrorKind::InvalidLength => f"invalid base64 length at byte {self.index_value}",
+            DecodeErrorKind::InvalidByte => f"invalid base64 digit at byte {self.index_value}",
+            DecodeErrorKind::InvalidPadding => f"invalid base64 padding at byte {self.index_value}",
+            DecodeErrorKind::NonCanonical => f"non-canonical base64 trailing bits at byte {self.index_value}",
         }
     }
 }

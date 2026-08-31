@@ -2286,17 +2286,14 @@ fn resolves_contextual_enum_patterns_from_expected_types() -> () {
     let some = Ref::new(false);
     let ok = Ref::new(false);
     for reference in result.typeck_results.references {
-        match reference.target {
-            Constructor(constructor) => {
-                if constructor.name == "First::Shared" {
-                    shared.set(true)
-                } else if constructor.name == "Option::Some" {
-                    some.set(true)
-                } else if constructor.name == "Result::Ok" {
-                    ok.set(true)
-                }
-            },
-            _ => (),
+        if let Constructor(constructor) = reference.target {
+            if constructor.name == "First::Shared" {
+                shared.set(true)
+            } else if constructor.name == "Option::Some" {
+                some.set(true)
+            } else if constructor.name == "Result::Ok" {
+                ok.set(true)
+            }
         }
     }
     testing::assert(shared.get());
@@ -2584,7 +2581,7 @@ fn validates_numeric_unary_operators() -> () {
 fn types_control_flow_member_subexpressions_as_unit() -> () {
     let source = "#[allow(unreachable_code)] fn projected() -> i32 { let _: i32 = (return 1).0; 0 } #[allow(unreachable_code)] fn indexed() -> i32 { let _: i32 = (return 1)[0]; 0 } #[allow(unreachable_code)] fn field() -> i32 { let _: i32 = (return 1).value; 0 }";
     let file = checked_file(source);
-    for index in range(0, 3) {
+    for index in 0..3 {
         match file.items.get(index) {
             Function(value) => match value.body.stmts.get(0) {
                 Let { is_mut: _, pat: Wild { ty: pattern_ty }, value: expression } => {
@@ -3120,7 +3117,7 @@ fn accepts_projected_trait_predicates() -> () {
 fn resolves_constrained_blanket_methods() -> () {
     let source = "trait Mark { fn mark(self: Self) -> string; } trait Label { fn label(self: Self) -> string; } struct Box[T] { value: T } impl Mark for i32 { fn mark(self: i32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { self.value } } fn string_label() -> string { (Box { value: \"text\" }).label() } fn marked_label() -> string { (Box { value: 7 }).label() }";
     let file = checked_file(source);
-    for index in range(3, 5) {
+    for index in 3..5 {
         match file.items.get(index) {
             Function(value) => match value.body.tail {
                 Some(Call {

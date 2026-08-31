@@ -75,9 +75,8 @@ fn serializes_builds_for_one_artifact_root() -> () {
             tasks.push(
                 scope.spawn(
                     |_: task::CancelToken| {
-                        match first_started.recv() {
-                            Some(()) => (),
-                            None => return Result::Err("first build did not start"),
+                        if let None = first_started.recv() {
+                            return Result::Err("first build did not start")
                         }
                         with_build_lock(
                             context,

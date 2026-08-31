@@ -4526,7 +4526,7 @@ fn source_position_string(state: CheckState, node: syntax::NodeId) -> string {
                             column += 1;
                         }
                     }
-                    return name + ":" + line.to_string() + ":" + column.to_string()
+                    return f"{name}:{line}:{column}"
                 }
             }
             name
@@ -5966,8 +5966,7 @@ fn evaluate_pending_value(state: CheckState, index: isize) -> () {
                 diagnostic(
                     state,
                     source,
-                    "assignment mismatch: " + pending.value_count.to_string() + " variables but "
-                        + value_description,
+                    f"assignment mismatch: {pending.value_count} variables but {value_description}",
                     false,
                 )
             }

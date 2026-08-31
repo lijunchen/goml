@@ -1827,9 +1827,7 @@ fn check_conversion(
                 } else {
                     ""
                 }
-                + " requires go1."
-                + required_version.to_string()
-                + " or later",
+                + f" requires go1.{required_version} or later",
             false,
         );
         return invalid_operand(state)
@@ -2776,7 +2774,7 @@ fn check_call(
                         state,
                         node,
                         ellipsis,
-                        "cannot use ... with " + values.len().to_string() + "-valued "
+                        f"cannot use ... with {values.len()}-valued "
                             + expression_source_text(state, arguments[0]),
                         false,
                     );

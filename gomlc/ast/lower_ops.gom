@@ -113,16 +113,9 @@ fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr]
                 let mut result = Expr::Call { func, args, span: expr_span };
                 for arg in trailing_args {
                     result = Expr::Call { func: result, args: Vec::new(), span: expr_span };
-                    match result {
-                        Call { func: next_func, args: next_args, span: next_span } => {
-                            next_args.push(arg);
-                            result = Expr::Call {
-                                func: next_func,
-                                args: next_args,
-                                span: next_span,
-                            };
-                        },
-                        _ => (),
+                    if let Call { func: next_func, args: next_args, span: next_span } = result {
+                        next_args.push(arg);
+                        result = Expr::Call { func: next_func, args: next_args, span: next_span };
                     }
                 }
                 Option::Some(result)
@@ -193,8 +186,8 @@ fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr]
 
 fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
     let args: Vec[Expr] = Vec::new();
-    match first_child(node, cst::NodeKind::ARG_LIST) {
-        Some(list) => for arg in children_of_kind(list, cst::NodeKind::ARG) {
+    if let Some(list) = first_child(node, cst::NodeKind::ARG_LIST) {
+        for arg in children_of_kind(list, cst::NodeKind::ARG) {
             let values = expr_children(arg);
             if !values.is_empty() {
                 if let Some(value) = lower_expr(ctx, values[0]) {
@@ -203,8 +196,7 @@ fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
             } else {
                 push_error(ctx, node_span(arg), "Arg has no expr")
             }
-        },
-        None => (),
+        }
     }
     args
 }

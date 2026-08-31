@@ -27,18 +27,12 @@ fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string]
 }
 
 fn render_actual(value: token::Token) -> string {
-    token::name(value.kind) + " literal=" + value.literal + " range=" + value.start.to_string()
-        + ".."
-        + value.end.to_string()
-        + " synthetic="
-        + value.synthetic.to_string()
+    token::name(value.kind)
+        + f" literal={value.literal} range={value.start}..{value.end} synthetic={value.synthetic}"
 }
 
 fn render_expected(value: differential::OracleToken) -> string {
-    value.kind + " literal=" + value.literal + " range=" + value.start.to_string() + ".."
-        + value.end.to_string()
-        + " synthetic="
-        + value.synthetic.to_string()
+    f"{value.kind} literal={value.literal} range={value.start}..{value.end} synthetic={value.synthetic}"
 }
 
 fn compare_file(file: string) -> Result[isize, string] {
@@ -59,8 +53,7 @@ fn compare_file(file: string) -> Result[isize, string] {
             || actual_token.end != expected_token.end
             || actual_token.synthetic != expected_token.synthetic {
             return Result::Err(
-                file + ": token " + index.to_string() + " mismatch\nactual: "
-                    + render_actual(actual_token)
+                f"{file}: token {index} mismatch\nactual: " + render_actual(actual_token)
                     + "\nexpected: "
                     + render_expected(expected_token),
             )
@@ -68,9 +61,7 @@ fn compare_file(file: string) -> Result[isize, string] {
     }
     if actual.tokens.len() != expected.tokens.len() {
         Result::Err(
-            file + ": token count mismatch: actual " + actual.tokens.len().to_string()
-                + ", expected "
-                + expected.tokens.len().to_string(),
+            f"{file}: token count mismatch: actual {actual.tokens.len()}, expected {expected.tokens.len()}",
         )
     } else {
         Result::Ok(actual.tokens.len())

@@ -258,18 +258,14 @@ fn package_info_parse_use(scanner: PackageInfoScanner, source_path: string) -> R
             }
             let mut done = false;
             while !done {
-                match package_info_read_ident(scanner) {
-                    Some(_) => (),
-                    None => return Result::Err(
-                        package_info_error(source_path, "expected an imported item"),
-                    ),
+                if let None = package_info_read_ident(scanner) {
+                    return Result::Err(package_info_error(source_path, "expected an imported item"))
                 }
                 if package_info_consume_keyword(scanner, "as") {
-                    match package_info_read_ident(scanner) {
-                        Some(_) => (),
-                        None => return Result::Err(
+                    if let None = package_info_read_ident(scanner) {
+                        return Result::Err(
                             package_info_error(source_path, "expected use item alias"),
-                        ),
+                        )
                     }
                 }
                 if package_info_consume_text(scanner, ",") {
@@ -379,14 +375,12 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
         while remaining > 0 && !path.starts_with("module::") {
             let mut changed = false;
             for candidate in uses {
-                match candidate.alias {
-                    Some(alias) => if (path == alias || path.starts_with(alias + "::"))
-                        && path != candidate.path {
+                if let Some(alias) = candidate.alias {
+                    if (path == alias || path.starts_with(alias + "::")) && path != candidate.path {
                         path = candidate.path;
                         changed = true;
                         break
-                    },
-                    None => (),
+                    }
                 }
             }
             if changed {

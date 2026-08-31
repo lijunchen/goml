@@ -17,7 +17,7 @@ use utf8::BytesUtf8;
 fn result_string[E: ToString](value: Result[string, E], context: string) -> Result[string, string] {
     match value {
         Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(context + ": " + message.to_string()),
+        Err(message) => Result::Err(f"{context}: {message}"),
     }
 }
 
@@ -435,23 +435,21 @@ fn local_import(sources: Vec[ModuleSource], current_module: string, import_path:
                 }
             }
         }
-        match package_directory_in_source(current, import_path) {
-            Some(directory) => if fs::is_dir(directory) {
+        if let Some(directory) = package_directory_in_source(current, import_path) {
+            if fs::is_dir(directory) {
                 return Result::Ok(Option::Some(import_path))
             } else {
                 return Result::Err("local package does not exist: " + import_path)
-            },
-            None => (),
+            }
         }
         for source in sources {
             if source.name == current_module {} else {
-                match package_directory_in_source(source, import_path) {
-                    Some(directory) => if fs::is_dir(directory) {
+                if let Some(directory) = package_directory_in_source(source, import_path) {
+                    if fs::is_dir(directory) {
                         return Result::Ok(Option::Some(import_path))
                     } else {
                         return Result::Err("external package does not exist: " + import_path)
-                    },
-                    None => (),
+                    }
                 }
             }
         }

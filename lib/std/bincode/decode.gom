@@ -118,8 +118,7 @@ fn bincode_decoder_path(decoder: Decoder) -> string {
 }
 
 fn decoder_error(decoder: Decoder, message: string) -> string {
-    message + " at path " + bincode_decoder_path(decoder) + " at byte "
-        + decoder.offset.get().to_string()
+    message + " at path " + bincode_decoder_path(decoder) + f" at byte {decoder.offset.get()}"
 }
 
 fn read_byte(decoder: Decoder) -> Result[byte, string] {

@@ -694,17 +694,15 @@ fn resolve_receiver(
     }
     let receiver_arity_mismatch = origin_parameters.len() != parts.1.len();
     if receiver_arity_mismatch {
+        let parameter_text = if parts.1.len() == 1 {
+            "type parameter"
+        } else {
+            "type parameters"
+        };
         diagnostic(
             state,
             receiver_type_node,
-            "receiver declares " + parts.1.len().to_string() + " type parameter"
-                + if parts.1.len() == 1 {
-                    ""
-                } else {
-                    "s"
-                }
-                + ", but receiver base type declares "
-                + origin_parameters.len().to_string(),
+            f"receiver declares {parts.1.len()} {parameter_text}, but receiver base type declares {origin_parameters.len()}",
             false,
         )
     }
@@ -742,11 +740,7 @@ fn resolve_receiver(
                                 id,
                                 file: source.file,
                                 span: source.span,
-                                path: "$unknown[*ast.Ident:"
-                                    + node_start(state, name_node).to_string()
-                                    + ":"
-                                    + (node_start(state, name_node) + 1).to_string()
-                                    + "]",
+                                path: f"$unknown[*ast.Ident:{node_start(state, name_node)}:{node_start(state, name_node) + 1}]",
                                 kind: syntax::SyntaxKind::Ident {
                                     name_pos: node_start(state, name_node),
                                     name,

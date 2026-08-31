@@ -92,7 +92,7 @@ pub fn artifact_binary_reader_remaining(reader: ArtifactBinaryReader) -> isize {
 }
 
 fn artifact_binary_reader_error(reader: ArtifactBinaryReader, message: string) -> string {
-    "binary artifact at byte " + reader.offset.get().to_string() + ": " + message
+    f"binary artifact at byte {reader.offset.get()}: {message}"
 }
 
 pub fn artifact_binary_read_u8(reader: ArtifactBinaryReader) -> Result[u8, string] {

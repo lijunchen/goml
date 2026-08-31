@@ -79,12 +79,9 @@ fn write_json_deserialize_frame_path(builder: text::StringBuilder, frame: JsonDe
                 builder.write_char('.');
                 builder.write_string(name)
             }
-            match field.get() {
-                Some(name) => {
-                    builder.write_char('.');
-                    builder.write_string(name)
-                },
-                None => (),
+            if let Some(name) = field.get() {
+                builder.write_char('.');
+                builder.write_string(name)
             }
         },
         JsonDeserializeFrame::Variant {
@@ -121,8 +118,8 @@ fn json_deserializer_path(deserializer: JsonDeserializer) -> string {
 }
 
 fn json_deserializer_error(deserializer: JsonDeserializer, message: string) -> string {
-    message + " at path " + json_deserializer_path(deserializer) + " at byte "
-        + deserializer.parser.index.get().to_string()
+    message + " at path " + json_deserializer_path(deserializer)
+        + f" at byte {deserializer.parser.index.get()}"
 }
 
 fn contextualize_json_error(deserializer: JsonDeserializer, message: string) -> string {
@@ -134,7 +131,7 @@ fn contextualize_json_error(deserializer: JsonDeserializer, message: string) -> 
     if with_path.contains(" at byte ") {
         with_path
     } else {
-        with_path + " at byte " + deserializer.parser.index.get().to_string()
+        f"{with_path} at byte {deserializer.parser.index.get()}"
     }
 }
 

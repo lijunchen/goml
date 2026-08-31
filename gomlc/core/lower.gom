@@ -25,7 +25,7 @@ struct EnumCase {
 fn gensym(ctx: Lowerer, prefix: string) -> string {
     let current = ctx.counter.get();
     ctx.counter.set(current + 1);
-    prefix + current.to_string()
+    f"{prefix}{current}"
 }
 
 fn type_text(value: tast::Type) -> string {
@@ -1662,21 +1662,16 @@ fn lower_pattern_continuation(
         columns.push(PatternColumn { source: source_name, source_ty, pattern });
         let rows: Vec[PatternRow] = Vec::new();
         rows.push(PatternRow { columns, bindings: Vec::new(), body });
-        match failure {
-            Some(value) => {
-                let fallback_columns: Vec[PatternColumn] = Vec::new();
-                fallback_columns.push(
-                    PatternColumn {
-                        source: source_name,
-                        source_ty,
-                        pattern: tast::Pat::Wild { ty: source_ty },
-                    },
-                );
-                rows.push(
-                    PatternRow { columns: fallback_columns, bindings: Vec::new(), body: value },
-                )
-            },
-            None => (),
+        if let Some(value) = failure {
+            let fallback_columns: Vec[PatternColumn] = Vec::new();
+            fallback_columns.push(
+                PatternColumn {
+                    source: source_name,
+                    source_ty,
+                    pattern: tast::Pat::Wild { ty: source_ty },
+                },
+            );
+            rows.push(PatternRow { columns: fallback_columns, bindings: Vec::new(), body: value })
         }
         lower_pattern_rows(ctx, rows, ty)
     }

@@ -267,13 +267,12 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
                             },
                             _ => return Result::Err("select receive operand is not a channel"),
                         }
-                        match guard {
-                            Some(value) => verify_type(
+                        if let Some(value) = guard {
+                            verify_type(
                                 imm_type(value),
                                 repr::Type::Bool,
                                 "select guard is not bool",
-                            )?,
-                            None => (),
+                            )?
                         }
                         verify_block(state, body, ret_ty, copy_join_signatures(joins))?
                     },
@@ -292,13 +291,12 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
                             },
                             _ => return Result::Err("select send operand is not a channel"),
                         }
-                        match guard {
-                            Some(value) => verify_type(
+                        if let Some(value) = guard {
+                            verify_type(
                                 imm_type(value),
                                 repr::Type::Bool,
                                 "select guard is not bool",
-                            )?,
-                            None => (),
+                            )?
                         }
                         verify_block(state, body, ret_ty, copy_join_signatures(joins))?
                     },
@@ -629,15 +627,12 @@ fn verify_function(
         Inherent { owner, method_name: _ } => repr::validate_type(owner)?,
         Source | TraitImplementation { method_name: _ } => (),
     }
-    match value.trait_impl {
-        Some(implementation) => {
-            repr::validate_trait_ref(implementation.trait_ref)?;
-            repr::validate_type(implementation.for_ty)?;
-            for associated in implementation.associated_types {
-                repr::validate_type(associated.1)?
-            }
-        },
-        None => (),
+    if let Some(implementation) = value.trait_impl {
+        repr::validate_trait_ref(implementation.trait_ref)?;
+        repr::validate_type(implementation.for_ty)?;
+        for associated in implementation.associated_types {
+            repr::validate_type(associated.1)?
+        }
     }
     let state = VerifyState { join_names: collections::HashSet::new(), closures, structs, enums };
     match verify_block(state, value.body, value.ret_ty, Vec::new()) {

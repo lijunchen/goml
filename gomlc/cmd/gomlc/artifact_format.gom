@@ -69,16 +69,11 @@ fn output_transaction[T](anchor: string, action: () -> Result[T, string]) -> Res
             return Result::Err(error)
         },
     };
-    let epoch = hash::sha256_hex(
-        previous + "\u0000" + time::SystemTime::now().unix_nanoseconds().to_string() + "\u0000"
-            + anchor,
-    );
-    match atomic_write_text(epoch_path, "writing:" + epoch) {
-        Ok(()) => (),
-        Err(error) => {
-            let _ = release_output_lock(lock);
-            return Result::Err(error)
-        },
+    let now = time::SystemTime::now().unix_nanoseconds();
+    let epoch = hash::sha256_hex(f"{previous}\u0000{now}\u0000{anchor}");
+    if let Err(error) = atomic_write_text(epoch_path, "writing:" + epoch) {
+        let _ = release_output_lock(lock);
+        return Result::Err(error)
     }
     let result = action();
     match result {

@@ -10,30 +10,26 @@ fn response_result(value: json::Value) -> Option[json::Value] {
 }
 
 fn response_has_label(value: json::Value, expected: string) -> bool {
-    match response_result(value) {
-        Some(result) => match json::as_array(result) {
-            Some(items) => for item in items {
-                match json::field(item, "label") {
-                    Some(label) => match json::as_string(label) {
-                        Some(label) => if label == expected {
+    if let Some(result) = response_result(value) {
+        if let Some(items) = json::as_array(result) {
+            for item in items {
+                if let Some(label) = json::field(item, "label") {
+                    if let Some(label) = json::as_string(label) {
+                        if label == expected {
                             return true
-                        },
-                        None => (),
-                    },
-                    None => (),
+                        }
+                    }
                 }
-            },
-            None => (),
-        },
-        None => (),
+            }
+        }
     }
     false
 }
 
 fn response_has_snippet(value: json::Value, expected: string) -> bool {
-    match response_result(value) {
-        Some(result) => match json::as_array(result) {
-            Some(items) => for item in items {
+    if let Some(result) = response_result(value) {
+        if let Some(items) = json::as_array(result) {
+            for item in items {
                 let label_matches = match json::field(item, "label") {
                     Some(label) => match json::as_string(label) {
                         Some(label) => label == expected,
@@ -42,17 +38,14 @@ fn response_has_snippet(value: json::Value, expected: string) -> bool {
                     None => false,
                 };
                 if label_matches {
-                    match json::field(item, "insertTextFormat") {
-                        Some(json::Value::Number(value)) => if value == "2" {
+                    if let Some(json::Value::Number(value)) = json::field(item, "insertTextFormat") {
+                        if value == "2" {
                             return true
-                        },
-                        _ => (),
+                        }
                     }
                 }
-            },
-            None => (),
-        },
-        None => (),
+            }
+        }
     }
     false
 }
@@ -218,9 +211,7 @@ fn completes_from_cached_analysis_after_document_changes() -> () {
         Err(error) => testing::fail(error.to_string()),
     }
     let position = changed.byte_len() - "); () }".byte_len();
-    let completion = "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"textDocument/completion\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\"},\"position\":{\"line\":0,\"character\":"
-        + position.to_string()
-        + "}}}";
+    let completion = f"{{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"textDocument/completion\",\"params\":{{\"textDocument\":{{\"uri\":\"file:///tmp/completion-change.gom\"}},\"position\":{{\"line\":0,\"character\":{position}}}}}}}";
     match handle_payload(server, completion) {
         Ok(messages) => {
             testing::assert_eq(messages.len(), 1);
@@ -266,11 +257,7 @@ fn refreshes_completion_analysis_after_dependency_changes() -> () {
     );
     let _ = document_analysis(server, main_document);
     let position = main_source.byte_len() - " }".byte_len();
-    let completion = "{\"jsonrpc\":\"2.0\",\"id\":13,\"method\":\"textDocument/completion\",\"params\":{\"textDocument\":{\"uri\":\""
-        + main_uri
-        + "\"},\"position\":{\"line\":0,\"character\":"
-        + position.to_string()
-        + "}}}";
+    let completion = f"{{\"jsonrpc\":\"2.0\",\"id\":13,\"method\":\"textDocument/completion\",\"params\":{{\"textDocument\":{{\"uri\":\"{main_uri}\"}},\"position\":{{\"line\":0,\"character\":{position}}}}}}}";
     match handle_payload(server, completion) {
         Ok(messages) => {
             testing::assert_eq(messages.len(), 1);

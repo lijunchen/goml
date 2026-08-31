@@ -229,14 +229,11 @@ fn initial_used_types(value: mono::File) -> collections::HashSet[string] {
             collect_used_types(result, param.1)
         }
         collect_used_types(result, function.ret_ty);
-        match function.trait_impl {
-            Some(value) => {
-                collect_used_types(result, value.for_ty);
-                for associated in value.associated_types {
-                    collect_used_types(result, associated.1)
-                }
-            },
-            None => (),
+        if let Some(value) = function.trait_impl {
+            collect_used_types(result, value.for_ty);
+            for associated in value.associated_types {
+                collect_used_types(result, associated.1)
+            }
         }
         collect_used_block(result, function.body)
     }
@@ -285,8 +282,8 @@ fn fresh_struct_name(state: State, hint: Option[string]) -> string {
         let index = state.next_env.get();
         state.next_env.set(index + 1);
         let candidate = match hint {
-            Some(name) => "closure_env_" + name + "_" + index.to_string(),
-            None => "closure_env_" + index.to_string(),
+            Some(name) => f"closure_env_{name}_{index}",
+            None => f"closure_env_{index}",
         };
         if state.used_types.insert(candidate) {
             return candidate
@@ -297,7 +294,7 @@ fn fresh_struct_name(state: State, hint: Option[string]) -> string {
 fn fresh_name(state: State, prefix: string) -> string {
     let index = state.next_name.get();
     state.next_name.set(index + 1);
-    prefix + index.to_string()
+    f"{prefix}{index}"
 }
 
 fn trailing_number(value: string) -> Option[isize] {
@@ -360,11 +357,10 @@ fn parse_digits(value: string, start: isize) -> isize {
 }
 
 fn observe_name(maximum: Ref[isize], name: string) -> () {
-    match trailing_number(name) {
-        Some(value) => if value > maximum.get() {
+    if let Some(value) = trailing_number(name) {
+        if value > maximum.get() {
             maximum.set(value)
-        },
-        None => (),
+        }
     }
 }
 
@@ -806,11 +802,10 @@ fn collect_captured(
 ) -> () {
     match value {
         Var { name, ty: _ } => if bound.contains(name) {} else {
-            match find_scope(scope, name) {
-                Some(entry) => if capture_exists(captured, name) {} else {
+            if let Some(entry) = find_scope(scope, name) {
+                if capture_exists(captured, name) {} else {
                     captured.push(Capture { name, ty: entry.ty })
-                },
-                None => (),
+                }
             }
         },
         Constr { constructor: _, args, ty: _ } => {
@@ -897,8 +892,8 @@ fn collect_captured(
 
 fn make_field_name(name: string, index: isize) -> string {
     match sanitize_name(name) {
-        Some(name) => name + "_" + index.to_string(),
-        None => "field_" + index.to_string(),
+        Some(name) => f"{name}_{index}",
+        None => f"field_{index}",
     }
 }
 

@@ -136,7 +136,7 @@ fn lower_select_recv_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] 
                 None => "_",
             },
             None => match match_list {
-                Some(_) => "$select_recv_" + node_span(node).start.to_string(),
+                Some(_) => f"$select_recv_{node_span(node).start}",
                 None => "_",
             },
         };

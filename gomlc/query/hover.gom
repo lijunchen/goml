@@ -188,16 +188,15 @@ fn type_alias_hover(value: Analysis, symbol: Symbol) -> Option[string] {
 fn function_hover_by_def(value: Analysis, expected: hir::DefId) -> Option[string] {
     for environment in value.environments {
         for function in environment.functions {
-            match function.def_id {
-                Some(actual) => if actual.pkg == expected.pkg && actual.index == expected.index {
+            if let Some(actual) = function.def_id {
+                if actual.pkg == expected.pkg && actual.index == expected.index {
                     return hover_function_text(
                         function.comptime,
                         function.generics,
                         function.params,
                         function.ret_ty,
                     )
-                },
-                None => (),
+                }
             }
         }
     }
@@ -303,26 +302,17 @@ fn symbol_at_offset(value: Analysis, offset: isize) -> Option[Symbol] {
 }
 
 pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
-    match comptime_derive_hover(value, offset) {
-        Some(contents) => match token_at(value.syntax, offset) {
-            Some(token) => return Option::Some(
-                HoverResult { contents, span: ast::span(token.start, token.end) },
-            ),
-            None => (),
-        },
-        None => (),
+    if let Some(contents) = comptime_derive_hover(value, offset) {
+        if let Some(token) = token_at(value.syntax, offset) {
+            return Option::Some(HoverResult { contents, span: ast::span(token.start, token.end) })
+        }
     }
-    match symbol_at_offset(value, offset) {
-        Some(symbol) => match symbol.kind {
-            Function => match symbol_hover_type(value, symbol) {
-                Some(contents) => {
-                    return Option::Some(HoverResult { contents, span: symbol.span })
-                },
-                None => (),
-            },
-            _ => (),
-        },
-        None => (),
+    if let Some(symbol) = symbol_at_offset(value, offset) {
+        if let Function = symbol.kind {
+            if let Some(contents) = symbol_hover_type(value, symbol) {
+                return Option::Some(HoverResult { contents, span: symbol.span })
+            }
+        }
     }
     let mut result: Option[HoverResult] = Option::None;
     let mut width = 2147483647;
@@ -330,14 +320,11 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
         let fact_width = fact.callee_span.end - fact.callee_span.start;
         if fact.source_path == value.source_path && fact_contains(fact.callee_span, offset)
             && fact_width <= width {
-            match hover_call_text(fact.comptime, fact.callee_ty) {
-                Some(contents) => {
-                    result = Option::Some(
-                        HoverResult { contents, span: hover_span(value, fact.callee_span, offset) },
-                    );
-                    width = fact_width;
-                },
-                None => (),
+            if let Some(contents) = hover_call_text(fact.comptime, fact.callee_ty) {
+                result = Option::Some(
+                    HoverResult { contents, span: hover_span(value, fact.callee_span, offset) },
+                );
+                width = fact_width;
             }
         }
     }
@@ -345,14 +332,11 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact_contains(fact.span, offset)
             && fact_width < width {
-            match reference_hover_text(value, fact.target, fact.ty) {
-                Some(contents) => {
-                    result = Option::Some(
-                        HoverResult { contents, span: hover_span(value, fact.span, offset) },
-                    );
-                    width = fact_width;
-                },
-                None => (),
+            if let Some(contents) = reference_hover_text(value, fact.target, fact.ty) {
+                result = Option::Some(
+                    HoverResult { contents, span: hover_span(value, fact.span, offset) },
+                );
+                width = fact_width;
             }
         }
     }
@@ -360,14 +344,11 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact_contains(fact.span, offset)
             && fact_width < width {
-            match hover_text(fact.ty) {
-                Some(contents) => {
-                    result = Option::Some(
-                        HoverResult { contents, span: hover_span(value, fact.span, offset) },
-                    );
-                    width = fact_width;
-                },
-                None => (),
+            if let Some(contents) = hover_text(fact.ty) {
+                result = Option::Some(
+                    HoverResult { contents, span: hover_span(value, fact.span, offset) },
+                );
+                width = fact_width;
             }
         }
     }
@@ -375,14 +356,11 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact_contains(fact.span, offset)
             && fact_width < width {
-            match hover_text(fact.ty) {
-                Some(contents) => {
-                    result = Option::Some(
-                        HoverResult { contents, span: hover_span(value, fact.span, offset) },
-                    );
-                    width = fact_width;
-                },
-                None => (),
+            if let Some(contents) = hover_text(fact.ty) {
+                result = Option::Some(
+                    HoverResult { contents, span: hover_span(value, fact.span, offset) },
+                );
+                width = fact_width;
             }
         }
     }

@@ -194,7 +194,7 @@ fn type_doc_with_contract(builtin: BuiltinContract, value: Type) -> pretty::Doc 
                 [
                     pretty::text("["),
                     type_doc_with_contract(builtin, elem),
-                    pretty::text("; " + length.to_string() + "]"),
+                    pretty::text(f"; {length}]"),
                 ],
             ),
         ),
@@ -271,7 +271,7 @@ fn type_doc_with_contract(builtin: BuiltinContract, value: Type) -> pretty::Doc 
             ),
         ),
         Var(variable) => match variable.get() {
-            Unbound { id: index, kind: _ } => pretty::text("TypeVar(" + index.to_string() + ")"),
+            Unbound { id: index, kind: _ } => pretty::text(f"TypeVar({index})"),
             Link(inner) => type_doc_with_contract(builtin, inner),
         },
         Error => pretty::text("<error>"),
@@ -988,7 +988,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                     if target == 0 {
                         "break "
                     } else {
-                        "break@" + target.to_string() + " "
+                        f"break@{target} "
                     },
                 ),
                 expr_doc(value),
@@ -997,7 +997,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 if target == 0 {
                     "break"
                 } else {
-                    "break@" + target.to_string()
+                    f"break@{target}"
                 },
             ),
         },
@@ -1005,7 +1005,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             if target == 0 {
                 "continue"
             } else {
-                "continue@" + target.to_string()
+                f"continue@{target}"
             },
         ),
         Return { expr: value, ty: _ } => match value {
@@ -1032,7 +1032,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             ),
         ),
         Proj { tuple: value, index, ty: _ } => {
-            pretty::append(expr_doc(value), pretty::text("." + index.to_string()))
+            pretty::append(expr_doc(value), pretty::text(f".{index}"))
         },
         Field { expr: value, field_name: name, ty: _ } => {
             pretty::append(expr_doc(value), pretty::text("." + name))
@@ -1131,14 +1131,13 @@ fn pat_doc(value: Pat) -> pretty::Doc {
             for value in prefix {
                 values.push(pat_doc(value))
             }
-            match rest {
-                Some(value) => values.push(
+            if let Some(value) = rest {
+                values.push(
                     match value.binding {
                         Some(name) => pretty::text(name + " @ .."),
                         None => pretty::text(".."),
                     },
-                ),
-                None => (),
+                )
             }
             for value in suffix {
                 values.push(pat_doc(value))

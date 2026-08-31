@@ -148,13 +148,12 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
             if occurs(variable, base) {
                 true
             } else {
-                match qualifier {
-                    Some(reference) => for arg in reference.args {
+                if let Some(reference) = qualifier {
+                    for arg in reference.args {
                         if occurs(variable, arg) {
                             return true
                         }
-                    },
-                    None => (),
+                    }
                 }
                 false
             }
@@ -715,13 +714,12 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
             if contains_parameter(base, name, substitutions) {
                 true
             } else {
-                match qualifier {
-                    Some(reference) => for arg in reference.args {
+                if let Some(reference) = qualifier {
+                    for arg in reference.args {
                         if contains_parameter(arg, name, substitutions) {
                             return true
                         }
-                    },
-                    None => (),
+                    }
                 }
                 false
             }
@@ -1077,31 +1075,28 @@ pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef])
     let mut implementation_index = 0;
     while implementation_index < implementations.len() {
         let implementation = implementations.get(implementation_index);
-        match associated_binding(implementation, name) {
-            Some(associated) => {
-                let substitutions = instantiate_substitutions(
-                    Ref::new(0),
-                    implementation.generics,
-                    Vec::new(),
-                );
-                let owner = substitute_type(implementation.for_type, substitutions);
-                let application = substitute_trait_ref(implementation.trait_ref, substitutions);
-                let trait_matches = match qualifier {
-                    Some(reference) => names_match(application.name, reference.name)
-                        && unify_types(application.args, reference.args),
-                    None => true,
-                };
-                if trait_matches && unify(owner, base) {
-                    let predicates = substitute_predicates(implementation.predicates, substitutions);
-                    if builtin_source_predicates_satisfied(predicates, Vec::new()) {
-                        let candidate = substitute_type(associated, substitutions);
-                        if !type_list_contains(candidates, candidate) {
-                            candidates.push(candidate)
-                        }
+        if let Some(associated) = associated_binding(implementation, name) {
+            let substitutions = instantiate_substitutions(
+                Ref::new(0),
+                implementation.generics,
+                Vec::new(),
+            );
+            let owner = substitute_type(implementation.for_type, substitutions);
+            let application = substitute_trait_ref(implementation.trait_ref, substitutions);
+            let trait_matches = match qualifier {
+                Some(reference) => names_match(application.name, reference.name)
+                    && unify_types(application.args, reference.args),
+                None => true,
+            };
+            if trait_matches && unify(owner, base) {
+                let predicates = substitute_predicates(implementation.predicates, substitutions);
+                if builtin_source_predicates_satisfied(predicates, Vec::new()) {
+                    let candidate = substitute_type(associated, substitutions);
+                    if !type_list_contains(candidates, candidate) {
+                        candidates.push(candidate)
                     }
                 }
-            },
-            None => (),
+            }
         }
         implementation_index += 1;
     }
@@ -1120,32 +1115,25 @@ fn collect_impl_projection_candidate(
     qualifier: Option[TraitRef],
     candidates: Vec[Type],
 ) -> () {
-    match associated_binding(impl_info, name) {
-        Some(associated) => {
-            let substitutions = instantiate_substitutions(
-                ctx.counter,
-                impl_info.generics,
-                Vec::new(),
-            );
-            let owner = substitute_type(impl_info.for_type, substitutions);
-            let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
-            if unify(owner, base) {
-                let trait_matches = match qualifier {
-                    Some(reference) => impl_matches_trait(ctx, impl_info, reference)
-                        && unify_types(application.args, reference.args),
-                    None => true,
-                };
-                let predicates = substitute_predicates(impl_info.predicates, substitutions);
-                apply_predicate_equalities(predicates);
-                if trait_matches && predicates_satisfied_at(ctx, predicates, Vec::new()) {
-                    let candidate = substitute_type(associated, substitutions);
-                    if !type_list_contains(candidates, candidate) {
-                        candidates.push(candidate)
-                    }
+    if let Some(associated) = associated_binding(impl_info, name) {
+        let substitutions = instantiate_substitutions(ctx.counter, impl_info.generics, Vec::new());
+        let owner = substitute_type(impl_info.for_type, substitutions);
+        let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
+        if unify(owner, base) {
+            let trait_matches = match qualifier {
+                Some(reference) => impl_matches_trait(ctx, impl_info, reference)
+                    && unify_types(application.args, reference.args),
+                None => true,
+            };
+            let predicates = substitute_predicates(impl_info.predicates, substitutions);
+            apply_predicate_equalities(predicates);
+            if trait_matches && predicates_satisfied_at(ctx, predicates, Vec::new()) {
+                let candidate = substitute_type(associated, substitutions);
+                if !type_list_contains(candidates, candidate) {
+                    candidates.push(candidate)
                 }
             }
-        },
-        None => (),
+        }
     }
 }
 

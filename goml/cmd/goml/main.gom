@@ -551,9 +551,8 @@ fn run_toolchain_finalize(args: Vec[string]) -> Result[(), string] {
             let output = path::join(compiler_dir, "compiler-world-v2.gaf");
             let temporary = output + ".tmp";
             if fs::is_file(temporary) {
-                match fs::remove_file(temporary) {
-                    Ok(()) => (),
-                    Err(error) => return Result::Err(error.to_string()),
+                if let Err(error) = fs::remove_file(temporary) {
+                    return Result::Err(error.to_string())
                 }
             }
             let plan = project::toolchain_world_plan(context, temporary)?;
@@ -594,17 +593,15 @@ fn main() -> () {
             } else if args.len() != 2 {
                 fail(f"unexpected argument {args[2]}")
             } else {
-                match commands::print_home() {
-                    Ok(()) => (),
-                    Err(message) => fail(message),
+                if let Err(message) = commands::print_home() {
+                    fail(message)
                 }
             },
             NEW_COMMAND => if args.len() >= 3 && (args[2] == "-h" || args[2] == "--help") {
                 io::println(command_help(NEW_COMMAND))
             } else {
-                match commands::parse_new(args) {
-                    Ok(()) => (),
-                    Err(message) => fail(message),
+                if let Err(message) = commands::parse_new(args) {
+                    fail(message)
                 }
             },
             CLEAN_COMMAND => if args.len() >= 3 && (args[2] == "-h" || args[2] == "--help") {
@@ -640,9 +637,8 @@ fn main() -> () {
                     ADD_COMMAND => commands::add_dependency(args),
                     _ => commands::remove_dependency(args),
                 };
-                match result {
-                    Ok(()) => (),
-                    Err(message) => fail(message),
+                if let Err(message) = result {
+                    fail(message)
                 }
             },
             _ => match parse_cli(args) {

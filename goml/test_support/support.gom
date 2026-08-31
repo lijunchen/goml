@@ -57,9 +57,8 @@ pub fn gomlc_binary() -> string {
 pub fn workspace(name: string) -> string {
     let result = path::join(path::join(module_root(), "_artifact/test-work"), name);
     if fs::exists(result) {
-        match fs::remove_dir_all(result) {
-            Ok(()) => (),
-            Err(message) => testing::fail(message.to_string()),
+        if let Err(message) = fs::remove_dir_all(result) {
+            testing::fail(message.to_string())
         }
     }
     match fs::create_dir_all(result) {
@@ -72,9 +71,8 @@ pub fn workspace(name: string) -> string {
 }
 
 pub fn create_dir(value: string) -> () {
-    match fs::create_dir_all(value) {
-        Ok(()) => (),
-        Err(message) => testing::fail(message.to_string()),
+    if let Err(message) = fs::create_dir_all(value) {
+        testing::fail(message.to_string())
     }
 }
 
@@ -82,9 +80,8 @@ pub fn write_file(file: string, content: string) -> () {
     if let Some(parent) = path::parent(file) {
         create_dir(parent)
     }
-    match fs::write_file_structured(file, content) {
-        Ok(()) => (),
-        Err(message) => testing::fail(message.to_string()),
+    if let Err(message) = fs::write_file_structured(file, content) {
+        testing::fail(message.to_string())
     }
 }
 

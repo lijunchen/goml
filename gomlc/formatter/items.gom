@@ -230,11 +230,10 @@ fn node_continues_expression(value: LocatedNode) -> bool {
 }
 
 fn expression_statement_drops_semicolon(node: LocatedNode, following: Option[LocatedNode]) -> bool {
-    match first_significant_token(node) {
-        Some(token) => if token.token.kind == lexer::TokenKind::Label {
+    if let Some(token) = first_significant_token(node) {
+        if token.token.kind == lexer::TokenKind::Label {
             return false
-        },
-        None => (),
+        }
     }
     let following_continues = match following {
         Some(value) => node_continues_expression(value),

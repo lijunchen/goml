@@ -267,9 +267,8 @@ fn rejects_invalid_compile_time_string_boundaries() -> () {
 #[test]
 fn evaluates_recursive_direct_calls() -> () {
     let module = factorial_module();
-    match verify_module(module, Vec::new()) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = verify_module(module, Vec::new()) {
+        testing::fail(error.to_string())
     }
     testing::assert_eq(
         expect_int(
@@ -365,9 +364,8 @@ fn loop_site_module() -> ctir::CtModule {
 #[test]
 fn evaluates_local_state_and_loops() -> () {
     let module = loop_site_module();
-    match verify_module(module, Vec::new()) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = verify_module(module, Vec::new()) {
+        testing::fail(error.to_string())
     }
     testing::assert_eq(expect_int(evaluate_site(module, Vec::new(), 0, default_limits())), 10)
 }
@@ -473,9 +471,8 @@ fn evaluates_structured_match_values() -> () {
             origin: 0,
         },
     );
-    match verify_module(module, Vec::new()) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = verify_module(module, Vec::new()) {
+        testing::fail(error.to_string())
     }
     testing::assert_eq(expect_int(evaluate_site(module, Vec::new(), 0, default_limits())), 42)
 }
@@ -626,9 +623,8 @@ fn applies_fixed_width_integer_semantics() -> () {
             origin: 0,
         },
     );
-    match verify_module(module, Vec::new()) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = verify_module(module, Vec::new()) {
+        testing::fail(error.to_string())
     }
     match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
@@ -824,9 +820,8 @@ fn evaluates_return_break_and_continue() -> () {
         },
     );
     module.entries.push(ctir::CtEntry { name: "return_value", function_id: 0, public: true });
-    match verify_module(module, Vec::new()) {
-        Ok(()) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = verify_module(module, Vec::new()) {
+        testing::fail(error.to_string())
     }
     testing::assert_eq(
         expect_int(evaluate_entry(module, Vec::new(), "return_value", Vec::new(), default_limits())),

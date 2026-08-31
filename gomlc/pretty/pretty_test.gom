@@ -232,7 +232,7 @@ fn reproduces_wadlers_tree_example_at_width_30() -> () {
 #[test]
 fn explicit_work_stack_handles_deep_left_association() -> () {
     let mut value = nil();
-    for _ in range(0, 5000) {
+    for _ in 0..5000 {
         value = append(value, text("x"));
     }
     testing::assert_eq(pretty(80, value).byte_len(), 5000)
@@ -241,7 +241,7 @@ fn explicit_work_stack_handles_deep_left_association() -> () {
 #[test]
 fn fill_is_constructed_lazily_for_many_choices() -> () {
     let values: Vec[Doc] = Vec::new();
-    for _ in range(0, 250) {
+    for _ in 0..250 {
         values.push(text("x"))
     }
     let rendered = pretty(9, fill(values));
