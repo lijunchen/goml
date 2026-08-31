@@ -87,9 +87,8 @@ fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                     Some(list) => {
                         let arms: Vec[Arm] = Vec::new();
                         for arm in children_of_kind(list, cst::NodeKind::MATCH_ARM) {
-                            match lower_match_arm(ctx, arm) {
-                                Some(value) => arms.push(value),
-                                None => (),
+                            if let Some(value) = lower_match_arm(ctx, arm) {
+                                arms.push(value)
                             }
                         }
                         Option::Some(Expr::Match { expr: scrutinee, arms, span: node_span(node) })
@@ -156,9 +155,8 @@ fn lower_select_recv_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] 
             Some(list) => {
                 let arms: Vec[Arm] = Vec::new();
                 for arm in children_of_kind(list, cst::NodeKind::MATCH_ARM) {
-                    match lower_match_arm(ctx, arm) {
-                        Some(value) => arms.push(value),
-                        None => (),
+                    if let Some(value) = lower_match_arm(ctx, arm) {
+                        arms.push(value)
                     }
                 }
                 let temporary_span = node_span(node);
@@ -247,9 +245,8 @@ fn lower_select_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
                         SELECT_DEFAULT_ARM => lower_select_default_arm(ctx, arm),
                         _ => Option::None,
                     };
-                    match lowered {
-                        Some(value) => arms.push(value),
-                        None => (),
+                    if let Some(value) = lowered {
+                        arms.push(value)
                     }
                 }
                 Option::Some(

@@ -118,7 +118,7 @@ pub fn build_type_info_index(
                 diagnostics.push(
                     index_diagnostic(
                         package_path,
-                        "keyed type fact has invalid type " + fact.type_id.value.to_string(),
+                        f"keyed type fact has invalid type {fact.type_id.value}",
                     ),
                 )
             } else if index.keyed_types[key].is_some() {
@@ -130,24 +130,15 @@ pub fn build_type_info_index(
             }
         } else if !valid_node(fact.node, node_count) {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "type fact has invalid node " + fact.node.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"type fact has invalid node {fact.node.value}"),
             )
         } else if !valid_type(world, fact.type_id) {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "type fact has invalid type " + fact.type_id.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"type fact has invalid type {fact.type_id.value}"),
             )
         } else if index.type_indices[fact.node.value] >= 0 {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "conflicting type facts for node " + fact.node.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"conflicting type facts for node {fact.node.value}"),
             )
         } else {
             index.type_indices[fact.node.value] = fact_index.to_i32();
@@ -159,7 +150,7 @@ pub fn build_type_info_index(
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "definition fact has invalid node " + fact.node.value.to_string(),
+                    f"definition fact has invalid node {fact.node.value}",
                 ),
             )
         } else if !valid_optional_object(world, fact.object) {
@@ -168,7 +159,7 @@ pub fn build_type_info_index(
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "conflicting definition facts for node " + fact.node.value.to_string(),
+                    f"conflicting definition facts for node {fact.node.value}",
                 ),
             )
         } else {
@@ -179,19 +170,13 @@ pub fn build_type_info_index(
         let fact = index.uses[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "use fact has invalid node " + fact.node.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"use fact has invalid node {fact.node.value}"),
             )
         } else if !valid_optional_object(world, fact.object) {
             diagnostics.push(index_diagnostic(package_path, "use fact has invalid object"))
         } else if index.use_indices[fact.node.value] >= 0 {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "conflicting use facts for node " + fact.node.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"conflicting use facts for node {fact.node.value}"),
             )
         } else {
             index.use_indices[fact.node.value] = fact_index.to_i32();
@@ -201,10 +186,7 @@ pub fn build_type_info_index(
         let fact = index.implicits[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "implicit fact has invalid node " + fact.node.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"implicit fact has invalid node {fact.node.value}"),
             )
         } else if !valid_optional_object(world, fact.object) {
             diagnostics.push(index_diagnostic(package_path, "implicit fact has invalid object"))
@@ -212,7 +194,7 @@ pub fn build_type_info_index(
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "conflicting implicit facts for node " + fact.node.value.to_string(),
+                    f"conflicting implicit facts for node {fact.node.value}",
                 ),
             )
         } else {
@@ -223,10 +205,7 @@ pub fn build_type_info_index(
         let fact = index.selections[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "selection fact has invalid node " + fact.node.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"selection fact has invalid node {fact.node.value}"),
             )
         } else if !valid_type(world, fact.receiver_type) || !valid_type(world, fact.type_id) {
             diagnostics.push(index_diagnostic(package_path, "selection fact has invalid type"))
@@ -236,7 +215,7 @@ pub fn build_type_info_index(
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "conflicting selection facts for node " + fact.node.value.to_string(),
+                    f"conflicting selection facts for node {fact.node.value}",
                 ),
             )
         } else {
@@ -253,10 +232,7 @@ pub fn build_type_info_index(
         }
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "instance fact has invalid node " + fact.node.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"instance fact has invalid node {fact.node.value}"),
             )
         } else if !valid {
             diagnostics.push(index_diagnostic(package_path, "instance fact has invalid type"))
@@ -264,7 +240,7 @@ pub fn build_type_info_index(
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "conflicting instance facts for node " + fact.node.value.to_string(),
+                    f"conflicting instance facts for node {fact.node.value}",
                 ),
             )
         } else {
@@ -275,10 +251,7 @@ pub fn build_type_info_index(
         let fact = index.scopes[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
-                index_diagnostic(
-                    package_path,
-                    "scope fact has invalid node " + fact.node.value.to_string(),
-                ),
+                index_diagnostic(package_path, f"scope fact has invalid node {fact.node.value}"),
             )
         } else if !valid_scope(world, fact.scope) {
             diagnostics.push(index_diagnostic(package_path, "scope fact has invalid scope"))
@@ -286,7 +259,7 @@ pub fn build_type_info_index(
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "conflicting scope facts for node " + fact.node.value.to_string(),
+                    f"conflicting scope facts for node {fact.node.value}",
                 ),
             )
         } else {
@@ -299,14 +272,14 @@ pub fn build_type_info_index(
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "file version fact has invalid file " + fact.file.value.to_string(),
+                    f"file version fact has invalid file {fact.file.value}",
                 ),
             )
         } else if index.file_version_indices[fact.file.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "conflicting file version facts for file " + fact.file.value.to_string(),
+                    f"conflicting file version facts for file {fact.file.value}",
                 ),
             )
         } else {
@@ -318,7 +291,7 @@ pub fn build_type_info_index(
             diagnostics.push(
                 index_diagnostic(
                     package_path,
-                    "initializer has invalid expression node " + initializer.right.value.to_string(),
+                    f"initializer has invalid expression node {initializer.right.value}",
                 ),
             )
         }

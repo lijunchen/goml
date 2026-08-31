@@ -394,9 +394,8 @@ fn type_mismatch_text(left: Type, right: Type) -> string {
 
 fn first_type_list_error(left: Vec[Type], right: Vec[Type]) -> Option[string] {
     for index in 0..left.len() {
-        match first_unification_error(left[index], right[index]) {
-            Some(message) => return Option::Some(message),
-            None => (),
+        if let Some(message) = first_unification_error(left[index], right[index]) {
+            return Option::Some(message)
         }
     }
     Option::None

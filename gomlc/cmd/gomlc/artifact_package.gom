@@ -222,9 +222,8 @@ fn artifact_resolve_interface_units(
                     ),
                 },
             };
-            match artifact_interface_toolchain_error(world, interface) {
-                Some(error) => return Result::Err(error),
-                None => (),
+            if let Some(error) = artifact_interface_toolchain_error(world, interface) {
+                return Result::Err(error)
             }
             if !artifact_dependency_hash_matches(request.expected_hash, interface.interface_hash) {
                 return Result::Err(
@@ -233,9 +232,8 @@ fn artifact_resolve_interface_units(
                 )
             }
             let _ = resolved_names.insert(interface.package_name);
-            match artifact_standard_package(world.standard, interface.package_name) {
-                Some(_) => (),
-                None => resolved.push(interface),
+            if let None = artifact_standard_package(world.standard, interface.package_name) {
+                resolved.push(interface)
             }
             for dependency in interface.deps {
                 pending.push(
@@ -298,15 +296,13 @@ fn artifact_dependency_environments(
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
     let comptime_modules: Vec[ctir::CtModule] = Vec::new();
     for package_value in selected_standard_packages_for_needs(standard, needs) {
-        match package_value.interface_unit.comptime {
-            Some(value) => comptime_modules.push(value.module),
-            None => (),
+        if let Some(value) = package_value.interface_unit.comptime {
+            comptime_modules.push(value.module)
         }
     }
     for interface in units {
-        match interface.comptime {
-            Some(value) => comptime_modules.push(value.module),
-            None => (),
+        if let Some(value) = interface.comptime {
+            comptime_modules.push(value.module)
         }
     }
     artifact_verify_comptime_modules(comptime_modules)?;
@@ -497,9 +493,8 @@ fn artifact_use_has_explicit_alias(value: ast::LowerResult, package_name: string
                     if !use_decl.items.is_empty() {
                         return true
                     } else {
-                        match use_decl.alias {
-                            Some(_) => return true,
-                            None => (),
+                        if let Some(_) = use_decl.alias {
+                            return true
                         }
                     }
                 }
@@ -685,18 +680,16 @@ fn compile_artifact_package(
     let derive_modules: Vec[ctir::CtModule] = Vec::new();
     let derive_reexports: Vec[(string, string)] = Vec::new();
     for package_value in selected_standard_packages_for_needs(world.standard, source_needs) {
-        match package_value.interface_unit.comptime {
-            Some(value) => derive_modules.push(value.module),
-            None => (),
+        if let Some(value) = package_value.interface_unit.comptime {
+            derive_modules.push(value.module)
         }
         for value in package_value.interface_unit.exports.reexports {
             derive_reexports.push(value)
         }
     }
     for interface_unit_value in provided {
-        match interface_unit_value.comptime {
-            Some(value) => derive_modules.push(value.module),
-            None => (),
+        if let Some(value) = interface_unit_value.comptime {
+            derive_modules.push(value.module)
         }
         for value in interface_unit_value.exports.reexports {
             derive_reexports.push(value)
@@ -707,9 +700,8 @@ fn compile_artifact_package(
         None => Option::None,
     };
     let verified_derive_modules = derive_modules;
-    match builtin_derive_module {
-        Some(value) => verified_derive_modules.push(value),
-        None => (),
+    if let Some(value) = builtin_derive_module {
+        verified_derive_modules.push(value)
     }
     artifact_verify_comptime_modules(verified_derive_modules)?;
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();

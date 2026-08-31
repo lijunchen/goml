@@ -348,9 +348,8 @@ fn environment_collection_preserves_hir_trait_scope() -> () {
         "example::values",
     );
     testing::assert_eq(file.use_traits.len(), 0);
-    match package_signatures(file) {
-        Ok(_) => (),
-        Err(error) => testing::fail(error.to_string()),
+    if let Err(error) = package_signatures(file) {
+        testing::fail(error.to_string())
     }
     testing::assert_eq(file.use_traits.len(), 0)
 }
@@ -1839,9 +1838,8 @@ fn reports_unimported_package_members_canonically() -> () {
     );
     testing::assert_eq(result.diagnostics.len(), 2);
     testing::assert_eq(result.diagnostics.get(0).message, "Could not infer type");
-    match result.diagnostics.get(0).span {
-        None => (),
-        Some(_) => testing::fail("expected spanless inference diagnostic"),
+    if let Some(_) = result.diagnostics.get(0).span {
+        testing::fail("expected spanless inference diagnostic")
     }
     testing::assert_eq(result.diagnostics.get(0).source_path, "");
     testing::assert_eq(

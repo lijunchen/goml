@@ -81,9 +81,8 @@ fn collect_inline_term_names(
             for arm in arms {
                 collect_inline_block_names(arm.body, names, joins, counter)
             }
-            match default {
-                Some(body) => collect_inline_block_names(body, names, joins, counter),
-                None => (),
+            if let Some(body) = default {
+                collect_inline_block_names(body, names, joins, counter)
             }
         },
         Select { arms, default, .. } => {
@@ -96,9 +95,8 @@ fn collect_inline_term_names(
                     Send { body, .. } => collect_inline_block_names(body, names, joins, counter),
                 }
             }
-            match default {
-                Some(body) => collect_inline_block_names(body, names, joins, counter),
-                None => (),
+            if let Some(body) = default {
+                collect_inline_block_names(body, names, joins, counter)
             }
         },
         Return(_) | Jump { .. } | Unreachable { .. } => (),

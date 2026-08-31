@@ -139,9 +139,8 @@ fn first_significant_token(value: LocatedNode) -> Option[LocatedToken] {
     let cursor = child_cursor(value);
     while cursor.remaining() > 0 {
         match cursor.next() {
-            Some(Node(node)) => match first_significant_token(node) {
-                Some(token) => return Option::Some(token),
-                None => (),
+            Some(Node(node)) => if let Some(token) = first_significant_token(node) {
+                return Option::Some(token)
             },
             Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {} else {
                 return Option::Some(token)
@@ -157,9 +156,8 @@ fn last_significant_token(value: LocatedNode) -> Option[LocatedToken] {
     let cursor = child_cursor(value);
     while cursor.remaining() > 0 {
         match cursor.next() {
-            Some(Node(node)) => match last_significant_token(node) {
-                Some(token) => result.set(Option::Some(token)),
-                None => (),
+            Some(Node(node)) => if let Some(token) = last_significant_token(node) {
+                result.set(Option::Some(token))
             },
             Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {} else {
                 result.set(Option::Some(token))

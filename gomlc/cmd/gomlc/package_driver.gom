@@ -338,9 +338,8 @@ fn public_item_names(values: Vec[ast::LowerResult], package_name: string) -> Vec
     for value in values {
         match value.ast {
             Some(file) => for item in file.items {
-                match public_ast_item_name(package_name, item) {
-                    Some(name) => result.push(name),
-                    None => (),
+                if let Some(name) = public_ast_item_name(package_name, item) {
+                    result.push(name)
                 }
             },
             None => (),
@@ -504,9 +503,8 @@ fn trait_impl_exposed_private_names(
         for param in method.params {
             collect_private_type_names(result, package_name, public_names, param.1)
         }
-        match method.ret_ty {
-            Some(ret_ty) => collect_private_type_names(result, package_name, public_names, ret_ty),
-            None => (),
+        if let Some(ret_ty) = method.ret_ty {
+            collect_private_type_names(result, package_name, public_names, ret_ty)
         }
     }
     result
@@ -563,9 +561,8 @@ fn function_exposed_private_names(
     for param in value.params {
         collect_private_type_names(result, package_name, public_names, param.1)
     }
-    match value.ret_ty {
-        Some(ret_ty) => collect_private_type_names(result, package_name, public_names, ret_ty),
-        None => (),
+    if let Some(ret_ty) = value.ret_ty {
+        collect_private_type_names(result, package_name, public_names, ret_ty)
     }
     wire::sort_artifact_names(result)
 }

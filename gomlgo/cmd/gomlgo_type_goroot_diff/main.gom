@@ -89,8 +89,7 @@ fn main() -> () {
     }
     match goroot_compare::compare(root, scope, limit, start, mode, goos, goarch, cgo, test_mode) {
         Ok(summary) => println(
-            "GOROOT type-check differential: packages=" + summary.packages.to_string()
-                + " accepted="
+            f"GOROOT type-check differential: packages={summary.packages}" + " accepted="
                 + summary.accepted.to_string()
                 + " rejected="
                 + summary.rejected.to_string()

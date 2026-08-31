@@ -126,9 +126,8 @@ fn block_docs(value: Block) -> Vec[pretty::Doc] {
                 ),
             )
         }
-        match value.tail {
-            Some(tail) => result.push(expr_doc(tail)),
-            None => (),
+        if let Some(tail) = value.tail {
+            result.push(expr_doc(tail))
         }
     }
     result
@@ -448,9 +447,8 @@ fn expr_doc(value: Expr) -> pretty::Doc {
         },
         TraitCall { trait_ref: reference, method_name, receiver, args, .. } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(args.len() + 1);
-            match receiver {
-                Some(value) => values.push(expr_doc(value)),
-                None => (),
+            if let Some(value) = receiver {
+                values.push(expr_doc(value))
             }
             for arg in args {
                 values.push(expr_doc(arg))

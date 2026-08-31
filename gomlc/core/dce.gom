@@ -188,9 +188,8 @@ fn dce_collect_exprs(result: DceNames, values: Vec[Expr]) -> () {
 }
 
 fn dce_collect_optional_expr(result: DceNames, value: Option[Expr]) -> () {
-    match value {
-        Some(value) => dce_collect_expr(result, value),
-        None => (),
+    if let Some(value) = value {
+        dce_collect_expr(result, value)
     }
 }
 
@@ -627,9 +626,8 @@ fn dce_collect_function_exprs(ctx: DceFunctions, values: Vec[Expr]) -> () {
 }
 
 fn dce_collect_optional_function_expr(ctx: DceFunctions, value: Option[Expr]) -> () {
-    match value {
-        Some(value) => dce_collect_function_expr(ctx, value),
-        None => (),
+    if let Some(value) = value {
+        dce_collect_function_expr(ctx, value)
     }
 }
 
@@ -727,9 +725,8 @@ fn dce_collect_function_expr(ctx: DceFunctions, value: Expr) -> () {
         },
         TraitCall { trait_ref, method_name, instance_name, for_ty, receiver, args, ty: _ } => {
             dce_retain_trait_methods(ctx, trait_ref.name, method_name);
-            match instance_name {
-                Some(name) => dce_retain_function(ctx, name),
-                None => (),
+            if let Some(name) = instance_name {
+                dce_retain_function(ctx, name)
             }
             dce_collect_trait_ref_types(ctx, trait_ref);
             dce_collect_type(ctx, for_ty);
@@ -783,9 +780,8 @@ pub fn eliminate_unreachable_functions(value: File) -> File {
     while index < ctx.pending.len() {
         let name = ctx.pending[index];
         index += 1;
-        match ctx.functions[name] {
-            Some(function) => dce_collect_function(ctx, function),
-            None => (),
+        if let Some(function) = ctx.functions[name] {
+            dce_collect_function(ctx, function)
         }
     }
     let functions: Vec[Function] = Vec::new();

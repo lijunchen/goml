@@ -141,9 +141,8 @@ fn eliminates_dead_monomorphic_locals() -> () {
 #[test]
 fn rejects_invalid_mono_nominal_types() -> () {
     let file = lower_source("fn main() -> () { () }");
-    match validate(file) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = validate(file) {
+        testing::fail(message)
     }
     let function = file.functions[0];
     let functions = Vec::from_array(

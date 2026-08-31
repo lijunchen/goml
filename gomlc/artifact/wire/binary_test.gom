@@ -22,9 +22,8 @@ fn artifact_binary_expect_unit(value: Result[(), string]) -> () {
 }
 
 fn artifact_binary_expect_err[T](value: Result[T, string]) -> () {
-    match value {
-        Ok(_) => testing::fail("expected binary artifact error"),
-        Err(_) => (),
+    if let Ok(_) = value {
+        testing::fail("expected binary artifact error")
     }
 }
 

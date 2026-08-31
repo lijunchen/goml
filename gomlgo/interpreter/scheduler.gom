@@ -370,12 +370,12 @@ fn invalid_scheduled_instruction(message: string) -> ScheduledInstruction {
 fn scheduled_instruction(scheduled: ScheduledFrame) -> ScheduledInstruction {
     let block_id = scheduled.frame.block.get();
     if block_id.value < 0 || block_id.value >= scheduled.frame.blocks.len() {
-        return invalid_scheduled_instruction("invalid current block " + block_id.value.to_string())
+        return invalid_scheduled_instruction(f"invalid current block {block_id.value}")
     }
     let block = scheduled.frame.blocks[block_id.value];
     let index = scheduled.instruction.get();
     if index < 0 || index > block.instructions.len() {
-        invalid_scheduled_instruction("invalid current instruction " + index.to_string())
+        invalid_scheduled_instruction(f"invalid current instruction {index}")
     } else {
         ScheduledInstruction {
             instructions: block.instructions,
@@ -420,7 +420,7 @@ fn scheduled_channel_matches(frame: Frame, register_id: bytecode::RegisterId, ta
 
 fn checked_channel(state: VmState, id: isize) -> Result[ChannelValue, string] {
     if id < 0 || id >= state.channels.len() {
-        Result::Err("invalid channel " + id.to_string())
+        Result::Err(f"invalid channel {id}")
     } else {
         Result::Ok(state.channels[id])
     }

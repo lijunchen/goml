@@ -161,9 +161,8 @@ fn write_verbatim(value: Renderer, content: string) -> () {
 
 fn flush_suffixes(value: Renderer) -> () {
     while !value.suffixes.is_empty() {
-        match value.suffixes.pop_front() {
-            Some(suffix) => render_doc(value, suffix, RenderMode::Flat),
-            None => (),
+        if let Some(suffix) = value.suffixes.pop_front() {
+            render_doc(value, suffix, RenderMode::Flat)
         }
     }
 }

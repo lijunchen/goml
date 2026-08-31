@@ -517,9 +517,8 @@ fn block_doc(value: Block) -> pretty::Doc {
     for statement in value.stmts {
         values.push(pretty::append(stmt_doc(statement), pretty::text(";")))
     }
-    match value.tail {
-        Some(tail) => values.push(expr_doc(tail)),
-        None => (),
+    if let Some(tail) = value.tail {
+        values.push(expr_doc(tail))
     }
     braced_docs(values, 4)
 }
@@ -770,9 +769,8 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                     ),
                 )
             }
-            match base {
-                Some(value) => values.push(pretty::append(pretty::text(".."), expr_doc(value))),
-                None => (),
+            if let Some(value) = base {
+                values.push(pretty::append(pretty::text(".."), expr_doc(value)))
             }
             record_doc(pretty::text(name), values)
         },

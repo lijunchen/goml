@@ -839,14 +839,14 @@ fn definition_object(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
 fn use_object(builder: FunctionBuilder, node: syntax::NodeId) -> Result[go_types::ObjectId, string] {
     match builder.index.uses[execution::require_use_index(builder.index, node)?].object {
         Some(object) => Result::Ok(object),
-        None => Result::Err("use fact has no object for node " + node.value.to_string()),
+        None => Result::Err(f"use fact has no object for node {node.value}"),
     }
 }
 
 fn identifier(builder: FunctionBuilder, node: syntax::NodeId) -> Result[string, string] {
     match node_kind(builder, node) {
         syntax::SyntaxKind::Ident { name_pos: _, name } => Result::Ok(name),
-        _ => Result::Err("expected identifier at node " + node.value.to_string()),
+        _ => Result::Err(f"expected identifier at node {node.value}"),
     }
 }
 
@@ -901,7 +901,7 @@ fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -
         )
     }
     let Some(value) = syntax::get_node(builder.syntax.arena, node) else {
-        return Result::Err("invalid syntax node " + node.value.to_string());
+        return Result::Err(f"invalid syntax node {node.value}");
     };
     let location = CodeLocation { file: value.file, start: value.span.start, end: value.span.end };
     builder.blocks[builder.current.get().value].instructions.push(Instruction { kind, location });
@@ -916,7 +916,7 @@ fn terminate(builder: FunctionBuilder, node: syntax::NodeId, kind: TerminatorKin
         return Result::Err("basic block already has a terminator")
     }
     let Some(value) = syntax::get_node(builder.syntax.arena, node) else {
-        return Result::Err("invalid syntax node " + node.value.to_string());
+        return Result::Err(f"invalid syntax node {node.value}");
     };
     let location = CodeLocation { file: value.file, start: value.span.start, end: value.span.end };
     builder.blocks[builder.current.get().value].terminator = Option::Some(
@@ -5111,7 +5111,7 @@ fn finalize_blocks(builder: FunctionBuilder, source: syntax::NodeId) -> Result[
     }
     let result: Vec[BasicBlock] = Vec::new();
     let Some(value) = syntax::get_node(builder.syntax.arena, source) else {
-        return Result::Err("invalid syntax node " + source.value.to_string());
+        return Result::Err(f"invalid syntax node {source.value}");
     };
     let fallback_location = CodeLocation {
         file: value.file,

@@ -1927,9 +1927,8 @@ fn lower_file_with_types(
                 ),
             },
             ImplBlock(block) => if block.methods.is_empty() {
-                match block.trait_ref {
-                    Some(reference) => functions.push(lower_marker_trait_witness(block, reference)),
-                    None => (),
+                if let Some(reference) = block.trait_ref {
+                    functions.push(lower_marker_trait_witness(block, reference))
                 }
             } else {
                 for method in block.methods {

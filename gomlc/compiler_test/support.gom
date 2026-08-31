@@ -187,9 +187,8 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
             Err(_) => Option::None,
         }
     };
-    match interpreted {
-        Some(value) => return value,
-        None => (),
+    if let Some(value) = interpreted {
+        return value
     }
     if source_current && fs::is_file(executable) {} else {
         match process::Command::new("go").arg("build").arg("-o").arg("main").arg("main.go").current_dir(
@@ -204,7 +203,7 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
                 return ""
             },
             Err(message) => {
-                testing::fail("failed to build Go source: " + message.to_string());
+                testing::fail(f"failed to build Go source: {message}");
                 return ""
             },
         }
@@ -221,7 +220,7 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
             ""
         },
         Err(message) => {
-            testing::fail("failed to execute generated program: " + message.to_string());
+            testing::fail(f"failed to execute generated program: {message}");
             ""
         },
     }

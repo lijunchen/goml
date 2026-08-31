@@ -111,7 +111,7 @@ fn bool_backing(memory: Memory, place: Place) -> Option[Vec[bool]] {
 
 fn load_cell(memory: Memory, cell: CellId) -> Result[Value, string] {
     if !cell_valid(memory, cell.value) {
-        Result::Err("invalid cell " + cell.value.to_string())
+        Result::Err(f"invalid cell {cell.value}")
     } else {
         Result::Ok(copy_value(cell_value(memory, cell.value)))
     }
@@ -119,7 +119,7 @@ fn load_cell(memory: Memory, cell: CellId) -> Result[Value, string] {
 
 fn store_cell(memory: Memory, cell: CellId, value: Value) -> Result[(), string] {
     if !cell_valid(memory, cell.value) {
-        Result::Err("invalid cell " + cell.value.to_string())
+        Result::Err(f"invalid cell {cell.value}")
     } else {
         set_cell_value(memory, cell.value, copy_value(value));
         Result::Ok(())
@@ -226,7 +226,7 @@ fn load_projection(memory: Memory, value: Value, projections: Vec[Projection], o
 
 pub fn load_place(memory: Memory, place: Place) -> Result[Value, string] {
     if !cell_valid(memory, place.root.value) {
-        return Result::Err("invalid cell " + place.root.value.to_string())
+        return Result::Err(f"invalid cell {place.root.value}")
     }
     let value = cell_value(memory, place.root.value);
     match place.projections {
@@ -277,7 +277,7 @@ fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection],
 
 pub fn borrow_place(memory: Memory, place: Place) -> Result[Value, string] {
     if !cell_valid(memory, place.root.value) {
-        return Result::Err("invalid cell " + place.root.value.to_string())
+        return Result::Err(f"invalid cell {place.root.value}")
     }
     let value = cell_value(memory, place.root.value);
     match place.projections {
@@ -354,7 +354,7 @@ fn store_projection(
 
 pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[(), string] {
     if !cell_valid(memory, place.root.value) {
-        return Result::Err("invalid cell " + place.root.value.to_string())
+        return Result::Err(f"invalid cell {place.root.value}")
     }
     match place.projections {
         Some(projections) => {

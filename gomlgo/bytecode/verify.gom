@@ -241,7 +241,7 @@ fn check_register(
             Option::Some(function.id),
             Option::Some(block),
             instruction,
-            "invalid register " + register.value.to_string(),
+            f"invalid register {register.value}",
         )
     }
 }
@@ -284,7 +284,7 @@ fn check_place(
             Option::Some(function.id),
             Option::Some(block),
             instruction,
-            "invalid place " + place.value.to_string(),
+            f"invalid place {place.value}",
         )
     }
 }
@@ -314,7 +314,7 @@ fn check_local(
             Option::Some(function.id),
             Option::Some(block),
             instruction,
-            "invalid local " + local.value.to_string(),
+            f"invalid local {local.value}",
         )
     }
 }
@@ -551,7 +551,7 @@ fn check_call_target(
                 Option::Some(function.id),
                 Option::Some(block),
                 instruction,
-                "invalid function " + value.value.to_string(),
+                f"invalid function {value.value}",
             )
         },
         CallTarget::Method { function: value, receiver } => {
@@ -561,7 +561,7 @@ fn check_call_target(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid method function " + value.value.to_string(),
+                    f"invalid method function {value.value}",
                 )
             }
             check_register(function, diagnostics, block, instruction, receiver)
@@ -573,7 +573,7 @@ fn check_call_target(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid interface method " + method.value.to_string(),
+                    f"invalid interface method {method.value}",
                 )
             }
             check_register(function, diagnostics, block, instruction, receiver)
@@ -587,7 +587,7 @@ fn check_call_target(
                 Option::Some(function.id),
                 Option::Some(block),
                 instruction,
-                "invalid native call " + value.value.to_string(),
+                f"invalid native call {value.value}",
             )
         },
         CallTarget::NativeMethod { call, receiver } => {
@@ -597,7 +597,7 @@ fn check_call_target(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid native method " + call.value.to_string(),
+                    f"invalid native method {call.value}",
                 )
             }
             check_register(function, diagnostics, block, instruction, receiver)
@@ -1138,7 +1138,7 @@ fn check_location(
             Option::Some(function.id),
             Option::Some(block),
             instruction,
-            "invalid source file " + location.file.value.to_string(),
+            f"invalid source file {location.file.value}",
         )
     } else if location.file.value >= 0 {
         let mut found = false;
@@ -1185,7 +1185,7 @@ fn check_target_type(
             Option::Some(function.id),
             Option::Some(block),
             instruction,
-            "invalid type " + type_id.value.to_string(),
+            f"invalid type {type_id.value}",
         )
     } else if register_valid(function, target)
         && !go_types::identical(program.world, function.register_types[target.value], type_id) {
@@ -1245,7 +1245,7 @@ fn check_instruction(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid global " + global.value.to_string(),
+                    f"invalid global {global.value}",
                 )
             }
         },
@@ -1436,7 +1436,7 @@ fn check_instruction(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid slice element type " + element_type.value.to_string(),
+                    f"invalid slice element type {element_type.value}",
                 )
             }
             check_optional_register(function, diagnostics, block, instruction, low);
@@ -1451,7 +1451,7 @@ fn check_instruction(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid allocated type " + type_id.value.to_string(),
+                    f"invalid allocated type {type_id.value}",
                 )
             }
             check_optional_register(function, diagnostics, block, instruction, value);
@@ -1578,7 +1578,7 @@ fn check_instruction(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid closure function " + target_function.value.to_string(),
+                    f"invalid closure function {target_function.value}",
                 )
             } else {
                 let target_value = program.functions[target_function.value];
@@ -1630,7 +1630,7 @@ fn check_instruction(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid method value function " + target_function.value.to_string(),
+                    f"invalid method value function {target_function.value}",
                 )
             }
         },
@@ -1647,7 +1647,7 @@ fn check_instruction(
                     Option::Some(function.id),
                     Option::Some(block),
                     instruction,
-                    "invalid method expression function " + target_function.value.to_string(),
+                    f"invalid method expression function {target_function.value}",
                 )
             }
             if !valid_type(program, receiver_type) {
@@ -1941,7 +1941,7 @@ fn check_edge(
             Option::Some(function.id),
             Option::Some(block),
             instruction,
-            "invalid block " + target.value.to_string(),
+            f"invalid block {target.value}",
         );
         return
     }
@@ -2316,7 +2316,7 @@ fn check_function(
                 Option::Some(function.id),
                 Option::None,
                 -1,
-                "invalid parameter local " + local.value.to_string(),
+                f"invalid parameter local {local.value}",
             )
         } else if local.value != function.captures.len() + index {
             report(
@@ -2337,7 +2337,7 @@ fn check_function(
                 Option::Some(function.id),
                 Option::None,
                 -1,
-                "invalid capture local " + local.value.to_string(),
+                f"invalid capture local {local.value}",
             )
         } else if local.value != index {
             report(
@@ -2353,7 +2353,7 @@ fn check_function(
                 Option::Some(function.id),
                 Option::None,
                 -1,
-                "duplicate capture local " + local.value.to_string(),
+                f"duplicate capture local {local.value}",
             )
         } else {
             let _ = seen_captures.insert(local.value);
@@ -2377,7 +2377,7 @@ fn check_function(
                 Option::Some(function.id),
                 Option::None,
                 -1,
-                "invalid result local " + local.value.to_string(),
+                f"invalid result local {local.value}",
             )
         } else if seen_captures.contains(local.value) {
             report(

@@ -19,10 +19,8 @@ impl[T] Deque[T] {
 
     pub fn with_capacity(capacity: isize) -> Deque[T] {
         let slots: Vec[Option[T]] = Vec::with_capacity(capacity);
-        let mut index = 0;
-        while index < capacity {
+        for _ in 0..capacity {
             slots.push(Option::None);
-            index += 1;
         }
         Deque { slots: Ref::new(slots), head: Ref::new(0), len: Ref::new(0) }
     }
@@ -49,12 +47,10 @@ impl[T] Deque[T] {
                 old_capacity * 2
             };
             let next: Vec[Option[T]] = Vec::with_capacity(new_capacity);
-            let mut index = 0;
-            while index < new_capacity {
+            for _ in 0..new_capacity {
                 next.push(Option::None);
-                index += 1;
             }
-            index = 0;
+            let mut index = 0;
             while index < self.len.get() {
                 let old_index = (self.head.get() + index) % old_capacity;
                 next[index] = old[old_index];

@@ -159,9 +159,8 @@ fn comptime_derive_definition(value: Analysis, target: ComptimeDeriveTarget) -> 
 fn comptime_derive_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let result: Vec[DefinitionResult] = Vec::new();
     for target in comptime_derive_targets_at(value, offset) {
-        match comptime_derive_definition(value, target) {
-            Some(definition) => push_definition(result, definition),
-            None => (),
+        if let Some(definition) = comptime_derive_definition(value, target) {
+            push_definition(result, definition)
         }
     }
     result

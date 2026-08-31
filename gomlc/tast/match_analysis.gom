@@ -923,9 +923,8 @@ fn coverage_specialize(matrix: Vec[Vec[CoveragePat]], constructor: CoverageConst
                 },
                 None => Option::Some(coverage_wild_fields(constructor.fields)),
             };
-            match fields {
-                Some(fields) => result.push(coverage_join(fields, coverage_tail(row))),
-                None => (),
+            if let Some(fields) = fields {
+                result.push(coverage_join(fields, coverage_tail(row)))
             }
         }
     }
@@ -1065,9 +1064,8 @@ fn coverage_useful_sequence(
         if coverage_sequence_matches(head.sequence, length) && (length == 0 || element_inhabited) {
             let specialized: Vec[Vec[CoveragePat]] = Vec::new();
             for row in matrix {
-                match coverage_sequence_specialize_row(row, length, element) {
-                    Some(row) => specialized.push(row),
-                    None => (),
+                if let Some(row) = coverage_sequence_specialize_row(row, length, element) {
+                    specialized.push(row)
                 }
             }
             match coverage_sequence_specialize_pattern(head, length, element) {
@@ -1137,9 +1135,8 @@ fn coverage_scalar_candidate_intervals(head: CoveragePat, domains: Vec[CoverageS
             Some(value) => {
                 let result: Vec[CoverageScalar] = Vec::new();
                 for domain in domains {
-                    match coverage_scalar_intersection(value, domain) {
-                        Some(value) => result.push(value),
-                        None => (),
+                    if let Some(value) = coverage_scalar_intersection(value, domain) {
+                        result.push(value)
                     }
                 }
                 result
@@ -1715,9 +1712,8 @@ fn finalized_constant_value(
         Some(value) => Option::Some(value),
         None => {
             for dependency in dependencies {
-                match module_constant_primitive(dependency, name, ty) {
-                    Some(value) => return Option::Some(value),
-                    None => (),
+                if let Some(value) = module_constant_primitive(dependency, name, ty) {
+                    return Option::Some(value)
                 }
             }
             Option::None

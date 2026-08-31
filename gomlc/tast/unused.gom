@@ -42,9 +42,8 @@ fn collect_unused_name_ref(value: hir::NameRef, result: Vec[hir::DefId]) -> () {
 }
 
 fn collect_unused_optional_expr(value: Option[hir::Expr], result: Vec[hir::DefId]) -> () {
-    match value {
-        Some(value) => collect_unused_expr(value, result),
-        None => (),
+    if let Some(value) = value {
+        collect_unused_expr(value, result)
     }
 }
 

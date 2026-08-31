@@ -709,9 +709,8 @@ fn block_doc(value: Block) -> pretty::Doc {
     for statement in value.stmts {
         values.push(pretty::append(stmt_doc(statement), pretty::text(";")))
     }
-    match value.tail {
-        Some(tail) => values.push(expr_doc(tail)),
-        None => (),
+    if let Some(tail) = value.tail {
+        values.push(expr_doc(tail))
     }
     braced_docs(values, 4)
 }

@@ -8,9 +8,8 @@ use std::text;
 fn lower_block(ctx: LowerCtx, node: LocatedNode) -> Option[Block] {
     let stmts: Vec[Stmt] = Vec::new();
     for stmt in stmt_children(node) {
-        match lower_stmt(ctx, stmt) {
-            Some(value) => stmts.push(value),
-            None => (),
+        if let Some(value) = lower_stmt(ctx, stmt) {
+            stmts.push(value)
         }
     }
     let tails = expr_children(node);
@@ -468,9 +467,8 @@ fn lower_closure(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
         let params: Vec[ClosureParam] = Vec::new();
         match first_child(node, cst::NodeKind::CLOSURE_PARAM_LIST) {
             Some(list) => for param in children_of_kind(list, cst::NodeKind::CLOSURE_PARAM) {
-                match lower_closure_param(ctx, param) {
-                    Some(value) => params.push(value),
-                    None => (),
+                if let Some(value) = lower_closure_param(ctx, param) {
+                    params.push(value)
                 }
             },
             None => push_error(ctx, node_span(node), "Closure missing parameter list"),
@@ -1078,9 +1076,8 @@ fn lower_expr_sequence(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr
     } else {
         let items: Vec[Expr] = Vec::new();
         for child in expr_children(node) {
-            match lower_expr(ctx, child) {
-                Some(value) => items.push(value),
-                None => (),
+            if let Some(value) = lower_expr(ctx, child) {
+                items.push(value)
             }
         }
         if tuple {

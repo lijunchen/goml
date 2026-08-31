@@ -574,9 +574,8 @@ fn fail_unknown_subcommand(command: string) -> () {
 
 fn handle_cli_parse_error(command: string, error: string) -> () {
     if is_cli_help_signal(error) {
-        match command_help(command) {
-            Some(help) => print_cli_help(help),
-            None => (),
+        if let Some(help) = command_help(command) {
+            print_cli_help(help)
         }
         process::exit(0)
     } else {

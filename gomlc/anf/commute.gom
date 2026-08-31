@@ -141,9 +141,8 @@ fn collect_commute_assigned_term(result: Vec[string], value: Term) -> () {
             for arm in arms {
                 collect_commute_assigned_block(result, arm.body)
             }
-            match default {
-                Some(body) => collect_commute_assigned_block(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_commute_assigned_block(result, body)
             }
         },
         Select { arms, default, .. } => {
@@ -155,9 +154,8 @@ fn collect_commute_assigned_term(result: Vec[string], value: Term) -> () {
                     },
                 )
             }
-            match default {
-                Some(body) => collect_commute_assigned_block(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_commute_assigned_block(result, body)
             }
         },
         Return(_) | Jump { .. } | Unreachable { .. } => (),
@@ -356,9 +354,8 @@ fn collect_commute_term_fields(
             for arm in arms {
                 collect_commute_block_fields(result, arm.body, scrutinee, counter)
             }
-            match default {
-                Some(body) => collect_commute_block_fields(result, body, scrutinee, counter),
-                None => (),
+            if let Some(body) = default {
+                collect_commute_block_fields(result, body, scrutinee, counter)
             }
         },
         Select { arms, default, .. } => {
@@ -372,9 +369,8 @@ fn collect_commute_term_fields(
                     counter,
                 )
             }
-            match default {
-                Some(body) => collect_commute_block_fields(result, body, scrutinee, counter),
-                None => (),
+            if let Some(body) = default {
+                collect_commute_block_fields(result, body, scrutinee, counter)
             }
         },
         Return(_) | Jump { .. } | Unreachable { .. } => (),

@@ -2377,9 +2377,8 @@ fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::
             let args = specialize_exprs(ctx, bindings, args);
             let ty = specialize_type(ctx, ty, bindings);
             let actual_types: Vec[core::Type] = Vec::new();
-            match receiver {
-                Some(value) => actual_types.push(core::expr_type(value)),
-                None => (),
+            if let Some(value) = receiver {
+                actual_types.push(core::expr_type(value))
             }
             for arg in args {
                 actual_types.push(core::expr_type(arg))
@@ -2488,9 +2487,8 @@ fn ensure_runtime_trait_impls_for_type(ctx: SpecializeCtx, value: core::Type) ->
 }
 
 fn ensure_runtime_trait_impls_for_optional_expr(ctx: SpecializeCtx, value: Option[core::Expr]) -> () {
-    match value {
-        Some(value) => ensure_runtime_trait_impls_for_expr(ctx, value),
-        None => (),
+    if let Some(value) = value {
+        ensure_runtime_trait_impls_for_expr(ctx, value)
     }
 }
 
@@ -2589,15 +2587,13 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
         TraitCall { receiver, args, .. } => {
-            match receiver {
-                Some(value) => ensure_runtime_trait_impls_for_expr(ctx, value),
-                None => (),
+            if let Some(value) = receiver {
+                ensure_runtime_trait_impls_for_expr(ctx, value)
             }
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
-        Break { value, ty: _, .. } => match value {
-            Some(expr) => ensure_runtime_trait_impls_for_expr(ctx, expr),
-            None => (),
+        Break { value, ty: _, .. } => if let Some(expr) = value {
+            ensure_runtime_trait_impls_for_expr(ctx, expr)
         },
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
@@ -2682,9 +2678,8 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     for function in value.functions {
         function_index[function.name] = function;
         let _ = used_names.insert(function.name);
-        match inherent_function_method(function) {
-            Some(method_name) => add_indexed_function(inherent_method_index, method_name, function),
-            None => (),
+        if let Some(method_name) = inherent_function_method(function) {
+            add_indexed_function(inherent_method_index, method_name, function)
         }
         match function.trait_impl {
             Some(metadata) => {

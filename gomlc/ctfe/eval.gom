@@ -346,9 +346,8 @@ fn restore_pattern_locals(
             for pattern in prefix {
                 restore_pattern_locals(target, saved, pattern)
             }
-            match rest {
-                Some(slot) => restore_pattern_local(target, saved, slot),
-                None => (),
+            if let Some(slot) = rest {
+                restore_pattern_local(target, saved, slot)
             }
             for pattern in suffix {
                 restore_pattern_locals(target, saved, pattern)
@@ -1034,9 +1033,8 @@ fn eval_function(
     }
     match state.derive_state {
         Some(_) => (),
-        None => match find_memoized(state, module.package_name, function.id, args) {
-            Some(value) => return Result::Ok(value),
-            None => (),
+        None => if let Some(value) = find_memoized(state, module.package_name, function.id, args) {
+            return Result::Ok(value)
         },
     }
     state.call_depth.set(state.call_depth.get() + 1);

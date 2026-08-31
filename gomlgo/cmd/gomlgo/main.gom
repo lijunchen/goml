@@ -433,7 +433,7 @@ fn run_files(arguments: Vec[string]) -> () {
             vm_config.select_seed = match num::parse_uint_structured(arguments[index + 1]) {
                 Ok(value) => value.to_u64(),
                 Err(message) => {
-                    fail("invalid select seed: " + message.to_string());
+                    fail(f"invalid select seed: {message}");
                     0.to_u64()
                 },
             };
@@ -450,7 +450,7 @@ fn run_files(arguments: Vec[string]) -> () {
                     1
                 },
                 Err(message) => {
-                    fail("invalid maximum goroutine count: " + message.to_string());
+                    fail(f"invalid maximum goroutine count: {message}");
                     1
                 },
             };
@@ -467,7 +467,7 @@ fn run_files(arguments: Vec[string]) -> () {
                     1.to_i64()
                 },
                 Err(message) => {
-                    fail("invalid maximum step count: " + message.to_string());
+                    fail(f"invalid maximum step count: {message}");
                     1.to_i64()
                 },
             };

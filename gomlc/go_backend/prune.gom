@@ -116,9 +116,8 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> () {
         Expr { expr } | Go { call: expr } | Defer { call: expr } => collect_expr_names(result, expr),
         Var { name: _, ty, value: initial } => {
             collect_type_names(result, ty);
-            match initial {
-                Some(expr) => collect_expr_names(result, expr),
-                None => (),
+            if let Some(expr) = initial {
+                collect_expr_names(result, expr)
             }
         },
         Assign { name: _, value: expr } => collect_expr_names(result, expr),
@@ -132,9 +131,8 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> () {
             collect_expr_names(result, expr)
         },
         MultiAssign { names: _, value: expr } => collect_expr_names(result, expr),
-        Return { expr } => match expr {
-            Some(expr) => collect_expr_names(result, expr),
-            None => (),
+        Return { expr } => if let Some(expr) = expr {
+            collect_expr_names(result, expr)
         },
         ReturnMulti { exprs: values } => {
             for value in values {
@@ -144,9 +142,8 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> () {
         If { cond, then_, else_ } => {
             collect_expr_names(result, cond);
             collect_block_names(result, then_);
-            match else_ {
-                Some(body) => collect_block_names(result, body),
-                None => (),
+            if let Some(body) = else_ {
+                collect_block_names(result, body)
             }
         },
         Loop { body } | LabeledLoop { label: _, body } => collect_block_names(result, body),
@@ -160,9 +157,8 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> () {
                 collect_expr_names(result, case.value);
                 collect_block_names(result, case.body)
             }
-            match default {
-                Some(body) => collect_block_names(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_block_names(result, body)
             }
         },
         TypeSwitch { binding: _, expr, cases, default } => {
@@ -171,9 +167,8 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> () {
                 collect_type_names(result, case.ty);
                 collect_block_names(result, case.body)
             }
-            match default {
-                Some(body) => collect_block_names(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_block_names(result, body)
             }
         },
         Select { cases, default } => {
@@ -187,9 +182,8 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> () {
                 }
                 collect_block_names(result, case.body)
             }
-            match default {
-                Some(body) => collect_block_names(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_block_names(result, body)
             }
         },
         Break | BreakLabel { label: _ } | Continue | ContinueLabel { label: _ } | Panic {
@@ -233,9 +227,8 @@ fn collect_item_names(result: NameSet, value: Item) -> () {
             }
         },
         Global(global) => {
-            match global.ty {
-                Some(ty) => collect_type_names(result, ty),
-                None => (),
+            if let Some(ty) = global.ty {
+                collect_type_names(result, ty)
             }
             collect_expr_names(result, global.value)
         },
@@ -244,9 +237,8 @@ fn collect_item_names(result: NameSet, value: Item) -> () {
                 for param in method.params {
                     collect_type_names(result, param)
                 }
-                match method.ret_ty {
-                    Some(ty) => collect_type_names(result, ty),
-                    None => (),
+                if let Some(ty) = method.ret_ty {
+                    collect_type_names(result, ty)
                 }
             }
         },
@@ -259,9 +251,8 @@ fn collect_item_names(result: NameSet, value: Item) -> () {
             for param in function.params {
                 collect_type_names(result, param.1)
             }
-            match function.ret_ty {
-                Some(ty) => collect_type_names(result, ty),
-                None => (),
+            if let Some(ty) = function.ret_ty {
+                collect_type_names(result, ty)
             }
             collect_block_names(result, function.body)
         },
@@ -270,9 +261,8 @@ fn collect_item_names(result: NameSet, value: Item) -> () {
             for param in method.params {
                 collect_type_names(result, param.1)
             }
-            match method.ret_ty {
-                Some(ty) => collect_type_names(result, ty),
-                None => (),
+            if let Some(ty) = method.ret_ty {
+                collect_type_names(result, ty)
             }
             collect_block_names(result, method.body)
         },

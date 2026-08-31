@@ -243,9 +243,8 @@ fn dce_term(value: Term) -> DceTermResult {
                 match arm {
                     Receive { channel, guard, binding, binding_ty, body } => {
                         dce_collect_imm(live.values, channel);
-                        match guard {
-                            Some(value) => dce_collect_imm(live.values, value),
-                            None => (),
+                        if let Some(value) = guard {
+                            dce_collect_imm(live.values, value)
                         }
                         let result = dce_block_with_live(body);
                         dce_names_remove(result.live.values, binding);
@@ -263,9 +262,8 @@ fn dce_term(value: Term) -> DceTermResult {
                     Send { channel, value, guard, body } => {
                         dce_collect_imm(live.values, channel);
                         dce_collect_imm(live.values, value);
-                        match guard {
-                            Some(value) => dce_collect_imm(live.values, value),
-                            None => (),
+                        if let Some(value) = guard {
+                            dce_collect_imm(live.values, value)
                         }
                         let result = dce_block_with_live(body);
                         dce_live_add_all(live, result.live);

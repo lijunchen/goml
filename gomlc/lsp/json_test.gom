@@ -38,9 +38,8 @@ fn rejects_invalid_json() -> () {
         Ok(_) => testing::fail("expected invalid JSON"),
         Err(_) => (),
     }
-    match json::parse("01") {
-        Ok(_) => testing::fail("expected invalid number"),
-        Err(_) => (),
+    if let Ok(_) = json::parse("01") {
+        testing::fail("expected invalid number")
     }
     match json::parse("\"\\ud83d\\ude00\"") {
         Ok(String(value)) => {

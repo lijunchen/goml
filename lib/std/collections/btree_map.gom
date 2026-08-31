@@ -122,9 +122,8 @@ fn btree_borrow_from_previous[K, V](parent: BTreeNode[K, V], index: isize) -> ()
     child.keys.insert(0, parent.keys[index - 1]);
     child.values.insert(0, parent.values[index - 1]);
     if !child.leaf {
-        match sibling.children.pop() {
-            Some(value) => child.children.insert(0, value),
-            None => (),
+        if let Some(value) = sibling.children.pop() {
+            child.children.insert(0, value)
         }
     }
     match sibling.keys.pop() {

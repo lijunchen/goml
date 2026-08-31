@@ -890,9 +890,8 @@ fn collects_all_invalid_test_attribute_diagnostics() -> () {
         testing::assert_eq(diagnostic.stage, "attribute");
         testing::assert_eq(diagnostic.message, expected.get(index));
         testing::assert_eq(diagnostic.source_path, "attribute_test.gom");
-        match diagnostic.span {
-            Some(_) => (),
-            None => testing::fail("expected attribute diagnostic span"),
+        if let None = diagnostic.span {
+            testing::fail("expected attribute diagnostic span")
         }
     }
 }
@@ -1953,9 +1952,8 @@ fn parses_artifact_json_values() -> () {
         },
         _ => testing::fail("expected JSON object"),
     }
-    match json::parse("[01]") {
-        Err(_) => (),
-        Ok(_) => testing::fail("expected invalid JSON number"),
+    if let Ok(_) = json::parse("[01]") {
+        testing::fail("expected invalid JSON number")
     }
     match json::parse("{} trailing") {
         Err(_) => (),
@@ -2465,9 +2463,8 @@ fn compiler_world_artifact_round_trips() -> () {
         Err(error) => testing::fail(error.to_string()),
     }
     first.truncate(first.len() - 1);
-    match decode_package_world(first) {
-        Ok(_) => testing::fail("expected truncated compiler world to fail"),
-        Err(_) => (),
+    if let Ok(_) = decode_package_world(first) {
+        testing::fail("expected truncated compiler world to fail")
     }
 }
 

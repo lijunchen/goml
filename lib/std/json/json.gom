@@ -137,14 +137,12 @@ fn parse_json_string(value: JsonParser) -> Result[string, string] {
             } else if escape == b'/' {
                 builder.write_char('/')
             } else if escape == b'b' {
-                match char_from_u32(8) {
-                    Some(character) => builder.write_char(character),
-                    None => (),
+                if let Some(character) = char_from_u32(8) {
+                    builder.write_char(character)
                 }
             } else if escape == b'f' {
-                match char_from_u32(12) {
-                    Some(character) => builder.write_char(character),
-                    None => (),
+                if let Some(character) = char_from_u32(12) {
+                    builder.write_char(character)
                 }
             } else if escape == b'n' {
                 builder.write_char('\n')

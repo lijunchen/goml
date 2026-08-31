@@ -20,7 +20,7 @@ fn resolve_program(value: string) -> Result[string, string] {
     } else {
         match process::look_path_structured(value) {
             Ok(value) => canonical(value),
-            Err(message) => Result::Err("failed to find gomlfmt: " + message.to_string()),
+            Err(message) => Result::Err(f"failed to find gomlfmt: {message}"),
         }
     }
 }

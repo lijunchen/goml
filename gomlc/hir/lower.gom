@@ -509,9 +509,8 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
     if parts.len() == 1 {
         let matches: Vec[(DefId, isize)] = Vec::new();
         for info in ctx.enums {
-            match enum_variant(info, parts[0]) {
-                Some(index) => matches.push((info.def_id, index)),
-                None => (),
+            if let Some(index) = enum_variant(info, parts[0]) {
+                matches.push((info.def_id, index))
             }
         }
         if matches.len() == 1 {
@@ -764,15 +763,13 @@ fn pattern_binding_mismatch(expected: Vec[(string, LocalId)], actual: Vec[(strin
     let missing: Vec[string] = Vec::new();
     let extra: Vec[string] = Vec::new();
     for value in expected {
-        match find_binding(actual, value.0) {
-            Some(_) => (),
-            None => missing.push(value.0),
+        if let None = find_binding(actual, value.0) {
+            missing.push(value.0)
         }
     }
     for value in actual {
-        match find_binding(expected, value.0) {
-            Some(_) => (),
-            None => extra.push(value.0),
+        if let None = find_binding(expected, value.0) {
+            extra.push(value.0)
         }
     }
     if missing.is_empty() && extra.is_empty() {
@@ -1746,9 +1743,8 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
     for file in files {
         for item in file.items {
             let def_id = DefId { pkg: id, index };
-            match item_name(canonical_package_name, item) {
-                Some(name) => definitions.push((name, def_id)),
-                None => (),
+            if let Some(name) = item_name(canonical_package_name, item) {
+                definitions.push((name, def_id))
             }
             match item {
                 Constant(value) => {
@@ -2003,9 +1999,8 @@ pub fn lower_expanded_package_files(
 ) -> Vec[LowerResult] {
     let files: Vec[ast::File] = Vec::new();
     for value in values {
-        match value.0.ast {
-            Some(file) => files.push(file),
-            None => (),
+        if let Some(file) = value.0.ast {
+            files.push(file)
         }
     }
     let base = make_context(files, canonical_package_name, true);

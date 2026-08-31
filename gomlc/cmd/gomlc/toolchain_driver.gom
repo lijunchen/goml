@@ -194,10 +194,9 @@ fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::Artif
 ] {
     let modules: Vec[ctir::CtModule] = Vec::new();
     for value in values {
-        match value.comptime {
-            Some(value) => modules.push(value.module),
-            None => (),
-        };
+        if let Some(value) = value.comptime {
+            modules.push(value.module)
+        }
     }
     artifact_verify_comptime_modules(modules)?;
     let result: Vec[tast::DependencyEnvironment] = Vec::new();

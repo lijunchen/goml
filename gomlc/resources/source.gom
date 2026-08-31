@@ -592,9 +592,7 @@ pub fn standard_package_link_closure(package_names: Vec[string]) -> Vec[string] 
 pub fn toolchain_lib_dir() -> Result[string, string] {
     let executable = match env::current_exe_structured() {
         Ok(value) => value,
-        Err(error) => return Result::Err(
-            "could not locate compiler executable: " + error.to_string(),
-        ),
+        Err(error) => return Result::Err(f"could not locate compiler executable: {error}"),
     };
     let binary_dir = match path::parent(executable) {
         Some(value) => value,

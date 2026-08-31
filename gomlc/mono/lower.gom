@@ -122,9 +122,8 @@ fn ensure_type_instance(
     args: Vec[core::Type],
     name_args: Vec[Type],
 ) -> string {
-    match ctx.error.get() {
-        Some(_) => return base_name,
-        None => (),
+    if let Some(_) = ctx.error.get() {
+        return base_name
     }
     match find_type_instance(ctx, base_name, args) {
         Some(instance) => instance.name,
@@ -364,9 +363,8 @@ fn collapse_trait_ref(ctx: TypeCtx, value: core::TraitRef) -> TraitRef {
 }
 
 fn invalid_type(ctx: TypeCtx, message: string) -> Type {
-    match ctx.error.get() {
-        Some(_) => (),
-        None => ctx.error.set(Option::Some(message)),
+    if let None = ctx.error.get() {
+        ctx.error.set(Option::Some(message))
     }
     Type::Unit
 }
@@ -955,9 +953,8 @@ fn collect_trait_ref_type_names(ctx: TypeCtx, value: core::TraitRef) -> () {
 }
 
 fn collect_optional_trait_ref_type_names(ctx: TypeCtx, value: Option[core::TraitRef]) -> () {
-    match value {
-        Some(reference) => collect_trait_ref_type_names(ctx, reference),
-        None => (),
+    if let Some(reference) = value {
+        collect_trait_ref_type_names(ctx, reference)
     }
 }
 
@@ -1028,9 +1025,8 @@ fn collect_exprs_type_names(ctx: TypeCtx, values: Vec[core::Expr]) -> () {
 }
 
 fn collect_optional_expr_type_names(ctx: TypeCtx, value: Option[core::Expr]) -> () {
-    match value {
-        Some(expr) => collect_expr_type_names(ctx, expr),
-        None => (),
+    if let Some(expr) = value {
+        collect_expr_type_names(ctx, expr)
     }
 }
 

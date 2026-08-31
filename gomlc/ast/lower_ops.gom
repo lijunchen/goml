@@ -197,9 +197,8 @@ fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
         Some(list) => for arg in children_of_kind(list, cst::NodeKind::ARG) {
             let values = expr_children(arg);
             if !values.is_empty() {
-                match lower_expr(ctx, values[0]) {
-                    Some(value) => args.push(value),
-                    None => (),
+                if let Some(value) = lower_expr(ctx, values[0]) {
+                    args.push(value)
                 }
             } else {
                 push_error(ctx, node_span(arg), "Arg has no expr")

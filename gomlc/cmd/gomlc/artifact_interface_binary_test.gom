@@ -349,9 +349,8 @@ fn comptime_interface_rejects_invalid_semantic_hash() -> () {
             bytes::Bytes::new()
         },
     };
-    match interface_codec::decode_binary(encoded) {
-        Ok(_) => testing::fail("expected invalid comptime semantic hash rejection"),
-        Err(_) => (),
+    if let Ok(_) = interface_codec::decode_binary(encoded) {
+        testing::fail("expected invalid comptime semantic hash rejection")
     }
 }
 
@@ -459,8 +458,7 @@ fn binary_interface_artifact_rejects_unknown_required_section() -> () {
             bytes::Bytes::new()
         },
     };
-    match interface_codec::decode_binary(encoded) {
-        Ok(_) => testing::fail("expected unknown required section rejection"),
-        Err(_) => (),
+    if let Ok(_) = interface_codec::decode_binary(encoded) {
+        testing::fail("expected unknown required section rejection")
     }
 }

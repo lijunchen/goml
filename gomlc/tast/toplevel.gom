@@ -332,9 +332,8 @@ fn report_unresolved_block(ctx: Checker, value: hir::Block, report_all: bool) ->
                     mark_unresolved_pattern_locals(ctx, pat)
                 }
                 report_unresolved_expr(ctx, value, report_all);
-                match else_branch {
-                    Some(value) => report_unresolved_expr(ctx, value, report_all),
-                    None => (),
+                if let Some(value) = else_branch {
+                    report_unresolved_expr(ctx, value, report_all)
                 }
             },
             Assign { target, op: _, value } => {
@@ -344,9 +343,8 @@ fn report_unresolved_block(ctx: Checker, value: hir::Block, report_all: bool) ->
             Expr { expr } => report_unresolved_expr(ctx, expr, report_all),
         }
     }
-    match value.tail {
-        Some(expr) => report_unresolved_expr(ctx, expr, report_all),
-        None => (),
+    if let Some(expr) = value.tail {
+        report_unresolved_expr(ctx, expr, report_all)
     }
 }
 
@@ -374,9 +372,8 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr, report_all: bool) -> (
             for field in fields {
                 report_unresolved_expr(ctx, field.1, report_all)
             }
-            match base {
-                Some(value) => report_unresolved_expr(ctx, value, report_all),
-                None => (),
+            if let Some(value) = base {
+                report_unresolved_expr(ctx, value, report_all)
             }
         },
         Closure { params, body } => {
@@ -395,9 +392,8 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr, report_all: bool) -> (
         Match { expr, arms } => {
             report_unresolved_expr(ctx, expr, report_all);
             for arm in arms {
-                match arm.guard {
-                    Some(guard) => report_unresolved_expr(ctx, guard, report_all),
-                    None => (),
+                if let Some(guard) = arm.guard {
+                    report_unresolved_expr(ctx, guard, report_all)
                 }
                 report_unresolved_expr(ctx, arm.body, report_all)
             }
@@ -416,13 +412,11 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr, report_all: bool) -> (
             report_unresolved_expr(ctx, iterator, report_all);
             report_unresolved_expr(ctx, body, report_all)
         },
-        Return { expr } => match expr {
-            Some(expr) => report_unresolved_expr(ctx, expr, report_all),
-            None => (),
+        Return { expr } => if let Some(expr) = expr {
+            report_unresolved_expr(ctx, expr, report_all)
         },
-        Break { value, .. } => match value {
-            Some(expr) => report_unresolved_expr(ctx, expr, report_all),
-            None => (),
+        Break { value, .. } => if let Some(expr) = value {
+            report_unresolved_expr(ctx, expr, report_all)
         },
         Call { func, args } => {
             report_unresolved_expr(ctx, func, report_all);
@@ -2882,9 +2876,8 @@ fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> () {
             Defer { expr } => attach_expr_diagnostic_spans(ctx, expr),
             Let { is_mut: _, pat: _, annotation: _, value, else_branch } => {
                 attach_expr_diagnostic_spans(ctx, value);
-                match else_branch {
-                    Some(value) => attach_expr_diagnostic_spans(ctx, value),
-                    None => (),
+                if let Some(value) = else_branch {
+                    attach_expr_diagnostic_spans(ctx, value)
                 }
             },
             Assign { target, op: _, value } => {
@@ -2894,9 +2887,8 @@ fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> () {
             Expr { expr } => attach_expr_diagnostic_spans(ctx, expr),
         }
     }
-    match value.tail {
-        Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
-        None => (),
+    if let Some(expr) = value.tail {
+        attach_expr_diagnostic_spans(ctx, expr)
     }
 }
 
@@ -2949,9 +2941,8 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> () {
             for field in fields {
                 attach_expr_diagnostic_spans(ctx, field.1)
             }
-            match base {
-                Some(value) => attach_expr_diagnostic_spans(ctx, value),
-                None => (),
+            if let Some(value) = base {
+                attach_expr_diagnostic_spans(ctx, value)
             }
         },
         Closure { params: _, body } | Unary { op: _, expr: body } | Cast { expr: body, ty: _ } | Try {
@@ -2963,9 +2954,8 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> () {
         Match { expr, arms } => {
             attach_expr_diagnostic_spans(ctx, expr);
             for arm in arms {
-                match arm.guard {
-                    Some(guard) => attach_expr_diagnostic_spans(ctx, guard),
-                    None => (),
+                if let Some(guard) = arm.guard {
+                    attach_expr_diagnostic_spans(ctx, guard)
                 }
                 attach_expr_diagnostic_spans(ctx, arm.body)
             }
@@ -2984,13 +2974,11 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> () {
             attach_expr_diagnostic_spans(ctx, iterator);
             attach_expr_diagnostic_spans(ctx, body)
         },
-        Return { expr } => match expr {
-            Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
-            None => (),
+        Return { expr } => if let Some(expr) = expr {
+            attach_expr_diagnostic_spans(ctx, expr)
         },
-        Break { value, .. } => match value {
-            Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
-            None => (),
+        Break { value, .. } => if let Some(expr) = value {
+            attach_expr_diagnostic_spans(ctx, expr)
         },
         Call { func, args } => {
             attach_expr_diagnostic_spans(ctx, func);
@@ -3227,13 +3215,11 @@ fn check_file_with_package(
         match item {
             Constant(value) => {
                 let checked = check_constant(ctx, value);
-                match checked.0 {
-                    Some(value) => constants.push(value),
-                    None => (),
+                if let Some(value) = checked.0 {
+                    constants.push(value)
                 }
-                match checked.1 {
-                    Some(value) => pending_constants.push(value),
-                    None => (),
+                if let Some(value) = checked.1 {
+                    pending_constants.push(value)
                 }
             },
             Static(value) => statics.push(check_static(ctx, value)),
@@ -3243,9 +3229,8 @@ fn check_file_with_package(
     validate_constant_cycles(ctx, constants);
     let pattern_dependencies: Vec[ctir::CtModule] = Vec::new();
     for dependency in dependencies {
-        match dependency.comptime {
-            Some(module) => pattern_dependencies.push(module),
-            None => (),
+        if let Some(module) = dependency.comptime {
+            pattern_dependencies.push(module)
         }
     }
     let pattern_values = evaluate_pattern_constants(
@@ -3740,9 +3725,8 @@ fn check_package_files_for_link_with_environments_options(
     let typeck_results = empty_typeck_results();
     let comptime_dependencies: Vec[ctir::CtModule] = Vec::new();
     for dependency in dependencies {
-        match dependency.comptime {
-            Some(value) => comptime_dependencies.push(value),
-            None => (),
+        if let Some(value) = dependency.comptime {
+            comptime_dependencies.push(value)
         }
     }
     let package_environments: Vec[PackageEnvironment] = Vec::new();

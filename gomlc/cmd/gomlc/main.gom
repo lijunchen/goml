@@ -92,9 +92,8 @@ fn inline_dump_argument(value: string) -> Option[(string, string)] {
     names.push(DUMP_ANF_OPTION);
     names.push(DUMP_GO_OPTION);
     for name in names {
-        match inline_cli_value(value, name) {
-            Some(argument) => return Option::Some((name, argument)),
-            None => (),
+        if let Some(argument) = inline_cli_value(value, name) {
+            return Option::Some((name, argument))
         }
     }
     Option::None

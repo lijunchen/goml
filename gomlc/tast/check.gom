@@ -1194,9 +1194,8 @@ fn missing_constructor_expr(ctx: Checker, name: string, expected: Option[Type]) 
 }
 
 fn report_error_inference(ctx: Checker, expected: Option[Type]) -> () {
-    match expected {
-        Some(_) => (),
-        None => push_spanless_inference_diagnostic(ctx),
+    if let None = expected {
+        push_spanless_inference_diagnostic(ctx)
     }
 }
 
@@ -1221,9 +1220,8 @@ fn check_resolved_constructor_expr(
             ty: fresh_unresolved_inference(ctx),
         }
     }
-    match propagated_expected(expected) {
-        Some(ty) => expect_type(ctx, info.ty, ty),
-        None => (),
+    if let Some(ty) = propagated_expected(expected) {
+        expect_type(ctx, info.ty, ty)
     }
     let arity_mismatch = args.len() != info.fields.len();
     if arity_mismatch {
@@ -1324,9 +1322,8 @@ fn check_struct_update_expr(
 ) -> Expr {
     match resolve_struct(ctx, name) {
         Some(info) => {
-            match propagated_expected(expected) {
-                Some(ty) => expect_type(ctx, info.ty, ty),
-                None => (),
+            if let Some(ty) = propagated_expected(expected) {
+                expect_type(ctx, info.ty, ty)
             }
             let stmts: Vec[Stmt] = Vec::new();
             let checked_fields: Vec[(string, string, Type)] = Vec::new();
@@ -1446,9 +1443,8 @@ fn check_struct_expr(
                     ty: Type::Error,
                 }
             }
-            match propagated_expected(expected) {
-                Some(ty) => expect_type(ctx, info.ty, ty),
-                None => (),
+            if let Some(ty) = propagated_expected(expected) {
+                expect_type(ctx, info.ty, ty)
             }
             for index in 0..fields.len() {
                 let provided = fields[index];
@@ -1555,9 +1551,8 @@ fn check_positional_struct_expr(
         report_error_inference(ctx, expected);
         return Expr::Constr { constructor: info.constructor, args: Vec::new(), ty: Type::Error }
     }
-    match propagated_expected(expected) {
-        Some(ty) => expect_type(ctx, info.ty, ty),
-        None => (),
+    if let Some(ty) = propagated_expected(expected) {
+        expect_type(ctx, info.ty, ty)
     }
     let arity_mismatch = args.len() != info.fields.len();
     if arity_mismatch {
@@ -1609,9 +1604,8 @@ fn check_tuple_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]
 fn check_array_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]) -> Expr {
     let elem = fresh_type(ctx.counter, VarKind::Any);
     let array_ty = Type::Array { len: values.len(), elem };
-    match propagated_expected(expected) {
-        Some(ty) => expect_type(ctx, array_ty, ty),
-        None => (),
+    if let Some(ty) = propagated_expected(expected) {
+        expect_type(ctx, array_ty, ty)
     }
     let items: Vec[Expr] = Vec::new();
     for value in values {
@@ -1686,9 +1680,8 @@ fn check_interpolated_string_expr(
     parts: Vec[hir::InterpolatedStringPart],
     expected: Option[Type],
 ) -> Expr {
-    match propagated_expected(expected) {
-        Some(ty) => expect_type(ctx, Type::String, ty),
-        None => (),
+    if let Some(ty) = propagated_expected(expected) {
+        expect_type(ctx, Type::String, ty)
     }
     let mut result = Expr::Prim { value: Primitive::String { value: "" }, ty: Type::String };
     for part in parts {
@@ -1744,9 +1737,8 @@ fn check_closure_expr(
                     ctx.predicates,
                     true,
                 );
-                match contextual {
-                    Some(expected) => expect_type(ctx, declared, expected),
-                    None => (),
+                if let Some(expected) = contextual {
+                    expect_type(ctx, declared, expected)
                 }
                 declared
             },
@@ -2486,9 +2478,8 @@ fn check_call_expr(
             None => match reference {
                 Other(name) => {
                     push_diagnostic(ctx, "Unresolved callee " + name);
-                    match expected {
-                        Some(_) => (),
-                        None => push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE),
+                    if let None = expected {
+                        push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE)
                     }
                     let values: Vec[Expr] = Vec::new();
                     for value in args {
@@ -2870,9 +2861,8 @@ fn check_binary_expr(
                 Option::Some(left_source.span),
             )
         } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
-            match partial_order_trait(ctx, expr_type(left)) {
-                Some(_) => (),
-                None => push_operator_not_defined(ctx, op, expr_type(left), left_source.span),
+            if let None = partial_order_trait(ctx, expr_type(left)) {
+                push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
             }
         } else if is_arithmetic_op(op) && !is_numeric_type(expr_type(left))
             && !(match prune(expr_type(left)) {
@@ -3006,9 +2996,8 @@ fn hir_pattern_locals(value: hir::Pat) -> Vec[hir::LocalId] {
                 }
             }
             match rest {
-                Some(value) => match value.binding {
-                    Some(local) => result.push(local),
-                    None => (),
+                Some(value) => if let Some(local) = value.binding {
+                    result.push(local)
                 },
                 None => (),
             }
@@ -3118,9 +3107,8 @@ fn collect_or_pattern_bindings(values: Vec[OrPatternBinding], value: Pat) -> () 
                 collect_or_pattern_bindings(values, value)
             }
             match rest {
-                Some(value) => match value.binding {
-                    Some(name) => push_or_pattern_binding(values, name, false, value.ty),
-                    None => (),
+                Some(value) => if let Some(name) = value.binding {
+                    push_or_pattern_binding(values, name, false, value.ty)
                 },
                 None => (),
             }
@@ -4772,9 +4760,8 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             }
             if unresolved_other && ctx.suppress_unresolved_ref_diagnostic.get() == 0
                 && contains_unresolved_inference(ctx, expr_type(result)) {
-                match expected {
-                    Some(_) => (),
-                    None => push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE),
+                if let None = expected {
+                    push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE)
                 }
             }
             coerce_expr(ctx, result, expected)
@@ -5927,9 +5914,8 @@ fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> () {
                 mark_mutable_pattern(ctx, value)
             }
             match rest {
-                Some(value) => match value.binding {
-                    Some(local) => mark_mutable_local(ctx, local),
-                    None => (),
+                Some(value) => if let Some(local) = value.binding {
+                    mark_mutable_local(ctx, local)
                 },
                 None => (),
             }
@@ -6129,9 +6115,8 @@ fn check_block(ctx: Checker, value: hir::Block, expected: Option[Type]) -> (Bloc
     for stmt in value.stmts {
         let stmt_span = hir_stmt_span(stmt);
         if !reachable && !unreachable_reported {
-            match exit_span {
-                Some(cause) => push_unreachable_code_warning(ctx, stmt_span, cause),
-                None => (),
+            if let Some(cause) = exit_span {
+                push_unreachable_code_warning(ctx, stmt_span, cause)
             }
             unreachable_reported = true;
         }
@@ -6146,18 +6131,16 @@ fn check_block(ctx: Checker, value: hir::Block, expected: Option[Type]) -> (Bloc
     let tail = match value.tail {
         Some(expr) => {
             if !reachable && !unreachable_reported {
-                match exit_span {
-                    Some(cause) => push_unreachable_code_warning(ctx, expr.span, cause),
-                    None => (),
+                if let Some(cause) = exit_span {
+                    push_unreachable_code_warning(ctx, expr.span, cause)
                 }
             }
             Option::Some(check_expr(ctx, expr, expected))
         },
         None => {
             if reachable {
-                match expected {
-                    Some(ty) => expect_type(ctx, Type::Unit, ty),
-                    None => (),
+                if let Some(ty) = expected {
+                    expect_type(ctx, Type::Unit, ty)
                 }
             }
             Option::None

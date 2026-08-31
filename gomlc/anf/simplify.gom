@@ -265,9 +265,8 @@ fn collect_assigned_term(result: collections::HashSet[string], value: Term) -> (
             for arm in arms {
                 collect_assigned_block(result, arm.body)
             }
-            match default {
-                Some(body) => collect_assigned_block(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_assigned_block(result, body)
             }
         },
         Select { arms, default, .. } => {
@@ -279,9 +278,8 @@ fn collect_assigned_term(result: collections::HashSet[string], value: Term) -> (
                     },
                 )
             }
-            match default {
-                Some(body) => collect_assigned_block(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_assigned_block(result, body)
             }
         },
         Return(_) | Jump { .. } | Unreachable { .. } => (),

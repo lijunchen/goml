@@ -122,7 +122,7 @@ pub fn named_field(fields: Vec[(string, Value)], name: string) -> Result[Value, 
 
 pub fn positional_field(fields: Vec[(string, Value)], index: isize) -> Result[Value, string] {
     if index < 0 || index >= fields.len() {
-        Result::Err("missing positional field " + index.to_string())
+        Result::Err(f"missing positional field {index}")
     } else {
         Result::Ok(fields[index].1)
     }

@@ -582,9 +582,8 @@ fn stmt_doc(value: Stmt) -> pretty::Doc {
             for value in cases {
                 values.push(switch_case_doc(value))
             }
-            match default {
-                Some(body) => values.push(default_case_doc(body)),
-                None => (),
+            if let Some(body) = default {
+                values.push(default_case_doc(body))
             }
             pretty::concat(
                 Vec::from_array(
@@ -613,9 +612,8 @@ fn stmt_doc(value: Stmt) -> pretty::Doc {
             for value in cases {
                 values.push(type_switch_case_doc(value))
             }
-            match default {
-                Some(body) => values.push(default_case_doc(body)),
-                None => (),
+            if let Some(body) = default {
+                values.push(default_case_doc(body))
             }
             pretty::concat(
                 Vec::from_array(
@@ -641,9 +639,8 @@ fn stmt_doc(value: Stmt) -> pretty::Doc {
             for value in cases {
                 values.push(select_case_doc(value))
             }
-            match default {
-                Some(body) => values.push(default_case_doc(body)),
-                None => (),
+            if let Some(body) = default {
+                values.push(default_case_doc(body))
             }
             pretty::append(pretty::text("select "), switch_body_doc(values))
         },

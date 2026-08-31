@@ -31,9 +31,8 @@ pub enum WaitResult[T] {
 
 fn completed_scope_value[T](result: Ref[Option[T]]) -> T {
     loop {
-        match result.get() {
-            Some(value) => break value,
-            None => (),
+        if let Some(value) = result.get() {
+            break value
         }
     }
 }

@@ -82,9 +82,8 @@ fn licm_collect_local_names(value: Block, result: collections::HashSet[string]) 
             for arm in arms {
                 licm_collect_local_names(arm.body, result)
             }
-            match default {
-                Some(body) => licm_collect_local_names(body, result),
-                None => (),
+            if let Some(body) = default {
+                licm_collect_local_names(body, result)
             }
         },
         Select { arms, default, .. } => {
@@ -102,9 +101,8 @@ fn licm_collect_local_names(value: Block, result: collections::HashSet[string]) 
                     result,
                 )
             }
-            match default {
-                Some(body) => licm_collect_local_names(body, result),
-                None => (),
+            if let Some(body) = default {
+                licm_collect_local_names(body, result)
             }
         },
         Return(_) | Jump { .. } | Unreachable { .. } => (),
@@ -133,9 +131,8 @@ fn licm_collect_param_names(value: Block, result: collections::HashSet[string]) 
             for arm in arms {
                 licm_collect_param_names(arm.body, result)
             }
-            match default {
-                Some(body) => licm_collect_param_names(body, result),
-                None => (),
+            if let Some(body) = default {
+                licm_collect_param_names(body, result)
             }
         },
         Select { arms, default, .. } => {
@@ -153,9 +150,8 @@ fn licm_collect_param_names(value: Block, result: collections::HashSet[string]) 
                     result,
                 )
             }
-            match default {
-                Some(body) => licm_collect_param_names(body, result),
-                None => (),
+            if let Some(body) = default {
+                licm_collect_param_names(body, result)
             }
         },
         Return(_) | Jump { .. } | Unreachable { .. } => (),

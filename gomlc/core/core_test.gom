@@ -608,9 +608,8 @@ fn retains_reachable_trait_method_candidates() -> () {
 #[test]
 fn validates_core_binding_types() -> () {
     let file = lower_source("fn main() -> () { let value = 1; () }");
-    match validate(file) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = validate(file) {
+        testing::fail(message)
     }
     let function = file.functions[0];
     let statement = function.body.stmts[0];

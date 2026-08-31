@@ -78,9 +78,8 @@ fn preserves_explicit_closure_packs_and_metadata() -> () {
     );
     testing::assert_eq(file.closure_defs.len(), 1);
     testing::assert(encode(file).contains("pack_closure["));
-    match verify(file) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(file) {
+        testing::fail(message)
     }
 }
 
@@ -117,9 +116,8 @@ fn eliminates_dead_anf_locals_without_dropping_calls() -> () {
             "fn effect() -> i32 { println(\"kept\"); 1 } fn main() -> () { let dead = (1, 2); let kept = effect(); () }",
         ),
     );
-    match verify(value) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(value) {
+        testing::fail(message)
     }
     let output = encode(value);
     testing::assert(!output.contains("dead/"));
@@ -157,9 +155,8 @@ fn eliminates_unreachable_recursive_join_members() -> () {
             repr::Type::Unit,
         ),
     );
-    match verify(value) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(value) {
+        testing::fail(message)
     }
     let output = encode(value);
     testing::assert(output.contains("join live"));
@@ -189,9 +186,8 @@ fn eliminates_unreferenced_nonrecursive_joins() -> () {
             repr::Type::Unit,
         ),
     );
-    match verify(value) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(value) {
+        testing::fail(message)
     }
     testing::assert(!encode(value).contains("join dead"))
 }
@@ -503,9 +499,8 @@ fn inlines_small_static_calls() -> () {
     let file = lower_source(
         "fn id(value: string) -> string { value } fn main() -> () { let value = id(\"ok\"); println(value) }",
     );
-    match verify(file) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(file) {
+        testing::fail(message)
     }
     let output = encode(file);
     testing::assert(!output.contains("let value/1 = id("));
@@ -567,9 +562,8 @@ fn exhausts_static_inline_budget() -> () {
 fn commutes_known_constructor_continuations() -> () {
     let source = "enum Maybe { Some(i32), None } fn make(flag: bool) -> Maybe { if flag { Some(7) } else { None } } fn consume(value: Maybe) -> i32 { match value { Some(item) => item, None => 0 } } fn combined(flag: bool) -> i32 { consume(make(flag)) }";
     let lowered = lower_source(source);
-    match verify(lowered) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(lowered) {
+        testing::fail(message)
     }
     let output = encode(lowered);
     testing::assert(output.contains("join commute_arm"));
@@ -580,9 +574,8 @@ fn commutes_known_constructor_continuations() -> () {
 fn preserves_continuations_with_unknown_entries() -> () {
     let source = "enum Maybe { Some(i32), None } fn consume(value: Maybe) -> i32 { match value { Some(item) => item, None => 0 } } fn combined(flag: bool, fallback: Maybe) -> i32 { consume(if flag { Some(1) } else { fallback }) }";
     let lowered = lower_source(source);
-    match verify(lowered) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(lowered) {
+        testing::fail(message)
     }
     let output = encode(lowered);
     testing::assert(output.contains("join k"));
@@ -661,9 +654,8 @@ fn encoded_function(output: string, name: string) -> string {
 fn fuses_recursive_join_consumers() -> () {
     let source = "fn find(wanted: isize) -> Option[isize] { let current = Ref::new(0); loop { let value = current.get(); if value >= 5 { return Option::None; } else if value == wanted { return Option::Some(value); } else { current.set(value + 1); }; }; Option::None } fn any(wanted: isize) -> bool { match find(wanted) { Some(_) => true, None => false } }";
     let lowered = lower_source(source);
-    match verify(lowered) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(lowered) {
+        testing::fail(message)
     }
     let any = encoded_function(encode(lowered), "any");
     testing::assert(any.contains("joinrec"));
@@ -735,9 +727,8 @@ fn required_position(value: string, expected: string) -> isize {
 fn hoists_safe_loop_invariants() -> () {
     let source = "fn work(base: isize, count: isize) -> isize { let mut index = 0; let mut result = 0; while index < count { let square = base * base; let scaled = square * 17; let offset = scaled + base; result = result + offset; index = index + 1; }; result }";
     let lowered = lower_source(source);
-    match verify(lowered) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(lowered) {
+        testing::fail(message)
     }
     let output = encoded_function(encode(lowered), "work");
     let loop_position = required_position(output, "joinrec");
@@ -751,9 +742,8 @@ fn hoists_safe_loop_invariants() -> () {
 fn preserves_trapping_and_mutable_loop_values() -> () {
     let source = "fn work(divisor: isize, count: isize) -> isize { let mut index = 0; let mut changing = 1; let mut result = 0; while index < count { let quotient = 100 / divisor; let derived = changing + 1; result = result + quotient + derived; changing = changing + 1; index = index + 1; }; result }";
     let lowered = lower_source(source);
-    match verify(lowered) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = verify(lowered) {
+        testing::fail(message)
     }
     let output = encoded_function(encode(lowered), "work");
     let loop_position = required_position(output, "joinrec");

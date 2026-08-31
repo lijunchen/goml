@@ -588,9 +588,8 @@ fn sha256_file_handles_streamed_content_and_missing_files() -> () {
         ),
         Err(message) => testing::fail(message.to_string()),
     }
-    match fs::sha256_file(path::join(root, "missing.txt")) {
-        Ok(_) => testing::fail("missing file produced a digest"),
-        Err(_) => (),
+    if let Ok(_) = fs::sha256_file(path::join(root, "missing.txt")) {
+        testing::fail("missing file produced a digest")
     }
 }
 

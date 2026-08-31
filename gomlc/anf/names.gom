@@ -77,9 +77,8 @@ fn observe_exprs(maximum: Ref[isize], values: Vec[lift::Expr]) -> () {
 }
 
 fn observe_optional_expr(maximum: Ref[isize], value: Option[lift::Expr]) -> () {
-    match value {
-        Some(value) => observe_expr(maximum, value),
-        None => (),
+    if let Some(value) = value {
+        observe_expr(maximum, value)
     }
 }
 

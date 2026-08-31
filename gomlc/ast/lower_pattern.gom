@@ -163,9 +163,8 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             PATTERN_TUPLE => {
                 let pats: Vec[Pat] = Vec::new();
                 for child in pattern_children(node) {
-                    match lower_pat_inner(ctx, child) {
-                        Some(value) => pats.push(value),
-                        None => (),
+                    if let Some(value) = lower_pat_inner(ctx, child) {
+                        pats.push(value)
                     }
                 }
                 if !has_token(node, lexer::TokenKind::Comma) && pats.len() == 1 {
@@ -303,9 +302,8 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 None => {
                     let pats: Vec[Pat] = Vec::new();
                     for child in pattern_children(node) {
-                        match lower_pat_inner(ctx, child) {
-                            Some(value) => pats.push(value),
-                            None => (),
+                        if let Some(value) = lower_pat_inner(ctx, child) {
+                            pats.push(value)
                         }
                     }
                     Option::Some(

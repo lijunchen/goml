@@ -25,9 +25,8 @@ fn collect_term_locals(values: collections::HashSet[string], value: Term) -> () 
             for arm in arms {
                 collect_block_locals(values, arm.body)
             }
-            match default {
-                Some(body) => collect_block_locals(values, body),
-                None => (),
+            if let Some(body) = default {
+                collect_block_locals(values, body)
             }
         },
         Select { arms, default, .. } => {
@@ -40,9 +39,8 @@ fn collect_term_locals(values: collections::HashSet[string], value: Term) -> () 
                     Send { body, .. } => collect_block_locals(values, body),
                 }
             }
-            match default {
-                Some(body) => collect_block_locals(values, body),
-                None => (),
+            if let Some(body) = default {
+                collect_block_locals(values, body)
             }
         },
         Return(_) | Jump { .. } | Unreachable { .. } => (),

@@ -24,25 +24,20 @@ fn normalizes_integer_bases_without_machine_width_limits() -> () {
 
 #[test]
 fn rejects_invalid_normalized_integers() -> () {
-    match normalize_integer("0x") {
-        None => (),
-        Some(_) => testing::fail("expected missing hexadecimal digits"),
+    if let Some(_) = normalize_integer("0x") {
+        testing::fail("expected missing hexadecimal digits")
     }
-    match normalize_integer("0b102") {
-        None => (),
-        Some(_) => testing::fail("expected invalid binary digit"),
+    if let Some(_) = normalize_integer("0b102") {
+        testing::fail("expected invalid binary digit")
     }
-    match normalize_integer("0o8") {
-        None => (),
-        Some(_) => testing::fail("expected invalid octal digit"),
+    if let Some(_) = normalize_integer("0o8") {
+        testing::fail("expected invalid octal digit")
     }
-    match normalize_integer("0x_1") {
-        None => (),
-        Some(_) => testing::fail("expected invalid leading separator"),
+    if let Some(_) = normalize_integer("0x_1") {
+        testing::fail("expected invalid leading separator")
     }
-    match normalize_integer("10_") {
-        None => (),
-        Some(_) => testing::fail("expected invalid trailing separator"),
+    if let Some(_) = normalize_integer("10_") {
+        testing::fail("expected invalid trailing separator")
     }
 }
 
@@ -54,9 +49,8 @@ fn assert_float_integer(value: string, expected: string) -> () {
 }
 
 fn assert_non_integer_float(value: string) -> () {
-    match normalize_float_integer(value, 20) {
-        Some(_) => testing::fail("expected non-integer float"),
-        None => (),
+    if let Some(_) = normalize_float_integer(value, 20) {
+        testing::fail("expected non-integer float")
     }
 }
 
@@ -83,8 +77,7 @@ fn parses_valid_float32() -> () {
         Some(value) => testing::assert(value == 3.5),
         None => testing::fail("expected f32"),
     }
-    match parse_float32("not-a-number") {
-        None => (),
-        Some(_) => testing::fail("expected invalid f32"),
+    if let Some(_) = parse_float32("not-a-number") {
+        testing::fail("expected invalid f32")
     }
 }

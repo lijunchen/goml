@@ -86,7 +86,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
     match fs::create_dir_all(work_dir) {
         Ok(()) => (),
         Err(message) => {
-            testing::fail("failed to create Go work dir: " + message.to_string());
+            testing::fail(f"failed to create Go work dir: {message}");
             return ""
         },
     }
@@ -104,7 +104,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
         match fs::write_file_structured(main_file, go_source) {
             Ok(()) => (),
             Err(message) => {
-                testing::fail("failed to write Go source: " + message.to_string());
+                testing::fail(f"failed to write Go source: {message}");
                 return ""
             },
         }
@@ -112,7 +112,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
             match fs::remove_file(executable) {
                 Ok(()) => (),
                 Err(message) => {
-                    testing::fail("failed to remove stale executable: " + message.to_string());
+                    testing::fail(f"failed to remove stale executable: {message}");
                     return ""
                 },
             }
@@ -140,9 +140,8 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
             Err(_) => Option::None,
         }
     };
-    match interpreted {
-        Some(value) => return value,
-        None => (),
+    if let Some(value) = interpreted {
+        return value
     }
     if source_current && fs::is_file(executable) {} else {
         match process::Command::new("go").arg("build").arg("-o").arg("main").arg("main.go").current_dir(
@@ -163,7 +162,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
                 }
             },
             Err(message) => {
-                testing::fail("failed to build Go source: " + message.to_string());
+                testing::fail(f"failed to build Go source: {message}");
                 return ""
             },
         }
@@ -174,7 +173,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
                 match process::Output::stdout(output).to_string_utf8() {
                     Ok(value) => value,
                     Err(message) => {
-                        testing::fail("failed to decode Go stdout: " + message.to_string());
+                        testing::fail(f"failed to decode Go stdout: {message}");
                         ""
                     },
                 }
@@ -192,7 +191,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
             }
         },
         Err(message) => {
-            testing::fail("failed to execute generated program: " + message.to_string());
+            testing::fail(f"failed to execute generated program: {message}");
             ""
         },
     }
@@ -214,7 +213,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
             }
         },
         Err(message) => {
-            testing::fail("failed to read pipeline fixtures: " + message.to_string())
+            testing::fail(f"failed to read pipeline fixtures: {message}")
         },
     }
     result

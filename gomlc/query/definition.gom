@@ -464,9 +464,8 @@ fn local_definition_span(value: Analysis, local: hir::LocalId) -> Option[Definit
     for distance in 0..facts.len() {
         let fact = facts[facts.len() - 1 - distance];
         if same_local(fact.local, local) {
-            match local_definition_span_from_fact(value, fact) {
-                Some(definition) => return Option::Some(definition),
-                None => (),
+            if let Some(definition) = local_definition_span_from_fact(value, fact) {
+                return Option::Some(definition)
             }
         }
     }
@@ -607,9 +606,8 @@ pub fn goto_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult]
     }
     if member_access {
         if result.is_empty() {
-            match semantic_definition(value, offset) {
-                Some(definition) => result.push(definition),
-                None => (),
+            if let Some(definition) = semantic_definition(value, offset) {
+                result.push(definition)
             }
         }
         return result
@@ -617,9 +615,8 @@ pub fn goto_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult]
     match reference {
         Some(fact) => match fact.target {
             Local(_) | Constructor(_) => if result.is_empty() {
-                match semantic_definition(value, offset) {
-                    Some(definition) => result.push(definition),
-                    None => (),
+                if let Some(definition) = semantic_definition(value, offset) {
+                    result.push(definition)
                 }
             },
             _ => if result.is_empty() {
@@ -635,9 +632,8 @@ pub fn goto_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult]
         },
     }
     if result.is_empty() {
-        match semantic_definition(value, offset) {
-            Some(definition) => result.push(definition),
-            None => (),
+        if let Some(definition) = semantic_definition(value, offset) {
+            result.push(definition)
         }
     }
     result

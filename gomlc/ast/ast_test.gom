@@ -236,9 +236,8 @@ fn lowers_cross_file_constructor_patterns() -> () {
 fn parser_diagnostics_prevent_ast_creation() -> () {
     let result = lower(parser::parse("fn broken( {"));
     testing::assert(result.diagnostics.len() > 0);
-    match result.ast {
-        Some(_) => testing::fail("unexpected AST"),
-        None => (),
+    if let Some(_) = result.ast {
+        testing::fail("unexpected AST")
     }
 }
 
@@ -280,15 +279,13 @@ fn preserves_inconsistent_and_duplicate_pattern_bindings() -> () {
         ),
     );
     testing::assert_eq(inconsistent.diagnostics.len(), 0);
-    match inconsistent.ast {
-        Some(_) => (),
-        None => testing::fail("expected inconsistent pattern AST"),
+    if let None = inconsistent.ast {
+        testing::fail("expected inconsistent pattern AST")
     }
     let duplicate = lower(parser::parse("fn main() -> () { let (value, value) = (1, 2); }"));
     testing::assert_eq(duplicate.diagnostics.len(), 0);
-    match duplicate.ast {
-        Some(_) => (),
-        None => testing::fail("expected duplicate pattern AST"),
+    if let None = duplicate.ast {
+        testing::fail("expected duplicate pattern AST")
     }
 }
 

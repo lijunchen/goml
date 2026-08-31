@@ -208,9 +208,8 @@ fn find_attribute(attrs: Vec[Attribute], expected: string) -> Option[Attribute] 
 fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
     let result: Vec[TypeExpr] = Vec::new();
     for child in type_children(node) {
-        match lower_ty(ctx, child) {
-            Some(value) => result.push(value),
-            None => (),
+        if let Some(value) = lower_ty(ctx, child) {
+            result.push(value)
         }
     }
     result
@@ -315,9 +314,8 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                                 match first_child(bound, cst::NodeKind::DYN_ARG_LIST) {
                                     Some(list) => {
                                         for ty_node in type_children(list) {
-                                            match lower_ty(ctx, ty_node) {
-                                                Some(ty) => args.push(ty),
-                                                None => (),
+                                            if let Some(ty) = lower_ty(ctx, ty_node) {
+                                                args.push(ty)
                                             }
                                         }
                                         for binding in children_of_kind(
@@ -402,9 +400,8 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                                 }
                             } else {
                                 let values: Vec[TypeExpr] = Vec::new();
-                                match lower_ty(ctx, param_node) {
-                                    Some(value) => values.push(value),
-                                    None => (),
+                                if let Some(value) = lower_ty(ctx, param_node) {
+                                    values.push(value)
                                 }
                                 values
                             };
@@ -445,9 +442,8 @@ fn lower_trait_ref(ctx: LowerCtx, node: LocatedNode) -> Option[TraitRef] {
 fn lower_trait_set(ctx: LowerCtx, node: LocatedNode) -> Vec[TraitRef] {
     let result: Vec[TraitRef] = Vec::new();
     for child in type_children(node) {
-        match lower_trait_ref(ctx, child) {
-            Some(value) => result.push(value),
-            None => (),
+        if let Some(value) = lower_trait_ref(ctx, child) {
+            result.push(value)
         }
     }
     result
@@ -462,9 +458,8 @@ fn lower_generics(ctx: LowerCtx, node: LocatedNode) -> (Vec[string], Vec[(string
                 Some(token) => {
                     let name = token.token.text;
                     generics.push(name);
-                    match first_child(generic, cst::NodeKind::TRAIT_SET) {
-                        Some(set) => bounds.push((name, lower_trait_set(ctx, set))),
-                        None => (),
+                    if let Some(set) = first_child(generic, cst::NodeKind::TRAIT_SET) {
+                        bounds.push((name, lower_trait_set(ctx, set)))
                     }
                 },
                 None => (),
@@ -577,16 +572,14 @@ fn lower_result(result: cst::ParseResult) -> LowerResult {
         };
         let uses: Vec[UseDecl] = Vec::new();
         for use_node in children_of_kind(root, cst::NodeKind::USE) {
-            match lower_use(ctx, use_node) {
-                Some(value) => uses.push(value),
-                None => (),
+            if let Some(value) = lower_use(ctx, use_node) {
+                uses.push(value)
             }
         }
         let items: Vec[Item] = Vec::new();
         for item_node in item_children(root) {
-            match lower_item(ctx, item_node) {
-                Some(value) => items.push(value),
-                None => (),
+            if let Some(value) = lower_item(ctx, item_node) {
+                items.push(value)
             }
         }
         let ast = if ctx.diagnostics.is_empty() {

@@ -1428,9 +1428,8 @@ fn indexes_syntax_with_absolute_ranges_and_parents() -> () {
     match node_at(analysis.syntax, 3) {
         Some(node) => {
             testing::assert(!cst::node_kind_equal(node.kind, cst::NodeKind::FILE));
-            match parent_node(analysis.syntax, node) {
-                Some(_) => (),
-                None => testing::fail("expected parent node"),
+            if let None = parent_node(analysis.syntax, node) {
+                testing::fail("expected parent node")
             }
         },
         None => testing::fail("expected node"),

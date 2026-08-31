@@ -1079,7 +1079,7 @@ fn unary_op(value: isize) -> Result[ast::UnaryOp, string] {
         0 => Result::Ok(ast::UnaryOp::Neg),
         1 => Result::Ok(ast::UnaryOp::Not),
         2 => Result::Ok(ast::UnaryOp::BitNot),
-        _ => Result::Err("unknown meta unary operator " + value.to_string()),
+        _ => Result::Err(f"unknown meta unary operator {value}"),
     }
 }
 
@@ -1103,7 +1103,7 @@ fn binary_op(value: isize) -> Result[ast::BinaryOp, string] {
         15 => Result::Ok(ast::BinaryOp::GreaterEq),
         16 => Result::Ok(ast::BinaryOp::Eq),
         17 => Result::Ok(ast::BinaryOp::NotEq),
-        _ => Result::Err("unknown meta binary operator " + value.to_string()),
+        _ => Result::Err(f"unknown meta binary operator {value}"),
     }
 }
 

@@ -113,9 +113,8 @@ fn lower_package(
                 query_diagnostic(value.source_path, "lower", diagnostic.message, diagnostic.span),
             )
         }
-        match value.hir {
-            Some(file) => files.push(file),
-            None => (),
+        if let Some(file) = value.hir {
+            files.push(file)
         }
     }
     LoweredPackage { name: value.package_name, files, expanded_sources, diagnostics }
@@ -179,9 +178,8 @@ fn environments_with_builtin_and_comptime(
     modules: Vec[ctir::CtModule],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
     let result: Vec[tast::DependencyEnvironment] = Vec::new();
-    match builtin {
-        Some(environment) => result.push(environment),
-        None => (),
+    if let Some(environment) = builtin {
+        result.push(environment)
     }
     for environment in environments_with_comptime(files, modules)? {
         result.push(environment)
@@ -474,9 +472,8 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     append_navigation_sources(all_sources, context.builtin_sources, checked);
     append_navigation_sources(all_sources, context.prelude_sources, checked);
     let comptime_modules: Vec[ctir::CtModule] = Vec::new();
-    match builtin_derive {
-        Some(module) => comptime_modules.push(module),
-        None => (),
+    if let Some(module) = builtin_derive {
+        comptime_modules.push(module)
     }
     for module in derive_modules {
         comptime_modules.push(module)

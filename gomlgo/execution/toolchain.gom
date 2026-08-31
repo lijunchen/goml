@@ -108,9 +108,7 @@ fn parse_json_stream(input: string) -> Result[Vec[json::Value], string] {
         if index == input.byte_len() {
             break
         } else if input.byte_get(index) != b'{' {
-            return Result::Err(
-                "go list emitted a non-object JSON value at byte " + index.to_string(),
-            )
+            return Result::Err(f"go list emitted a non-object JSON value at byte {index}")
         }
         let start = index;
         let mut depth = 0;
@@ -139,15 +137,13 @@ fn parse_json_stream(input: string) -> Result[Vec[json::Value], string] {
                     complete = true;
                     break
                 } else if depth < 0 {
-                    return Result::Err(
-                        "go list emitted unbalanced JSON at byte " + index.to_string(),
-                    )
+                    return Result::Err(f"go list emitted unbalanced JSON at byte {index}")
                 }
             }
             index += 1;
         }
         if !complete {
-            return Result::Err("go list emitted incomplete JSON at byte " + start.to_string())
+            return Result::Err(f"go list emitted incomplete JSON at byte {start}")
         }
     }
     Result::Ok(values)

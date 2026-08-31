@@ -5,9 +5,8 @@ use module::lift;
 
 fn all_immediate(values: Vec[lift::Expr]) -> bool {
     for value in values {
-        match try_imm(value) {
-            Some(_) => (),
-            None => return false,
+        if let None = try_imm(value) {
+            return false
         }
     }
     true

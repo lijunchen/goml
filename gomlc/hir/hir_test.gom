@@ -99,9 +99,8 @@ fn reports_pattern_binding_errors_during_resolution() -> () {
         duplicate.diagnostics.get(0).message,
         "Variable value is bound more than once in the same pattern",
     );
-    match duplicate.hir {
-        Some(_) => (),
-        None => testing::fail("expected duplicate pattern HIR"),
+    if let None = duplicate.hir {
+        testing::fail("expected duplicate pattern HIR")
     }
     let inconsistent = lower(
         ast::lower(
@@ -116,9 +115,8 @@ fn reports_pattern_binding_errors_during_resolution() -> () {
         inconsistent.diagnostics.get(0).message,
         "Or-pattern alternatives must bind the same variables: missing inner",
     );
-    match inconsistent.hir {
-        Some(_) => (),
-        None => testing::fail("expected inconsistent pattern HIR"),
+    if let None = inconsistent.hir {
+        testing::fail("expected inconsistent pattern HIR")
     }
 }
 

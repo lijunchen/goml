@@ -39,9 +39,8 @@ fn collect_mutable_block(value: tast::Block, result: collections::IndexMap[strin
             Expr { expr } => collect_mutable_expr(expr, result),
         }
     }
-    match value.tail {
-        Some(expr) => collect_mutable_expr(expr, result),
-        None => (),
+    if let Some(expr) = value.tail {
+        collect_mutable_expr(expr, result)
     }
 }
 
@@ -51,9 +50,8 @@ fn collect_mutable_expr(value: tast::Expr, result: collections::IndexMap[string,
             ty: _,
             ..,
         } => (),
-        Break { value, ty: _, .. } => match value {
-            Some(expr) => collect_mutable_expr(expr, result),
-            None => (),
+        Break { value, ty: _, .. } => if let Some(expr) = value {
+            collect_mutable_expr(expr, result)
         },
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
             items: args,
@@ -66,9 +64,8 @@ fn collect_mutable_expr(value: tast::Expr, result: collections::IndexMap[string,
             collect_mutable_expr(source, result);
             for arm in arms {
                 collect_mutable_pattern(arm.pat, false, result);
-                match arm.guard {
-                    Some(guard) => collect_mutable_expr(guard, result),
-                    None => (),
+                if let Some(guard) = arm.guard {
+                    collect_mutable_expr(guard, result)
                 }
                 collect_mutable_expr(arm.body, result)
             }
@@ -77,18 +74,16 @@ fn collect_mutable_expr(value: tast::Expr, result: collections::IndexMap[string,
             match arm {
                 Receive { channel, guard, binding: _, binding_ty: _, body } => {
                     collect_mutable_expr(channel, result);
-                    match guard {
-                        Some(value) => collect_mutable_expr(value, result),
-                        None => (),
+                    if let Some(value) = guard {
+                        collect_mutable_expr(value, result)
                     }
                     collect_mutable_expr(body, result)
                 },
                 Send { channel, value, guard, body } => {
                     collect_mutable_expr(channel, result);
                     collect_mutable_expr(value, result);
-                    match guard {
-                        Some(value) => collect_mutable_expr(value, result),
-                        None => (),
+                    if let Some(value) = guard {
+                        collect_mutable_expr(value, result)
                     }
                     collect_mutable_expr(body, result)
                 },
@@ -118,9 +113,8 @@ fn collect_mutable_expr(value: tast::Expr, result: collections::IndexMap[string,
             collect_mutable_expr(iterator, result);
             collect_mutable_expr(body, result)
         },
-        Return { expr, ty: _ } => match expr {
-            Some(value) => collect_mutable_expr(value, result),
-            None => (),
+        Return { expr, ty: _ } => if let Some(value) = expr {
+            collect_mutable_expr(value, result)
         },
         Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
             tuple: expr,
@@ -204,9 +198,8 @@ fn collect_pattern_names(value: tast::Pat, result: collections::IndexSet[string]
                 collect_pattern_names(item, result)
             }
             match rest {
-                Some(value) => match value.binding {
-                    Some(name) => push_name(result, name),
-                    None => (),
+                Some(value) => if let Some(name) = value.binding {
+                    push_name(result, name)
                 },
                 None => (),
             }
@@ -253,9 +246,8 @@ fn collect_bound_block(value: tast::Block, result: collections::IndexSet[string]
             Expr { expr } => collect_bound_expr(expr, result),
         }
     }
-    match value.tail {
-        Some(expr) => collect_bound_expr(expr, result),
-        None => (),
+    if let Some(expr) = value.tail {
+        collect_bound_expr(expr, result)
     }
 }
 
@@ -266,9 +258,8 @@ fn collect_bound_expr(value: tast::Expr, result: collections::IndexSet[string]) 
             body: _,
             ty: _,
         } | Continue { ty: _, .. } => (),
-        Break { value, ty: _, .. } => match value {
-            Some(expr) => collect_bound_expr(expr, result),
-            None => (),
+        Break { value, ty: _, .. } => if let Some(expr) = value {
+            collect_bound_expr(expr, result)
         },
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
             items: args,
@@ -280,9 +271,8 @@ fn collect_bound_expr(value: tast::Expr, result: collections::IndexSet[string]) 
             collect_bound_expr(source, result);
             for arm in arms {
                 collect_pattern_names(arm.pat, result);
-                match arm.guard {
-                    Some(guard) => collect_bound_expr(guard, result),
-                    None => (),
+                if let Some(guard) = arm.guard {
+                    collect_bound_expr(guard, result)
                 }
                 collect_bound_expr(arm.body, result)
             }
@@ -292,18 +282,16 @@ fn collect_bound_expr(value: tast::Expr, result: collections::IndexSet[string]) 
                 Receive { channel, guard, binding, binding_ty: _, body } => {
                     push_name(result, binding);
                     collect_bound_expr(channel, result);
-                    match guard {
-                        Some(value) => collect_bound_expr(value, result),
-                        None => (),
+                    if let Some(value) = guard {
+                        collect_bound_expr(value, result)
                     }
                     collect_bound_expr(body, result)
                 },
                 Send { channel, value, guard, body } => {
                     collect_bound_expr(channel, result);
                     collect_bound_expr(value, result);
-                    match guard {
-                        Some(value) => collect_bound_expr(value, result),
-                        None => (),
+                    if let Some(value) = guard {
+                        collect_bound_expr(value, result)
                     }
                     collect_bound_expr(body, result)
                 },
@@ -333,9 +321,8 @@ fn collect_bound_expr(value: tast::Expr, result: collections::IndexSet[string]) 
             collect_bound_expr(iterator, result);
             collect_bound_expr(body, result)
         },
-        Return { expr, ty: _ } => match expr {
-            Some(value) => collect_bound_expr(value, result),
-            None => (),
+        Return { expr, ty: _ } => if let Some(value) = expr {
+            collect_bound_expr(value, result)
         },
         Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
             tuple: expr,
@@ -378,9 +365,8 @@ fn collect_reference_block(value: tast::Block, result: collections::IndexSet[str
             Expr { expr } => collect_reference_expr(expr, result),
         }
     }
-    match value.tail {
-        Some(expr) => collect_reference_expr(expr, result),
-        None => (),
+    if let Some(expr) = value.tail {
+        collect_reference_expr(expr, result)
     }
 }
 
@@ -392,9 +378,8 @@ fn collect_reference_expr(value: tast::Expr, result: collections::IndexSet[strin
             body: _,
             ty: _,
         } | Continue { ty: _, .. } => (),
-        Break { value, ty: _, .. } => match value {
-            Some(expr) => collect_reference_expr(expr, result),
-            None => (),
+        Break { value, ty: _, .. } => if let Some(expr) = value {
+            collect_reference_expr(expr, result)
         },
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
             items: args,
@@ -405,9 +390,8 @@ fn collect_reference_expr(value: tast::Expr, result: collections::IndexSet[strin
         Match { expr: source, arms, ty: _, .. } => {
             collect_reference_expr(source, result);
             for arm in arms {
-                match arm.guard {
-                    Some(guard) => collect_reference_expr(guard, result),
-                    None => (),
+                if let Some(guard) = arm.guard {
+                    collect_reference_expr(guard, result)
                 }
                 collect_reference_expr(arm.body, result)
             }
@@ -416,18 +400,16 @@ fn collect_reference_expr(value: tast::Expr, result: collections::IndexSet[strin
             match arm {
                 Receive { channel, guard, binding: _, binding_ty: _, body } => {
                     collect_reference_expr(channel, result);
-                    match guard {
-                        Some(value) => collect_reference_expr(value, result),
-                        None => (),
+                    if let Some(value) = guard {
+                        collect_reference_expr(value, result)
                     }
                     collect_reference_expr(body, result)
                 },
                 Send { channel, value, guard, body } => {
                     collect_reference_expr(channel, result);
                     collect_reference_expr(value, result);
-                    match guard {
-                        Some(value) => collect_reference_expr(value, result),
-                        None => (),
+                    if let Some(value) = guard {
+                        collect_reference_expr(value, result)
                     }
                     collect_reference_expr(body, result)
                 },
@@ -456,9 +438,8 @@ fn collect_reference_expr(value: tast::Expr, result: collections::IndexSet[strin
             collect_reference_expr(iterator, result);
             collect_reference_expr(body, result)
         },
-        Return { expr, ty: _ } => match expr {
-            Some(value) => collect_reference_expr(value, result),
-            None => (),
+        Return { expr, ty: _ } => if let Some(value) = expr {
+            collect_reference_expr(value, result)
         },
         Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
             tuple: expr,
@@ -501,9 +482,8 @@ fn collect_capture_block(value: tast::Block, result: collections::IndexSet[strin
             Expr { expr } => collect_capture_expr(expr, result),
         }
     }
-    match value.tail {
-        Some(expr) => collect_capture_expr(expr, result),
-        None => (),
+    if let Some(expr) = value.tail {
+        collect_capture_expr(expr, result)
     }
 }
 
@@ -533,9 +513,8 @@ fn collect_capture_expr(value: tast::Expr, result: collections::IndexSet[string]
             ty: _,
             ..,
         } => (),
-        Break { value, ty: _, .. } => match value {
-            Some(expr) => collect_capture_expr(expr, result),
-            None => (),
+        Break { value, ty: _, .. } => if let Some(expr) = value {
+            collect_capture_expr(expr, result)
         },
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
             items: args,
@@ -547,9 +526,8 @@ fn collect_capture_expr(value: tast::Expr, result: collections::IndexSet[string]
         Match { expr: source, arms, ty: _, .. } => {
             collect_capture_expr(source, result);
             for arm in arms {
-                match arm.guard {
-                    Some(guard) => collect_capture_expr(guard, result),
-                    None => (),
+                if let Some(guard) = arm.guard {
+                    collect_capture_expr(guard, result)
                 }
                 collect_capture_expr(arm.body, result)
             }
@@ -558,18 +536,16 @@ fn collect_capture_expr(value: tast::Expr, result: collections::IndexSet[string]
             match arm {
                 Receive { channel, guard, binding: _, binding_ty: _, body } => {
                     collect_capture_expr(channel, result);
-                    match guard {
-                        Some(value) => collect_capture_expr(value, result),
-                        None => (),
+                    if let Some(value) = guard {
+                        collect_capture_expr(value, result)
                     }
                     collect_capture_expr(body, result)
                 },
                 Send { channel, value, guard, body } => {
                     collect_capture_expr(channel, result);
                     collect_capture_expr(value, result);
-                    match guard {
-                        Some(value) => collect_capture_expr(value, result),
-                        None => (),
+                    if let Some(value) = guard {
+                        collect_capture_expr(value, result)
                     }
                     collect_capture_expr(body, result)
                 },
@@ -598,9 +574,8 @@ fn collect_capture_expr(value: tast::Expr, result: collections::IndexSet[string]
             collect_capture_expr(iterator, result);
             collect_capture_expr(body, result)
         },
-        Return { expr, ty: _ } => match expr {
-            Some(value) => collect_capture_expr(value, result),
-            None => (),
+        Return { expr, ty: _ } => if let Some(value) = expr {
+            collect_capture_expr(value, result)
         },
         Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
             tuple: expr,

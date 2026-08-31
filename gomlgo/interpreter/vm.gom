@@ -2391,7 +2391,7 @@ fn runtime_error(kind: string, message: string, location: Option[bytecode::Sourc
 
 fn validate_function(state: VmState, id: bytecode::FunctionId) -> Result[(), string] {
     if id.value < 0 || id.value >= state.program.functions.len() {
-        Result::Err("invalid function " + id.value.to_string())
+        Result::Err(f"invalid function {id.value}")
     } else {
         Result::Ok(())
     }
@@ -2478,7 +2478,7 @@ fn replace_scalar_place_local(frame: Frame, place: bytecode::PlaceId, local: isi
 
 fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(u64, isize, bool), string] {
     if id.value < 0 || id.value >= frame.registers.len() {
-        return Result::Err("invalid register " + id.value.to_string())
+        return Result::Err(f"invalid register {id.value}")
     }
     if frame.scalar.is_empty() {
         return match frame.registers[id.value] {
@@ -2522,7 +2522,7 @@ fn integer_register_index(frame: Frame, id: bytecode::RegisterId) -> Result[isiz
 
 fn boolean_register(frame: Frame, id: bytecode::RegisterId) -> Result[bool, string] {
     if id.value < 0 || id.value >= frame.registers.len() {
-        return Result::Err("invalid register " + id.value.to_string())
+        return Result::Err(f"invalid register {id.value}")
     }
     if !frame.scalar.is_empty() {
         let code = frame.scalar[frame.registers.len() + id.value];
@@ -2538,7 +2538,7 @@ fn boolean_register(frame: Frame, id: bytecode::RegisterId) -> Result[bool, stri
 
 fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
     if id.value < 0 || id.value >= frame.registers.len() {
-        Result::Err("invalid register " + id.value.to_string())
+        Result::Err(f"invalid register {id.value}")
     } else {
         if !frame.scalar.is_empty() {
             let code = frame.scalar[frame.registers.len() + id.value];
@@ -2571,7 +2571,7 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
 
 fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[(), string] {
     if id.value < 0 || id.value >= frame.registers.len() {
-        Result::Err("invalid register " + id.value.to_string())
+        Result::Err(f"invalid register {id.value}")
     } else if frame.scalar.is_empty() {
         frame.registers[id.value] = Option::Some(copy_value(value));
         Result::Ok(())
@@ -2979,9 +2979,9 @@ fn load_cell_register(memory: Memory, frame: Frame, cell: CellId, target: byteco
     string,
 ] {
     if !cell_valid(memory, cell.value) {
-        Result::Err("invalid cell " + cell.value.to_string())
+        Result::Err(f"invalid cell {cell.value}")
     } else if target.value < 0 || target.value >= frame.registers.len() {
-        Result::Err("invalid register " + target.value.to_string())
+        Result::Err(f"invalid register {target.value}")
     } else {
         frame.registers[target.value] = Option::Some(copy_value(cell_value(memory, cell.value)));
         Result::Ok(())
@@ -2990,7 +2990,7 @@ fn load_cell_register(memory: Memory, frame: Frame, cell: CellId, target: byteco
 
 fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
     if id.value < 0 || id.value >= frame.places.len() {
-        Result::Err("invalid place " + id.value.to_string())
+        Result::Err(f"invalid place {id.value}")
     } else {
         match frame.places[id.value] {
             Some(value) => Result::Ok(value),
@@ -3010,7 +3010,7 @@ fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
 
 fn root_frame_place(frame: Frame, id: bytecode::PlaceId) -> Result[Option[CellId], string] {
     if id.value < 0 || id.value >= frame.places.len() {
-        Result::Err("invalid place " + id.value.to_string())
+        Result::Err(f"invalid place {id.value}")
     } else if frame.place_roots[id.value] != -1 {
         Result::Ok(Option::Some(cell_id(frame.place_roots[id.value])))
     } else {
@@ -3026,7 +3026,7 @@ fn root_frame_place(frame: Frame, id: bytecode::PlaceId) -> Result[Option[CellId
 
 fn set_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId) -> Result[(), string] {
     if id.value < 0 || id.value >= frame.places.len() {
-        Result::Err("invalid place " + id.value.to_string())
+        Result::Err(f"invalid place {id.value}")
     } else {
         frame.place_roots[id.value] = value.value;
         frame.places[id.value] = Option::None;
@@ -3049,7 +3049,7 @@ fn set_local_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId, loca
 
 fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result[(), string] {
     if id.value < 0 || id.value >= frame.places.len() {
-        Result::Err("invalid place " + id.value.to_string())
+        Result::Err(f"invalid place {id.value}")
     } else {
         frame.place_roots[id.value] = -1;
         frame.places[id.value] = Option::Some(value);
@@ -3066,7 +3066,7 @@ fn set_bool_place(
     index: isize,
 ) -> Result[(), string] {
     if id.value < 0 || id.value >= frame.places.len() {
-        Result::Err("invalid place " + id.value.to_string())
+        Result::Err(f"invalid place {id.value}")
     } else {
         frame.place_roots[id.value] = -1;
         frame.places[id.value] = Option::None;
@@ -4608,8 +4608,7 @@ fn aggregate_value(
                         let target = native_field_reference(value, element.index);
                         if !native_host_value_valid(target) {
                             return Result::Err(
-                                "native composite field " + element.index.to_string()
-                                    + " is not accessible",
+                                f"native composite field {element.index}" + " is not accessible",
                             )
                         }
                         let source = native_argument(
@@ -4620,8 +4619,7 @@ fn aggregate_value(
                         )?;
                         if !set_native_value(target, source) {
                             return Result::Err(
-                                "native composite field " + element.index.to_string()
-                                    + " is not assignable",
+                                f"native composite field {element.index}" + " is not assignable",
                             )
                         }
                     }
@@ -4721,7 +4719,7 @@ fn native_call_value(state: VmState, id: bytecode::NativeCallId) -> Result[
     string,
 ] {
     if id.value < 0 || id.value >= state.program.native_calls.len() {
-        Result::Err("invalid native call " + id.value.to_string())
+        Result::Err(f"invalid native call {id.value}")
     } else {
         Result::Ok(state.program.native_calls[id.value])
     }
@@ -6163,13 +6161,13 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
         },
         bytecode::InstructionKind::LocalPlace { target, local } => if local.value < 0
             || local.value >= frame.locals.len() {
-            Result::Err("invalid local " + local.value.to_string())
+            Result::Err(f"invalid local {local.value}")
         } else {
             set_local_root_place(frame, target, frame.locals[local.value], local.value)
         },
         bytecode::InstructionKind::GlobalPlace { target, global } => if global.value < 0
             || global.value >= state.globals.len() {
-            Result::Err("invalid global " + global.value.to_string())
+            Result::Err(f"invalid global {global.value}")
         } else {
             set_root_place(frame, target, state.globals[global.value])
         },
@@ -7556,12 +7554,7 @@ fn execute_sequential_constant(
     }
     match state.instruction_constants[source] {
         Some(value) => if target < 0 || target >= frame.registers.len() {
-            sequential_error_at(
-                state,
-                frame,
-                instruction.location,
-                "invalid register " + target.to_string(),
-            )
+            sequential_error_at(state, frame, instruction.location, f"invalid register {target}")
         } else {
             if frame.scalar.is_empty() {
                 frame.registers[target] = Option::Some(copy_value(value));
@@ -9201,7 +9194,7 @@ fn enter_block(
     arguments: Vec[Value],
 ) -> Result[(), string] {
     if target.value < 0 || target.value >= function.blocks.len() {
-        return Result::Err("invalid jump target " + target.value.to_string())
+        return Result::Err(f"invalid jump target {target.value}")
     }
     let parameters = function.blocks[target.value].parameters;
     if parameters.len() != arguments.len() {
@@ -9516,7 +9509,7 @@ fn execute_function(
         if block_id.value < 0 || block_id.value >= function.blocks.len() {
             state.depth.set(state.depth.get() - 1);
             release_frame_slots(state, frame);
-            return Result::Err("invalid current block " + block_id.value.to_string())
+            return Result::Err(f"invalid current block {block_id.value}")
         }
         let block = function.blocks[block_id.value];
         let operations = state.sequential_operations[function_id.value][block_id.value];

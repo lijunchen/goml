@@ -326,9 +326,8 @@ fn bool_pattern_row(row: PatternRow, source: string, expected: bool) -> Option[P
 fn bool_pattern_rows(rows: Vec[PatternRow], source: string, expected: bool) -> Vec[PatternRow] {
     let result: Vec[PatternRow] = Vec::new();
     for row in rows {
-        match bool_pattern_row(row, source, expected) {
-            Some(value) => result.push(value),
-            None => (),
+        if let Some(value) = bool_pattern_row(row, source, expected) {
+            result.push(value)
         }
     }
     result
@@ -371,9 +370,8 @@ fn tuple_pattern_rows(
 ) -> Vec[PatternRow] {
     let result: Vec[PatternRow] = Vec::new();
     for row in rows {
-        match tuple_pattern_row(row, source, names, types) {
-            Some(value) => result.push(value),
-            None => (),
+        if let Some(value) = tuple_pattern_row(row, source, names, types) {
+            result.push(value)
         }
     }
     result
@@ -450,9 +448,8 @@ fn struct_pattern_rows(
 ) -> Vec[PatternRow] {
     let result: Vec[PatternRow] = Vec::new();
     for row in rows {
-        match struct_pattern_row(row, source, names, fields) {
-            Some(value) => result.push(value),
-            None => (),
+        if let Some(value) = struct_pattern_row(row, source, names, fields) {
+            result.push(value)
         }
     }
     result
@@ -532,9 +529,8 @@ fn enum_pattern_rows(
 ) -> Vec[PatternRow] {
     let result: Vec[PatternRow] = Vec::new();
     for row in rows {
-        match enum_pattern_row(row, source, constructor_name, variables) {
-            Some(value) => result.push(value),
-            None => (),
+        if let Some(value) = enum_pattern_row(row, source, constructor_name, variables) {
+            result.push(value)
         }
     }
     result
@@ -699,9 +695,8 @@ fn unit_pattern_row(row: PatternRow, source: string) -> Option[PatternRow] {
 fn unit_pattern_rows(rows: Vec[PatternRow], source: string) -> Vec[PatternRow] {
     let result: Vec[PatternRow] = Vec::new();
     for row in rows {
-        match unit_pattern_row(row, source) {
-            Some(value) => result.push(value),
-            None => (),
+        if let Some(value) = unit_pattern_row(row, source) {
+            result.push(value)
         }
     }
     result
@@ -787,9 +782,8 @@ fn primitive_pattern_row(row: PatternRow, source: string, key: string) -> Option
 fn primitive_pattern_rows(rows: Vec[PatternRow], source: string, key: string) -> Vec[PatternRow] {
     let result: Vec[PatternRow] = Vec::new();
     for row in rows {
-        match primitive_pattern_row(row, source, key) {
-            Some(value) => result.push(value),
-            None => (),
+        if let Some(value) = primitive_pattern_row(row, source, key) {
+            result.push(value)
         }
     }
     result

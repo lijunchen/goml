@@ -82,9 +82,8 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             for input in interface_files {
                 inputs.push(input)
             }
-            match world {
-                Some(value) => inputs.push(value),
-                None => (),
+            if let Some(value) = world {
+                inputs.push(value)
             }
             let outputs = Vec::from_array([path::with_extension(output, "interface")]);
             match subcommand {
@@ -114,9 +113,8 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             let outputs = Vec::from_array(
                 [path::with_extension(output, "interface"), path::with_extension(output, "core")],
             );
-            match counter_output {
-                Some(value) => outputs.push(value),
-                None => (),
+            if let Some(value) = counter_output {
+                outputs.push(value)
             }
             Option::Some(
                 CacheSpec {
@@ -152,9 +150,8 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             for input in input_cores {
                 inputs.push(input)
             }
-            match world {
-                Some(value) => inputs.push(value),
-                None => (),
+            if let Some(value) = world {
+                inputs.push(value)
             }
             Option::Some(
                 CacheSpec {
@@ -171,9 +168,8 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             for input in input_cores {
                 inputs.push(input)
             }
-            match world {
-                Some(value) => inputs.push(value),
-                None => (),
+            if let Some(value) = world {
+                inputs.push(value)
             }
             Option::Some(
                 CacheSpec {

@@ -39,10 +39,8 @@ fn index_map_capacity_for_entries(entries: isize) -> isize {
 
 fn index_map_empty_indices(capacity: isize) -> Vec[isize] {
     let indices = Vec::with_capacity(capacity);
-    let mut index = 0;
-    while index < capacity {
+    for _ in 0..capacity {
         indices.push(-1);
-        index += 1;
     }
     indices
 }
@@ -136,9 +134,8 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let next_entries: Vec[Option[IndexMapEntry[K, V]]] = Vec::with_capacity(desired_entries);
         let mut old_index = 0;
         while old_index < old_entries.len() {
-            match old_entries[old_index] {
-                Some(entry) => next_entries.push(Option::Some(entry)),
-                None => (),
+            if let Some(entry) = old_entries[old_index] {
+                next_entries.push(Option::Some(entry))
             }
             old_index += 1;
         }
@@ -258,9 +255,8 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let result = Vec::with_capacity(self.len.get());
         let mut index = 0;
         while index < self.entries.get().len() {
-            match self.entries.get()[index] {
-                Some(entry) => result.push((entry.key, entry.value)),
-                None => (),
+            if let Some(entry) = self.entries.get()[index] {
+                result.push((entry.key, entry.value))
             }
             index += 1;
         }
@@ -271,9 +267,8 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let result = Vec::with_capacity(self.len.get());
         let mut index = 0;
         while index < self.entries.get().len() {
-            match self.entries.get()[index] {
-                Some(entry) => result.push(entry.key),
-                None => (),
+            if let Some(entry) = self.entries.get()[index] {
+                result.push(entry.key)
             }
             index += 1;
         }
@@ -284,9 +279,8 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let result = Vec::with_capacity(self.len.get());
         let mut index = 0;
         while index < self.entries.get().len() {
-            match self.entries.get()[index] {
-                Some(entry) => result.push(entry.value),
-                None => (),
+            if let Some(entry) = self.entries.get()[index] {
+                result.push(entry.value)
             }
             index += 1;
         }

@@ -144,9 +144,8 @@ fn formatter_goldens_match() -> () {
                 },
             };
             if env::var_structured("UPDATE_EXPECT").is_ok() {
-                match fs::write_file_structured(golden_path, formatted) {
-                    Ok(_) => (),
-                    Err(error) => testing::fail(error.to_string()),
+                if let Err(error) = fs::write_file_structured(golden_path, formatted) {
+                    testing::fail(error.to_string())
                 }
             } else {
                 testing::assert_eq(formatted, read_fixture(golden_path))

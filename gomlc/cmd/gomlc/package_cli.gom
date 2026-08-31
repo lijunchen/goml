@@ -233,9 +233,8 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                     value_required_error("--interface-path <INTERFACE_FILE>", Option::None),
                 )
             } else {
-                match inline_cli_value(argument, "--interface-path") {
-                    Some(value) => interface_paths.push(value),
-                    None => (),
+                if let Some(value) = inline_cli_value(argument, "--interface-path") {
+                    interface_paths.push(value)
                 }
                 index += 1;
             }
@@ -537,9 +536,8 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--package")) {
-            match inline_cli_value(argument, "--package") {
-                Some(value) => packages.push(value),
-                None => (),
+            if let Some(value) = inline_cli_value(argument, "--package") {
+                packages.push(value)
             }
             index += 1;
         } else if argument == "--output" {

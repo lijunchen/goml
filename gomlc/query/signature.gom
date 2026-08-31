@@ -309,9 +309,8 @@ fn symbol_parameter_names(
 
 fn unresolved_parameter_names(value: Analysis, expected: string) -> Option[Vec[string]] {
     match value.lowered.ast {
-        Some(file) => match file_parameter_names(file, expected, Option::None, true) {
-            Some(names) => return Option::Some(names),
-            None => (),
+        Some(file) => if let Some(names) = file_parameter_names(file, expected, Option::None, true) {
+            return Option::Some(names)
         },
         None => (),
     }
@@ -320,9 +319,13 @@ fn unresolved_parameter_names(value: Analysis, expected: string) -> Option[Vec[s
         let source = value.sources[source_index];
         if source.path == value.source_path {} else {
             match ast::lower(parser::parse(source.source)).ast {
-                Some(file) => match file_parameter_names(file, expected, Option::None, true) {
-                    Some(names) => return Option::Some(names),
-                    None => (),
+                Some(file) => if let Some(names) = file_parameter_names(
+                    file,
+                    expected,
+                    Option::None,
+                    true,
+                ) {
+                    return Option::Some(names)
                 },
                 None => (),
             }

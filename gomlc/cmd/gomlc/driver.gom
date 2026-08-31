@@ -1403,14 +1403,12 @@ fn eliminate_core_dead_code(value: core::File) -> core::File {
 
 fn lower_mono_or_fail(value: core::File) -> mono::File {
     let result = mono::lower_checked(eliminate_core_dead_code(value));
-    match result.error {
-        Some(error) => fail(COMPILE_ERROR_PREFIX + error),
-        None => (),
+    if let Some(error) = result.error {
+        fail(COMPILE_ERROR_PREFIX + error)
     }
     let lowered = mono::dce(result.file);
-    match mono::validate(lowered) {
-        Ok(_) => (),
-        Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid Mono IR: " + message),
+    if let Err(message) = mono::validate(lowered) {
+        fail(COMPILE_ERROR_PREFIX + "invalid Mono IR: " + message)
     }
     lowered
 }
@@ -1432,18 +1430,16 @@ fn lower_lift_stage(value: mono::File, counter: Ref[isize]) -> lift::File {
         },
     };
     let result = lift::dce(lowered);
-    match lift::validate(result) {
-        Ok(_) => (),
-        Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid Lift IR: " + message),
+    if let Err(message) = lift::validate(result) {
+        fail(COMPILE_ERROR_PREFIX + "invalid Lift IR: " + message)
     }
     result
 }
 
 fn lower_anf_stage(value: lift::File, counter: Ref[isize]) -> anf::File {
     let result = anf::dce(anf::lower_with_counter(value, counter));
-    match anf::verify(result) {
-        Ok(_) => (),
-        Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid ANF IR: " + message),
+    if let Err(message) = anf::verify(result) {
+        fail(COMPILE_ERROR_PREFIX + "invalid ANF IR: " + message)
     }
     result
 }
@@ -1798,7 +1794,7 @@ fn execute_with_go_run(directory: string, go_file: string) -> Result[process::Ou
         "UTC",
     ).env("GOWORK", "off").env("GO111MODULE", "off").output_structured() {
         Ok(output) => Result::Ok(output),
-        Err(error) => Result::Err("failed to execute go run: " + error.to_string()),
+        Err(error) => Result::Err(f"failed to execute go run: {error}"),
     }
 }
 

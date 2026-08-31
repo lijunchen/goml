@@ -194,9 +194,8 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
     let analysis = document_analysis(server, document);
     let offset = request_offset(document, position)?;
     let sections: Vec[string] = Vec::new();
-    match query::hover(analysis, offset) {
-        Some(hover) => sections.push("```goml\n" + hover.contents + "\n```"),
-        None => (),
+    if let Some(hover) = query::hover(analysis, offset) {
+        sections.push("```goml\n" + hover.contents + "\n```")
     }
     let diagnostic_lines = collections::IndexSet::new();
     for diagnostic in analysis.checked.diagnostics {
@@ -485,9 +484,8 @@ fn code_action_response(params: json::Value) -> Result[json::Value, string] {
         match json::field(diagnostic, "data") {
             Some(data) => match json::field(data, "fixes") {
                 Some(Array(fixes)) => for fix in fixes {
-                    match fix_action(diagnostic, fix) {
-                        Some(action) => actions.push(action),
-                        None => (),
+                    if let Some(action) = fix_action(diagnostic, fix) {
+                        actions.push(action)
                     }
                 },
                 _ => (),
@@ -701,33 +699,31 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
     let output: Vec[json::Value] = Vec::new();
     match parse_rpc_message(value) {
         Ok(message) => if server.shutdown.get() && message.method != EXIT_METHOD {
-            match message.id {
-                Some(id) => output.push(rpc_error(id, -32600, "server has shut down")),
-                None => (),
+            if let Some(id) = message.id {
+                output.push(rpc_error(id, -32600, "server has shut down"))
             }
         } else {
             match message.method {
                 EXIT_METHOD => server.running.set(false),
                 INITIALIZED_METHOD => (),
-                DID_OPEN_METHOD => match did_open(server, message.params) {
-                    Ok(notification) => output.push(notification),
-                    Err(_) => (),
+                DID_OPEN_METHOD => if let Ok(notification) = did_open(server, message.params) {
+                    output.push(notification)
                 },
                 DID_CHANGE_METHOD => match did_change(server, message.params) {
                     Ok(()) => (),
                     Err(_) => (),
                 },
-                CHECK_DIAGNOSTICS_METHOD => match check_diagnostics(server, message.params) {
-                    Ok(notification) => output.push(notification),
-                    Err(_) => (),
+                CHECK_DIAGNOSTICS_METHOD => if let Ok(notification) = check_diagnostics(
+                    server,
+                    message.params,
+                ) {
+                    output.push(notification)
                 },
-                DID_CLOSE_METHOD => match did_close(server, message.params) {
-                    Ok(notification) => output.push(notification),
-                    Err(_) => (),
+                DID_CLOSE_METHOD => if let Ok(notification) = did_close(server, message.params) {
+                    output.push(notification)
                 },
-                DID_SAVE_METHOD => match did_save(server, message.params) {
-                    Ok(notification) => output.push(notification),
-                    Err(_) => (),
+                DID_SAVE_METHOD => if let Ok(notification) = did_save(server, message.params) {
+                    output.push(notification)
                 },
                 _ => match message.id {
                     Some(id) => match request_result(server, message) {
@@ -765,9 +761,8 @@ pub fn run_server() -> Result[(), string] {
     while server_running(server) {
         let payload = read_rpc_payload()?;
         let operation = status_operation(payload);
-        match operation {
-            Some(name) => write_rpc_message(status_notification("busy", name))?,
-            None => (),
+        if let Some(name) = operation {
+            write_rpc_message(status_notification("busy", name))?
         }
         match handle_payload(server, payload) {
             Ok(messages) => for message in messages {
@@ -775,9 +770,8 @@ pub fn run_server() -> Result[(), string] {
             },
             Err(error) => return Result::Err(error),
         }
-        match operation {
-            Some(name) => write_rpc_message(status_notification("ready", name))?,
-            None => (),
+        if let Some(name) = operation {
+            write_rpc_message(status_notification("ready", name))?
         }
     }
     if server.shutdown.get() {

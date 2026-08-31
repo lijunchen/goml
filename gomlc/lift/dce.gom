@@ -181,9 +181,8 @@ fn dce_collect_exprs(result: DceNames, values: Vec[Expr]) -> () {
 }
 
 fn dce_collect_optional_expr(result: DceNames, value: Option[Expr]) -> () {
-    match value {
-        Some(value) => dce_collect_expr(result, value),
-        None => (),
+    if let Some(value) = value {
+        dce_collect_expr(result, value)
     }
 }
 

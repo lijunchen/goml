@@ -782,9 +782,11 @@ fn file_parameter_explicit_type(file: ast::File, name: string) -> Option[string]
     let mut item_index = file.items.len() - 1;
     while item_index >= 0 {
         match file.items[item_index] {
-            Function(function) => match parameter_explicit_type(function.params, name) {
-                Some(value) => return Option::Some(value),
-                None => (),
+            Function(function) => if let Some(value) = parameter_explicit_type(
+                function.params,
+                name,
+            ) {
+                return Option::Some(value)
             },
             ImplBlock(block) => {
                 let mut method_index = block.methods.len() - 1;
@@ -961,9 +963,8 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                 _ => (),
             }
         },
-        None => match explicit_receiver_type(value, dot) {
-            Some(receiver_name) => complete_named_methods(result, value, receiver_name, prefix),
-            None => (),
+        None => if let Some(receiver_name) = explicit_receiver_type(value, dot) {
+            complete_named_methods(result, value, receiver_name, prefix)
         },
     }
     result

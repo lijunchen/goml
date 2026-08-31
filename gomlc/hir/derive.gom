@@ -117,9 +117,8 @@ fn trait_default_function(
 fn trait_default_functions(value: ast::TraitDef) -> Vec[ast::Function] {
     let result: Vec[ast::Function] = Vec::new();
     for method in value.method_sigs {
-        match method.body {
-            Some(body) => result.push(trait_default_function(value, method, body)),
-            None => (),
+        if let Some(body) = method.body {
+            result.push(trait_default_function(value, method, body))
         }
     }
     result
@@ -146,9 +145,8 @@ enum ResolvedDerive {
 
 fn environment_modules(value: DeriveEnvironment) -> Vec[ctir::CtModule] {
     let result: Vec[ctir::CtModule] = Vec::new();
-    match value.builtin {
-        Some(module) => result.push(module),
-        None => (),
+    if let Some(module) = value.builtin {
+        result.push(module)
     }
     for module in value.dependencies {
         result.push(module)

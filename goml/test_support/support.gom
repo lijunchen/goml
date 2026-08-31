@@ -79,9 +79,8 @@ pub fn create_dir(value: string) -> () {
 }
 
 pub fn write_file(file: string, content: string) -> () {
-    match path::parent(file) {
-        Some(parent) => create_dir(parent),
-        None => (),
+    if let Some(parent) = path::parent(file) {
+        create_dir(parent)
     }
     match fs::write_file_structured(file, content) {
         Ok(()) => (),

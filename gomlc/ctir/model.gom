@@ -377,9 +377,8 @@ fn collect_reachable_expr(package_name: string, value: CtExpr, reachable: CtReac
         Match { value, arms } => {
             collect_reachable_expr(package_name, value, reachable);
             for arm in arms {
-                match arm.guard {
-                    Some(value) => collect_reachable_expr(package_name, value, reachable),
-                    None => (),
+                if let Some(value) = arm.guard {
+                    collect_reachable_expr(package_name, value, reachable)
                 }
                 collect_reachable_expr(package_name, arm.body, reachable)
             }
@@ -398,9 +397,8 @@ fn collect_reachable_expr(package_name: string, value: CtExpr, reachable: CtReac
             collect_reachable_expr(package_name, body, reachable)
         },
         Loop { target: _, body } => collect_reachable_expr(package_name, body, reachable),
-        Break { target: _, value } | Return(value) => match value {
-            Some(value) => collect_reachable_expr(package_name, value, reachable),
-            None => (),
+        Break { target: _, value } | Return(value) => if let Some(value) = value {
+            collect_reachable_expr(package_name, value, reachable)
         },
         Call { target, args } => {
             match target {
@@ -422,9 +420,8 @@ fn collect_reachable_block(package_name: string, value: CtBlock, reachable: CtRe
             },
         }
     }
-    match value.tail {
-        Some(value) => collect_reachable_expr(package_name, value, reachable),
-        None => (),
+    if let Some(value) = value.tail {
+        collect_reachable_expr(package_name, value, reachable)
     }
 }
 
@@ -457,9 +454,8 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
     }
     let mut index = 0;
     while index < reachable.function_ids.len() {
-        match functions_by_id[reachable.function_ids[index]] {
-            Some(function) => collect_reachable_block(value.package_name, function.body, reachable),
-            None => (),
+        if let Some(function) = functions_by_id[reachable.function_ids[index]] {
+            collect_reachable_block(value.package_name, function.body, reachable)
         }
         index += 1;
     }

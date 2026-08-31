@@ -260,10 +260,8 @@ fn read_string(decoder: Decoder) -> Result[string, string] {
         Result::Err(decoder_error(decoder, "string length exceeds remaining input"))
     } else {
         let values: Vec[byte] = Vec::with_capacity(length);
-        let mut index = 0;
-        while index < length {
+        for _ in 0..length {
             values.push(read_byte(decoder)?);
-            index += 1;
         }
         match bytes::Bytes::from_vec(values).to_string_utf8() {
             Ok(value) => Result::Ok(value),
@@ -334,10 +332,8 @@ fn read_sequence(decoder: Decoder, schemas: Vec[serde::Schema]) -> Result[serde:
     } else {
         let length = read_length(decoder)?;
         let values: Vec[serde::Value] = Vec::with_capacity(length);
-        let mut index = 0;
-        while index < length {
+        for _ in 0..length {
             values.push(read_schema(decoder, schemas[0])?);
-            index += 1;
         }
         Result::Ok(serde::Value::Sequence(values))
     }
@@ -597,10 +593,8 @@ impl serde::Deserializer for Decoder {
         claim_bincode_input(self)?;
         let length = read_length(self)?;
         let values: Vec[byte] = Vec::with_capacity(length);
-        let mut index = 0;
-        while index < length {
+        for _ in 0..length {
             values.push(read_byte(self)?);
-            index += 1;
         }
         Result::Ok(values)
     }

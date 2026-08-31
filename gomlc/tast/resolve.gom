@@ -241,9 +241,8 @@ fn instantiate_enum(ctx: Checker, value: EnumInfo) -> (Type, Vec[TypeSubst]) {
     let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
     let args: Vec[Type] = Vec::new();
     for generic in value.generics {
-        match find_substitution(substitutions, generic) {
-            Some(ty) => args.push(ty),
-            None => (),
+        if let Some(ty) = find_substitution(substitutions, generic) {
+            args.push(ty)
         }
     };
     (nominal_type(ctx.builtin, value.name, args), substitutions)
@@ -418,9 +417,8 @@ fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
     let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
     let args: Vec[Type] = Vec::new();
     for generic in value.generics {
-        match find_substitution(substitutions, generic) {
-            Some(ty) => args.push(ty),
-            None => (),
+        if let Some(ty) = find_substitution(substitutions, generic) {
+            args.push(ty)
         }
     }
     let fields: Vec[(string, Type)] = Vec::new();
@@ -534,9 +532,8 @@ fn resolve_named_field_constructor(ctx: Checker, name: string) -> NamedFieldCons
         },
         None => (),
     }
-    match resolve_struct(ctx, name) {
-        Some(value) => return NamedFieldConstructorResolution::Found(value),
-        None => (),
+    if let Some(value) = resolve_struct(ctx, name) {
+        return NamedFieldConstructorResolution::Found(value)
     }
     let candidates: Vec[(EnumInfo, isize)] = Vec::new();
     for value in ctx.enums {
@@ -2055,9 +2052,8 @@ fn trait_substitutions(ctx: Checker, info: TraitInfo, reference: TraitRef, self_
     for arg in reference.args {
         explicit.push(arg)
     }
-    match self_ty {
-        Some(ty) => explicit.push(ty),
-        None => (),
+    if let Some(ty) = self_ty {
+        explicit.push(ty)
     }
     instantiate_substitutions(ctx.counter, params, explicit)
 }
@@ -2621,9 +2617,8 @@ fn validate_signature_type(ctx: Checker, value: Type) -> () {
         },
         Projection { for_ty: base, name: _, trait_ref: qualifier } => {
             validate_signature_type(ctx, base);
-            match qualifier {
-                Some(reference) => validate_trait_reference(ctx, reference),
-                None => (),
+            if let Some(reference) = qualifier {
+                validate_trait_reference(ctx, reference)
             }
         },
         Tuple { items: values } => for value in values {
@@ -3062,9 +3057,8 @@ fn resolve_trait_static(
             let substitutions = instantiate_substitutions(ctx.counter, info.generics, explicit);
             let args: Vec[Type] = Vec::new();
             for generic in info.generics {
-                match find_substitution(substitutions, generic) {
-                    Some(ty) => args.push(ty),
-                    None => (),
+                if let Some(ty) = find_substitution(substitutions, generic) {
+                    args.push(ty)
                 }
             }
             let reference = TraitRef { name: info.name, args };

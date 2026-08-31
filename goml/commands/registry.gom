@@ -159,9 +159,8 @@ fn module_root() -> Result[string, string] {
     loop {
         let manifest_path = path::join(directory, manifest::FILENAME);
         if fs::is_file(manifest_path) {
-            match manifest::load(manifest_path) {
-                Ok(_) => return Result::Ok(directory),
-                Err(_) => (),
+            if let Ok(_) = manifest::load(manifest_path) {
+                return Result::Ok(directory)
             }
         }
         match path::parent(directory) {

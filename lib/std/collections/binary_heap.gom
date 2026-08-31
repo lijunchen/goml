@@ -110,9 +110,8 @@ impl[T: cmp::Ord] BinaryHeap[T] {
     pub fn into_sorted_vec(self: BinaryHeap[T]) -> Vec[T] {
         let result = Vec::with_capacity(self.len());
         while !self.is_empty() {
-            match self.pop() {
-                Some(value) => result.push(value),
-                None => (),
+            if let Some(value) = self.pop() {
+                result.push(value)
             }
         }
         result.reverse();

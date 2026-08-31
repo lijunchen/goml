@@ -321,9 +321,8 @@ fn collect_local_term(names: collections::HashSet[string], value: anf::Term) -> 
             for arm in arms {
                 collect_local_block(names, arm.body)
             }
-            match default {
-                Some(body) => collect_local_block(names, body),
-                None => (),
+            if let Some(body) = default {
+                collect_local_block(names, body)
             }
         },
         Select { arms, default, .. } => {
@@ -336,9 +335,8 @@ fn collect_local_term(names: collections::HashSet[string], value: anf::Term) -> 
                     Send { body, .. } => collect_local_block(names, body),
                 }
             }
-            match default {
-                Some(body) => collect_local_block(names, body),
-                None => (),
+            if let Some(body) = default {
+                collect_local_block(names, body)
             }
         },
         Return(_) | Jump { .. } | Unreachable { .. } => (),
@@ -2220,9 +2218,11 @@ fn append_struct_field_types(result: Vec[repr::Type], definition: repr::StructDe
 fn struct_field_types(env: LowerEnv, value: repr::Type) -> Vec[repr::Type] {
     let result: Vec[repr::Type] = Vec::new();
     match repr::resolve_type(value) {
-        Named { name } | ClosureEnvironment { name } => match find_struct(env.structs, name) {
-            Some(definition) => append_struct_field_types(result, definition),
-            None => (),
+        Named { name } | ClosureEnvironment { name } => if let Some(definition) = find_struct(
+            env.structs,
+            name,
+        ) {
+            append_struct_field_types(result, definition)
         },
         _ => (),
     }
@@ -2509,9 +2509,8 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
 }
 
 fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
-    match compile_hashmap_array_literal_let(env, value) {
-        Some(result) => return result,
-        None => (),
+    if let Some(result) = compile_hashmap_array_literal_let(env, value) {
+        return result
     }
     let result: Vec[Stmt] = Vec::new();
     let compiled = compile_value(env, value.name, value.value, value.ty);
@@ -2662,9 +2661,8 @@ fn collect_collection_arrays_term(result: HashMap[string, anf::Value], value: an
             for arm in arms {
                 collect_collection_arrays(result, arm.body)
             }
-            match default {
-                Some(body) => collect_collection_arrays(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_collection_arrays(result, body)
             }
         },
         Select { arms, default, .. } => {
@@ -2676,9 +2674,8 @@ fn collect_collection_arrays_term(result: HashMap[string, anf::Value], value: an
                     },
                 )
             }
-            match default {
-                Some(body) => collect_collection_arrays(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_collection_arrays(result, body)
             }
         },
         Return(_) | Jump { target: _, args: _, ret_ty: _ } | Unreachable { ty: _ } => (),
@@ -2720,9 +2717,8 @@ fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> () {
             for arm in arms {
                 collect_joins_block(result, arm.body)
             }
-            match default {
-                Some(body) => collect_joins_block(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_joins_block(result, body)
             }
         },
         Select { arms, default, .. } => {
@@ -2734,9 +2730,8 @@ fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> () {
                     },
                 )
             }
-            match default {
-                Some(body) => collect_joins_block(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_joins_block(result, body)
             }
         },
         Return(_) | Jump { target: _, args: _, ret_ty: _ } | Unreachable { ty: _ } => (),
@@ -3082,9 +3077,8 @@ fn arm_type(env: LowerEnv, value: anf::Imm) -> Option[Type] {
 
 fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
     for value in values {
-        match arm_type(env, value.lhs) {
-            Some(_) => return true,
-            None => (),
+        if let Some(_) = arm_type(env, value.lhs) {
+            return true
         }
     }
     false
@@ -3832,9 +3826,8 @@ fn simple_loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf
             for arm in arms {
                 targets.push(loop_branch_target(arm.body, loop_name, joins))
             }
-            match default {
-                Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
-                None => (),
+            if let Some(body) = default {
+                targets.push(loop_branch_target(body, loop_name, joins))
             }
             let exits: Vec[string] = Vec::new();
             let continues: Vec[()] = Vec::new();
@@ -3869,9 +3862,8 @@ fn simple_loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf
                     ),
                 )
             }
-            match default {
-                Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
-                None => (),
+            if let Some(body) = default {
+                targets.push(loop_branch_target(body, loop_name, joins))
             }
             let exits: Vec[string] = Vec::new();
             let continues: Vec[()] = Vec::new();
@@ -4100,9 +4092,8 @@ fn term_loop_outcomes(
 fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBind]) -> Option[
     string,
 ] {
-    match simple_loop_exit_target(value, loop_name, parent) {
-        Some(target) => return Option::Some(target),
-        None => (),
+    if let Some(target) = simple_loop_exit_target(value, loop_name, parent) {
+        return Option::Some(target)
     }
     let internal_joins: Vec[anf::JoinBind] = Vec::new();
     collect_joins_block(internal_joins, value);
@@ -4136,9 +4127,8 @@ fn find_loop_exit(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBin
             for bind in value.binds {
                 match bind {
                     Join(dispatch) => if all_paths_reach_or_terminate(value, dispatch.name) {
-                        match find_loop_exit(dispatch.body, loop_name, joins) {
-                            Some(target) => return Option::Some(target),
-                            None => (),
+                        if let Some(target) = find_loop_exit(dispatch.body, loop_name, joins) {
+                            return Option::Some(target)
                         }
                     },
                     _ => (),
@@ -4284,9 +4274,8 @@ fn compile_loop_term_leaf(
                     Stmt::ContinueLabel { label: active_loop_label(env, target).unwrap_or("") },
                 )
             } else if target == exit_name {
-                match find_join(env.joins, target) {
-                    Some(join) => append_stmts(result, compile_jump_args(env, join, args)),
-                    None => (),
+                if let Some(join) = find_join(env.joins, target) {
+                    append_stmts(result, compile_jump_args(env, join, args))
                 }
                 result.push(Stmt::BreakLabel { label })
             } else {
@@ -5224,9 +5213,8 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> () {
                 collect_imm_type(result, arm.lhs);
                 collect_block_types(result, arm.body)
             }
-            match default {
-                Some(body) => collect_block_types(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_block_types(result, body)
             }
         },
         Select { arms, default, ret_ty: ty, .. } => {
@@ -5235,9 +5223,8 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> () {
                 match arm {
                     Receive { channel, guard, binding: _, binding_ty, body } => {
                         collect_imm_type(result, channel);
-                        match guard {
-                            Some(value) => collect_imm_type(result, value),
-                            None => (),
+                        if let Some(value) = guard {
+                            collect_imm_type(result, value)
                         }
                         collect_type(result, binding_ty);
                         collect_block_types(result, body)
@@ -5245,17 +5232,15 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> () {
                     Send { channel, value, guard, body } => {
                         collect_imm_type(result, channel);
                         collect_imm_type(result, value);
-                        match guard {
-                            Some(value) => collect_imm_type(result, value),
-                            None => (),
+                        if let Some(value) = guard {
+                            collect_imm_type(result, value)
                         }
                         collect_block_types(result, body)
                     },
                 }
             }
-            match default {
-                Some(body) => collect_block_types(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_block_types(result, body)
             }
         },
         Unreachable { ty } => collect_type(result, ty),
@@ -5351,9 +5336,8 @@ fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> () {
             for arm in arms {
                 collect_dyn_block(result, arm.body)
             }
-            match default {
-                Some(body) => collect_dyn_block(result, body),
-                None => (),
+            if let Some(body) = default {
+                collect_dyn_block(result, body)
             }
         },
         _ => (),
@@ -5619,9 +5603,8 @@ fn inspect_pointer_calls(
                 }
                 inspect_pointer_calls(arm.body, target, parameter, valid, calls)
             }
-            match default {
-                Some(body) => inspect_pointer_calls(body, target, parameter, valid, calls),
-                None => (),
+            if let Some(body) = default {
+                inspect_pointer_calls(body, target, parameter, valid, calls)
             }
         },
         Select { arms, default, .. } => {
@@ -5653,9 +5636,8 @@ fn inspect_pointer_calls(
                     },
                 }
             }
-            match default {
-                Some(body) => inspect_pointer_calls(body, target, parameter, valid, calls),
-                None => (),
+            if let Some(body) = default {
+                inspect_pointer_calls(body, target, parameter, valid, calls)
             }
         },
         Unreachable { ty: _ } => (),
@@ -6144,9 +6126,8 @@ fn validate_anf(value: anf::File) -> Result[(), string] {
     let go_foreign: Vec[GoForeignSpec] = Vec::new();
     let missing_types = new_collected_types();
     for function in value.functions {
-        match validate_anf_block(function.body) {
-            Ok(_) => (),
-            Err(error) => return Result::Err("in function " + function.name + ": " + error),
+        if let Err(error) = validate_anf_block(function.body) {
+            return Result::Err("in function " + function.name + ": " + error)
         }
         collect_runtime_block(runtime_hooks, missing_types, intrinsics, go_foreign, function.body)
     }

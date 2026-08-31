@@ -1154,17 +1154,15 @@ fn accept_build_result(
     match value.result {
         Ok(()) => match finish_prepared_command(digests, context, identity, value.cache) {
             Ok(()) => {
-                match value.completion {
-                    Some(completion) => completion.send(true),
-                    None => (),
+                if let Some(completion) = value.completion {
+                    completion.send(true)
                 }
                 let _ = completed_nodes.insert(value.index);
                 Result::Ok(())
             },
             Err(message) => {
-                match value.completion {
-                    Some(completion) => completion.send(false),
-                    None => (),
+                if let Some(completion) = value.completion {
+                    completion.send(false)
                 }
                 scope.cancel();
                 Result::Err(message)

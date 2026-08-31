@@ -363,9 +363,8 @@ pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> () {
     if value.binary_mode == 2 {
         artifact_binary_collect_string(value.binary_strings, name)
     } else if value.binary_mode == 3 {
-        match value.binary_scopes.peek() {
-            Some(scope) => scope.count.set(scope.count.get() + 1),
-            None => (),
+        if let Some(scope) = value.binary_scopes.peek() {
+            scope.count.set(scope.count.get() + 1)
         }
         artifact_binary_stream_error(
             value,

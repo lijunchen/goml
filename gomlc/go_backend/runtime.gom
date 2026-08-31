@@ -3956,9 +3956,8 @@ fn collect_dyn_call_methods(result: Vec[DynMethod], trait_name: string, block: a
             for arm in arms {
                 collect_dyn_call_methods(result, trait_name, arm.body)
             }
-            match default {
-                Some(body) => collect_dyn_call_methods(result, trait_name, body),
-                None => (),
+            if let Some(body) = default {
+                collect_dyn_call_methods(result, trait_name, body)
             }
         },
         _ => (),

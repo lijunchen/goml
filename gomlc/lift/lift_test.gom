@@ -130,9 +130,8 @@ fn validates_generated_closure_environments() -> () {
     let file = lower_source(
         "fn main() -> () { let add = |value: i32| value + 1; println(add(41)); }",
     );
-    match validate(file) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = validate(file) {
+        testing::fail(message)
     }
 }
 
@@ -144,9 +143,8 @@ fn represents_stored_closures_with_explicit_packs() -> () {
     let output = encode(file);
     testing::assert_eq(file.closure_defs.len(), 2);
     testing::assert(output.contains("pack_closure["));
-    match validate(file) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
+    if let Err(message) = validate(file) {
+        testing::fail(message)
     }
 }
 

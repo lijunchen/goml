@@ -1447,9 +1447,8 @@ fn evaluate_pattern_constants(
     let _ = evaluate_constants(builtin, file, Vec::new(), module, dependencies, names, diagnostics);
     let result: Vec[(string, Primitive)] = Vec::new();
     for constant in file.constants {
-        match module_constant_primitive(module, constant.name, constant.ty) {
-            Some(value) => result.push((constant.name, value)),
-            None => (),
+        if let Some(value) = module_constant_primitive(module, constant.name, constant.ty) {
+            result.push((constant.name, value))
         }
     }
     result

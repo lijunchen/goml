@@ -40,9 +40,8 @@ struct LambdaLiftResult {
 }
 
 fn invalid_expr(state: State, ty: mono::Type, message: string) -> LowerExpr {
-    match state.error.get() {
-        Some(_) => (),
-        None => state.error.set(Option::Some(message)),
+    if let None = state.error.get() {
+        state.error.set(Option::Some(message))
     }
     LowerExpr::Prim { value: mono::Primitive::Unit, ty }
 }
@@ -124,9 +123,8 @@ fn collect_used_exprs(values: collections::HashSet[string], exprs: Vec[mono::Exp
 }
 
 fn collect_used_optional_expr(values: collections::HashSet[string], expr: Option[mono::Expr]) -> () {
-    match expr {
-        Some(expr) => collect_used_expr(values, expr),
-        None => (),
+    if let Some(expr) = expr {
+        collect_used_expr(values, expr)
     }
 }
 
@@ -214,9 +212,8 @@ fn collect_used_expr(values: collections::HashSet[string], expr: mono::Expr) -> 
             collect_used_expr(values, receiver);
             collect_used_exprs(values, args)
         },
-        Break { value, ty: _, .. } => match value {
-            Some(expr) => collect_used_expr(values, expr),
-            None => (),
+        Break { value, ty: _, .. } => if let Some(expr) = value {
+            collect_used_expr(values, expr)
         },
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
@@ -378,9 +375,8 @@ fn observe_exprs(maximum: Ref[isize], values: Vec[mono::Expr]) -> () {
 }
 
 fn observe_optional_expr(maximum: Ref[isize], value: Option[mono::Expr]) -> () {
-    match value {
-        Some(value) => observe_expr(maximum, value),
-        None => (),
+    if let Some(value) = value {
+        observe_expr(maximum, value)
     }
 }
 
@@ -779,9 +775,8 @@ fn collect_captured_optional(
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
 ) -> () {
-    match value {
-        Some(value) => collect_captured(value, bound, captured, scope),
-        None => (),
+    if let Some(value) = value {
+        collect_captured(value, bound, captured, scope)
     }
 }
 
@@ -893,9 +888,8 @@ fn collect_captured(
         PackClosure { environment, apply: _, ty: _ } => {
             collect_captured(environment, bound, captured, scope)
         },
-        Break { value, ty: _, .. } => match value {
-            Some(expr) => collect_captured(expr, bound, captured, scope),
-            None => (),
+        Break { value, ty: _, .. } => if let Some(expr) = value {
+            collect_captured(expr, bound, captured, scope)
         },
         Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _, .. } => (),
     }

@@ -513,9 +513,8 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
                         }
                     }
                     for method in children_of_kind(list, cst::NodeKind::TRAIT_METHOD_SIG) {
-                        match lower_trait_method(ctx, method) {
-                            Some(value) => method_sigs.push(value),
-                            None => (),
+                        if let Some(value) = lower_trait_method(ctx, method) {
+                            method_sigs.push(value)
                         }
                     }
                 },
@@ -598,9 +597,8 @@ fn lower_params(ctx: LowerCtx, node: LocatedNode, shorthand_self_ty: Option[Type
         Some(list) => {
             let mut index = 0;
             for param in children_of_kind(list, cst::NodeKind::PARAM) {
-                match lower_param(ctx, param, index, shorthand_self_ty) {
-                    Some(value) => result.push(value),
-                    None => (),
+                if let Some(value) = lower_param(ctx, param, index, shorthand_self_ty) {
+                    result.push(value)
                 }
                 index += 1;
             }
@@ -713,9 +711,8 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                     let associated_ty = type_children(associated);
                     match name {
                         Some(name_token) => if !associated_ty.is_empty() {
-                            match lower_ty(ctx, associated_ty[0]) {
-                                Some(ty) => associated_types.push((name_token.token.text, ty)),
-                                None => (),
+                            if let Some(ty) = lower_ty(ctx, associated_ty[0]) {
+                                associated_types.push((name_token.token.text, ty))
                             }
                         },
                         None => (),

@@ -583,21 +583,19 @@ fn deserialize_variant_body(input: DeriveInput, variant: isize) -> MetaExpr {
             exprs_two(meta_expr_int(kind), meta_expr_int(field_count)),
         ),
     );
-    let mut field = 0;
-    while field < field_count {
+    for field in 0..field_count {
         meta_block_let_mut_typed(
             block,
             direct_variant_field_binding(input, variant, field),
             option_type(derive_variant_field_type(input, variant, field)),
             meta_expr_constructor("Option::None", exprs()),
         );
-        field += 1;
     }
     let next = derive_fresh_name(input, "serde_next_variant_field");
     meta_block_let_mut(block, next, try_deserializer_call("next_variant_field", exprs()));
     let loop_block = meta_block_new();
     let mut branch = try_deserializer_call("skip_value", exprs());
-    field = field_count;
+    let mut field = field_count;
     while field > 0 {
         field -= 1;
         branch = deserialize_direct_variant_field_branch(input, variant, field, next, branch);
