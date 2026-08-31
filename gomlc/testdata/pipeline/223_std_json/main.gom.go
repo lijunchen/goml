@@ -616,19 +616,21 @@ type closure_env_trait_impl_std_ser_h68439e2614f7cf40ea2ca975c616f740_lize_float
     self_0 _goml_m_std_p_json_p_JsonDeserializer
 }
 
-type closure_env_std_json_parse_json_value_11 struct {}
+type closure_env_trait_impl_std_ser_h4592a05eb0cf02256429aa14d00f59fe_ariant_field_11 struct {}
 
-type closure_env_inherent_string_string_char_indices_12 struct {
+type closure_env_std_json_parse_json_value_12 struct {}
+
+type closure_env_inherent_string_string_char_indices_13 struct {
     index_0 *ref_int_x
     self_1 string
 }
 
-type closure_env_inherent_string_string_chars_13 struct {
+type closure_env_inherent_string_string_chars_14 struct {
     self_0 string
     index_1 *ref_int_x
 }
 
-type closure_env_goml_builtin_range_14 struct {
+type closure_env_goml_builtin_range_15 struct {
     current_0 *ref_int_x
     end_1 int
 }
@@ -3427,9 +3429,9 @@ func _goml_m_std_p_json_p_parse__json__value(value__0 _goml_m_std_p_json_p_JsonP
             return t11
         case 34:
             var t12 Result__string__string = _goml_m_std_p_json_p_parse__json__string(value__0)
-            var t13 closure_env_std_json_parse_json_value_11 = closure_env_std_json_parse_json_value_11{}
+            var t13 closure_env_std_json_parse_json_value_12 = closure_env_std_json_parse_json_value_12{}
             var t14 func(string) _goml_m_std_p_json_p_Value = func(p0 string) _goml_m_std_p_json_p_Value {
-                return _goml_m_inherent_i_closure__en_h2239a5c69baf23bda8d5a80154db07c2_lue__11_i_apply(t13, p0)
+                return _goml_m_inherent_i_closure__en_hc3186200d25be10876101148ead5d5a4_lue__12_i_apply(t13, p0)
             }
             switch t12._tag {
             case 0:
@@ -4926,7 +4928,7 @@ func string_is_char_boundary(value__0 string, index__0 int) bool {
     }
 }
 
-func _goml_m_inherent_i_closure__en_h2239a5c69baf23bda8d5a80154db07c2_lue__11_i_apply(env0 closure_env_std_json_parse_json_value_11, text__0 string) _goml_m_std_p_json_p_Value {
+func _goml_m_inherent_i_closure__en_hc3186200d25be10876101148ead5d5a4_lue__12_i_apply(env0 closure_env_std_json_parse_json_value_12, text__0 string) _goml_m_std_p_json_p_Value {
     var t0 _goml_m_std_p_json_p_Value = _goml_m_std_p_json_p_Value_String{
         _0: text__0,
     }

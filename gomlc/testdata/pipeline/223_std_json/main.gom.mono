@@ -6219,26 +6219,12 @@ fn std::serde::finish_value_serializer(
       }
   } else {
       {
-        {
-          let mtmp0 =
-            inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
-              std::serde::ValueSerializer.result(serializer/0)
-            ) in
-          match mtmp0 {
-            Option__std::serde::Value::None => {
-              Result__std::serde::Value__string::Err("serialization produced no value")
-            },
-            Option__std::serde::Value::Some(x0) => {
-              {
-                let x0 = Option__std::serde::Value::Some._0(mtmp0) in
-                {
-                  let value/0 = x0 in
-                  Result__std::serde::Value__string::Ok(value/0)
-                }
-              }
-            },
-          }
-        }
+        inherent#Option#Option[T]#ok_or__E_string__T_std::serde::Value(
+          inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
+            std::serde::ValueSerializer.result(serializer/0)
+          ),
+          "serialization produced no value"
+        )
       }
   }
 }
@@ -13119,9 +13105,14 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
                                                 },
                                               }
                                             } in
+                                          let field/0 =
+                                            inherent#Option#Option[T]#map__T_string__U_std::serde::FieldKey(
+                                              next/1.2,
+                                              |name/0| std::serde::FieldKey::Name(name/0)
+                                            ) in
                                           let _wild3 =
-                                            if inherent#Option#Option[T]#is_some__T_string(
-                                              next/1.2
+                                            if inherent#Option#Option[T]#is_some__T_std::serde::FieldKey(
+                                              field/0
                                             ) {
                                                 {
                                                   inherent#Ref#Ref[T]#set__T_isize(
@@ -13136,29 +13127,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
                                             inherent#Ref#Ref[T]#set__T_bool(first/0, next/1.0) in
                                           let _wild5 =
                                             inherent#Ref#Ref[T]#set__T_bool(done/0, next/1.1) in
-                                          {
-                                            let mtmp4 = next/1.2 in
-                                            match mtmp4 {
-                                              Option__string::None => {
-                                                Result__Option__std::serde::FieldKey__string::Ok(
-                                                  Option__std::serde::FieldKey::None
-                                                )
-                                              },
-                                              Option__string::Some(x15) => {
-                                                {
-                                                  let x15 = Option__string::Some._0(mtmp4) in
-                                                  {
-                                                    let name/0 = x15 in
-                                                    Result__Option__std::serde::FieldKey__string::Ok(
-                                                      Option__std::serde::FieldKey::Some(
-                                                        std::serde::FieldKey::Name(name/0)
-                                                      )
-                                                    )
-                                                  }
-                                                }
-                                              },
-                                            }
-                                          }
+                                          Result__Option__std::serde::FieldKey__string::Ok(field/0)
                                         }
                                       }
                                     }
@@ -18527,6 +18496,26 @@ fn inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
   (@intrinsic(vec.len)(self/0) == 0)
 }
 
+fn inherent#Option#Option[T]#ok_or__E_string__T_std::serde::Value(
+  self/0: Option__std::serde::Value,
+  error/0: string
+) -> Result__std::serde::Value__string {
+  match self/0 {
+    Option__std::serde::Value::None => {
+      Result__std::serde::Value__string::Err(error/0)
+    },
+    Option__std::serde::Value::Some(x0) => {
+      {
+        let x0 = Option__std::serde::Value::Some._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__std::serde::Value__string::Ok(value/0)
+        }
+      }
+    },
+  }
+}
+
 fn inherent#Option#Option[T]#is_none__T_std::serde::Value(
   self/0: Option__std::serde::Value
 ) -> bool {
@@ -19651,6 +19640,41 @@ fn inherent#Vec#Vec[T]#push__T_std::json::JsonDeserializeFrame(
   elem/0: std::json::JsonDeserializeFrame
 ) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Option#Option[T]#map__T_string__U_std::serde::FieldKey(
+  self/0: Option__string,
+  map_fn/0: (string) -> std::serde::FieldKey
+) -> Option__std::serde::FieldKey {
+  match self/0 {
+    Option__string::None => {
+      Option__std::serde::FieldKey::None
+    },
+    Option__string::Some(x0) => {
+      {
+        let x0 = Option__string::Some._0(self/0) in
+        {
+          let value/0 = x0 in
+          Option__std::serde::FieldKey::Some(map_fn/0(value/0))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#is_some__T_std::serde::FieldKey(
+  self/0: Option__std::serde::FieldKey
+) -> bool {
+  match self/0 {
+    Option__std::serde::FieldKey::None => {
+      false
+    },
+    Option__std::serde::FieldKey::Some(x0) => {
+      {
+        true
+      }
+    },
+  }
 }
 
 fn char_from_u32(value/0: u32) -> Option__char {

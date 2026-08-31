@@ -7691,26 +7691,27 @@ fn std::serde::finish_value_serializer(
       t3
     } else {
       let t4 = std::serde::ValueSerializer.result(serializer/0) in
-      join inline_cont1(mtmp0: Option__std::serde::Value) -> Result__std::serde::Value__string {
-        match mtmp0 {
+      join inline_cont1(t5: Option__std::serde::Value) -> Result__std::serde::Value__string {
+        let inline0 = "serialization produced no value" in
+        match t5 {
           Tag_0 => {
-            let t5 = Result__std::serde::Value__string::Err("serialization produced no value") in
-            t5
+            let inline1 = Result__std::serde::Value__string::Err(inline0) in
+            inline1
           },
           Tag_1 => {
-            let x0 = Option__std::serde::Value::Some._0(mtmp0) in
-            let t6 = Result__std::serde::Value__string::Ok(x0) in
-            t6
+            let inline2 = Option__std::serde::Value::Some._0(t5) in
+            let inline3 = Result__std::serde::Value__string::Ok(inline2) in
+            inline3
           },
         }
       } in
-      let inline0 = @intrinsic(ref.get)(t4) in
-      jump inline_cont1(inline0)
+      let inline4 = @intrinsic(ref.get)(t4) in
+      jump inline_cont1(inline4)
     }
   } in
-  let inline1 = @intrinsic(vec.len)(t0) in
-  let inline2 = (inline1 == 0) in
-  jump inline_cont0(inline2)
+  let inline5 = @intrinsic(vec.len)(t0) in
+  let inline6 = (inline5 == 0) in
+  jump inline_cont0(inline6)
 }
 
 fn std::serde::value_slot_ready(serializer/0: std::serde::ValueSerializer) -> bool {
@@ -10707,9 +10708,9 @@ fn std::text::find_bytes(value/0: string, expected/0: string) -> Option__isize {
 fn std::text::char_indices(value/0: string) -> FnIterator__(isize,char) {
   let inline0 = @intrinsic(ref.new)(0) in
   let inline1 =
-    closure_env_inherent_string_string_char_indices_12 { index_0: inline0, self_1: value/0 } in
+    closure_env_inherent_string_string_char_indices_13 { index_0: inline0, self_1: value/0 } in
   let inline2 =
-    pack_closure[inherent#closure_env_inherent_string_string_char_indices_12#closure_env_inherent_string_string_char_indices_12#apply](
+    pack_closure[inherent#closure_env_inherent_string_string_char_indices_13#closure_env_inherent_string_string_char_indices_13#apply](
       inline1
     ) in
   let inline3 = inherent#FnIterator#FnIterator[T]#from_fn__T_(isize,char)(inline2) in
@@ -15944,120 +15945,119 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
                           jp2: (bool, bool, Option__string)
                         ) -> Result__Option__std::serde::FieldKey__string {
                           let t25 = jp2.2 in
+                          let t26 =
+                            closure_env_trait_impl_std_serde_Deserializer_std_json_JsonDeserializer_next_variant_field_11 {} in
+                          let t27 =
+                            pack_closure[inherent#closure_env_trait_impl_std_serde_Deserializer_std_json_JsonDeserializer_next_variant_field_11#closure_env_trait_impl_std_serde_Deserializer_std_json_JsonDeserializer_next_variant_field_11#apply](
+                              t26
+                            ) in
                           join inline_cont11(
-                            t26: bool
+                            field/0: Option__std::serde::FieldKey
                           ) -> Result__Option__std::serde::FieldKey__string {
-                            join k4() -> Result__Option__std::serde::FieldKey__string {
-                              let t27 = jp2.0 in
-                              join inline_cont12(
-                                _wild2: ()
-                              ) -> Result__Option__std::serde::FieldKey__string {
-                                let t28 = jp2.1 in
+                            join inline_cont12(
+                              t28: bool
+                            ) -> Result__Option__std::serde::FieldKey__string {
+                              join k4() -> Result__Option__std::serde::FieldKey__string {
+                                let t29 = jp2.0 in
                                 join inline_cont13(
-                                  _wild3: ()
+                                  _wild2: ()
                                 ) -> Result__Option__std::serde::FieldKey__string {
-                                  let mtmp4 = jp2.2 in
-                                  match mtmp4 {
-                                    Tag_0 => {
-                                      let t29 =
-                                        Result__Option__std::serde::FieldKey__string::Ok(Tag_0) in
-                                      t29
-                                    },
-                                    Tag_1 => {
-                                      let x7 = Option__string::Some._0(mtmp4) in
-                                      let t30 = std::serde::FieldKey::Name(x7) in
-                                      let t31 = Option__std::serde::FieldKey::Some(t30) in
-                                      let t32 =
-                                        Result__Option__std::serde::FieldKey__string::Ok(t31) in
-                                      t32
-                                    },
-                                  }
+                                  let t30 = jp2.1 in
+                                  join inline_cont14(
+                                    _wild3: ()
+                                  ) -> Result__Option__std::serde::FieldKey__string {
+                                    let t31 =
+                                      Result__Option__std::serde::FieldKey__string::Ok(field/0) in
+                                    t31
+                                  } in
+                                  let inline13 = @intrinsic(ref.set)(x3, t30) in
+                                  jump inline_cont14(())
                                 } in
-                                let inline13 = @intrinsic(ref.set)(x3, t28) in
+                                let inline14 = @intrinsic(ref.set)(x2, t29) in
                                 jump inline_cont13(())
                               } in
-                              let inline14 = @intrinsic(ref.set)(x2, t27) in
-                              jump inline_cont12(())
-                            } in
-                            if t26 {
-                              join inline_cont14(
-                                t33: isize
-                              ) -> Result__Option__std::serde::FieldKey__string {
-                                let t34 = (t33 + 1) in
-                                let inline15 = @intrinsic(ref.set)(x1, t34) in
+                              if t28 {
+                                join inline_cont15(
+                                  t32: isize
+                                ) -> Result__Option__std::serde::FieldKey__string {
+                                  let t33 = (t32 + 1) in
+                                  let inline15 = @intrinsic(ref.set)(x1, t33) in
+                                  jump k4()
+                                } in
+                                let inline16 = @intrinsic(ref.get)(x1) in
+                                jump inline_cont15(inline16)
+                              } else {
                                 jump k4()
-                              } in
-                              let inline16 = @intrinsic(ref.get)(x1) in
-                              jump inline_cont14(inline16)
-                            } else {
-                              jump k4()
+                              }
+                            } in
+                            match field/0 {
+                              Tag_0 => {
+                                jump inline_cont12(false)
+                              },
+                              Tag_1 => {
+                                jump inline_cont12(true)
+                              },
                             }
                           } in
                           match t25 {
                             Tag_0 => {
-                              jump inline_cont11(false)
+                              jump inline_cont11(Tag_0)
                             },
                             Tag_1 => {
-                              jump inline_cont11(true)
+                              let inline17 = Option__string::Some._0(t25) in
+                              let inline18 = t27(inline17) in
+                              let inline19 = Option__std::serde::FieldKey::Some(inline18) in
+                              jump inline_cont11(inline19)
                             },
                           }
                         } in
                         match mtmp3 {
                           Tag_0 => {
-                            let x8 = Result__(bool,bool,Option__string)__string::Ok._0(mtmp3) in
-                            jump k3(x8)
+                            let x7 = Result__(bool,bool,Option__string)__string::Ok._0(mtmp3) in
+                            jump k3(x7)
                           },
                           Tag_1 => {
-                            let x9 = Result__(bool,bool,Option__string)__string::Err._0(mtmp3) in
-                            let t35 = Result__Option__std::serde::FieldKey__string::Err(x9) in
-                            t35
+                            let x8 = Result__(bool,bool,Option__string)__string::Err._0(mtmp3) in
+                            let t34 = Result__Option__std::serde::FieldKey__string::Err(x8) in
+                            t34
                           },
                         }
                       } in
-                      let inline17 = @intrinsic(ref.get)(x3) in
-                      jump inline_cont10(inline17)
+                      let inline20 = @intrinsic(ref.get)(x3) in
+                      jump inline_cont10(inline20)
                     } in
-                    let inline18 = @intrinsic(ref.get)(x2) in
-                    jump inline_cont9(inline18)
+                    let inline21 = @intrinsic(ref.get)(x2) in
+                    jump inline_cont9(inline21)
                   }
                 } in
-                let inline19 = @intrinsic(ref.get)(x0) in
-                jump inline_cont3(inline19)
+                let inline22 = @intrinsic(ref.get)(x0) in
+                jump inline_cont3(inline22)
               }
             } in
-            let inline20 = @intrinsic(ref.get)(x0) in
-            jump inline_cont2(inline20)
+            let inline23 = @intrinsic(ref.get)(x0) in
+            jump inline_cont2(inline23)
           }
         } in
-        let inline21 = @intrinsic(ref.get)(x4) in
-        jump inline_cont0(inline21)
+        let inline24 = @intrinsic(ref.get)(x4) in
+        jump inline_cont0(inline24)
       },
       _ => {
-        let t36 = std::json::JsonDeserializer.parser(self/0) in
-        join inline_cont15(t37: string) -> Result__Option__std::serde::FieldKey__string {
-          let t38 = Result__Option__std::serde::FieldKey__string::Err(t37) in
-          t38
-        } in
-        let inline22 = "variant field outside a variant" in
-        let inline23 = ("" + inline22) in
-        let inline24 = (inline23 + " at byte ") in
-        let inline25 = std::json::JsonParser.index(t36) in
-        let inline26 = inherent#Ref#Ref[T]#get__T_isize(inline25) in
-        let inline27 = inherent#isize#isize#to_string(inline26) in
-        let inline28 = (inline24 + inline27) in
-        jump inline_cont15(inline28)
+        let t35 = std::json::JsonDeserializer.parser(self/0) in
+        let t36 = std::json::json_error(t35, "variant field outside a variant") in
+        let t37 = Result__Option__std::serde::FieldKey__string::Err(t36) in
+        t37
       },
     }
   } in
   match mtmp0 {
     Tag_0 => {
-      let x10 = Result__isize__string::Ok._0(mtmp0) in
-      jump k0(x10)
+      let x9 = Result__isize__string::Ok._0(mtmp0) in
+      jump k0(x9)
     },
     Tag_1 => {
-      let x11 = Result__isize__string::Err._0(mtmp0) in
-      let t39 = Result__Option__std::serde::FieldKey__string::Err(x11) in
-      t39
+      let x10 = Result__isize__string::Err._0(mtmp0) in
+      let t38 = Result__Option__std::serde::FieldKey__string::Err(x10) in
+      t38
     },
   }
 }
@@ -17997,9 +17997,9 @@ fn std::json::parse_json_value(value/0: std::json::JsonParser) -> Result__std::j
             },
             34 => {
               let t12 = std::json::parse_json_string(value/0) in
-              let t13 = closure_env_std_json_parse_json_value_11 {} in
+              let t13 = closure_env_std_json_parse_json_value_12 {} in
               let t14 =
-                pack_closure[inherent#closure_env_std_json_parse_json_value_11#closure_env_std_json_parse_json_value_11#apply](
+                pack_closure[inherent#closure_env_std_json_parse_json_value_12#closure_env_std_json_parse_json_value_12#apply](
                   t13
                 ) in
               match t12 {
@@ -22361,6 +22361,23 @@ fn inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
   t1
 }
 
+fn inherent#Option#Option[T]#ok_or__E_string__T_std::serde::Value(
+  self/0: Option__std::serde::Value,
+  error/0: string
+) -> Result__std::serde::Value__string {
+  match self/0 {
+    Tag_0 => {
+      let t0 = Result__std::serde::Value__string::Err(error/0) in
+      t0
+    },
+    Tag_1 => {
+      let x0 = Option__std::serde::Value::Some._0(self/0) in
+      let t1 = Result__std::serde::Value__string::Ok(x0) in
+      t1
+    },
+  }
+}
+
 fn inherent#Option#Option[T]#is_none__T_std::serde::Value(
   self/0: Option__std::serde::Value
 ) -> bool {
@@ -22569,9 +22586,9 @@ fn inherent#string#string#find_bytes(self/0: string, expected/0: string) -> Opti
 fn inherent#string#string#char_indices(self/0: string) -> FnIterator__(isize,char) {
   let index/0 = @intrinsic(ref.new)(0) in
   let t0 =
-    closure_env_inherent_string_string_char_indices_12 { index_0: index/0, self_1: self/0 } in
+    closure_env_inherent_string_string_char_indices_13 { index_0: index/0, self_1: self/0 } in
   let t1 =
-    pack_closure[inherent#closure_env_inherent_string_string_char_indices_12#closure_env_inherent_string_string_char_indices_12#apply](
+    pack_closure[inherent#closure_env_inherent_string_string_char_indices_13#closure_env_inherent_string_string_char_indices_13#apply](
       t0
     ) in
   let inline0 = FnIterator__(isize,char) { next_fn: t1 } in
@@ -22611,9 +22628,9 @@ fn inherent#string#string#char_count(self/0: string) -> isize {
     jump inline_cont1(t0)
   } in
   let inline2 = @intrinsic(ref.new)(0) in
-  let inline3 = closure_env_inherent_string_string_chars_13 { self_0: self/0, index_1: inline2 } in
+  let inline3 = closure_env_inherent_string_string_chars_14 { self_0: self/0, index_1: inline2 } in
   let inline4 =
-    pack_closure[inherent#closure_env_inherent_string_string_chars_13#closure_env_inherent_string_string_chars_13#apply](
+    pack_closure[inherent#closure_env_inherent_string_string_chars_14#closure_env_inherent_string_string_chars_14#apply](
       inline3
     ) in
   let inline5 = inherent#FnIterator#FnIterator[T]#from_fn__T_char(inline4) in
@@ -22743,12 +22760,12 @@ fn inherent#string#string#slice_chars(
           } in
           let inline5 = @intrinsic(ref.new)(0) in
           let inline6 =
-            closure_env_inherent_string_string_char_indices_12 {
+            closure_env_inherent_string_string_char_indices_13 {
               index_0: inline5,
               self_1: self/0
             } in
           let inline7 =
-            pack_closure[inherent#closure_env_inherent_string_string_char_indices_12#closure_env_inherent_string_string_char_indices_12#apply](
+            pack_closure[inherent#closure_env_inherent_string_string_char_indices_13#closure_env_inherent_string_string_char_indices_13#apply](
               inline6
             ) in
           let inline8 = inherent#FnIterator#FnIterator[T]#from_fn__T_(isize,char)(inline7) in
@@ -23084,9 +23101,9 @@ fn inherent#string#string#lines(self/0: string) -> Vec[string] {
           } in
           let inline8 = 0 in
           let inline9 = @intrinsic(ref.new)(inline8) in
-          let inline10 = closure_env_goml_builtin_range_14 { current_0: inline9, end_1: t2 } in
+          let inline10 = closure_env_goml_builtin_range_15 { current_0: inline9, end_1: t2 } in
           let inline11 =
-            pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+            pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
               inline10
             ) in
           let inline12 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline11) in
@@ -23249,9 +23266,9 @@ fn inherent#Vec#Vec[T]#join__T_string(self/0: Vec[string], separator/0: string) 
                     let inline4 = 0 in
                     let inline5 = @intrinsic(ref.new)(inline4) in
                     let inline6 =
-                      closure_env_goml_builtin_range_14 { current_0: inline5, end_1: t5 } in
+                      closure_env_goml_builtin_range_15 { current_0: inline5, end_1: t5 } in
                     let inline7 =
-                      pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+                      pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
                         inline6
                       ) in
                     let inline8 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline7) in
@@ -23295,9 +23312,9 @@ fn inherent#Vec#Vec[T]#join__T_string(self/0: Vec[string], separator/0: string) 
         } in
         let inline15 = 0 in
         let inline16 = @intrinsic(ref.new)(inline15) in
-        let inline17 = closure_env_goml_builtin_range_14 { current_0: inline16, end_1: t1 } in
+        let inline17 = closure_env_goml_builtin_range_15 { current_0: inline16, end_1: t1 } in
         let inline18 =
-          pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+          pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
             inline17
           ) in
         let inline19 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline18) in
@@ -23350,9 +23367,9 @@ fn inherent#string#string#repeat(self/0: string, count/0: isize) -> string {
         } in
         let inline3 = 0 in
         let inline4 = @intrinsic(ref.new)(inline3) in
-        let inline5 = closure_env_goml_builtin_range_14 { current_0: inline4, end_1: count/0 } in
+        let inline5 = closure_env_goml_builtin_range_15 { current_0: inline4, end_1: count/0 } in
         let inline6 =
-          pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+          pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
             inline5
           ) in
         let inline7 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline6) in
@@ -23414,9 +23431,9 @@ fn inherent#string#string#is_ascii(self/0: string) -> bool {
     } in
     let inline3 = 0 in
     let inline4 = @intrinsic(ref.new)(inline3) in
-    let inline5 = closure_env_goml_builtin_range_14 { current_0: inline4, end_1: t0 } in
+    let inline5 = closure_env_goml_builtin_range_15 { current_0: inline4, end_1: t0 } in
     let inline6 =
-      pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+      pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
         inline5
       ) in
     let inline7 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline6) in
@@ -23482,9 +23499,9 @@ fn inherent#string#string#eq_ignore_ascii_case(self/0: string, other/0: string) 
           } in
           let inline7 = 0 in
           let inline8 = @intrinsic(ref.new)(inline7) in
-          let inline9 = closure_env_goml_builtin_range_14 { current_0: inline8, end_1: t3 } in
+          let inline9 = closure_env_goml_builtin_range_15 { current_0: inline8, end_1: t3 } in
           let inline10 =
-            pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+            pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
               inline9
             ) in
           let inline11 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline10) in
@@ -23548,9 +23565,9 @@ fn inherent#string#string#to_ascii_lowercase(self/0: string) -> string {
       } in
       let inline5 = 0 in
       let inline6 = @intrinsic(ref.new)(inline5) in
-      let inline7 = closure_env_goml_builtin_range_14 { current_0: inline6, end_1: t0 } in
+      let inline7 = closure_env_goml_builtin_range_15 { current_0: inline6, end_1: t0 } in
       let inline8 =
-        pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+        pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
           inline7
         ) in
       let inline9 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline8) in
@@ -23610,9 +23627,9 @@ fn inherent#string#string#to_ascii_uppercase(self/0: string) -> string {
       } in
       let inline5 = 0 in
       let inline6 = @intrinsic(ref.new)(inline5) in
-      let inline7 = closure_env_goml_builtin_range_14 { current_0: inline6, end_1: t0 } in
+      let inline7 = closure_env_goml_builtin_range_15 { current_0: inline6, end_1: t0 } in
       let inline8 =
-        pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+        pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
           inline7
         ) in
       let inline9 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline8) in
@@ -23703,9 +23720,9 @@ fn inherent#string#string#contains(self/0: string, expected/0: string) -> bool {
                 } in
                 let inline6 = 0 in
                 let inline7 = @intrinsic(ref.new)(inline6) in
-                let inline8 = closure_env_goml_builtin_range_14 { current_0: inline7, end_1: t8 } in
+                let inline8 = closure_env_goml_builtin_range_15 { current_0: inline7, end_1: t8 } in
                 let inline9 =
-                  pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+                  pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
                     inline8
                   ) in
                 let inline10 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline9) in
@@ -23813,6 +23830,36 @@ fn inherent#Vec#Vec[T]#push__T_std::json::JsonDeserializeFrame(
 ) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
+}
+
+fn inherent#Option#Option[T]#map__T_string__U_std::serde::FieldKey(
+  self/0: Option__string,
+  map_fn/0: (string) -> std::serde::FieldKey
+) -> Option__std::serde::FieldKey {
+  match self/0 {
+    Tag_0 => {
+      Tag_0
+    },
+    Tag_1 => {
+      let x0 = Option__string::Some._0(self/0) in
+      let t0 = map_fn/0(x0) in
+      let t1 = Option__std::serde::FieldKey::Some(t0) in
+      t1
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#is_some__T_std::serde::FieldKey(
+  self/0: Option__std::serde::FieldKey
+) -> bool {
+  match self/0 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      true
+    },
+  }
 }
 
 fn char_from_u32(value/0: u32) -> Option__char {
@@ -24800,9 +24847,9 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_(isize,char)(
 
 fn inherent#string#string#chars(self/0: string) -> FnIterator__char {
   let index/0 = @intrinsic(ref.new)(0) in
-  let t0 = closure_env_inherent_string_string_chars_13 { self_0: self/0, index_1: index/0 } in
+  let t0 = closure_env_inherent_string_string_chars_14 { self_0: self/0, index_1: index/0 } in
   let t1 =
-    pack_closure[inherent#closure_env_inherent_string_string_chars_13#closure_env_inherent_string_string_chars_13#apply](
+    pack_closure[inherent#closure_env_inherent_string_string_chars_14#closure_env_inherent_string_string_chars_14#apply](
       t0
     ) in
   let inline0 = FnIterator__char { next_fn: t1 } in
@@ -24921,9 +24968,9 @@ fn inherent#Vec#Vec[T]#pop__T_string(self/0: Vec[string]) -> Option__string {
 
 fn __goml_builtin_range(start/0: isize, end/0: isize) -> FnIterator__isize {
   let current/0 = @intrinsic(ref.new)(start/0) in
-  let t0 = closure_env_goml_builtin_range_14 { current_0: current/0, end_1: end/0 } in
+  let t0 = closure_env_goml_builtin_range_15 { current_0: current/0, end_1: end/0 } in
   let t1 =
-    pack_closure[inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply](
+    pack_closure[inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply](
       t0
     ) in
   let inline0 = FnIterator__isize { next_fn: t1 } in
@@ -28184,19 +28231,27 @@ fn inherent#closure_env_trait_impl_std_serde_Deserializer_std_json_JsonDeseriali
   jump inline_cont0(inline11)
 }
 
-fn inherent#closure_env_std_json_parse_json_value_11#closure_env_std_json_parse_json_value_11#apply(
-  env0: closure_env_std_json_parse_json_value_11,
+fn inherent#closure_env_trait_impl_std_serde_Deserializer_std_json_JsonDeserializer_next_variant_field_11#closure_env_trait_impl_std_serde_Deserializer_std_json_JsonDeserializer_next_variant_field_11#apply(
+  env0: closure_env_trait_impl_std_serde_Deserializer_std_json_JsonDeserializer_next_variant_field_11,
+  name/0: string
+) -> std::serde::FieldKey {
+  let t0 = std::serde::FieldKey::Name(name/0) in
+  t0
+}
+
+fn inherent#closure_env_std_json_parse_json_value_12#closure_env_std_json_parse_json_value_12#apply(
+  env0: closure_env_std_json_parse_json_value_12,
   text/0: string
 ) -> std::json::Value {
   let t0 = std::json::Value::String(text/0) in
   t0
 }
 
-fn inherent#closure_env_inherent_string_string_char_indices_12#closure_env_inherent_string_string_char_indices_12#apply(
-  env0: closure_env_inherent_string_string_char_indices_12
+fn inherent#closure_env_inherent_string_string_char_indices_13#closure_env_inherent_string_string_char_indices_13#apply(
+  env0: closure_env_inherent_string_string_char_indices_13
 ) -> Option__(isize,char) {
-  let index/0 = closure_env_inherent_string_string_char_indices_12.index_0(env0) in
-  let self/0 = closure_env_inherent_string_string_char_indices_12.self_1(env0) in
+  let index/0 = closure_env_inherent_string_string_char_indices_13.index_0(env0) in
+  let self/0 = closure_env_inherent_string_string_char_indices_13.self_1(env0) in
   let current/0 = @intrinsic(ref.get)(index/0) in
   join commute_arm0(commute_field0: (char, isize)) -> Option__(isize,char) {
     let x0 = commute_field0.0 in
@@ -28219,11 +28274,11 @@ fn inherent#closure_env_inherent_string_string_char_indices_12#closure_env_inher
   }
 }
 
-fn inherent#closure_env_inherent_string_string_chars_13#closure_env_inherent_string_string_chars_13#apply(
-  env0: closure_env_inherent_string_string_chars_13
+fn inherent#closure_env_inherent_string_string_chars_14#closure_env_inherent_string_string_chars_14#apply(
+  env0: closure_env_inherent_string_string_chars_14
 ) -> Option__char {
-  let self/0 = closure_env_inherent_string_string_chars_13.self_0(env0) in
-  let index/0 = closure_env_inherent_string_string_chars_13.index_1(env0) in
+  let self/0 = closure_env_inherent_string_string_chars_14.self_0(env0) in
+  let index/0 = closure_env_inherent_string_string_chars_14.index_1(env0) in
   let t0 = @intrinsic(ref.get)(index/0) in
   join commute_arm0(commute_field0: (char, isize)) -> Option__char {
     let x0 = commute_field0.0 in
@@ -28246,11 +28301,11 @@ fn inherent#closure_env_inherent_string_string_chars_13#closure_env_inherent_str
   }
 }
 
-fn inherent#closure_env_goml_builtin_range_14#closure_env_goml_builtin_range_14#apply(
-  env0: closure_env_goml_builtin_range_14
+fn inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#apply(
+  env0: closure_env_goml_builtin_range_15
 ) -> Option__isize {
-  let current/0 = closure_env_goml_builtin_range_14.current_0(env0) in
-  let end/0 = closure_env_goml_builtin_range_14.end_1(env0) in
+  let current/0 = closure_env_goml_builtin_range_15.current_0(env0) in
+  let end/0 = closure_env_goml_builtin_range_15.end_1(env0) in
   let value/0 = @intrinsic(ref.get)(current/0) in
   let t0 = (value/0 < end/0) in
   if t0 {

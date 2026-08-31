@@ -4932,6 +4932,23 @@ fn inherent#Option#Option[T]#map[T, U](self/0: Option[T], map_fn/0: (T) -> U) ->
   }
 }
 
+fn inherent#Option#Option[T]#ok_or[T, E](self/0: Option[T], error/0: E) -> Result[T, E] {
+  match self/0 {
+    Option::None => {
+      Result::Err(error/0)
+    },
+    Option::Some(x0) => {
+      {
+        let x0 = Option::Some._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result::Ok(value/0)
+        }
+      }
+    },
+  }
+}
+
 fn inherent#Result#Result[T,E]#map[T, E, U](self/0: Result[T, E], map_fn/0: (T) -> U) -> Result[
   U,
   E
@@ -7743,20 +7760,7 @@ fn std::serde::variant_key_matches(
 }
 
 fn std::serde::required_field(value/0: Option[T], name/0: string) -> Result[T, string] {
-  match value/0 {
-    Option::None => {
-      Result::Err((("missing field `" + name/0) + "`"))
-    },
-    Option::Some(x0) => {
-      {
-        let x0 = Option::Some._0(value/0) in
-        {
-          let value/1 = x0 in
-          Result::Ok(value/1)
-        }
-      }
-    },
-  }
+  inherent#Option#Option[T]#ok_or(value/0, (("missing field `" + name/0) + "`"))
 }
 
 fn std::serde::schema_field_index(
@@ -14669,26 +14673,12 @@ fn std::serde::finish_value_serializer(serializer/0: std::serde::ValueSerializer
       }
   } else {
       {
-        {
-          let mtmp0 =
-            inherent#Ref#Ref[Option[std::serde::Value]]#get(
-              std::serde::ValueSerializer.result(serializer/0)
-            ) in
-          match mtmp0 {
-            Option::None => {
-              Result::Err("serialization produced no value")
-            },
-            Option::Some(x0) => {
-              {
-                let x0 = Option::Some._0(mtmp0) in
-                {
-                  let value/0 = x0 in
-                  Result::Ok(value/0)
-                }
-              }
-            },
-          }
-        }
+        inherent#Option#Option[std::serde::Value]#ok_or(
+          inherent#Ref#Ref[Option[std::serde::Value]]#get(
+            std::serde::ValueSerializer.result(serializer/0)
+          ),
+          "serialization produced no value"
+        )
       }
   }
 }
@@ -21467,8 +21457,15 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
                                                 },
                                               }
                                             } in
+                                          let field/0 =
+                                            inherent#Option#Option[string]#map(
+                                              next/1.2,
+                                              |name/0: string| => std::serde::FieldKey::Name(name/0)
+                                            ) in
                                           let _wild3 =
-                                            if inherent#Option#Option[string]#is_some(next/1.2) {
+                                            if inherent#Option#Option[std::serde::FieldKey]#is_some(
+                                              field/0
+                                            ) {
                                                 {
                                                   inherent#Ref#Ref[isize]#set(
                                                     index/0,
@@ -21482,27 +21479,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
                                             inherent#Ref#Ref[bool]#set(first/0, next/1.0) in
                                           let _wild5 =
                                             inherent#Ref#Ref[bool]#set(done/0, next/1.1) in
-                                          {
-                                            let mtmp4 = next/1.2 in
-                                            match mtmp4 {
-                                              Option::None => {
-                                                Result::Ok(Option::None)
-                                              },
-                                              Option::Some(x15) => {
-                                                {
-                                                  let x15 = Option::Some._0(mtmp4) in
-                                                  {
-                                                    let name/0 = x15 in
-                                                    Result::Ok(
-                                                      Option::Some(
-                                                        std::serde::FieldKey::Name(name/0)
-                                                      )
-                                                    )
-                                                  }
-                                                }
-                                              },
-                                            }
-                                          }
+                                          Result::Ok(field/0)
                                         }
                                       }
                                     }
