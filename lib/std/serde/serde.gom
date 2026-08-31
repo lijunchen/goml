@@ -367,7 +367,7 @@ impl[T: Serialize] Serialize for Vec[T] {
         while index < self.len() {
             serializer.begin_sequence_element(index)?;
             Serialize::serialize(self[index], serializer)?;
-            index = index + 1;
+            index += 1;
         }
         serializer.end_sequence()
     }

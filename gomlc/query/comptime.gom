@@ -34,7 +34,7 @@ fn derive_attribute_at(value: Analysis, offset: isize) -> bool {
                 if token.end <= node.end && token.text == "derive" {
                     return true
                 } else {
-                    index = index + 1;
+                    index += 1;
                 }
             }
         },
@@ -60,7 +60,7 @@ fn comptime_derive_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxT
                 }
             }
         }
-        index = index + 1;
+        index += 1;
     }
     result
 }

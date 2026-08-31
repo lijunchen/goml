@@ -4033,7 +4033,7 @@ fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> isiz
     let mut count = 0;
     for coercion in coercions {
         if raw_dyn_factory_name(coercion.trait_name, coercion.for_ty) == expected {
-            count = count + 1;
+            count += 1;
         }
     }
     count
@@ -4049,7 +4049,7 @@ fn dyn_wrapper_name_count(
     for coercion in coercions {
         for method in dyn_methods(builtin, functions, coercion.trait_name) {
             if raw_dyn_wrapper_name(coercion.trait_name, coercion.for_ty, method.name) == expected {
-                count = count + 1;
+                count += 1;
             }
         }
     }
@@ -4140,11 +4140,11 @@ fn find_dyn_impl_name(
                     && candidate_method == method_name {
                     return go_ident(function.name)
                 } else {
-                    index = index - 1;
+                    index -= 1;
                 }
             },
             _ => {
-                index = index - 1;
+                index -= 1;
             },
         }
     }

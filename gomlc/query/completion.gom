@@ -46,7 +46,7 @@ fn prefix_start(source: string, offset: isize) -> isize {
         source.byte_len()
     };
     while start > 0 && identifier_byte(source.byte_get(start - 1)) {
-        start = start - 1;
+        start -= 1;
     }
     start
 }
@@ -71,10 +71,10 @@ fn active_use_path_start(source: string, limit: isize) -> Option[isize] {
             token.kind,
             lexer::TokenKind::LBrace,
         ) {
-            depth = depth + 1;
+            depth += 1;
         } else if lexer::token_kind_equal(token.kind, lexer::TokenKind::RBrace) {
             if depth > 0 {
-                depth = depth - 1;
+                depth -= 1;
             }
         } else if depth == 0 && lexer::token_kind_equal(token.kind, lexer::TokenKind::UseKeyword) {
             path_start = Option::Some(token.end);
@@ -166,7 +166,7 @@ fn path_text(value: ast::Path) -> string {
             builder.write_string("::")
         }
         builder.write_string(segment.ident);
-        index = index + 1;
+        index += 1;
     }
     builder.finish()
 }
@@ -218,7 +218,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
                         expand_module_namespace(value.module_path, path_text(use_decl.path)),
                     )
                 } else {
-                    index = index - 1;
+                    index -= 1;
                 }
             }
             Option::None
@@ -235,7 +235,7 @@ fn namespace_path(source: string, offset: isize) -> Option[string] {
         while owner_start > 0 {
             let byte = source.byte_get(owner_start - 1);
             if identifier_byte(byte) || byte == b':' {
-                owner_start = owner_start - 1;
+                owner_start -= 1;
             } else {
                 break
             }
@@ -256,7 +256,7 @@ fn first_namespace_segment(value: string) -> string {
         if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
             return value.byte_slice(0, index)
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     value
@@ -364,7 +364,7 @@ fn immediate_package_member(qualified_name: string, package_name: string) -> boo
             if remainder.byte_get(index) == b':' && remainder.byte_get(index + 1) == b':' {
                 return false
             }
-            index = index + 1;
+            index += 1;
         }
         true
     }
@@ -543,9 +543,9 @@ fn short_type_name(value: string) -> string {
     while index + 1 < value.byte_len() {
         if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
             start = index + 2;
-            index = index + 1;
+            index += 1;
         }
-        index = index + 1;
+        index += 1;
     }
     value.byte_slice(start, value.byte_len())
 }
@@ -626,7 +626,7 @@ fn significant_token_before(value: Analysis, offset: isize) -> Option[SyntaxToke
         if token.end <= offset && !lexer::token_is_trivia(token.kind) {
             return Option::Some(token)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -738,7 +738,7 @@ fn parameter_explicit_type(parameters: Vec[(string, ast::TypeExpr)], name: strin
         if parameter.0 == name {
             return explicit_type_name(parameter.1)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -750,30 +750,30 @@ fn source_explicit_receiver_type(source: string, name: string, limit: isize) -> 
         if source.byte_slice(index, index + name.byte_len()) == name {
             let mut cursor = index + name.byte_len();
             while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
-                cursor = cursor + 1;
+                cursor += 1;
             }
             if cursor < limit && source.byte_get(cursor) == b':' {
-                cursor = cursor + 1;
+                cursor += 1;
                 while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
-                    cursor = cursor + 1;
+                    cursor += 1;
                 }
                 if cursor + 3 <= limit && source.byte_slice(cursor, cursor + 3) == "dyn" {
-                    cursor = cursor + 3;
+                    cursor += 3;
                     while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
-                        cursor = cursor + 1;
+                        cursor += 1;
                     }
                 }
                 let type_start = cursor;
                 while cursor < limit
                     && (identifier_byte(source.byte_get(cursor)) || source.byte_get(cursor) == b':') {
-                    cursor = cursor + 1;
+                    cursor += 1;
                 }
                 if cursor > type_start {
                     return Option::Some(source.byte_slice(type_start, cursor))
                 }
             }
         }
-        index = index - 1;
+        index -= 1;
     }
     Option::None
 }
@@ -799,7 +799,7 @@ fn file_parameter_explicit_type(file: ast::File, name: string) -> Option[string]
             },
             _ => (),
         }
-        item_index = item_index - 1;
+        item_index -= 1;
     }
     Option::None
 }
@@ -1201,7 +1201,7 @@ fn completion_whitespace(value: u8) -> bool {
 fn previous_completion_byte(source: string, end: isize) -> Option[isize] {
     let mut index = end;
     while index > 0 && completion_whitespace(source.byte_get(index - 1)) {
-        index = index - 1;
+        index -= 1;
     }
     if index == 0 {
         Option::None
@@ -1215,7 +1215,7 @@ fn completion_word_before(source: string, end: isize) -> string {
         Some(last) => {
             let mut start = last;
             while start > 0 && identifier_byte(source.byte_get(start - 1)) {
-                start = start - 1;
+                start -= 1;
             }
             source.byte_slice(start, last + 1)
         },
@@ -1227,15 +1227,15 @@ fn call_open_before(source: string, offset: isize) -> Option[isize] {
     let mut index = offset;
     let mut depth = 0;
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let byte = source.byte_get(index);
         if byte == b')' {
-            depth = depth + 1;
+            depth += 1;
         } else if byte == b'(' {
             if depth == 0 {
                 return Option::Some(index)
             } else {
-                depth = depth - 1;
+                depth -= 1;
             }
         }
     }
@@ -1265,15 +1265,15 @@ fn completion_open_brace(source: string, end: isize) -> Option[isize] {
     let mut index = end;
     let mut depth = 0;
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let value = source.byte_get(index);
         if value == b'}' {
-            depth = depth + 1;
+            depth += 1;
         } else if value == b'{' {
             if depth == 0 {
                 return Option::Some(index)
             } else {
-                depth = depth - 1;
+                depth -= 1;
             }
         }
     }
@@ -1292,7 +1292,7 @@ fn select_completion_open(source: string, offset: isize) -> Option[isize] {
                         let mut priority_start = last;
                         while priority_start > 0
                             && identifier_byte(source.byte_get(priority_start - 1)) {
-                            priority_start = priority_start - 1;
+                            priority_start -= 1;
                         }
                         if completion_word_before(source, priority_start) == "select" {
                             Option::Some(open)
@@ -1339,7 +1339,7 @@ fn append_select_completions(
             }
             let mut arm_start = content.byte_len();
             while arm_start > 0 && content.byte_get(arm_start - 1) != b',' {
-                arm_start = arm_start - 1;
+                arm_start -= 1;
             }
             let arm = content.byte_slice(arm_start, content.byte_len());
             if arm.contains("recv(") && arm.contains(")") && !arm.contains("=>") {

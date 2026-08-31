@@ -1651,9 +1651,8 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
             ),
         )
     } else if name == "meta_expr_integer" {
-        let value = match numeric::normalize_integer(string_argument(args, 0)?) {
-            Some(value) => value,
-            None => return Result::Err("meta_expr_integer expects a valid integer literal"),
+        let Some(value) = numeric::normalize_integer(string_argument(args, 0)?) else {
+            return Result::Err("meta_expr_integer expects a valid integer literal");
         };
         let ty = type_value(state, args, 1)?;
         let integer = match ty {

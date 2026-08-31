@@ -458,7 +458,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
     let output: Vec[Stmt] = Vec::with_capacity(value.stmts.len());
     let mut index = value.stmts.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         match value.stmts[index] {
             Expr { expr } => {
                 if expr_has_side_effects(expr) {

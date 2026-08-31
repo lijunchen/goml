@@ -12,7 +12,7 @@ fn find_enum(values: Vec[repr::EnumDef], name: string) -> Option[repr::EnumDef] 
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -25,7 +25,7 @@ fn find_struct(values: Vec[repr::StructDef], name: string) -> Option[repr::Struc
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -38,7 +38,7 @@ fn instance_by_name(values: Vec[repr::TypeInstance], name: string) -> Option[rep
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -53,7 +53,7 @@ fn find_instance(values: Vec[repr::TypeInstance], base_name: string, args: Vec[r
         if value.base_name == base_name && type_lists_match(value.args, args) {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -192,7 +192,7 @@ fn unique_variant_go_name(candidate: string, function_names: FunctionNames) -> s
             let mut index = 1;
             let mut result = go_generated_ident(base + "__variant" + index.to_string());
             while variant_name_reserved(result, function_names) {
-                index = index + 1;
+                index += 1;
                 result = go_generated_ident(base + "__variant" + index.to_string());
             }
             result
@@ -253,7 +253,7 @@ fn compact_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef]
         if size < 0 || result + size > 24 {
             return -1
         } else {
-            result = result + size;
+            result += size;
         }
     }
     result
@@ -318,7 +318,7 @@ fn builtin_compact_type_list_size(
         if size < 0 || result + size > 48 {
             return -1
         } else {
-            result = result + size;
+            result += size;
         }
     }
     result

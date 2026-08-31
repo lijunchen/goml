@@ -2623,7 +2623,7 @@ fn validate_comptime_attributes(
     let mut derive_count = 0;
     for attribute in attrs {
         if attribute.name == "comptime" {
-            count = count + 1;
+            count += 1;
             if !free_function {
                 comptime_attribute_diagnostic(
                     ctx,
@@ -2650,7 +2650,7 @@ fn validate_comptime_attributes(
                 }
             }
         } else if attribute.name == "comptime_derive" {
-            derive_count = derive_count + 1;
+            derive_count += 1;
             if !free_function {
                 comptime_attribute_diagnostic(
                     ctx,

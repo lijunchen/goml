@@ -75,19 +75,13 @@ fn round_binary_float(magnitude: Natural, exponent: isize, negative: bool, preci
         let round_bit = natural_bit(rounded, shift - 1);
         let sticky = low_bits_nonzero(rounded, shift - 1);
         rounded = natural_shift_right(rounded, shift);
-        result_exponent = match exponent_add(result_exponent, shift) {
-            Some(value) => value,
-            None => return Option::None,
-        };
+        result_exponent = exponent_add(result_exponent, shift)?;
         if round_bit && (sticky || natural_bit(rounded, 0)) {
             rounded = natural_add_small(rounded, 1.to_u32());
         }
         if natural_bit_len(rounded) > precision {
             rounded = natural_shift_right(rounded, 1);
-            result_exponent = match exponent_add(result_exponent, 1) {
-                Some(value) => value,
-                None => return Option::None,
-            };
+            result_exponent = exponent_add(result_exponent, 1)?;
         }
     }
     let result = BinaryFloat { magnitude: rounded, exponent: result_exponent, negative };
@@ -143,19 +137,10 @@ fn binary_float_from_ratio(
     if comparison > 0 || (comparison == 0 && natural_bit(magnitude, 0)) {
         magnitude = natural_add_small(magnitude, 1.to_u32());
     }
-    let mut exponent = match exponent_add(mantissa_exponent, binary_exponent) {
-        Some(value) => match exponent_add(value, -precision) {
-            Some(value) => value,
-            None => return Option::None,
-        },
-        None => return Option::None,
-    };
+    let mut exponent = exponent_add(exponent_add(mantissa_exponent, binary_exponent)?, -precision)?;
     if natural_bit_len(magnitude) > precision {
         magnitude = natural_shift_right(magnitude, 1);
-        exponent = match exponent_add(exponent, 1) {
-            Some(value) => value,
-            None => return Option::None,
-        };
+        exponent = exponent_add(exponent, 1)?;
     }
     let result = BinaryFloat { magnitude, exponent, negative };
     if valid_binary_float(result) {
@@ -227,10 +212,7 @@ pub fn binary_float_neg(value: BinaryFloat) -> BinaryFloat {
 pub fn binary_float_mul(left: BinaryFloat, right: BinaryFloat, precision: isize) -> Option[
     BinaryFloat,
 ] {
-    let exponent = match exponent_add(left.exponent, right.exponent) {
-        Some(value) => value,
-        None => return Option::None,
-    };
+    let exponent = exponent_add(left.exponent, right.exponent)?;
     round_binary_float(
         natural_mul(left.magnitude, right.magnitude),
         exponent,
@@ -242,10 +224,7 @@ pub fn binary_float_mul(left: BinaryFloat, right: BinaryFloat, precision: isize)
 pub fn binary_float_div(left: BinaryFloat, right: BinaryFloat, precision: isize) -> Option[
     BinaryFloat,
 ] {
-    let exponent = match exponent_add(left.exponent, -right.exponent) {
-        Some(value) => value,
-        None => return Option::None,
-    };
+    let exponent = exponent_add(left.exponent, -right.exponent)?;
     binary_float_from_ratio(
         left.magnitude,
         right.magnitude,
@@ -387,7 +366,7 @@ fn binary_float_pow5(exponent: isize, precision: isize) -> Option[BinaryFloat] {
         if power % 2 == 1 {
             result = binary_float_mul(result, factor, precision)?;
         }
-        power = power / 2;
+        power /= 2;
         if power > 0 {
             factor = binary_float_mul(factor, factor, precision + 64)?;
         }

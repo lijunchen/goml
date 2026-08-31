@@ -287,7 +287,7 @@ pub fn is_generated_tuple_type_name(value: string) -> bool {
     } else {
         let mut index = 5;
         while index < value.len() && is_ascii_digit(value.get(index)) {
-            index = index + 1;
+            index += 1;
         }
         index > 5 && (index == value.len() || value.get(index) == '_')
     }

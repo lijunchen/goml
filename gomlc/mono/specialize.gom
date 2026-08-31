@@ -49,7 +49,7 @@ fn find_binding(values: Vec[TypeBinding], name: string) -> Option[core::Type] {
         if value.name == name {
             return Option::Some(value.ty)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -513,7 +513,7 @@ fn core_bool_conjunction(values: Vec[core::Expr]) -> core::Expr {
     let mut result = core_bool(true);
     let mut index = values.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         result = core::Expr::If {
             cond: values[index],
             then_branch: result,
@@ -582,7 +582,7 @@ fn structural_hash_body(builtin: tast::BuiltinContract, ty: core::Type) -> core:
             },
         );
         previous = next;
-        index = index + 1;
+        index += 1;
     }
     core::Expr::Block {
         block: core::Block { stmts, tail: Option::Some(core_var(previous, core::Type::Uint64)) },
@@ -701,7 +701,7 @@ fn structural_partial_ord_bool_body(
     );
     let mut index = left.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let equals = core_trait_call(
             core::TraitRef { name: builtin.partial_eq.name, args: Vec::new() },
             builtin.partial_eq.method,
@@ -749,7 +749,7 @@ fn structural_ord_body(
     );
     let mut index = left.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let name = "_structural_ordering_" + index.to_string();
         let comparison = core_trait_call(
             reference,
@@ -814,7 +814,7 @@ fn structural_partial_ord_body(
     };
     let mut index = left.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let comparison_name = "_structural_partial_ordering_" + index.to_string();
         let ordering_name = comparison_name + "_value";
         let comparison = core_trait_call(
@@ -1101,7 +1101,7 @@ fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
         let mut index = 1;
         let mut candidate = base + "__mono1";
         while name_is_used(ctx, candidate) {
-            index = index + 1;
+            index += 1;
             candidate = base + "__mono" + index.to_string();
         }
         let _ = ctx.used_names.insert(candidate);
@@ -2735,7 +2735,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     loop {
         while index < ctx.work.len() {
             let instance = ctx.work[index];
-            index = index + 1;
+            index += 1;
             match find_function(ctx, instance.original_name) {
                 Some(function) => {
                     ctx.active.set(Option::Some(instance));

@@ -238,7 +238,7 @@ impl serde::Serializer for JsonSerializer {
                 self.builder.write_char(',')
             }
             self.builder.write_string(value[index].to_string());
-            index = index + 1;
+            index += 1;
         }
         self.builder.write_char(']');
         Result::Ok(())

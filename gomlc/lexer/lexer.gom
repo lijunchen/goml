@@ -217,7 +217,7 @@ fn keyword_kind(text_value: string) -> TokenKind {
 fn scan_ident_end(source: string, start: isize) -> isize {
     let mut index = start;
     while index < source.byte_len() && is_ident_continue(byte_at(source, index)) {
-        index = index + 1;
+        index += 1;
     }
     index
 }
@@ -226,7 +226,7 @@ fn scan_digits_end(source: string, start: isize) -> isize {
     let mut index = start;
     while index < source.byte_len()
         && (ascii::is_digit(byte_at(source, index)) || byte_at(source, index) == b'_') {
-        index = index + 1;
+        index += 1;
     }
     index
 }
@@ -258,7 +258,7 @@ fn radix_digit(value: u8, base: isize) -> bool {
 fn scan_prefixed_integer(source: string, start: isize, base: isize) -> (TokenKind, isize) {
     let mut index = start + 2;
     while index < source.byte_len() && (is_ident_continue(byte_at(source, index))) {
-        index = index + 1;
+        index += 1;
     }
     let end = index;
     let mut valid = end > start + 2;
@@ -306,7 +306,7 @@ fn scan_number(source: string, start: isize) -> (TokenKind, isize) {
         let mut exponent_start = number_end + 1;
         if exponent_start < source.byte_len()
             && (byte_at(source, exponent_start) == b'+' || byte_at(source, exponent_start) == b'-') {
-            exponent_start = exponent_start + 1;
+            exponent_start += 1;
         }
         if exponent_start < source.byte_len() && ascii::is_digit(byte_at(source, exponent_start)) {
             let exponent_end = scan_digits_end(source, exponent_start);
@@ -369,7 +369,7 @@ fn scan_escape_end(source: string, slash: isize, quote: u8) -> Option[isize] {
                     (value - b'a' + 10).to_u32()
                 };
                 code = code * 16 + digit;
-                cursor = cursor + 1;
+                cursor += 1;
             }
             if cursor == slash + 6 && char_from_u32(code).is_some() {
                 Option::Some(slash + 6)
@@ -425,7 +425,7 @@ fn raw_string_hash_count(source: string, start: isize) -> Option[isize] {
     } else {
         let mut index = start + 1;
         while index < source.byte_len() && byte_at(source, index) == b'#' {
-            index = index + 1;
+            index += 1;
         }
         if index < source.byte_len() && byte_at(source, index) == b'"' {
             Option::Some(index - start - 1)
@@ -449,13 +449,13 @@ fn scan_raw_string_end(source: string, start: isize, hash_count: isize) -> Optio
             let mut hash_index = 0;
             while hash_index < hash_count && index + 1 + hash_index < source.byte_len()
                 && byte_at(source, index + 1 + hash_index) == b'#' {
-                hash_index = hash_index + 1;
+                hash_index += 1;
             }
             if hash_index == hash_count {
                 return Option::Some(index + hash_count + 1)
             }
         }
-        index = index + 1;
+        index += 1;
     }
     Option::None
 }
@@ -469,7 +469,7 @@ fn scan_interpolation_expr_end(source: string, start: isize) -> Option[isize] {
         if text::starts_with_at(source, position, "//") {
             index = position + 2;
             while index < source.byte_len() && byte_at(source, index) != b'\n' {
-                index = index + 1;
+                index += 1;
             }
         } else if value == b'r' && starts_raw_string(source, position) {
             match raw_string_hash_count(source, position) {
@@ -532,10 +532,10 @@ fn scan_interpolation_expr_end(source: string, start: isize) -> Option[isize] {
                 None => return Option::None,
             }
         } else if value == b'{' {
-            depth = depth + 1;
+            depth += 1;
             index = position + 1;
         } else if value == b'}' {
-            depth = depth - 1;
+            depth -= 1;
             if depth == 0 {
                 return Option::Some(position)
             } else {
@@ -624,7 +624,7 @@ fn scan_label_end(source: string, start: isize) -> Option[isize] {
     } else {
         let mut end = first + 1;
         while end < source.byte_len() && is_ident_continue(byte_at(source, end)) {
-            end = end + 1;
+            end += 1;
         }
         if end < source.byte_len() && byte_at(source, end) == b'\'' {
             Option::None
@@ -701,7 +701,7 @@ fn scan_byte_string_end(source: string, start: isize) -> Option[isize] {
                 None => return Option::None,
             }
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     Option::None
@@ -724,7 +724,7 @@ fn scan_invalid_prefixed_literal_end(source: string, start: isize, quote: u8) ->
         if byte_at(source, index) == quote {
             return index + 1
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     index
@@ -733,19 +733,19 @@ fn scan_invalid_prefixed_literal_end(source: string, start: isize, quote: u8) ->
 fn scan_multiline_string_end(source: string, start: isize) -> Option[isize] {
     let mut cursor = start + 2;
     while cursor < source.byte_len() && byte_at(source, cursor) != b'\n' {
-        cursor = cursor + 1;
+        cursor += 1;
     }
     if cursor >= source.byte_len() {
         Option::None
     } else {
-        cursor = cursor + 1;
+        cursor += 1;
         let mut lines = 1;
         while cursor < source.byte_len() {
             let line_start = cursor;
             let mut index = line_start;
             while index < source.byte_len()
                 && (byte_at(source, index) == b' ' || byte_at(source, index) == b'\t') {
-                index = index + 1;
+                index += 1;
             }
             if index + 1 >= source.byte_len() || byte_at(source, index) != b'\\'
                 || byte_at(source, index + 1) != b'\\' {
@@ -755,11 +755,11 @@ fn scan_multiline_string_end(source: string, start: isize) -> Option[isize] {
                     return Option::None
                 }
             } else {
-                index = index + 2;
+                index += 2;
                 while index < source.byte_len() && byte_at(source, index) != b'\n' {
-                    index = index + 1;
+                    index += 1;
                 }
-                lines = lines + 1;
+                lines += 1;
                 if index >= source.byte_len() {
                     return Option::Some(index)
                 } else {
@@ -1043,13 +1043,13 @@ pub fn lex(source: string) -> Vec[Token] {
         if is_whitespace(value) {
             index = start + 1;
             while index < source.byte_len() && is_whitespace(byte_at(source, index)) {
-                index = index + 1;
+                index += 1;
             }
             push_token(tokens, source, TokenKind::Whitespace, start, index)
         } else if text::starts_with_at(source, start, "//") {
             index = start + 2;
             while index < source.byte_len() && byte_at(source, index) != b'\n' {
-                index = index + 1;
+                index += 1;
             }
             push_token(tokens, source, TokenKind::Comment, start, index)
         } else if text::starts_with_at(source, start, "\\\\") {
@@ -1477,7 +1477,7 @@ pub fn encode_text_hex(value: string) -> string {
         let byte = value.byte_get(index);
         builder.write_string(hex_digit(byte >> 4));
         builder.write_string(hex_digit(byte & 15));
-        index = index + 1;
+        index += 1;
     }
     builder.finish()
 }

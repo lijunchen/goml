@@ -17,22 +17,16 @@ pub struct TestItem {
 
 fn test_path_kind(source_path: string) -> Option[TestItemKind] {
     let mut current = path::clean(source_path);
-    loop {
-        match path::parent(current) {
-            Some(parent) => {
-                match path::file_name(parent) {
-                    Some(name) => if name == "tests" {
-                        return Option::Some(TestItemKind::External)
-                    },
-                    None => (),
-                }
-                if parent == current {
-                    break
-                } else {
-                    current = parent;
-                }
-            },
-            None => break,
+    while let Some(parent) = path::parent(current) {
+        if let Some(name) = path::file_name(parent) {
+            if name == "tests" {
+                return Option::Some(TestItemKind::External)
+            }
+        }
+        if parent == current {
+            break
+        } else {
+            current = parent;
         }
     }
     if source_path.ends_with("_test.gom") {
@@ -70,42 +64,31 @@ fn function_symbol_span(symbols: SymbolIndex, source_path: string, name: string)
 
 pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
     let result: Vec[TestItem] = Vec::new();
-    match test_path_kind(source_path) {
-        Some(kind) => {
-            let lowered = ast::lower(parser::parse(source));
-            match lowered.ast {
-                Some(file) => {
-                    let source_file = SourceFile {
-                        path: source_path,
-                        source,
-                        package_name: file.package_name,
-                    };
-                    let analysis_sources: Vec[SourceFile] = Vec::new();
-                    analysis_sources.push(source_file);
-                    let symbols = build_symbol_index_from_sources(analysis_sources);
-                    for item in file.items {
-                        match item {
-                            Function(function) => if has_test_attribute(function.attrs) {
-                                result.push(
-                                    TestItem {
-                                        name: function.name,
-                                        span: function_symbol_span(
-                                            symbols,
-                                            source_path,
-                                            function.name,
-                                        ),
-                                        kind,
-                                    },
-                                )
+    if let Some(kind) = test_path_kind(source_path) {
+        let lowered = ast::lower(parser::parse(source));
+        if let Some(file) = lowered.ast {
+            let source_file = SourceFile {
+                path: source_path,
+                source,
+                package_name: file.package_name,
+            };
+            let analysis_sources: Vec[SourceFile] = Vec::new();
+            analysis_sources.push(source_file);
+            let symbols = build_symbol_index_from_sources(analysis_sources);
+            for item in file.items {
+                if let Function(function) = item {
+                    if has_test_attribute(function.attrs) {
+                        result.push(
+                            TestItem {
+                                name: function.name,
+                                span: function_symbol_span(symbols, source_path, function.name),
+                                kind,
                             },
-                            _ => (),
-                        }
+                        )
                     }
-                },
-                None => (),
+                }
             }
-        },
-        None => (),
+        }
     }
     result
 }

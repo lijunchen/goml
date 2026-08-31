@@ -3276,9 +3276,8 @@ fn finish_signature_inference_unchecked(
     for argument in inferred {
         arguments.push(argument)
     }
-    let result = match go_types::instantiate(state.world, origin, arguments) {
-        Some(result) => result,
-        None => return state.world.invalid,
+    let Some(result) = go_types::instantiate(state.world, origin, arguments) else {
+        return state.world.invalid;
     };
     record_instantiated_type(state, node, arguments, result);
     for index in 0..state.info.types.len() {
@@ -3697,9 +3696,8 @@ fn recover_failed_call_from_target(
         return false
     }
     infer_from_parameter_constraints(state, parameters, bindings);
-    let arguments = match complete_inference_arguments(bindings) {
-        Some(arguments) => arguments,
-        None => return false,
+    let Some(arguments) = complete_inference_arguments(bindings) else {
+        return false;
     };
     let inferred = finish_signature_inference(state, call.0, signature, arguments);
     let parameter_tuple = match go_types::get_type(state.world, inferred) {

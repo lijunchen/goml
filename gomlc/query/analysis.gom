@@ -218,7 +218,7 @@ fn dependency_module_path(module_path: string, package_name: string) -> string {
         let mut separators = 0;
         for index in 0..package_name.byte_len() - 1 {
             if package_name.byte_get(index) == b':' && package_name.byte_get(index + 1) == b':' {
-                separators = separators + 1;
+                separators += 1;
                 if separators == 2 {
                     return package_name.byte_slice(0, index)
                 }

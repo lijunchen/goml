@@ -282,7 +282,7 @@ fn dce_free_block(value: Block) -> DceNames {
     dce_collect_optional_expr(result, value.tail);
     let mut index = value.stmts.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let stmt = value.stmts[index];
         dce_names_remove(result, stmt.name);
         dce_collect_expr(result, stmt.value)
@@ -369,7 +369,7 @@ fn dce_block(value: Block) -> Block {
     let result: Vec[LetStmt] = Vec::with_capacity(value.stmts.len());
     let mut index = value.stmts.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let stmt = value.stmts[index];
         let lowered = LetStmt { name: stmt.name, value: dce_expr(stmt.value), ty: stmt.ty };
         if dce_names_contains(live, lowered.name) {

@@ -188,7 +188,7 @@ fn entry_wrapper_name(
         let mut index = 1;
         let mut result = "main0__" + index.to_string();
         while name_present(used, result) {
-            index = index + 1;
+            index += 1;
             result = "main0__" + index.to_string();
         }
         result
@@ -535,7 +535,7 @@ fn compact_go_float_literal(value: string) -> string {
     };
     let mut end = value.byte_len();
     while end > start && value.byte_get(end - 1) == b'0' {
-        end = end - 1;
+        end -= 1;
     }
     if end == start || end == value.byte_len() {
         value
@@ -911,7 +911,7 @@ fn find_dyn_method(
         if method.name == method_name {
             return Option::Some(method)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -2768,7 +2768,7 @@ fn find_join(values: Vec[anf::JoinBind], name: string) -> Option[anf::JoinBind] 
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -2873,11 +2873,11 @@ fn find_block_join(value: anf::Block, name: string) -> Option[anf::JoinBind] {
                 if join.name == name {
                     return Option::Some(join)
                 } else {
-                    index = index - 1;
+                    index -= 1;
                 }
             },
             Let(_) | JoinRec(_) => {
-                index = index - 1;
+                index -= 1;
             },
         }
     }
@@ -3289,7 +3289,7 @@ fn compile_select(
                 )
             },
         }
-        arm_index = arm_index + 1;
+        arm_index += 1;
     }
     let lowered_default = match default {
         Some(body) => Option::Some(compile_body(body)),
@@ -3318,7 +3318,7 @@ fn compile_select(
                         ),
                     },
                 );
-                index = index - 1;
+                index -= 1;
             }
             append_stmts(result, nested.get().stmts)
         },
@@ -4028,7 +4028,7 @@ fn term_loop_outcomes(
                         visited,
                     ),
                 );
-                branches = branches + 1;
+                branches += 1;
             }
             match default {
                 Some(body) => {
@@ -4043,7 +4043,7 @@ fn term_loop_outcomes(
                             visited,
                         ),
                     );
-                    branches = branches + 1;
+                    branches += 1;
                 },
                 None => (),
             }
@@ -4069,7 +4069,7 @@ fn term_loop_outcomes(
                         visited,
                     ),
                 );
-                branches = branches + 1;
+                branches += 1;
             }
             match default {
                 Some(body) => {
@@ -4084,7 +4084,7 @@ fn term_loop_outcomes(
                             visited,
                         ),
                     );
-                    branches = branches + 1;
+                    branches += 1;
                 },
                 None => (),
             }

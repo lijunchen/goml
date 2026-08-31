@@ -71,7 +71,7 @@ fn first_identifier(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Ident) {
             return Option::Some(token)
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     Option::None
@@ -113,7 +113,7 @@ fn first_type_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[Syntax
             && token.text != "dyn" {
             return Option::Some(token)
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     Option::None
@@ -131,7 +131,7 @@ fn owner_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken
                 && type_node_kind(candidate.kind) {
                 return first_type_name_token(syntax, candidate)
             } else {
-                index = index - 1;
+                index -= 1;
             }
         }
         first_identifier(syntax, node)
@@ -226,7 +226,7 @@ fn node_has_token(syntax: SyntaxIndex, node: SyntaxNode, kind: lexer::TokenKind)
             && lexer::token_kind_equal(token.kind, kind) {
             return true
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     false
@@ -289,7 +289,7 @@ fn impl_has_trait(syntax: SyntaxIndex, node: SyntaxNode) -> bool {
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::LBrace) {
             return false
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     false

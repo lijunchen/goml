@@ -1272,9 +1272,8 @@ fn interface_method_occurrence(
     methods: Vec[InterfaceMethodOccurrence],
     method: go_types::ObjectId,
 ) -> Option[InterfaceMethodOccurrence] {
-    let value = match go_types::get_object(state.world, method) {
-        Some(value) => value,
-        None => return Option::None,
+    let Some(value) = go_types::get_object(state.world, method) else {
+        return Option::None;
     };
     for existing in methods {
         match go_types::get_object(state.world, existing.method) {

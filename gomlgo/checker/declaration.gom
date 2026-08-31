@@ -2050,10 +2050,7 @@ fn validate_named_type_inner(
 fn direct_named_dependency(state: CheckState, object: go_types::ObjectId) -> Option[
     go_types::ObjectId,
 ] {
-    let index = match pending_type_index(state, object) {
-        Some(value) => value,
-        None => return Option::None,
-    };
+    let index = pending_type_index(state, object)?;
     match identifier(state, state.pending_types[index].rhs) {
         Some(name) => match go_types::lookup(
             state.world,
@@ -2832,9 +2829,8 @@ fn recursive_cycle_diagnostic_rank(state: CheckState, value: CheckDiagnostic) ->
     if !value.message.starts_with("invalid recursive type") {
         return -1
     }
-    let object = match diagnostic_type_object(state, value) {
-        Some(object) => object,
-        None => return 3,
+    let Some(object) = diagnostic_type_object(state, value) else {
+        return 3;
     };
     if type_object_used_as_receiver(state, object) {
         return -1

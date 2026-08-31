@@ -121,21 +121,15 @@ pub fn new_project(name: string, base: string) -> Result[(), string] {
     create_directory(lib)?;
     write_file(path::join(project, manifest::FILENAME), "[module]\npath = \"" + name + "\"\n")?;
     write_file(path::join(project, ".gitignore"), "/_artifact/\n")?;
-    match write_file(
+    write_file(
         path::join(project, "main.gom"),
         "package main;\n\nuse " + name
             + "::lib;\n\nfn main() -> () {\n    println(lib::message())\n}\n",
-    ) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    }
-    match write_file(
+    )?;
+    write_file(
         path::join(lib, "lib.gom"),
         "package lib;\n\npub fn message() -> string {\n    \"hello from lib\"\n}\n",
-    ) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    }
+    )?;
     io::println("Created project at " + project);
     io::println("Next steps:");
     io::println("  cd " + project);

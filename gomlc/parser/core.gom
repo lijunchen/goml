@@ -94,9 +94,9 @@ fn input_nth(parser: Parser, offset: isize) -> lexer::TokenKind {
         if lexer::token_is_trivia(kind) {} else if remaining == 0 {
             return kind
         } else {
-            remaining = remaining - 1;
+            remaining -= 1;
         }
-        index = index + 1;
+        index += 1;
     }
     lexer::TokenKind::Eof
 }
@@ -109,9 +109,9 @@ fn input_nth_text(parser: Parser, offset: isize) -> string {
         if lexer::token_is_trivia(token.kind) {} else if remaining == 0 {
             return token.text
         } else {
-            remaining = remaining - 1;
+            remaining -= 1;
         }
-        index = index + 1;
+        index += 1;
     }
     ""
 }
@@ -128,7 +128,7 @@ fn input_current_text(parser: Parser) -> string {
 fn current_token_index(parser: Parser) -> Option[isize] {
     let mut index = parser.cursor.get();
     while index < parser.tokens.len() && lexer::token_is_trivia(parser.tokens[index].kind) {
-        index = index + 1;
+        index += 1;
     }
     if index < parser.tokens.len() {
         Option::Some(index)
@@ -165,7 +165,7 @@ fn missing_range(parser: Parser) -> (isize, isize) {
         if !lexer::token_is_trivia(token.kind) {
             return (token.end, token.end)
         }
-        index = index - 1;
+        index -= 1;
     }
     match current_token_index(parser) {
         Some(index) => {
@@ -326,11 +326,10 @@ impl Parser {
     }
 
     pub fn advance(self: Parser) -> () {
-        match current_lex_error(self) {
-            Some(value) => self.events.push(
+        if let Some(value) = current_lex_error(self) {
+            self.events.push(
                 Event::Error { message: value.message, start: value.start, end: value.end },
-            ),
-            None => (),
+            )
         }
         self.fuel.set(256);
         input_skip(self);
@@ -472,26 +471,22 @@ fn element_byte_len(element: cst::CstElement) -> isize {
 }
 
 fn finish_node(stack: collections::Stack[cst::CstNode], roots: Vec[cst::CstNode]) -> () {
-    match stack.pop() {
-        Some(value) => {
-            let mut byte_len = 0;
-            for child in value.children {
-                byte_len = byte_len + element_byte_len(child);
-            }
-            let complete = cst::node(value.kind, value.children, byte_len);
-            match stack.peek() {
-                Some(parent) => parent.children.push(cst::CstElement::Node(complete)),
-                None => roots.push(complete),
-            }
-        },
-        None => (),
+    if let Some(value) = stack.pop() {
+        let mut byte_len = 0;
+        for child in value.children {
+            byte_len += element_byte_len(child);
+        }
+        let complete = cst::node(value.kind, value.children, byte_len);
+        match stack.peek() {
+            Some(parent) => parent.children.push(cst::CstElement::Node(complete)),
+            None => roots.push(complete),
+        }
     }
 }
 
 fn push_token(stack: collections::Stack[cst::CstNode], token: lexer::Token) -> () {
-    match stack.peek() {
-        Some(parent) => parent.children.push(cst::CstElement::Token(token)),
-        None => (),
+    if let Some(parent) = stack.peek() {
+        parent.children.push(cst::CstElement::Token(token))
     }
 }
 
@@ -516,22 +511,15 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 kinds.push(kind);
                 let mut event_index = index;
                 let mut parent = forward_parent;
-                loop {
-                    match parent {
-                        Some(distance) => {
-                            event_index = event_index + distance;
-                            let parent_event = parser.events[event_index];
-                            parser.events[event_index] = event_tombstone();
-                            match event_open(parent_event) {
-                                Some((parent_kind, next)) => {
-                                    kinds.push(parent_kind);
-                                    parent = next;
-                                },
-                                None => break,
-                            }
-                        },
-                        None => break,
-                    }
+                while let Some(distance) = parent {
+                    event_index += distance;
+                    let parent_event = parser.events[event_index];
+                    parser.events[event_index] = event_tombstone();
+                    let Some((parent_kind, next)) = event_open(parent_event) else {
+                        break;
+                    };
+                    kinds.push(parent_kind);
+                    parent = next;
                 }
                 let mut kind_index = kinds.len() - 1;
                 while kind_index >= 0 {
@@ -539,14 +527,14 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                     if !cst::node_kind_equal(current, cst::NodeKind::TombStone) {
                         stack.push(cst::node(current, Vec::new(), 0))
                     }
-                    kind_index = kind_index - 1;
+                    kind_index -= 1;
                 }
             },
             Close => finish_node(stack, roots),
             Advance => {
                 if cursor < parser.tokens.len() {
                     push_token(stack, parser.tokens[cursor]);
-                    cursor = cursor + 1;
+                    cursor += 1;
                 }
             },
             Error { message, start, end } => {
@@ -555,9 +543,9 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
         }
         while cursor < parser.tokens.len() && lexer::token_is_trivia(parser.tokens[cursor].kind) {
             push_token(stack, parser.tokens[cursor]);
-            cursor = cursor + 1;
+            cursor += 1;
         }
-        index = index + 1;
+        index += 1;
     }
     let root = if !roots.is_empty() {
         roots[0]

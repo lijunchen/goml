@@ -312,7 +312,7 @@ fn write_dyn_bound_value(
                 builder.write_string(", ")
             }
             write_type_value(builtin, builder, argument);
-            index = index + 1;
+            index += 1;
         }
         for binding in value.associated_types {
             if index > 0 {
@@ -320,7 +320,7 @@ fn write_dyn_bound_value(
             }
             builder.write_string(binding.0 + " = ");
             write_type_value(builtin, builder, binding.1);
-            index = index + 1;
+            index += 1;
         }
         builder.write_char(']')
     }

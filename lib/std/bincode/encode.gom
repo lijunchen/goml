@@ -26,7 +26,7 @@ fn push_fixed(output: Vec[byte], value: u64, width: isize, config: Config) -> ()
             width - index - 1
         };
         output.push((value >> (position * 8)).to_u8());
-        index = index + 1;
+        index += 1;
     }
 }
 
@@ -435,7 +435,7 @@ impl serde::Serializer for BincodeSerializer {
         let mut index = 0;
         while index < value.len() {
             self.output.push(value[index]);
-            index = index + 1;
+            index += 1;
         }
         Result::Ok(())
     }

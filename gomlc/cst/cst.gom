@@ -306,7 +306,7 @@ fn debug_token_text(value: string) -> string {
     } else {
         let mut boundary = 21;
         while !value.is_char_boundary(boundary) {
-            boundary = boundary + 1;
+            boundary += 1;
         }
         value.byte_slice(0, boundary) + " ..."
     }

@@ -101,7 +101,7 @@ fn find_enum(ctx: Lowerer, name: string) -> Option[tast::EnumDef] {
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -114,7 +114,7 @@ fn find_struct(ctx: Lowerer, name: string) -> Option[tast::StructDef] {
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -216,7 +216,7 @@ fn eq_conjunction(values: Vec[LowerExpr]) -> LowerExpr {
                 else_branch: bool_expr(false),
                 ty: tast::Type::Bool,
             };
-            index = index - 1;
+            index -= 1;
         }
         result
     }
@@ -1452,7 +1452,7 @@ fn lower_cleanup_stmts(ctx: Lowerer, start: isize) -> Vec[LowerLetStmt] {
     let result: Vec[LowerLetStmt] = Vec::new();
     let mut index = ctx.cleanups.len();
     while index > start {
-        index = index - 1;
+        index -= 1;
         ctx.cleanup_lowering_depth.set(ctx.cleanup_lowering_depth.get() + 1);
         let value = lower_expr(ctx, ctx.cleanups[index]);
         ctx.cleanup_lowering_depth.set(ctx.cleanup_lowering_depth.get() - 1);
@@ -1611,7 +1611,7 @@ fn remaining_tast_block(
             );
             let mut cleanup_index = ctx.cleanups.len();
             while cleanup_index > cleanup_start {
-                cleanup_index = cleanup_index - 1;
+                cleanup_index -= 1;
                 stmts.push(tast::Stmt::Expr { expr: ctx.cleanups[cleanup_index] })
             }
             Option::Some(
@@ -1627,7 +1627,7 @@ fn remaining_tast_block(
         None => {
             let mut cleanup_index = ctx.cleanups.len();
             while cleanup_index > cleanup_start {
-                cleanup_index = cleanup_index - 1;
+                cleanup_index -= 1;
                 remaining.push(tast::Stmt::Expr { expr: ctx.cleanups[cleanup_index] })
             }
             Option::None

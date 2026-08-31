@@ -46,7 +46,7 @@ fn slash_shape(value: string) -> Option[NameShape] {
 fn trailing_shape(value: string) -> Option[NameShape] {
     let mut start = value.byte_len();
     while start > 0 && is_digit(value.byte_get(start - 1)) {
-        start = start - 1;
+        start -= 1;
     }
     if start == 0 || start == value.byte_len() {
         Option::None
@@ -74,7 +74,7 @@ pub fn canonical(names: Names, value: string) -> string {
                 };
                 let mut replacement = shape.prefix + shape.separator + index.to_string();
                 while names.reserved.contains(replacement) {
-                    index = index + 1;
+                    index += 1;
                     replacement = shape.prefix + shape.separator + index.to_string();
                 }
                 names.counters[key] = index + 1;

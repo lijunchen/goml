@@ -34,7 +34,7 @@ fn signature_label(parameters: Vec[string], return_type: string) -> string {
             builder.write_string(", ")
         }
         builder.write_string(parameter);
-        index = index + 1;
+        index += 1;
     }
     builder.write_string(") -> ");
     builder.write_string(return_type);
@@ -101,7 +101,7 @@ fn item_parameter_names(
                 if method.name == expected {
                     return Option::Some(function_parameter_names(method))
                 } else {
-                    index = index - 1;
+                    index -= 1;
                 }
             }
             Option::None
@@ -125,7 +125,7 @@ fn item_parameter_names(
                     }
                     return Option::Some(names)
                 } else {
-                    index = index - 1;
+                    index -= 1;
                 }
             }
             Option::None
@@ -163,7 +163,7 @@ fn file_parameter_names(
         ) {
             Some(names) => return Option::Some(names),
             None => {
-                item_index = item_index - 1;
+                item_index -= 1;
             },
         }
     }
@@ -327,7 +327,7 @@ fn unresolved_parameter_names(value: Analysis, expected: string) -> Option[Vec[s
                 None => (),
             }
         }
-        source_index = source_index - 1;
+        source_index -= 1;
     }
     Option::None
 }
@@ -402,7 +402,7 @@ fn active_parameter(fact: tast::CallFact, offset: isize) -> isize {
         } else if offset >= span.start {
             active = index;
         }
-        index = index + 1;
+        index += 1;
     }
     active
 }

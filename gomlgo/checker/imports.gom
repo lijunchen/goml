@@ -13,7 +13,7 @@ fn import_character_code(value: char) -> string {
     while number > 0 {
         let digit = (number % 16).to_isize();
         result = digits.byte_slice(digit, digit + 1) + result;
-        number = number / 16;
+        number /= 16;
     }
     while result.byte_len() < 4 {
         result = "0" + result;

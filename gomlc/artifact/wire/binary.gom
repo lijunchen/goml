@@ -50,7 +50,7 @@ fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: u64) -> ()
     let mut remaining = value;
     while remaining >= 128 {
         writer.data.push(((remaining & 127).to_u8()) | 128);
-        remaining = remaining >> 7;
+        remaining >>= 7;
     }
     writer.data.push(remaining.to_u8())
 }
@@ -151,7 +151,7 @@ fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[u64, str
         if byte & 128 == 0 {
             return Result::Ok(value)
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))

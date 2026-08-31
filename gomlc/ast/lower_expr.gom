@@ -189,10 +189,10 @@ fn unescape_string(value: string) -> string {
                 4
             };
             builder.write_string(value.byte_slice(index, index + width));
-            index = index + width;
+            index += width;
         } else if index + 1 >= value.byte_len() {
             builder.write_string("\\");
-            index = index + 1;
+            index += 1;
         } else {
             let escaped = value.byte_get(index + 1);
             match escaped {
@@ -211,14 +211,14 @@ fn unescape_string(value: string) -> string {
                         },
                         None => (),
                     }
-                    index = index + 4;
+                    index += 4;
                 },
                 _ => {
                     builder.write_string("\\");
                     builder.write_string(value.byte_slice(index + 1, index + 2))
                 },
             }
-            index = index + 2;
+            index += 2;
         }
     }
     builder.finish()
@@ -232,7 +232,7 @@ fn collapse_interpolated_braces(value: string) -> string {
         if (byte == b'{' || byte == b'}') && index + 1 < value.byte_len()
             && value.byte_get(index + 1) == byte {
             builder.write_string(value.byte_slice(index, index + 1));
-            index = index + 2;
+            index += 2;
         } else {
             let width = if byte < 128 {
                 1
@@ -244,7 +244,7 @@ fn collapse_interpolated_braces(value: string) -> string {
                 4
             };
             builder.write_string(value.byte_slice(index, index + width));
-            index = index + width;
+            index += width;
         }
     }
     builder.finish()
@@ -308,12 +308,12 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
             while line_start <= value.byte_len() {
                 let mut line_end = line_start;
                 while line_end < value.byte_len() && value.byte_get(line_end) != b'\n' {
-                    line_end = line_end + 1;
+                    line_end += 1;
                 }
                 let mut marker = line_start;
                 while marker < line_end
                     && (value.byte_get(marker) == b' ' || value.byte_get(marker) == b'\t') {
-                    marker = marker + 1;
+                    marker += 1;
                 }
                 if marker + 2 > line_end || value.byte_slice(marker, marker + 2) != "\\\\" {
                     push_error(ctx, token_span(token), "Invalid multiline string content");
@@ -868,7 +868,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
                     ) {
                         (Some(high), Some(low)) => {
                             result.push((high * 16 + low).to_string());
-                            index = index + 4;
+                            index += 4;
                         },
                         _ => return Option::None,
                     }
@@ -877,7 +877,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
                 match byte_escape_value(value.byte_get(index + 1)) {
                     Some(decoded) => {
                         result.push(decoded.to_string());
-                        index = index + 2;
+                        index += 2;
                     },
                     None => return Option::None,
                 }
@@ -886,7 +886,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
             return Option::None
         } else {
             result.push((byte.to_isize()).to_string());
-            index = index + 1;
+            index += 1;
         }
     }
     Option::Some(result)
@@ -898,7 +898,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
     }
     let mut hash_count = 0;
     while 2 + hash_count < value.byte_len() && value.byte_get(2 + hash_count) == b'#' {
-        hash_count = hash_count + 1;
+        hash_count += 1;
     }
     let start = hash_count + 3;
     let end = value.byte_len() - hash_count - 1;
@@ -1019,7 +1019,7 @@ fn lower_raw_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Ex
                 let source = token.token.text;
                 let mut hash_count = 0;
                 while 1 + hash_count < source.byte_len() && source.byte_get(1 + hash_count) == b'#' {
-                    hash_count = hash_count + 1;
+                    hash_count += 1;
                 }
                 let start = hash_count + 2;
                 let end = source.byte_len() - hash_count - 1;

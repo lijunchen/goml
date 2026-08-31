@@ -69,14 +69,14 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
                     ) {
                         (Some(high), Some(low)) => {
                             decoded_bytes.push(high * 16 + low);
-                            index = index + 3;
+                            index += 3;
                         },
                         _ => return Result::Err("invalid URI escape"),
                     }
                 }
             } else {
                 decoded_bytes.push(byte);
-                index = index + 1;
+                index += 1;
             }
         }
         match bytes::Bytes::from_vec(decoded_bytes).to_string_utf8() {

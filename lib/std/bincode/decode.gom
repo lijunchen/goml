@@ -144,7 +144,7 @@ fn read_fixed(decoder: Decoder, width: isize) -> Result[u64, string] {
             width - index - 1
         };
         result = result | (value << (position * 8));
-        index = index + 1;
+        index += 1;
     }
     Result::Ok(result)
 }
@@ -263,7 +263,7 @@ fn read_string(decoder: Decoder) -> Result[string, string] {
         let mut index = 0;
         while index < length {
             values.push(read_byte(decoder)?);
-            index = index + 1;
+            index += 1;
         }
         match bytes::Bytes::from_vec(values).to_string_utf8() {
             Ok(value) => Result::Ok(value),
@@ -337,7 +337,7 @@ fn read_sequence(decoder: Decoder, schemas: Vec[serde::Schema]) -> Result[serde:
         let mut index = 0;
         while index < length {
             values.push(read_schema(decoder, schemas[0])?);
-            index = index + 1;
+            index += 1;
         }
         Result::Ok(serde::Value::Sequence(values))
     }
@@ -600,7 +600,7 @@ impl serde::Deserializer for Decoder {
         let mut index = 0;
         while index < length {
             values.push(read_byte(self)?);
-            index = index + 1;
+            index += 1;
         }
         Result::Ok(values)
     }

@@ -116,7 +116,7 @@ pub fn token_at(index: SyntaxIndex, offset: isize) -> Option[SyntaxToken] {
         } else if token.end < offset || (token.end == offset && token.start < offset) {
             return Option::None
         } else {
-            cursor = cursor - 1;
+            cursor -= 1;
         }
     }
     Option::None

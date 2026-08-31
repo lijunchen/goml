@@ -50,7 +50,7 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
     while cursor <= source.byte_len() {
         let mut end = cursor;
         while end < source.byte_len() && source.byte_get(end) != b'\n' {
-            end = end + 1;
+            end += 1;
         }
         let line = trim_ascii(source.byte_slice(cursor, end));
         if line.starts_with("[") {
@@ -170,7 +170,7 @@ fn registry_versions(root: string, module_name: string) -> Result[Vec[string], s
     while cursor <= source.byte_len() {
         let mut end = cursor;
         while end < source.byte_len() && source.byte_get(end) != b'\n' {
-            end = end + 1;
+            end += 1;
         }
         let line = trim_ascii(source.byte_slice(cursor, end));
         if line.starts_with("[") {

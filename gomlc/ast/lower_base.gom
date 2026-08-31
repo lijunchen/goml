@@ -219,7 +219,7 @@ fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
 fn normalized_array_length(value: string) -> Option[string] {
     let mut index = 0;
     while index + 1 < value.byte_len() && value.byte_get(index) == b'0' {
-        index = index + 1;
+        index += 1;
     }
     let normalized = value.byte_slice(index, value.byte_len());
     let maximum = "9223372036854775807";

@@ -3284,7 +3284,7 @@ fn value_length(state: VmState, value: Value) -> Result[isize, string] {
             let mut count = 0;
             for entry in state.maps[id].entries {
                 if entry.active.get() {
-                    count = count + 1;
+                    count += 1;
                 }
             }
             Result::Ok(count)
@@ -3764,7 +3764,7 @@ fn map_entry_index(state: VmState, value: MapValue, key: Value, hash: u64) -> Re
             return Result::Ok(index)
         }
         index = entry.next;
-        visited = visited + 1;
+        visited += 1;
     }
     Result::Ok(-1)
 }

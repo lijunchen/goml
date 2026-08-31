@@ -88,7 +88,7 @@ fn ascii_prefix_equal_case_insensitive(value: string, expected: string) -> bool 
 fn header_line_content(value: string) -> string {
     let mut end = value.byte_len();
     while end > 0 && (value.byte_get(end - 1) == b'\n' || value.byte_get(end - 1) == b'\r') {
-        end = end - 1;
+        end -= 1;
     }
     value.byte_slice(0, end)
 }
@@ -119,7 +119,7 @@ pub fn content_length(value: string) -> Result[isize, string] {
         let mut start = prefix.byte_len();
         while start < line.byte_len()
             && (line.byte_get(start) == b' ' || line.byte_get(start) == b'\t') {
-            start = start + 1;
+            start += 1;
         }
         decimal_length(line.byte_slice(start, line.byte_len()))
     }

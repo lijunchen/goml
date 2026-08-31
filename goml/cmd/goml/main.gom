@@ -281,9 +281,8 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             && (argument == "--seed" || argument.starts_with("--seed=")) {
             let parsed_seed = option_value(args, index, argument, "--seed")?;
             index = parsed_seed.1;
-            let value = match parsed_seed.0 {
-                Some(value) => value,
-                None => return Result::Err("--seed requires a value"),
+            let Some(value) = parsed_seed.0 else {
+                return Result::Err("--seed requires a value");
             };
             match util::parse_positive_int(value) {
                 Ok(value) => {

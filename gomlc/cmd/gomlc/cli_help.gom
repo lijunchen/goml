@@ -473,7 +473,7 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
             if !(right_matches[index]) && left.byte_get(left_index) == right.byte_get(index) {
                 left_matches[left_index] = true;
                 right_matches[index] = true;
-                matches = matches + 1;
+                matches += 1;
                 break
             } else {
                 right_index = index + 1;
@@ -488,12 +488,12 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
     for left_index in 0..left.byte_len() {
         if left_matches[left_index] {
             while !(right_matches[right_index]) {
-                right_index = right_index + 1;
+                right_index += 1;
             }
             if left.byte_get(left_index) != right.byte_get(right_index) {
-                mismatches = mismatches + 1;
+                mismatches += 1;
             }
-            right_index = right_index + 1;
+            right_index += 1;
         }
     }
     let matched = matches;

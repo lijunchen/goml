@@ -43,7 +43,7 @@ fn hover_function_text(
                         builder.write_string(", ")
                     }
                     builder.write_string(short_type_name(generic));
-                    index = index + 1;
+                    index += 1;
                 }
                 builder.write_string("] ")
             }
@@ -134,10 +134,10 @@ fn function_hover_by_name(value: Analysis, name: string) -> Option[string] {
                     function.ret_ty,
                 )
             } else {
-                function_index = function_index - 1;
+                function_index -= 1;
             }
         }
-        environment_index = environment_index - 1;
+        environment_index -= 1;
     }
     Option::None
 }
@@ -246,10 +246,10 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                             method.function.ret_ty,
                         )
                     } else {
-                        method_index = method_index - 1;
+                        method_index -= 1;
                     }
                 }
-                environment_index = environment_index - 1;
+                environment_index -= 1;
             }
             Option::None
         },
@@ -268,13 +268,13 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                             if field.0 == symbol.name {
                                 return hover_text(field.1)
                             } else {
-                                field_index = field_index - 1;
+                                field_index -= 1;
                             }
                         }
                     }
-                    definition_index = definition_index - 1;
+                    definition_index -= 1;
                 }
-                environment_index = environment_index - 1;
+                environment_index -= 1;
             }
             Option::None
         },
@@ -296,7 +296,7 @@ fn symbol_at_offset(value: Analysis, offset: isize) -> Option[Symbol] {
             && offset < symbol.span.end {
             return Option::Some(symbol)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None

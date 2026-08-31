@@ -461,7 +461,7 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
             Some(function) => collect_reachable_block(value.package_name, function.body, reachable),
             None => (),
         }
-        index = index + 1;
+        index += 1;
     }
     let functions: Vec[CtFunction] = Vec::with_capacity(reachable.function_ids.len());
     for function in value.functions {

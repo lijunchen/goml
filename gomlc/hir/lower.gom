@@ -100,7 +100,7 @@ fn join_segments(values: Vec[string]) -> string {
             builder.write_string("::")
         }
         builder.write_string(value);
-        index = index + 1;
+        index += 1;
     }
     builder.finish()
 }
@@ -430,7 +430,7 @@ fn ast_type_head_span(value: ast::TypeExpr) -> Option[ast::Span] {
 fn find_binding(values: Vec[(string, LocalId)], name: string) -> Option[LocalId] {
     let mut index = values.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let entry = values[index];
         if entry.0 == name {
             return Option::Some(entry.1)
@@ -446,7 +446,7 @@ fn find_definition(ctx: LowerCtx, name: string) -> Option[DefId] {
         if entry.0 == name {
             return Option::Some(entry.1)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -459,7 +459,7 @@ fn find_constant_definition(ctx: LowerCtx, name: string) -> Option[DefId] {
         if entry.0 == name {
             return Option::Some(entry.1)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -498,7 +498,7 @@ fn enum_variant(info: EnumInfo, name: string) -> Option[isize] {
         if info.variants[index] == name {
             return Option::Some(index)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -542,11 +542,11 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
                             ConstructorRef::Resolved { enum_def: info.def_id, variant_index },
                         ),
                         None => {
-                            index = index - 1;
+                            index -= 1;
                         },
                     }
                 } else {
-                    index = index - 1;
+                    index -= 1;
                 }
             }
             Option::None
@@ -753,7 +753,7 @@ fn join_pattern_names(values: Vec[string]) -> string {
             builder.write_string(", ")
         }
         builder.write_string(value);
-        index = index + 1;
+        index += 1;
     }
     builder.finish()
 }
@@ -1770,7 +1770,7 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
                 TraitDef(value) => traits.push(value.name),
                 _ => (),
             }
-            index = index + 1;
+            index += 1;
         }
     }
     LowerCtx {
@@ -1889,7 +1889,7 @@ fn lower_file_with_context(
                 )
             },
         }
-        index = index + 1;
+        index += 1;
     }
     File {
         package_name: canonical_package_name,

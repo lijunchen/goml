@@ -287,9 +287,9 @@ fn artifact_short_name(value: string) -> string {
     while index + 1 < value.byte_len() {
         if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
             result = value.byte_slice(index + 2, value.byte_len());
-            index = index + 2;
+            index += 2;
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     result

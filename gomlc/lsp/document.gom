@@ -84,7 +84,7 @@ fn source_line_index(value: Server, source_path: string, source: string) -> text
         if document.path == source_path {
             return document.line_index
         } else {
-            document_cursor = document_cursor - 1;
+            document_cursor -= 1;
         }
     }
     match value.line_indexes.get(source_path) {

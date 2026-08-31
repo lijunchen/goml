@@ -8,7 +8,7 @@ fn self_type_occurrences(value: LocatedNode) -> isize {
     for token in direct_tokens(value) {
         if lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Ident)
             && token.token.text == "Self" {
-            result = result + 1;
+            result += 1;
         }
     }
     for child in direct_nodes(value) {
@@ -602,7 +602,7 @@ fn lower_params(ctx: LowerCtx, node: LocatedNode, shorthand_self_ty: Option[Type
                     Some(value) => result.push(value),
                     None => (),
                 }
-                index = index + 1;
+                index += 1;
             }
         },
         None => (),

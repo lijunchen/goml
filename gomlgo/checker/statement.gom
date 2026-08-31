@@ -2919,9 +2919,8 @@ fn record_switch_case_value(
     if basic_kind(state, operand.type_id) == go_types::BasicKind::UntypedNil {
         return
     }
-    let value = match operand.value {
-        Some(value) => value,
-        None => return,
+    let Some(value) = operand.value else {
+        return
     };
     if constant::constant_kind(value) == constant::ConstantKind::Unknown {
         return

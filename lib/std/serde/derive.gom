@@ -140,7 +140,7 @@ fn renamed_attribute(attribute: MetaAttribute, fallback: string) -> string {
                 && meta_attribute_argument_value_kind(attribute, index) == "string" {
                 return meta_attribute_argument_text(attribute, index)
             }
-            index = index + 1;
+            index += 1;
         }
         fallback
     }
@@ -152,7 +152,7 @@ fn field_name(input: DeriveInput, field: isize) -> string {
     let mut index = 0;
     while index < derive_field_attribute_count(input, field) {
         result = renamed_attribute(derive_field_attribute(input, field, index), result);
-        index = index + 1;
+        index += 1;
     }
     result
 }
@@ -163,7 +163,7 @@ fn variant_name(input: DeriveInput, variant: isize) -> string {
     let mut index = 0;
     while index < derive_variant_attribute_count(input, variant) {
         result = renamed_attribute(derive_variant_attribute(input, variant, index), result);
-        index = index + 1;
+        index += 1;
     }
     result
 }
@@ -177,7 +177,7 @@ fn variant_field_name(input: DeriveInput, variant: isize, field: isize) -> strin
             derive_variant_field_attribute(input, variant, field, index),
             result,
         );
-        index = index + 1;
+        index += 1;
     }
     result
 }
@@ -190,7 +190,7 @@ fn type_seen(input: DeriveInput, variant: isize, field: isize, ty: MetaType) -> 
             if meta_type_equal(derive_field_type(input, previous), ty) {
                 return true
             }
-            previous = previous + 1;
+            previous += 1;
         }
     } else {
         let mut previous_variant = 0;
@@ -203,16 +203,16 @@ fn type_seen(input: DeriveInput, variant: isize, field: isize, ty: MetaType) -> 
                 ) {
                     return true
                 }
-                previous_field = previous_field + 1;
+                previous_field += 1;
             }
-            previous_variant = previous_variant + 1;
+            previous_variant += 1;
         }
         let mut previous_field = 0;
         while previous_field < field {
             if meta_type_equal(derive_variant_field_type(input, variant, previous_field), ty) {
                 return true
             }
-            previous_field = previous_field + 1;
+            previous_field += 1;
         }
     }
     false
@@ -227,7 +227,7 @@ fn add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) 
             if meta_type_contains_generic(input, ty) && !type_seen(input, 0, field, ty) {
                 derive_output_add_predicate(output, ty, trait_name)
             }
-            field = field + 1;
+            field += 1;
         }
     } else {
         let mut variant = 0;
@@ -238,9 +238,9 @@ fn add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) 
                 if meta_type_contains_generic(input, ty) && !type_seen(input, variant, field, ty) {
                     derive_output_add_predicate(output, ty, trait_name)
                 }
-                field = field + 1;
+                field += 1;
             }
-            variant = variant + 1;
+            variant += 1;
         }
     }
 }
@@ -274,7 +274,7 @@ fn serialize_struct_body(input: DeriveInput) -> MetaExpr {
                 meta_expr_field(meta_expr_var("self"), derive_field_name(input, field)),
             ),
         );
-        field = field + 1;
+        field += 1;
     }
     meta_block_finish(block, serializer_call("end_struct", exprs()))
 }
@@ -331,7 +331,7 @@ fn serialize_enum_body(input: DeriveInput) -> MetaExpr {
                 ),
             );
             meta_block_expr(block, serialize_value(input, meta_expr_var(binding)));
-            field = field + 1;
+            field += 1;
         }
         let pattern = if kind == 2 {
             meta_pattern_struct(derive_item_name(input) + "::" + source_name, named, false)
@@ -342,7 +342,7 @@ fn serialize_enum_body(input: DeriveInput) -> MetaExpr {
             arms,
             meta_arm(pattern, meta_block_finish(block, serializer_call("end_variant", exprs()))),
         );
-        variant = variant + 1;
+        variant += 1;
     }
     meta_expr_match(meta_expr_var("self"), arms)
 }
@@ -440,7 +440,7 @@ fn deserialize_struct_body(input: DeriveInput) -> MetaExpr {
             option_type(derive_field_type(input, field)),
             meta_expr_constructor("Option::None", exprs()),
         );
-        field = field + 1;
+        field += 1;
     }
     let next = derive_fresh_name(input, "serde_next_field");
     meta_block_let_mut(block, next, try_deserializer_call("next_struct_field", exprs()));
@@ -448,7 +448,7 @@ fn deserialize_struct_body(input: DeriveInput) -> MetaExpr {
     let mut branch = try_deserializer_call("skip_value", exprs());
     field = derive_field_count(input);
     while field > 0 {
-        field = field - 1;
+        field -= 1;
         branch = deserialize_direct_struct_field_branch(
             input,
             field,
@@ -486,7 +486,7 @@ fn deserialize_struct_body(input: DeriveInput) -> MetaExpr {
                 meta_expr_unit(),
             ),
         );
-        field = field + 1;
+        field += 1;
     }
     meta_block_expr(block, try_deserializer_call("end_struct", exprs()));
     let result_fields = meta_expr_field_list_new();
@@ -506,7 +506,7 @@ fn deserialize_struct_body(input: DeriveInput) -> MetaExpr {
                 ),
             ),
         );
-        field = field + 1;
+        field += 1;
     }
     meta_block_finish(block, result_ok(meta_expr_target_struct(input, result_fields)))
 }
@@ -591,7 +591,7 @@ fn deserialize_variant_body(input: DeriveInput, variant: isize) -> MetaExpr {
             option_type(derive_variant_field_type(input, variant, field)),
             meta_expr_constructor("Option::None", exprs()),
         );
-        field = field + 1;
+        field += 1;
     }
     let next = derive_fresh_name(input, "serde_next_variant_field");
     meta_block_let_mut(block, next, try_deserializer_call("next_variant_field", exprs()));
@@ -599,7 +599,7 @@ fn deserialize_variant_body(input: DeriveInput, variant: isize) -> MetaExpr {
     let mut branch = try_deserializer_call("skip_value", exprs());
     field = field_count;
     while field > 0 {
-        field = field - 1;
+        field -= 1;
         branch = deserialize_direct_variant_field_branch(input, variant, field, next, branch);
     }
     meta_block_expr(loop_block, branch);
@@ -633,7 +633,7 @@ fn deserialize_variant_body(input: DeriveInput, variant: isize) -> MetaExpr {
                 meta_expr_unit(),
             ),
         );
-        field = field + 1;
+        field += 1;
     }
     meta_block_expr(block, try_deserializer_call("end_variant", exprs()));
     let positional = exprs();
@@ -659,7 +659,7 @@ fn deserialize_variant_body(input: DeriveInput, variant: isize) -> MetaExpr {
         } else {
             meta_expr_list_push(positional, value)
         }
-        field = field + 1;
+        field += 1;
     }
     let source_name = derive_variant_name(input, variant);
     let value = if kind == 2 {
@@ -688,7 +688,7 @@ fn deserialize_enum_body(input: DeriveInput) -> MetaExpr {
     let mut branch = deserializer_result_err("unknown enum variant");
     let mut variant = derive_variant_count(input);
     while variant > 0 {
-        variant = variant - 1;
+        variant -= 1;
         branch = meta_expr_if(
             definition_call(
                 input,

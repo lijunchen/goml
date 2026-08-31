@@ -58,7 +58,7 @@ fn derive_struct_type_seen(input: DeriveInput, index: isize, ty: MetaType) -> bo
         if meta_type_equal(derive_field_type(input, previous), ty) {
             return true
         }
-        previous = previous + 1;
+        previous += 1;
     }
     false
 }
@@ -75,16 +75,16 @@ fn derive_enum_type_seen(input: DeriveInput, variant_index: isize, field_index: 
             ) {
                 return true
             }
-            previous_field = previous_field + 1;
+            previous_field += 1;
         }
-        previous_variant = previous_variant + 1;
+        previous_variant += 1;
     }
     let mut previous_field = 0;
     while previous_field < field_index {
         if meta_type_equal(derive_variant_field_type(input, variant_index, previous_field), ty) {
             return true
         }
-        previous_field = previous_field + 1;
+        previous_field += 1;
     }
     false
 }
@@ -98,7 +98,7 @@ fn derive_add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: s
             if meta_type_contains_generic(input, ty) && !derive_struct_type_seen(input, index, ty) {
                 derive_output_add_predicate(output, ty, trait_name)
             }
-            index = index + 1;
+            index += 1;
         }
     } else {
         let mut variant_index = 0;
@@ -110,9 +110,9 @@ fn derive_add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: s
                     && !derive_enum_type_seen(input, variant_index, field_index, ty) {
                     derive_output_add_predicate(output, ty, trait_name)
                 }
-                field_index = field_index + 1;
+                field_index += 1;
             }
-            variant_index = variant_index + 1;
+            variant_index += 1;
         }
     }
 }
@@ -126,7 +126,7 @@ fn derive_add_all_predicates(input: DeriveInput, output: DeriveOutput, trait_nam
             if derive_struct_type_seen(input, index, ty) {} else {
                 derive_output_add_predicate(output, ty, trait_name)
             }
-            index = index + 1;
+            index += 1;
         }
     } else {
         let mut variant_index = 0;
@@ -137,9 +137,9 @@ fn derive_add_all_predicates(input: DeriveInput, output: DeriveOutput, trait_nam
                 if derive_enum_type_seen(input, variant_index, field_index, ty) {} else {
                     derive_output_add_predicate(output, ty, trait_name)
                 }
-                field_index = field_index + 1;
+                field_index += 1;
             }
-            variant_index = variant_index + 1;
+            variant_index += 1;
         }
     }
 }
@@ -186,7 +186,7 @@ fn derive_struct_format_body(input: DeriveInput, trait_name: string, method_name
                 method_name,
             ),
         );
-        index = index + 1;
+        index += 1;
     }
     result = derive_concat(result, meta_expr_string(" }"));
     meta_block_let_pattern(
@@ -241,7 +241,7 @@ fn derive_enum_format_body(input: DeriveInput, trait_name: string, method_name: 
                     method_name,
                 ),
             );
-            field_index = field_index + 1;
+            field_index += 1;
         }
         if variant_kind != 0 {
             result = derive_concat(
@@ -260,7 +260,7 @@ fn derive_enum_format_body(input: DeriveInput, trait_name: string, method_name: 
             meta_pattern_constructor(constructor, positional)
         };
         meta_arm_list_push(arms, meta_arm(pattern, result));
-        variant_index = variant_index + 1;
+        variant_index += 1;
     }
     meta_expr_match(meta_expr_var("self"), arms)
 }
@@ -315,7 +315,7 @@ fn derive_struct_eq_body(input: DeriveInput, trait_name: string) -> MetaExpr {
                 ),
             ),
         );
-        index = index + 1;
+        index += 1;
     }
     result
 }
@@ -356,7 +356,7 @@ fn derive_enum_eq_body(input: DeriveInput, trait_name: string) -> MetaExpr {
                     derive_expr_list_two(meta_expr_var(left), meta_expr_var(right)),
                 ),
             );
-            field_index = field_index + 1;
+            field_index += 1;
         }
         let constructor = item_name + "::" + variant_name;
         let left_pattern = if named_fields {
@@ -373,7 +373,7 @@ fn derive_enum_eq_body(input: DeriveInput, trait_name: string) -> MetaExpr {
         meta_pattern_list_push(tuple, left_pattern);
         meta_pattern_list_push(tuple, right_pattern);
         meta_arm_list_push(arms, meta_arm(meta_pattern_tuple(tuple), body));
-        variant_index = variant_index + 1;
+        variant_index += 1;
     }
     if derive_variant_count(input) > 1 {
         meta_arm_list_push(arms, meta_arm(meta_pattern_wild(), meta_expr_bool(false)))
@@ -438,7 +438,7 @@ fn derive_struct_hash_body(input: DeriveInput) -> MetaExpr {
                 meta_expr_field(meta_expr_var("self"), derive_field_name(input, index)),
             ),
         );
-        index = index + 1;
+        index += 1;
     }
     meta_block_finish(block, meta_expr_var("h"))
 }
@@ -471,7 +471,7 @@ fn derive_enum_hash_body(input: DeriveInput) -> MetaExpr {
                 meta_pattern_list_push(positional, meta_pattern_bind(binding))
             }
             meta_block_let(block, "h", derive_hash_step(input, meta_expr_var(binding)));
-            field_index = field_index + 1;
+            field_index += 1;
         }
         let constructor = item_name + "::" + variant_name;
         let pattern = if named_fields {
@@ -480,7 +480,7 @@ fn derive_enum_hash_body(input: DeriveInput) -> MetaExpr {
             meta_pattern_constructor(constructor, positional)
         };
         meta_arm_list_push(arms, meta_arm(pattern, meta_block_finish(block, meta_expr_var("h"))));
-        variant_index = variant_index + 1;
+        variant_index += 1;
     }
     meta_expr_match(meta_expr_var("self"), arms)
 }
@@ -515,7 +515,7 @@ fn derive_add_default_predicates(input: DeriveInput, output: DeriveOutput) -> ()
             if meta_type_contains_generic(input, ty) && !derive_struct_type_seen(input, index, ty) {
                 derive_output_add_predicate(output, ty, "Default")
             }
-            index = index + 1;
+            index += 1;
         }
     } else if derive_variant_count(input) > 0 {
         let mut index = 0;
@@ -524,7 +524,7 @@ fn derive_add_default_predicates(input: DeriveInput, output: DeriveOutput) -> ()
             if meta_type_contains_generic(input, ty) && !derive_enum_type_seen(input, 0, index, ty) {
                 derive_output_add_predicate(output, ty, "Default")
             }
-            index = index + 1;
+            index += 1;
         }
     }
 }
@@ -539,7 +539,7 @@ fn derive_struct_default_body(input: DeriveInput) -> MetaExpr {
             derive_field_name(input, index),
             derive_default_value(input),
         );
-        index = index + 1;
+        index += 1;
     }
     meta_expr_target_struct(input, fields)
 }
@@ -557,7 +557,7 @@ fn derive_enum_default_body(input: DeriveInput) -> MetaExpr {
                 derive_variant_field_name(input, 0, index),
                 derive_default_value(input),
             );
-            index = index + 1;
+            index += 1;
         }
         meta_expr_target_variant_struct(input, variant_name, fields)
     } else {
@@ -565,7 +565,7 @@ fn derive_enum_default_body(input: DeriveInput) -> MetaExpr {
         let mut index = 0;
         while index < derive_variant_field_count(input, 0) {
             meta_expr_list_push(values, derive_default_value(input));
-            index = index + 1;
+            index += 1;
         }
         meta_expr_target_constructor(input, variant_name, values)
     }
@@ -672,7 +672,7 @@ fn derive_struct_ord_body(input: DeriveInput, partial: bool) -> MetaExpr {
     };
     let mut index = derive_field_count(input);
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         let field_name = derive_field_name(input, index);
         let left = meta_expr_field(meta_expr_var("self"), field_name);
         let right = meta_expr_field(meta_expr_var("other"), field_name);
@@ -700,7 +700,7 @@ fn derive_enum_tag(input: DeriveInput, value: MetaExpr) -> MetaExpr {
                     derive_variant_field_name(input, variant, field),
                     meta_pattern_wild(),
                 );
-                field = field + 1;
+                field += 1;
             }
             meta_pattern_struct(
                 derive_item_name(input) + "::" + derive_variant_name(input, variant),
@@ -712,12 +712,12 @@ fn derive_enum_tag(input: DeriveInput, value: MetaExpr) -> MetaExpr {
             let mut field = 0;
             while field < derive_variant_field_count(input, variant) {
                 meta_pattern_list_push(fields, meta_pattern_wild());
-                field = field + 1;
+                field += 1;
             }
             meta_pattern_target_constructor(input, derive_variant_name(input, variant), fields)
         };
         meta_arm_list_push(arms, meta_arm(pattern, meta_expr_int(variant)));
-        variant = variant + 1;
+        variant += 1;
     }
     meta_expr_match(value, arms)
 }
@@ -736,7 +736,7 @@ fn derive_enum_same_variant_body(input: DeriveInput, variant: isize, partial: bo
     };
     let mut field = derive_variant_field_count(input, variant);
     while field > 0 {
-        field = field - 1;
+        field -= 1;
         let left = derive_fresh_name(input, "left");
         let right = derive_fresh_name(input, "right");
         if kind == 2 {
@@ -776,7 +776,7 @@ fn derive_enum_payload_order(input: DeriveInput, partial: bool) -> MetaExpr {
     let mut variant = 0;
     while variant < derive_variant_count(input) {
         meta_arm_list_push(arms, derive_enum_same_variant_body(input, variant, partial));
-        variant = variant + 1;
+        variant += 1;
     }
     meta_arm_list_push(
         arms,
@@ -835,7 +835,7 @@ fn derive_add_call_site_predicates(input: DeriveInput, output: DeriveOutput, tra
             if meta_type_contains_generic(input, ty) && !derive_struct_type_seen(input, index, ty) {
                 derive_output_add_call_site_predicate(output, ty, trait_name)
             }
-            index = index + 1;
+            index += 1;
         }
     } else {
         let mut variant = 0;
@@ -847,9 +847,9 @@ fn derive_add_call_site_predicates(input: DeriveInput, output: DeriveOutput, tra
                     && !derive_enum_type_seen(input, variant, field, ty) {
                     derive_output_add_call_site_predicate(output, ty, trait_name)
                 }
-                field = field + 1;
+                field += 1;
             }
-            variant = variant + 1;
+            variant += 1;
         }
     }
 }

@@ -69,9 +69,8 @@ fn instantiate_method_object(
     receiver_arguments: Vec[TypeId],
     receiver_type: TypeId,
 ) -> ObjectId {
-    let object = match get_object(world, source) {
-        Some(object) => object,
-        None => return object_id(-1),
+    let Some(object) = get_object(world, source) else {
+        return object_id(-1);
     };
     match get_type(world, object.type_id) {
         Some(TypeData {

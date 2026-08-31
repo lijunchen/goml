@@ -25,7 +25,7 @@ fn find_inline_name(values: Vec[InlineName], name: string) -> Option[Imm] {
         if value.name == name {
             return Option::Some(value.value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -38,7 +38,7 @@ fn find_inline_join(values: Vec[InlineJoin], name: string) -> Option[string] {
         if value.name == name {
             return Option::Some(value.replacement)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -381,7 +381,7 @@ fn clone_inline_block(
 fn inline_block_cost(value: Block) -> isize {
     let mut result = 1;
     for bind in value.binds {
-        result = result + 1;
+        result += 1;
         match bind {
             Let(_) => (),
             Join(value) => {

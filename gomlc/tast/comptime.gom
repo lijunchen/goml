@@ -160,9 +160,9 @@ fn short_comptime_name(value: string) -> string {
     while index + 1 < value.byte_len() {
         if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
             result = value.byte_slice(index + 2, value.byte_len());
-            index = index + 2;
+            index += 2;
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     result
@@ -392,7 +392,7 @@ fn integer_literal_bits(value: string) -> Option[u64] {
     while index < value.byte_len() {
         let digit = value.byte_get(index);
         if digit == b'_' {
-            index = index + 1;
+            index += 1;
             continue
         }
         let part = if digit >= b'0' && digit <= b'9' {
@@ -409,7 +409,7 @@ fn integer_literal_bits(value: string) -> Option[u64] {
         }
         result = result * (base.to_u64()) + (part.to_u64());
         found = true;
-        index = index + 1;
+        index += 1;
     }
     if found {
         Option::Some(result)
@@ -479,7 +479,7 @@ fn lower_binary_op(value: ast::BinaryOp) -> ctir::CtBinaryOp {
 fn find_local_slot(ctx: CtLowerContext, name: string) -> Option[isize] {
     let mut index = ctx.locals.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         if ctx.locals[index].0 == name {
             return Option::Some(ctx.locals[index].1)
         }
@@ -493,7 +493,7 @@ fn bind_pattern_slot(ctx: CtLowerContext, name: string, ty: Type, pattern_base: 
 ] {
     let mut index = ctx.locals.len();
     while index > pattern_base {
-        index = index - 1;
+        index -= 1;
         if ctx.locals[index].0 == name {
             return Result::Ok(ctx.locals[index].1)
         }
@@ -1614,7 +1614,7 @@ fn evaluate_constants(
                             ),
                         }
                         states[index] = 1;
-                        remaining = remaining - 1;
+                        remaining -= 1;
                         progress = true;
                     },
                     Err(error) => match error.kind {
@@ -1631,7 +1631,7 @@ fn evaluate_constants(
                                 ),
                             );
                             states[index] = 2;
-                            remaining = remaining - 1;
+                            remaining -= 1;
                             progress = true;
                         },
                     },
@@ -1651,7 +1651,7 @@ fn evaluate_constants(
                         ),
                     );
                     states[index] = 2;
-                    remaining = remaining - 1;
+                    remaining -= 1;
                 }
             }
         }

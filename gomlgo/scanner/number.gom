@@ -18,9 +18,9 @@ fn scan_digits(scanner: Scanner, base: isize, invalid: Ref[isize]) -> isize {
         let maximum = b'0'.to_i32() + base.to_i32();
         while is_decimal(scanner.current.get()) || scanner.current.get() == b'_'.to_i32() {
             if scanner.current.get() == b'_'.to_i32() {
-                result = result | 2;
+                result |= 2;
             } else {
-                result = result | 1;
+                result |= 1;
                 if scanner.current.get() >= maximum && invalid.get() < 0 {
                     invalid.set(scanner.offset.get())
                 }
@@ -30,9 +30,9 @@ fn scan_digits(scanner: Scanner, base: isize, invalid: Ref[isize]) -> isize {
     } else {
         while is_hex(scanner.current.get()) || scanner.current.get() == b'_'.to_i32() {
             if scanner.current.get() == b'_'.to_i32() {
-                result = result | 2;
+                result |= 2;
             } else {
-                result = result | 1;
+                result |= 1;
             }
             next(scanner)
         }
@@ -152,7 +152,7 @@ fn scan_number(scanner: Scanner) -> (token::Kind, string) {
         }
         let exponent_invalid = Ref::new(-1);
         let exponent_digits = scan_digits(scanner, 10, exponent_invalid);
-        digit_separator = digit_separator | exponent_digits;
+        digit_separator |= exponent_digits;
         if exponent_digits & 1 == 0 {
             report(scanner, scanner.offset.get(), "exponent has no digits")
         }

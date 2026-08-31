@@ -345,11 +345,11 @@ fn coverage_decrement_magnitude(value: string) -> string {
             digits[index] = digit - 1;
             break
         }
-        index = index - 1;
+        index -= 1;
     }
     let mut start = 0;
     while start + 1 < digits.len() && digits[start] == 48 {
-        start = start + 1;
+        start += 1;
     }
     let builder = text::StringBuilder::with_capacity(digits.len() - start);
     for position in start..digits.len() {
@@ -1050,7 +1050,7 @@ fn coverage_useful_sequence(
     let stable_length = max_prefix + max_suffix;
     let mut large_length = stable_length + 1;
     while exact_lengths.contains(large_length) {
-        large_length = large_length + 1;
+        large_length += 1;
     }
     let lengths = collections::IndexSet::new();
     for length in 0..stable_length + 1 {

@@ -1281,9 +1281,8 @@ fn mismatched_slice_element_types(state: CheckState, value: go_types::TypeId) ->
     let terms = go_types::type_set_specific_types(state.world, value);
     let mut first: Option[go_types::TypeId] = Option::None;
     for term in terms {
-        let element = match slice_element_type(state, term) {
-            Some(element) => element,
-            None => return Option::None,
+        let Some(element) = slice_element_type(state, term) else {
+            return Option::None;
         };
         match first {
             Some(first) => if !go_types::identical(state.world, first, element) {

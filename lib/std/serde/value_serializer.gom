@@ -234,7 +234,7 @@ impl Serializer for ValueSerializer {
         let mut index = 0;
         while index < value.len() {
             values.push(Value::Uint8(value[index]));
-            index = index + 1;
+            index += 1;
         }
         append_serialized_value(self, Value::Sequence(values))
     }

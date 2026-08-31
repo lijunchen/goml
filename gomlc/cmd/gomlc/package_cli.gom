@@ -43,7 +43,7 @@ fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
         if index >= 2 && !positional && argument == "--" {
             positional = true;
             result.push(argument);
-            index = index + 1;
+            index += 1;
         } else if index >= 2 && !positional && argument == "--world" {
             if option_string_present(world) {
                 return Result::Err(repeated_argument_error(args[1], "--world <WORLD>"))
@@ -51,7 +51,7 @@ fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
                 return Result::Err(value_required_error("--world <WORLD>", Option::None))
             } else {
                 world = Option::Some(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if index >= 2 && !positional
             && option_string_present(inline_cli_value(argument, "--world")) {
@@ -61,11 +61,11 @@ fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
                 return Result::Err(value_required_error("--world <WORLD>", Option::None))
             } else {
                 world = inline_cli_value(argument, "--world");
-                index = index + 1;
+                index += 1;
             }
         } else {
             result.push(argument);
-            index = index + 1;
+            index += 1;
         }
     }
     Result::Ok(ExtractedWorldArgs { args: result, world: world })
@@ -129,7 +129,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
         let argument = args[index];
         if !positional && argument == "--" {
             positional = true;
-            index = index + 1;
+            index += 1;
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
@@ -166,14 +166,14 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 return Result::Err(repeated_argument_error(command, "--package <PACKAGE>"))
             } else {
                 package_name = Option::Some(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--package")) {
             if option_string_present(package_name) {
                 return Result::Err(repeated_argument_error(command, "--package <PACKAGE>"))
             } else {
                 package_name = inline_cli_value(argument, "--package");
-                index = index + 1;
+                index += 1;
             }
         } else if argument == "--module" {
             if index + 1 >= args.len() || cli_option(args[index + 1]) {
@@ -182,7 +182,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 return Result::Err(repeated_argument_error(command, "--module <MODULE>"))
             } else {
                 module_name = Option::Some(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--module")) {
             if option_string_present(module_name) {
@@ -191,14 +191,14 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 return Result::Err(value_required_error("--module <MODULE>", Option::None))
             } else {
                 module_name = inline_cli_value(argument, "--module");
-                index = index + 1;
+                index += 1;
             }
         } else if argument == "--input" {
-            index = index + 1;
+            index += 1;
             let previous_len = inputs.len();
             while index < args.len() && !cli_option(args[index]) {
                 inputs.push(args[index]);
-                index = index + 1;
+                index += 1;
             }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
@@ -212,10 +212,10 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             } else {
                 inputs.push(value);
-                index = index + 1;
+                index += 1;
                 while index < args.len() && !cli_option(args[index]) {
                     inputs.push(args[index]);
-                    index = index + 1;
+                    index += 1;
                 }
             }
         } else if argument == "--interface-path" {
@@ -225,7 +225,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 )
             } else {
                 interface_paths.push(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--interface-path")) {
             if option_string_empty(inline_cli_value(argument, "--interface-path")) {
@@ -237,7 +237,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                     Some(value) => interface_paths.push(value),
                     None => (),
                 }
-                index = index + 1;
+                index += 1;
             }
         } else if argument == "--output" {
             if index + 1 >= args.len() || cli_option(args[index + 1]) {
@@ -246,7 +246,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 return Result::Err(repeated_argument_error(command, "--output <OUTPUT>"))
             } else {
                 output = Option::Some(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {
             if option_string_empty(inline_cli_value(argument, "--output")) {
@@ -255,7 +255,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 return Result::Err(repeated_argument_error(command, "--output <OUTPUT>"))
             } else {
                 output = inline_cli_value(argument, "--output");
-                index = index + 1;
+                index += 1;
             }
         } else {
             match similar_cli_argument(command, argument) {
@@ -338,7 +338,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
         let argument = args[index];
         if !positional && argument == "--" {
             positional = true;
-            index = index + 1;
+            index += 1;
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
@@ -366,11 +366,11 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
         } else if positional {
             return Result::Err(unexpected_argument_error(command, argument, false))
         } else if argument == "--input" {
-            index = index + 1;
+            index += 1;
             let previous_len = inputs.len();
             while index < args.len() && !cli_option(args[index]) {
                 inputs.push(args[index]);
-                index = index + 1;
+                index += 1;
             }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
@@ -384,10 +384,10 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             } else {
                 inputs.push(value);
-                index = index + 1;
+                index += 1;
                 while index < args.len() && !cli_option(args[index]) {
                     inputs.push(args[index]);
-                    index = index + 1;
+                    index += 1;
                 }
             }
         } else if argument == "--entry" {
@@ -397,14 +397,14 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                 return Result::Err(repeated_argument_error(command, "--entry <ENTRY>"))
             } else {
                 entry = Option::Some(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--entry")) {
             if option_string_present(entry) {
                 return Result::Err(repeated_argument_error(command, "--entry <ENTRY>"))
             } else {
                 entry = inline_cli_value(argument, "--entry");
-                index = index + 1;
+                index += 1;
             }
         } else if argument == "--output" {
             if index + 1 >= args.len() || cli_option(args[index + 1]) {
@@ -413,7 +413,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                 return Result::Err(repeated_argument_error(command, "--output <OUTPUT>"))
             } else {
                 output = Option::Some(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {
             if option_string_empty(inline_cli_value(argument, "--output")) {
@@ -422,7 +422,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                 return Result::Err(repeated_argument_error(command, "--output <OUTPUT>"))
             } else {
                 output = inline_cli_value(argument, "--output");
-                index = index + 1;
+                index += 1;
             }
         } else {
             match similar_cli_argument(command, argument) {
@@ -477,7 +477,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
         let argument = args[index];
         if !positional && argument == "--" {
             positional = true;
-            index = index + 1;
+            index += 1;
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
@@ -505,11 +505,11 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
         } else if positional {
             return Result::Err(unexpected_argument_error(command, argument, false))
         } else if argument == "--input" {
-            index = index + 1;
+            index += 1;
             let previous_len = inputs.len();
             while index < args.len() && !cli_option(args[index]) {
                 inputs.push(args[index]);
-                index = index + 1;
+                index += 1;
             }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
@@ -523,10 +523,10 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             } else {
                 inputs.push(value);
-                index = index + 1;
+                index += 1;
                 while index < args.len() && !cli_option(args[index]) {
                     inputs.push(args[index]);
-                    index = index + 1;
+                    index += 1;
                 }
             }
         } else if argument == "--package" {
@@ -534,14 +534,14 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 return Result::Err(value_required_error("--package <PACKAGE>", Option::None))
             } else {
                 packages.push(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--package")) {
             match inline_cli_value(argument, "--package") {
                 Some(value) => packages.push(value),
                 None => (),
             }
-            index = index + 1;
+            index += 1;
         } else if argument == "--output" {
             if index + 1 >= args.len() || cli_option(args[index + 1]) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
@@ -549,7 +549,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 return Result::Err(repeated_argument_error(command, "--output <OUTPUT>"))
             } else {
                 output = Option::Some(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {
             if option_string_empty(inline_cli_value(argument, "--output")) {
@@ -558,7 +558,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 return Result::Err(repeated_argument_error(command, "--output <OUTPUT>"))
             } else {
                 output = inline_cli_value(argument, "--output");
-                index = index + 1;
+                index += 1;
             }
         } else if argument == "--manifest" {
             if index + 1 >= args.len() || cli_option(args[index + 1]) {
@@ -567,7 +567,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 return Result::Err(repeated_argument_error(command, "--manifest <MANIFEST>"))
             } else {
                 manifest = Option::Some(args[index + 1]);
-                index = index + 2;
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--manifest")) {
             if option_string_empty(inline_cli_value(argument, "--manifest")) {
@@ -576,7 +576,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 return Result::Err(repeated_argument_error(command, "--manifest <MANIFEST>"))
             } else {
                 manifest = inline_cli_value(argument, "--manifest");
-                index = index + 1;
+                index += 1;
             }
         } else {
             match similar_cli_argument(command, argument) {

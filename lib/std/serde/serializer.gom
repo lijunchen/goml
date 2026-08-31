@@ -71,7 +71,7 @@ pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Resul
             while index < values.len() {
                 serializer.begin_sequence_element(index)?;
                 serialize_value_into(values[index], serializer)?;
-                index = index + 1;
+                index += 1;
             }
             serializer.end_sequence()
         },
@@ -81,7 +81,7 @@ pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Resul
             while index < values.len() {
                 serializer.begin_tuple_element(index)?;
                 serialize_value_into(values[index], serializer)?;
-                index = index + 1;
+                index += 1;
             }
             serializer.end_tuple()
         },
@@ -101,7 +101,7 @@ pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Resul
             while index < fields.len() {
                 serializer.begin_struct_field(index, fields[index].0)?;
                 serialize_value_into(fields[index].1, serializer)?;
-                index = index + 1;
+                index += 1;
             }
             serializer.end_struct()
         },
@@ -111,7 +111,7 @@ pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Resul
             while field < fields.len() {
                 serializer.begin_variant_field(field, fields[field].0)?;
                 serialize_value_into(fields[field].1, serializer)?;
-                field = field + 1;
+                field += 1;
             }
             serializer.end_variant()
         },

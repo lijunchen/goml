@@ -225,16 +225,16 @@ pub fn integer_parse(value: string) -> Result[BigInt, string] {
         let prefix = value.byte_get(start + 1);
         if prefix == b'b' || prefix == b'B' {
             radix = 2.to_u32();
-            start = start + 2;
+            start += 2;
         } else if prefix == b'o' || prefix == b'O' {
             radix = 8.to_u32();
-            start = start + 2;
+            start += 2;
         } else if prefix == b'x' || prefix == b'X' {
             radix = 16.to_u32();
-            start = start + 2;
+            start += 2;
         } else if value.byte_len() > start + 1 {
             radix = 8.to_u32();
-            start = start + 1;
+            start += 1;
         }
     }
     let magnitude = natural_parse_digits(value.byte_slice(start, value.byte_len()), radix)?;

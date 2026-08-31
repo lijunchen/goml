@@ -24,7 +24,7 @@ fn source_by_path(sources: Vec[SourceFile], source_path: string) -> Option[Sourc
         if source.path == source_path {
             return Option::Some(source)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -53,7 +53,7 @@ fn package_definition(value: Analysis, package_name: string) -> Option[Definitio
                 DefinitionResult { source_path: source.path, span: ast::span(0, 0) },
             )
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -72,7 +72,7 @@ fn node_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Ident) {
             result.push(token)
         }
-        index = index + 1;
+        index += 1;
     }
     result
 }
@@ -396,7 +396,7 @@ fn local_name_token(syntax: SyntaxIndex, start: isize, end: isize, name: string)
         if token.end <= end && token.text == name {
             return Option::Some(token)
         } else {
-            index = index + 1;
+            index += 1;
         }
     }
     Option::None

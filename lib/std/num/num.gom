@@ -63,9 +63,8 @@ fn integer_magnitude(
             previous_digit = false;
             index += 1;
         } else {
-            let digit = match integer_digit(current) {
-                Some(digit) => digit,
-                None => return (false, 0, "invalid syntax"),
+            let Some(digit) = integer_digit(current) else {
+                return (false, 0, "invalid syntax");
             };
             if digit >= radix {
                 return (false, 0, "invalid syntax")

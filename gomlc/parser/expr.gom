@@ -533,14 +533,14 @@ fn contextual_block_is_followed_by_block(parser: Parser) -> bool {
         if token_is(token, lexer::TokenKind::Eof) {
             return false;
         } else if token_is(token, lexer::TokenKind::LBrace) {
-            depth = depth + 1;
+            depth += 1;
         } else if token_is(token, lexer::TokenKind::RBrace) {
-            depth = depth - 1;
+            depth -= 1;
             if depth == 0 {
                 return token_is(parser.nth(index + 1), lexer::TokenKind::LBrace);
             }
         }
-        index = index + 1;
+        index += 1;
     }
     false
 }
@@ -630,7 +630,7 @@ fn path_has_type_args(parser: Parser) -> bool {
     let mut index = 1;
     while token_is(parser.nth(index), lexer::TokenKind::ColonColon)
         && token_is(parser.nth(index + 1), lexer::TokenKind::Ident) {
-        index = index + 2;
+        index += 2;
     }
     token_is(parser.nth(index), lexer::TokenKind::ColonColon)
         && token_is(parser.nth(index + 1), lexer::TokenKind::LBracket)

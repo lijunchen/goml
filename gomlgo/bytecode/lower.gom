@@ -684,7 +684,7 @@ fn analyze_function_capture_objects(
                         None => {},
                     }
                 }
-                usage_index = usage_index + 1;
+                usage_index += 1;
             }
         }
         result.push(FunctionCaptures { objects: captures })
@@ -900,9 +900,8 @@ fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -
                 + " was terminated",
         )
     }
-    let value = match syntax::get_node(builder.syntax.arena, node) {
-        Some(value) => value,
-        None => return Result::Err("invalid syntax node " + node.value.to_string()),
+    let Some(value) = syntax::get_node(builder.syntax.arena, node) else {
+        return Result::Err("invalid syntax node " + node.value.to_string());
     };
     let location = CodeLocation { file: value.file, start: value.span.start, end: value.span.end };
     builder.blocks[builder.current.get().value].instructions.push(Instruction { kind, location });
@@ -916,9 +915,8 @@ fn terminate(builder: FunctionBuilder, node: syntax::NodeId, kind: TerminatorKin
     if current_terminated(builder) {
         return Result::Err("basic block already has a terminator")
     }
-    let value = match syntax::get_node(builder.syntax.arena, node) {
-        Some(value) => value,
-        None => return Result::Err("invalid syntax node " + node.value.to_string()),
+    let Some(value) = syntax::get_node(builder.syntax.arena, node) else {
+        return Result::Err("invalid syntax node " + node.value.to_string());
     };
     let location = CodeLocation { file: value.file, start: value.span.start, end: value.span.end };
     builder.blocks[builder.current.get().value].terminator = Option::Some(
@@ -5112,9 +5110,8 @@ fn finalize_blocks(builder: FunctionBuilder, source: syntax::NodeId) -> Result[
         }
     }
     let result: Vec[BasicBlock] = Vec::new();
-    let value = match syntax::get_node(builder.syntax.arena, source) {
-        Some(value) => value,
-        None => return Result::Err("invalid syntax node " + source.value.to_string()),
+    let Some(value) = syntax::get_node(builder.syntax.arena, source) else {
+        return Result::Err("invalid syntax node " + source.value.to_string());
     };
     let fallback_location = CodeLocation {
         file: value.file,

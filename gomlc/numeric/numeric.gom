@@ -74,7 +74,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
                     }
                     while carry > 0 {
                         digits.push(carry % 10);
-                        carry = carry / 10;
+                        carry /= 10;
                     }
                 } else {
                     return Option::None
@@ -154,7 +154,7 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
         if byte >= b'0' && byte <= b'9' {
             coefficient_builder.write_string(value.byte_slice(index, index + 1));
             if decimal_seen {
-                fraction_digits = fraction_digits + 1;
+                fraction_digits += 1;
             }
         } else if byte == b'.' && !decimal_seen {
             decimal_seen = true;
@@ -162,10 +162,7 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
             return Option::None
         }
     }
-    let coefficient = match normalize_integer(coefficient_builder.finish()) {
-        Some(value) => value,
-        None => return Option::None,
-    };
+    let coefficient = normalize_integer(coefficient_builder.finish())?;
     let mut exponent_negative = false;
     let exponent = if exponent_start == value.byte_len() {
         "0"
@@ -175,15 +172,12 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
             let sign = value.byte_get(digits_start);
             if sign == b'-' {
                 exponent_negative = true;
-                digits_start = digits_start + 1;
+                digits_start += 1;
             } else if sign == b'+' {
-                digits_start = digits_start + 1;
+                digits_start += 1;
             }
         }
-        match normalize_integer(value.byte_slice(digits_start, value.byte_len())) {
-            Some(value) => value,
-            None => return Option::None,
-        }
+        normalize_integer(value.byte_slice(digits_start, value.byte_len()))?
     };
     if coefficient == "0" {
         return Option::Some(signed_decimal(negative, coefficient))
@@ -191,8 +185,8 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
     let mut trailing_zeros = 0;
     let mut index = coefficient.byte_len();
     while index > 0 && coefficient.byte_get(index - 1) == b'0' {
-        trailing_zeros = trailing_zeros + 1;
-        index = index - 1;
+        trailing_zeros += 1;
+        index -= 1;
     }
     let result = if exponent_negative {
         if fraction_digits > trailing_zeros {

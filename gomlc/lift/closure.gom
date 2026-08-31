@@ -62,7 +62,7 @@ fn find_scope(values: Vec[ScopeEntry], name: string) -> Option[ScopeEntry] {
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -611,13 +611,8 @@ fn transform_call(
     let args = transform_exprs(state, scope, args, context);
     match func {
         PackClosure { environment, apply, ty: _ } => {
-            let info = match find_closure_by_apply(state, apply) {
-                Some(info) => info,
-                None => return invalid_expr(
-                    state,
-                    ty,
-                    "closure apply metadata is missing for " + apply,
-                ),
+            let Some(info) = find_closure_by_apply(state, apply) else {
+                return invalid_expr(state, ty, "closure apply metadata is missing for " + apply)
             };
             let call_args: Vec[LowerExpr] = Vec::new();
             call_args.push(environment);
@@ -800,7 +795,7 @@ fn collect_captured_block(
     for stmt in value.stmts {
         collect_captured(stmt.value, bound, captured, scope);
         bound.push(stmt.name);
-        added = added + 1;
+        added += 1;
     }
     collect_captured_optional(value.tail, bound, captured, scope);
     for _ in 0..added {

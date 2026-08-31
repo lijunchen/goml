@@ -766,7 +766,7 @@ fn decode_ctir_value(value: wire::ArtifactValue) -> Result[ctir::CtValue, string
             let mut count = 0;
             let result = Ref::new(Option::None);
             for value in text.chars() {
-                count = count + 1;
+                count += 1;
                 result.set(Option::Some(value))
             }
             if count != 1 {

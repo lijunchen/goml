@@ -1392,7 +1392,7 @@ fn check_goroutine_limit(scheduler: Scheduler) -> Result[(), string] {
     let mut active = 0;
     for goroutine in scheduler.goroutines {
         if goroutine.state.get() != 2 {
-            active = active + 1;
+            active += 1;
         }
     }
     if active >= scheduler.state.config.max_goroutines {

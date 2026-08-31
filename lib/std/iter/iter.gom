@@ -36,14 +36,12 @@ where
 {
     FnIterator::from_fn(
         || {
-            loop {
-                match iterator.next() {
-                    Some(value) => if predicate(value) {
-                        return Option::Some(value)
-                    },
-                    None => return Option::None,
+            while let Some(value) = iterator.next() {
+                if predicate(value) {
+                    return Option::Some(value)
                 }
             }
+            Option::None
         },
     )
 }
@@ -54,15 +52,12 @@ where
 {
     FnIterator::from_fn(
         || {
-            loop {
-                match iterator.next() {
-                    Some(value) => match map_fn(value) {
-                        Some(mapped) => return Option::Some(mapped),
-                        None => (),
-                    },
-                    None => return Option::None,
+            while let Some(value) = iterator.next() {
+                if let Some(mapped) = map_fn(value) {
+                    return Option::Some(mapped)
                 }
             }
+            Option::None
         },
     )
 }
@@ -145,15 +140,13 @@ where
     let skipping = Ref::new(true);
     FnIterator::from_fn(
         || {
-            loop {
-                match iterator.next() {
-                    Some(value) => if skipping.get() && predicate(value) {} else {
-                        skipping.set(false);
-                        return Option::Some(value)
-                    },
-                    None => return Option::None,
+            while let Some(value) = iterator.next() {
+                if skipping.get() && predicate(value) {} else {
+                    skipping.set(false);
+                    return Option::Some(value)
                 }
             }
+            Option::None
         },
     )
 }
@@ -254,52 +247,39 @@ where
     I::Item = T,
 {
     let mut accumulator = initial;
-    loop {
-        match iterator.next() {
-            Some(value) => {
-                accumulator = combine(accumulator, value);
-            },
-            None => break,
-        }
+    while let Some(value) = iterator.next() {
+        accumulator = combine(accumulator, value);
     }
     accumulator
 }
 
 pub fn collect[T, I: Iterator](iterator: I) -> Vec[T] where I::Item = T {
     let values = Vec::new();
-    loop {
-        match iterator.next() {
-            Some(value) => values.push(value),
-            None => break,
-        }
+    while let Some(value) = iterator.next() {
+        values.push(value)
     }
     values
 }
 
 pub fn find[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[T] where I::Item = T {
-    loop {
-        match iterator.next() {
-            Some(value) => if predicate(value) {
-                return Option::Some(value)
-            },
-            None => return Option::None,
+    while let Some(value) = iterator.next() {
+        if predicate(value) {
+            return Option::Some(value)
         }
     }
+    Option::None
 }
 
 pub fn find_map[A, B, I: Iterator](iterator: I, map_fn: (A) -> Option[B]) -> Option[B]
 where
     I::Item = A,
 {
-    loop {
-        match iterator.next() {
-            Some(value) => match map_fn(value) {
-                Some(mapped) => return Option::Some(mapped),
-                None => (),
-            },
-            None => return Option::None,
+    while let Some(value) = iterator.next() {
+        if let Some(mapped) = map_fn(value) {
+            return Option::Some(mapped)
         }
     }
+    Option::None
 }
 
 pub fn any[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I::Item = T {
@@ -312,13 +292,8 @@ pub fn all[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I:
 
 pub fn count[I: Iterator](iterator: I) -> isize {
     let mut result = 0;
-    loop {
-        match iterator.next() {
-            Some(_) => {
-                result += 1;
-            },
-            None => break,
-        }
+    while let Some(_) = iterator.next() {
+        result += 1;
     }
     result
 }
@@ -328,16 +303,14 @@ where
     I::Item = T,
 {
     let mut index = 0;
-    loop {
-        match iterator.next() {
-            Some(value) => if predicate(value) {
-                return Option::Some(index)
-            } else {
-                index += 1;
-            },
-            None => return Option::None,
+    while let Some(value) = iterator.next() {
+        if predicate(value) {
+            return Option::Some(index)
+        } else {
+            index += 1;
         }
     }
+    Option::None
 }
 
 pub fn nth[I: Iterator](iterator: I, index: isize) -> Option[I::Item] {
@@ -345,44 +318,34 @@ pub fn nth[I: Iterator](iterator: I, index: isize) -> Option[I::Item] {
         Option::None
     } else {
         let mut current = 0;
-        loop {
-            match iterator.next() {
-                Some(value) => if current == index {
-                    return Option::Some(value)
-                } else {
-                    current += 1;
-                },
-                None => return Option::None,
+        while let Some(value) = iterator.next() {
+            if current == index {
+                return Option::Some(value)
+            } else {
+                current += 1;
             }
         }
+        Option::None
     }
 }
 
 pub fn last[I: Iterator](iterator: I) -> Option[I::Item] {
     let mut result = Option::None;
-    loop {
-        match iterator.next() {
-            Some(value) => {
-                result = Option::Some(value);
-            },
-            None => break,
-        }
+    while let Some(value) = iterator.next() {
+        result = Option::Some(value);
     }
     result
 }
 
 pub fn for_each[T, I: Iterator](iterator: I, action: (T) -> ()) -> () where I::Item = T {
-    loop {
-        match iterator.next() {
-            Some(value) => action(value),
-            None => break,
-        }
+    while let Some(value) = iterator.next() {
+        action(value)
     }
 }
 
 pub fn reduce[T, I: Iterator](iterator: I, combine: (T, T) -> T) -> Option[T] where I::Item = T {
-    match iterator.next() {
-        Some(first) => Option::Some(fold(iterator, first, combine)),
-        None => Option::None,
-    }
+    let Some(first) = iterator.next() else {
+        return Option::None;
+    };
+    Option::Some(fold(iterator, first, combine))
 }

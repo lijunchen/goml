@@ -156,7 +156,7 @@ fn source_for_path(analysis: query::Analysis, source_path: string) -> Option[str
         if source.path == source_path {
             return Option::Some(source.source)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     match fs::read_file_structured(source_path) {
@@ -342,7 +342,7 @@ fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, st
         while position > 0
             && (document.text.byte_get(position - 1) == b' '
                 || document.text.byte_get(position - 1) == b'\t') {
-            position = position - 1;
+            position -= 1;
         }
         let fields: Vec[(string, json::Value)] = Vec::new();
         push_json_field(

@@ -102,7 +102,7 @@ pub fn concat(values: Vec[Doc]) -> Doc {
     let mut result = nil();
     let mut index = values.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         result = append(values.get(index), result);
     }
     result
@@ -115,7 +115,7 @@ pub fn join(separator: Doc, values: Vec[Doc]) -> Doc {
     let mut index = values.len() - 1;
     let mut result = values.get(index);
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         result = append(values.get(index), append(separator, result));
     }
     result
@@ -128,7 +128,7 @@ pub fn folddoc(combine: (Doc, Doc) -> Doc, values: Vec[Doc]) -> Doc {
     let mut index = values.len() - 1;
     let mut result = values.get(index);
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         result = combine(values.get(index), result);
     }
     result
@@ -386,11 +386,11 @@ fn fits(initial: isize, initial_tasks: Tasks) -> bool {
                         );
                     },
                     Text(_, width) => {
-                        available = available - width;
+                        available -= width;
                         tasks = rest;
                     },
                     Line => if flat {
-                        available = available - 1;
+                        available -= 1;
                         tasks = rest;
                     } else {
                         return true
@@ -476,12 +476,12 @@ pub fn pretty(width: isize, value: Doc) -> string {
                     },
                     Text(content, content_width) => {
                         output.write_string(content);
-                        column = column + content_width;
+                        column += content_width;
                         tasks = rest;
                     },
                     Line => if flat {
                         output.write_char(' ');
-                        column = column + 1;
+                        column += 1;
                         tasks = rest;
                     } else {
                         write_line(output, indentation);

@@ -91,7 +91,7 @@ fn schema_field_index(fields: Vec[(string, Schema)], key: FieldKey) -> isize {
                 if fields[index].0 == name {
                     return index
                 }
-                index = index + 1;
+                index += 1;
             };
             -1
         },
@@ -106,7 +106,7 @@ fn schema_variant_index(variants: Vec[VariantSchema], key: VariantKey) -> isize 
                 if variants[index].index == expected {
                     return index
                 }
-                index = index + 1;
+                index += 1;
             };
             -1
         },
@@ -116,7 +116,7 @@ fn schema_variant_index(variants: Vec[VariantSchema], key: VariantKey) -> isize 
                 if variants[index].name == expected {
                     return index
                 }
-                index = index + 1;
+                index += 1;
             };
             -1
         },
@@ -182,7 +182,7 @@ fn deserialize_tuple_schema[D: Deserializer](deserializer: D, schemas: Vec[Schem
     while index < schemas.len() {
         deserializer.begin_tuple_element(index)?;
         values.push(deserialize_schema_from(deserializer, schemas[index])?);
-        index = index + 1;
+        index += 1;
     }
     deserializer.end_tuple()?;
     Result::Ok(Value::Tuple(values))

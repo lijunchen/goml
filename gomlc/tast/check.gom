@@ -102,7 +102,7 @@ fn increment_decimal(value: string) -> string {
         let byte = digits.get(index);
         if byte == b'9' {
             digits[index] = 48.to_u8();
-            index = index - 1;
+            index -= 1;
         } else {
             digits[index] = byte + 1;
             break
@@ -140,10 +140,10 @@ fn trim_fractional_zeros(value: string) -> string {
     } else {
         let mut end = value.byte_len();
         while end > 0 && value.byte_get(end - 1) == b'0' {
-            end = end - 1;
+            end -= 1;
         }
         if end > 0 && value.byte_get(end - 1) == b'.' {
-            end = end - 1;
+            end -= 1;
         }
         value.byte_slice(0, end)
     }
@@ -187,7 +187,7 @@ fn float_decimal(value: string) -> Option[FloatDecimal] {
     let digits = builder.finish();
     let mut first = 0;
     while first < digits.byte_len() && digits.byte_get(first) == b'0' {
-        first = first + 1;
+        first += 1;
     }
     if first == digits.byte_len() {
         Option::None
@@ -335,7 +335,7 @@ fn integer_magnitude(value: string) -> string {
         0
     };
     while start + 1 < value.byte_len() && value.byte_get(start) == b'0' {
-        start = start + 1;
+        start += 1;
     }
     value.byte_slice(start, value.byte_len())
 }
@@ -3216,7 +3216,7 @@ fn tast_pattern_binding_count(value: Pat) -> isize {
             match rest {
                 Some(value) => match value.binding {
                     Some(_) => {
-                        count = count + 1;
+                        count += 1;
                     },
                     None => (),
                 },
@@ -4458,7 +4458,7 @@ fn loop_target(ctx: Checker, label: Option[string]) -> Option[isize] {
             let mut target = 0;
             let mut index = ctx.loop_results.len();
             while index > 0 {
-                index = index - 1;
+                index -= 1;
                 match ctx.loop_results[index].label {
                     Some(value) => {
                         if value == expected {
@@ -4467,7 +4467,7 @@ fn loop_target(ctx: Checker, label: Option[string]) -> Option[isize] {
                     },
                     None => (),
                 }
-                target = target + 1;
+                target += 1;
             }
             push_diagnostic(ctx, "Unknown loop label '" + expected + "'");
             Option::None

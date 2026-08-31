@@ -296,7 +296,7 @@ fn dce_block_with_live(value: Block) -> DceBlockResult {
     let result: Vec[Bind] = Vec::with_capacity(value.binds.len());
     let mut index = value.binds.len();
     while index > 0 {
-        index = index - 1;
+        index -= 1;
         match value.binds[index] {
             Let(value) => if dce_names_contains(live.values, value.name) {
                 dce_names_remove(live.values, value.name);

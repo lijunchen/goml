@@ -77,7 +77,7 @@ fn find_type_instance_by_name(ctx: TypeCtx, name: string) -> Option[PendingTypeI
         if instance.name == name {
             return Option::Some(instance)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -108,7 +108,7 @@ fn unique_type_name(ctx: TypeCtx, base: string) -> string {
         let mut index = 1;
         let mut candidate = base + "__mono1";
         while type_name_is_used(ctx, candidate) {
-            index = index + 1;
+            index += 1;
             candidate = base + "__mono" + index.to_string();
         }
         let _ = ctx.used_names.insert(candidate);
@@ -249,7 +249,7 @@ fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[core::EnumDef] {
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -262,7 +262,7 @@ fn find_generic_struct(ctx: TypeCtx, name: string) -> Option[core::StructDef] {
         if value.name == name {
             return Option::Some(value)
         } else {
-            index = index - 1;
+            index -= 1;
         }
     }
     Option::None
@@ -1374,7 +1374,7 @@ fn materialize_definitions(ctx: TypeCtx) -> (Vec[EnumDef], Vec[StructDef]) {
                 None => (),
             },
         }
-        index = index + 1;
+        index += 1;
     };
     (enums, structs)
 }
