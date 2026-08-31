@@ -459,6 +459,15 @@ fn simplifies_known_constructor_matches_and_projections() -> () {
 }
 
 #[test]
+fn scalar_replaces_local_enum_constructors() -> () {
+    let source = "enum Local { None, Some(i32), } fn value() -> i32 { let local = Local::Some(41); match local { Local::None => 0, Local::Some(value) => value + 1, } }";
+    let output = encode(scalar_replace(lower_source(source)));
+    testing::assert(!output.contains("Local::Some"));
+    testing::assert(!output.contains("match local"));
+    testing::assert(output.contains(" + 1)"))
+}
+
+#[test]
 fn lowers_while_loops_through_recursive_joins() -> () {
     let source = "fn main() { let i = Ref::new(0); while i.get() < 10 { if i.get() == 5 { break } else { () }; let _ = println(i.get()); i.set(i.get() + 1); }; let _ = println(\"done\"); }";
     testing::assert_eq(

@@ -15,6 +15,10 @@ use std::collections;
 use std::text;
 use std::testing;
 
+fn test_variant_infos() -> VariantInfos {
+    VariantInfos { by_owner: HashMap::new(), owners: HashMap::new() }
+}
+
 fn test_builtins(counter: Ref[isize]) -> core::File {
     match core::lower_builtins(counter) {
         Ok(value) => value,
@@ -639,6 +643,7 @@ fn emits_complete_hashmap_and_ref_runtime_helpers() -> () {
                 Vec::new(),
                 Vec::new(),
                 new_function_names(),
+                test_variant_infos(),
                 true,
             ),
         },
@@ -987,6 +992,7 @@ fn indexes_builtin_hashmap_keys_directly() -> () {
                 Vec::new(),
                 Vec::new(),
                 new_function_names(),
+                test_variant_infos(),
                 true,
             ),
         },
@@ -1018,12 +1024,13 @@ fn dispatches_dyn_hashmap_keys_through_vtables() -> () {
 fn emits_generic_enum_instances_and_type_switches() -> () {
     let source = "enum Weird[T] { Next(Ref[Weird[(i32) -> i32]]), Done(T), } fn main() -> () { let x: Weird[i32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(output, "type Weird__i32 struct {\n    _tag int32"));
-    testing::assert(string_contains(output, "_v0_0 *ref_"));
-    testing::assert(string_contains(output, "_v1_0 int32"));
+    testing::assert(string_contains(output, "type Weird__i32 struct {"));
+    testing::assert(string_contains(output, "_p0 *ref_"));
+    testing::assert(string_contains(output, "_p1 int32"));
+    testing::assert(string_contains(output, "_tag uint8"));
     testing::assert(!string_contains(output, "type Weird__i32 interface"));
-    testing::assert(string_contains(output, "type _goml_m_Weird_____o_i32_q__m__z_i32 interface"));
-    testing::assert(string_contains(output, "_0 func(int32) int32"))
+    testing::assert(string_contains(output, "type _goml_m_Weird_____o_i32_q__m__z_i32 struct"));
+    testing::assert(string_contains(output, "_p1 func(int32) int32"))
 }
 
 #[test]
@@ -1079,8 +1086,9 @@ fn emits_non_repeating_joinrec_as_straight_line_control_flow() -> () {
 fn emits_closures_inside_enum_payloads() -> () {
     let source = "enum MaybeFn { Some((i32) -> i32), None, } fn next(flag: bool) -> MaybeFn { if flag { MaybeFn::Some(|x| x + 1) } else { MaybeFn::None } } fn main() -> () { match next(true) { MaybeFn::Some(f) => println(f(41).to_string()), MaybeFn::None => println(\"none\"), } }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(output, "type MaybeFn interface"));
-    testing::assert(string_contains(output, "_0 func(int32) int32"));
+    testing::assert(string_contains(output, "type MaybeFn struct"));
+    testing::assert(string_contains(output, "_p0 func(int32) int32"));
+    testing::assert(string_contains(output, "_tag uint8"));
     testing::assert(string_contains(output, "var commute_field24 func(int32) int32"));
     testing::assert(
         string_contains(
@@ -1202,7 +1210,7 @@ fn emits_structs_before_generic_enums() -> () {
         "type closure_env_build_0 struct",
         "type _goml_m_Option_____o__q__m__z_i32 struct",
     );
-    testing::assert(string_contains(output, "type Option__i32 struct"));
+    testing::assert(string_contains(output, "type Option__i32 uint64"));
     testing::assert(!string_contains(output, "type Option__i32 interface"));
     testing::assert(string_contains(output, "var inline19 func() int32 = func() int32"))
 }
@@ -1214,7 +1222,7 @@ fn preserves_enums_before_field_instances() -> () {
             "enum Expr { Num(i32), Add(Option[Expr]), } fn main() -> () { let value: Option[Expr] = Option::None; match value { Option::Some(_) => (), Option::None => (), }; }",
         ),
     );
-    let prefix = "package main\n\ntype Expr interface {\n    isExpr()\n}";
+    let prefix = "package main\n\ntype Expr struct {\n    _node *Expr_node\n}";
     testing::assert_eq(output.byte_slice(0, prefix.byte_len()), prefix);
     testing::assert(string_contains(output, "type Option__Expr struct"));
     testing::assert(!string_contains(output, "type Option__Expr interface"))
@@ -1308,17 +1316,9 @@ fn protects_entry_wrapper_from_user_main0() -> () {
 fn emits_while_conditions_with_try_matches() -> () {
     let source = "fn step(i: i32) -> Option[bool] { match i { 0 => Option::Some(true), 1 => Option::Some(true), 2 => Option::Some(false), _ => Option::None, } } fn main() -> Option[()] { let i = Ref::new(0); while match step(i.get())? { true => { i.set(i.get() + 1); true }, false => false, } { () }; Option::Some(()) }";
     let output = encode(lower_source(source));
-    testing::assert(
-        string_contains(output, "type Option__bool struct {\n    _tag int32\n    _v1_0 bool\n}"),
-    );
-    testing::assert(
-        string_contains(
-            output,
-            "type _goml_m_Option_____o__q_ struct {\n    _tag int32\n    _v1_0 struct{}\n}",
-        ),
-    );
-    testing::assert(string_contains(output, "switch mtmp1._tag {"));
-    testing::assert(string_contains(output, "var x2 bool = mtmp1._v1_0"));
+    testing::assert(string_contains(output, "type Option__bool uint8"));
+    testing::assert(string_contains(output, "type _goml_m_Option_____o__q_ uint8"));
+    testing::assert(string_contains(output, " != Option__bool(0)"));
     testing::assert(string_contains(output, "break Loop_loop16"))
 }
 
@@ -1381,21 +1381,18 @@ fn uses_synthetic_hashmap_options_when_unmaterialized() -> () {
 fn uses_linked_hashmap_option_variants() -> () {
     let source = "fn main() -> () { let map: HashMap[i32, i32] = HashMap::new(); map.set(1, 2); match map.get(1) { Option::Some(value) => println(value), Option::None => println(0), } }";
     let output = encode(lower_linked_source(source));
-    testing::assert(string_contains(output, "type Option__i32 struct"));
-    testing::assert(string_contains(output, "_tag: 1"));
-    testing::assert(string_contains(output, "_v1_0: value"));
-    testing::assert(string_contains(output, "_tag: 0"))
+    testing::assert(string_contains(output, "type Option__i32 uint64"));
+    testing::assert(string_contains(output, "uint64(uint32(value)) + 1"));
+    testing::assert(string_contains(output, "Option__i32(0)"))
 }
 
 #[test]
 fn reuses_materialized_hashmap_option_types() -> () {
     let source = "struct HashmapI32I32X { value: i32, } fn main() -> () { let c = HashmapI32I32X { value: 4 }; let m: HashMap[i32, i32] = HashMap::new(); m.set(1, 5); match m.get(1) { Option::Some(v) => println(c.value + v), Option::None => println(0), } }";
     let output = encode(lower_source(source));
-    testing::assert(
-        string_contains(output, "type Option__i32 struct {\n    _tag int32\n    _v1_0 int32\n}"),
-    );
-    testing::assert(string_contains(output, "switch mtmp1._tag {"));
-    testing::assert(string_contains(output, "var x2 int32 = mtmp1._v1_0"));
+    testing::assert(string_contains(output, "type Option__i32 uint64"));
+    testing::assert(string_contains(output, " != Option__i32(0)"));
+    testing::assert(string_contains(output, "int32(uint64("));
     testing::assert(!string_contains(output, "type Option__i32 interface"))
 }
 
@@ -1405,7 +1402,7 @@ fn reuses_wide_compact_hashmap_option_types() -> () {
     let output = encode(lower_linked_source(source));
     testing::assert(string_contains(output, "type Option__Payload struct"));
     testing::assert(string_contains(output, "func hashmap_get__HashMap_6string_7Payload("));
-    testing::assert(string_contains(output, "_v1_0: value"));
+    testing::assert(string_contains(output, "_p0: value"));
     testing::assert(!string_contains(output, "Option__Payload_Some"))
 }
 
@@ -1423,8 +1420,69 @@ fn lowers_tag_only_enums_as_constants() -> () {
     let source = "enum E { Tuple2_int32_int32, } fn main() -> () { let t = (10, 13); let tag = E::Tuple2_int32_int32; match tag { E::Tuple2_int32_int32 => println(t.0 + t.1), }; }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "package main\n\ntype Tuple2_3int_3int struct {\n    _0 int\n    _1 int\n}\n\ntype E int32\n\nconst (\n    _goml_user_Tuple2_int32_int32 E = 0\n)\n\nfunc main0() struct{} {\n    var tag__1 E = _goml_user_Tuple2_int32_int32\n    switch tag__1 {\n    case _goml_user_Tuple2_int32_int32:\n        var t3 int = 10\n        var t4 int = 13\n        var t5 int = t3 + t4\n        _goml_m_println(t5)\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+        "package main\n\ntype Tuple2_3int_3int struct {\n    _0 int\n    _1 int\n}\n\ntype E struct{}\n\nfunc main0() struct{} {\n    var tag__1 E = E{}\n    switch tag__1 {\n    case E{}:\n        var t3 int = 10\n        var t4 int = 13\n        var t5 int = t3 + t4\n        _goml_m_println(t5)\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
+}
+
+#[test]
+fn shares_enum_payload_slots_and_uses_narrow_tags() -> () {
+    let source = "enum Choice { First(u8), Second(u8), Wide(u16), Empty, } fn read(value: Choice) -> isize { match value { Choice::First(value) => value.to_isize(), Choice::Second(value) => value.to_isize(), Choice::Wide(value) => value.to_isize(), Choice::Empty => 0, } } fn main() -> () { println(read(Choice::Second(3))) }";
+    let output = encode(lower_source(source));
+    testing::assert(
+        string_contains(
+            output,
+            "type Choice struct {\n    _p1 uint16\n    _p0 uint8\n    _tag uint8\n}",
+        ),
+    );
+    testing::assert(!string_contains(output, "_v0_0"));
+    testing::assert(!string_contains(output, "_v1_0"))
+}
+
+#[test]
+fn erases_zero_sized_enum_payloads() -> () {
+    let source = "struct Marker {} enum Choice { MarkerValue(Marker), UnitValue(()), } fn main() -> () { let value = Choice::MarkerValue(Marker {}); match value { Choice::MarkerValue(_) => println(1), Choice::UnitValue(_) => println(2), } }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type Choice uint8"));
+    testing::assert(!string_contains(output, "type Choice struct"));
+    testing::assert(!string_contains(output, "_p0 Marker"))
+}
+
+#[test]
+fn uses_pointer_niches_for_optional_pointer_payloads() -> () {
+    let source = "enum MaybeVec { None, Some(Vec[i32]), } fn size(value: MaybeVec) -> isize { match value { MaybeVec::None => 0, MaybeVec::Some(items) => items.len(), } } fn main() -> () { let items: Vec[i32] = Vec::new(); println(size(MaybeVec::Some(items))) }";
+    let output = encode(lower_source(source));
+    testing::assert(
+        string_contains(output, "type MaybeVec struct {\n    _value *_goml_vec_int32\n}"),
+    );
+    testing::assert(!string_contains(output, "type MaybeVec interface"));
+    testing::assert(!string_contains(output, "_tag uint8"))
+}
+
+#[test]
+fn packs_optional_small_scalars() -> () {
+    let source = "enum MaybeByte { None, Some(u8), } fn read(value: MaybeByte) -> u8 { match value { MaybeByte::None => 0, MaybeByte::Some(value) => value, } } fn main() -> () { println(read(MaybeByte::Some(255))) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type MaybeByte uint16"));
+    testing::assert(!string_contains(output, "type MaybeByte struct"))
+}
+
+#[test]
+fn plans_nested_enums_before_their_owners() -> () {
+    let source = "enum Outer { None, Some(Inner), } enum Inner { Left(u8), Right(u8), } fn main() -> () { let value = Outer::Some(Inner::Right(9)); match value { Outer::None => println(0), Outer::Some(Inner::Left(x)) => println(x), Outer::Some(Inner::Right(x)) => println(x), } }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type Inner struct"));
+    testing::assert(string_contains(output, "type Outer struct"));
+    testing::assert(!string_contains(output, "type Outer interface"))
+}
+
+#[test]
+fn stores_recursive_enums_behind_node_pointers() -> () {
+    let source = "enum List { Nil, Cons(i32, List), } fn sum(value: List) -> i32 { match value { List::Nil => 0, List::Cons(head, tail) => head + sum(tail), } } fn main() -> () { println(sum(List::Cons(1, List::Nil))) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type List struct {\n    _node *List_node\n}"));
+    testing::assert(string_contains(output, "type List_node struct"));
+    testing::assert(string_contains(output, "func _goml_enum_tag_List(value List) uint8"));
+    testing::assert(!string_contains(output, "type List interface"))
 }
 
 #[test]
@@ -1442,17 +1500,16 @@ fn disambiguates_enum_variants_from_user_types() -> () {
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "type E__i32_A struct"));
     testing::assert(string_contains(output, "type E__string interface"));
-    testing::assert(string_contains(output, "type E__i32 interface"));
-    testing::assert(string_contains(output, "type E__i32_A__variant1 struct"))
+    testing::assert(string_contains(output, "type E__i32 struct"));
+    testing::assert(!string_contains(output, "type E__i32 interface"));
+    testing::assert(!string_contains(output, "type E__i32_A__variant1 struct"))
 }
 
 #[test]
 fn emits_compact_generic_enums_without_variant_types() -> () {
     let source = "enum Option[T] { Some(T), None, } fn main() -> () { let x: Option[u8] = Option::Some(42); match x { Option::Some(v) => println(v.to_string()), Option::None => println(\"none\"), }; }";
     let output = encode(lower_source(source));
-    testing::assert(
-        string_contains(output, "type Option__u8 struct {\n    _tag int32\n    _v0_0 uint8\n}"),
-    );
+    testing::assert(string_contains(output, "type Option__u8 uint16"));
     testing::assert(!string_contains(output, "type Option__u8 interface"));
     testing::assert(!string_contains(output, "type Some struct"));
     testing::assert(!string_contains(output, "type None struct"))
@@ -1466,14 +1523,11 @@ fn emits_compact_builtin_sums_around_interface_payloads() -> () {
     testing::assert(
         string_contains(
             output,
-            "type Result__Payload__string struct {\n    _tag int32\n    _v0_0 Payload\n    _v1_0 string\n}",
+            "type Result__Payload__string struct {\n    _p0 Payload\n    _p1 string\n    _tag uint8\n}",
         ),
     );
     testing::assert(
-        string_contains(
-            output,
-            "type Option__Payload struct {\n    _tag int32\n    _v1_0 Payload\n}",
-        ),
+        string_contains(output, "type Option__Payload struct {\n    _p0 Payload\n    _tag uint8\n}"),
     );
     testing::assert(!string_contains(output, "type Result__Payload__string interface"));
     testing::assert(!string_contains(output, "type Option__Payload interface"))
@@ -1567,7 +1621,7 @@ fn protects_index_intrinsics_from_user_functions() -> () {
     testing::assert(string_contains(output, "var inline115 int32 = 90 + inline114"));
     testing::assert(string_contains(output, "var inline105 int32 = 70 + inline104"));
     testing::assert(string_contains(output, "t75 = 120"));
-    testing::assert(string_contains(output, "_v1_0: 55"));
+    testing::assert(string_contains(output, "uint64(uint32(55)) + 1"));
     testing::assert(string_contains(output, "array_get__Array_2_5int32(a__17, 1)"));
     testing::assert(string_contains(output, "s__22[1]"));
     testing::assert(string_contains(output, "_goml_runtime_core_string_get("));
@@ -1581,7 +1635,7 @@ fn protects_index_intrinsics_from_user_functions() -> () {
 fn emits_unused_non_generic_enums() -> () {
     testing::assert_eq(
         encode(lower_source("enum Status { Idle, Busy(i32), }")),
-        "package main\n\ntype Status struct {\n    _tag int32\n    _v1_0 int32\n}\n\nfunc main() {\n    main0()\n}\n",
+        "package main\n\ntype Status uint64\n\nfunc main() {\n    main0()\n}\n",
     )
 }
 
@@ -1611,14 +1665,11 @@ fn hoists_continuations_through_nested_matches() -> () {
     let source = "enum T { A, B(bool, bool), } fn test(t: T) -> () { match t { A => println((1).to_string()), B(false, false) => println((2).to_string()), B(false, true) => println((3).to_string()), _ => println((4).to_string()), } } fn main() { let _ = test(B(true, true)); let _ = test(B(false, true)); let _ = test(B(false, false)); let _ = test(A); () }";
     let output = encode(lower_source(source));
     testing::assert(
-        string_contains(
-            output,
-            "type T struct {\n    _tag int32\n    _v1_0 bool\n    _v1_1 bool\n}",
-        ),
+        string_contains(output, "type T struct {\n    _p0 bool\n    _p1 bool\n    _tag uint8\n}"),
     );
     testing::assert(string_contains(output, "switch t__0._tag {"));
-    testing::assert(string_contains(output, "var x0 bool = t__0._v1_0"));
-    testing::assert(string_contains(output, "var x1 bool = t__0._v1_1"));
+    testing::assert(string_contains(output, "var x0 bool = t__0._p0"));
+    testing::assert(string_contains(output, "var x1 bool = t__0._p1"));
     testing::assert(string_contains(output, "var t22 T = T{"))
 }
 
@@ -1626,9 +1677,7 @@ fn hoists_continuations_through_nested_matches() -> () {
 fn keeps_mixed_match_continuations_in_branches() -> () {
     let source = "enum Choice { Early, Keep(i32), } fn choose(choice: Choice) -> i32 { let value = match choice { Choice::Early => return 1, Choice::Keep(value) => value, }; value + 1 } fn main() -> () { println(choose(Choice::Keep(2))); }";
     let output = encode(lower_source(source));
-    testing::assert(
-        string_contains(output, "type Choice struct {\n    _tag int32\n    _v1_0 int32\n}"),
-    );
+    testing::assert(string_contains(output, "type Choice uint64"));
     testing::assert(string_contains(output, "var inline15 int32 = 2"));
     testing::assert(string_contains(output, "var inline14 int32 = inline12 + 1"));
     testing::assert(string_contains(output, "_goml_m_println(t9)"))
