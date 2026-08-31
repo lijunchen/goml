@@ -3905,9 +3905,6 @@ fn inherent#std::task::Task#std::task::Task[T]#join[T](self/0: std::task::Task[T
       {
         let mtmp1 = inherent#Ref#Ref[Option[T]]#get(std::task::Task.result(self/0)) in
         match mtmp1 {
-          Option::None => {
-            ()
-          },
           Option::Some(x0) => {
             {
               let x0 = Option::Some._0(mtmp1) in
@@ -3919,6 +3916,7 @@ fn inherent#std::task::Task#std::task::Task[T]#join[T](self/0: std::task::Task[T
               }
             }
           },
+          _ => (),
         }
       }
     }
@@ -4122,50 +4120,41 @@ fn std::task::record_concurrent_result(
   received/0: Option[(isize, Result[(), E])]
 ) -> () {
   match received/0 {
-    Option::None => {
-      ()
-    },
     Option::Some(x0) => {
       {
         let x0 = Option::Some._0(received/0) in
         {
           let item/0 = x0 in
           {
-            let mtmp0 = item/0.1 in
-            match mtmp0 {
-              Result::Ok(x1) => {
-                {
-                  let x1 = Result::Ok._0(mtmp0) in
-                  match x1 {
-                    () => {
-                      ()
-                    },
-                  }
-                }
-              },
-              Result::Err(x2) => {
-                {
-                  let x2 = Result::Err._0(mtmp0) in
+            {
+              let mtmp0 = item/0.1 in
+              match mtmp0 {
+                Result::Err(x1) => {
                   {
-                    let error/0 = x2 in
+                    let x1 = Result::Err._0(mtmp0) in
                     {
-                      let _wild0 =
-                        {
-                          let place_root0 = ordered/0 in
-                          let index0 = item/0.0 in
-                          let place0 = @intrinsic(vec.get)(place_root0, index0) in
-                          let value0 = Option::Some(error/0) in
-                          @intrinsic(vec.set)(place_root0, index0, value0)
-                        } in
+                      let error/0 = x1 in
+                      {
+                        let _wild0 =
+                          {
+                            let place_root0 = ordered/0 in
+                            let index0 = item/0.0 in
+                            let place0 = @intrinsic(vec.get)(place_root0, index0) in
+                            let value0 = Option::Some(error/0) in
+                            @intrinsic(vec.set)(place_root0, index0, value0)
+                          } in
+                      }
                     }
                   }
-                }
-              },
+                },
+                _ => (),
+              }
             }
           }
         }
       }
     },
+    _ => (),
   }
 }
 
@@ -4312,21 +4301,21 @@ fn std::task::for_each_concurrent(
                     {
                       let mtmp1 = @intrinsic(vec.get)(ordered/0, index/0) in
                       match mtmp1 {
-                        Option::None => {
-                          ()
-                        },
                         Option::Some(x0) => {
                           {
                             let x0 = Option::Some._0(mtmp1) in
                             {
                               let error/0 = x0 in
-                              inherent#Vec#Vec[std::task::IndexedError[E]]#push(
-                                errors/0,
-                                std::task::IndexedError { index: index/0, error: error/0 }
-                              )
+                              {
+                                inherent#Vec#Vec[std::task::IndexedError[E]]#push(
+                                  errors/0,
+                                  std::task::IndexedError { index: index/0, error: error/0 }
+                                )
+                              }
                             }
                           }
                         },
+                        _ => (),
                       }
                     }
                   }

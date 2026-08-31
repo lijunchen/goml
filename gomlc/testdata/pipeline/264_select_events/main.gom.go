@@ -888,14 +888,12 @@ func _goml_m_inherent_i_std_p_task__h53c24a9f0a217bb05f370161a3b86100_oin____T__
         var inline0 Option__isize = ref_get__Ref_13Option__isize(t1)
         mtmp1 = inline0
         switch mtmp1._tag {
-        case 0:
-            continue
         case 1:
             var x0 int = mtmp1._v1_0
             jp0 = x0
             break Loop_loop_expr0
         default:
-            panic("non-exhaustive match")
+            continue
         }
     }
     return jp0

@@ -755,42 +755,44 @@ fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#length(
 fn trait_impl#ToString#std::bytes::BoundsError#to_string(
   self/0: std::bytes::BoundsError
 ) -> string {
-  let t0 = std::bytes::BoundsError.offset_value(self/0) in
-  join inline_cont0(t1: string) -> string {
-    let t2 = ("byte range at offset " + t1) in
-    let t3 = (t2 + " needs ") in
-    let t4 = std::bytes::BoundsError.needed_value(self/0) in
-    join inline_cont1(t5: string) -> string {
-      let t6 = (t3 + t5) in
-      let t7 = (t6 + " bytes in buffer of length ") in
-      let t8 = std::bytes::BoundsError.length_value(self/0) in
-      join inline_cont2(t9: string) -> string {
-        let t10 = (t7 + t9) in
-        t10
+  let t0 = ("" + "byte range at offset ") in
+  let t1 = std::bytes::BoundsError.offset_value(self/0) in
+  join inline_cont0(t2: string) -> string {
+    let t3 = (t0 + t2) in
+    let t4 = (t3 + " needs ") in
+    let t5 = std::bytes::BoundsError.needed_value(self/0) in
+    join inline_cont1(t6: string) -> string {
+      let t7 = (t4 + t6) in
+      let t8 = (t7 + " bytes in buffer of length ") in
+      let t9 = std::bytes::BoundsError.length_value(self/0) in
+      join inline_cont2(t10: string) -> string {
+        let t11 = (t8 + t10) in
+        t11
       } in
-      let inline0 = __goml_builtin_int_to_string(t8) in
+      let inline0 = __goml_builtin_int_to_string(t9) in
       jump inline_cont2(inline0)
     } in
-    let inline1 = __goml_builtin_int_to_string(t4) in
+    let inline1 = __goml_builtin_int_to_string(t5) in
     jump inline_cont1(inline1)
   } in
-  let inline2 = __goml_builtin_int_to_string(t0) in
+  let inline2 = __goml_builtin_int_to_string(t1) in
   jump inline_cont0(inline2)
 }
 
 fn trait_impl#Debug#std::bytes::BoundsError#debug(self/0: std::bytes::BoundsError) -> string {
-  let inline0 = std::bytes::BoundsError.offset_value(self/0) in
-  let inline1 = inherent#isize#isize#to_string(inline0) in
-  let inline2 = ("byte range at offset " + inline1) in
-  let inline3 = (inline2 + " needs ") in
-  let inline4 = std::bytes::BoundsError.needed_value(self/0) in
-  let inline5 = inherent#isize#isize#to_string(inline4) in
-  let inline6 = (inline3 + inline5) in
-  let inline7 = (inline6 + " bytes in buffer of length ") in
-  let inline8 = std::bytes::BoundsError.length_value(self/0) in
-  let inline9 = inherent#isize#isize#to_string(inline8) in
-  let inline10 = (inline7 + inline9) in
-  inline10
+  let inline0 = ("" + "byte range at offset ") in
+  let inline1 = std::bytes::BoundsError.offset_value(self/0) in
+  let inline2 = inherent#isize#isize#to_string(inline1) in
+  let inline3 = (inline0 + inline2) in
+  let inline4 = (inline3 + " needs ") in
+  let inline5 = std::bytes::BoundsError.needed_value(self/0) in
+  let inline6 = inherent#isize#isize#to_string(inline5) in
+  let inline7 = (inline4 + inline6) in
+  let inline8 = (inline7 + " bytes in buffer of length ") in
+  let inline9 = std::bytes::BoundsError.length_value(self/0) in
+  let inline10 = inherent#isize#isize#to_string(inline9) in
+  let inline11 = (inline8 + inline10) in
+  inline11
 }
 
 fn trait_impl#PartialEq#std::bytes::BoundsError#eq(
@@ -4296,12 +4298,12 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_isize(
         let t1 = std::task::Task__isize.result(self/0) in
         join inline_cont1(mtmp1: Option__isize) -> isize {
           match mtmp1 {
-            Tag_0 => {
-              jump loop_expr0()
-            },
             Tag_1 => {
               let x0 = Option__isize::Some._0(mtmp1) in
               jump exit0(x0)
+            },
+            _ => {
+              jump loop_expr0()
             },
           }
         } in

@@ -607,7 +607,7 @@ fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#length(
 fn trait_impl#ToString#std::bytes::BoundsError#to_string(
   self/0: std::bytes::BoundsError
 ) -> string {
-  ((((("byte range at offset " +
+  (((((("" + "byte range at offset ") +
     inherent#isize#isize#to_string(std::bytes::BoundsError.offset_value(self/0))) +
     " needs ") +
     inherent#isize#isize#to_string(std::bytes::BoundsError.needed_value(self/0))) +
@@ -2933,9 +2933,6 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_isize(
         let mtmp1 =
           inherent#Ref#Ref[T]#get__T_Option[isize](std::task::Task__isize.result(self/0)) in
         match mtmp1 {
-          Option__isize::None => {
-            ()
-          },
           Option__isize::Some(x0) => {
             {
               let x0 = Option__isize::Some._0(mtmp1) in
@@ -2947,6 +2944,7 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_isize(
               }
             }
           },
+          _ => (),
         }
       }
     }

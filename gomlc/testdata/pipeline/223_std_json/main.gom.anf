@@ -504,42 +504,44 @@ fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#length(
 fn trait_impl#ToString#std::bytes::BoundsError#to_string(
   self/0: std::bytes::BoundsError
 ) -> string {
-  let t0 = std::bytes::BoundsError.offset_value(self/0) in
-  join inline_cont0(t1: string) -> string {
-    let t2 = ("byte range at offset " + t1) in
-    let t3 = (t2 + " needs ") in
-    let t4 = std::bytes::BoundsError.needed_value(self/0) in
-    join inline_cont1(t5: string) -> string {
-      let t6 = (t3 + t5) in
-      let t7 = (t6 + " bytes in buffer of length ") in
-      let t8 = std::bytes::BoundsError.length_value(self/0) in
-      join inline_cont2(t9: string) -> string {
-        let t10 = (t7 + t9) in
-        t10
+  let t0 = ("" + "byte range at offset ") in
+  let t1 = std::bytes::BoundsError.offset_value(self/0) in
+  join inline_cont0(t2: string) -> string {
+    let t3 = (t0 + t2) in
+    let t4 = (t3 + " needs ") in
+    let t5 = std::bytes::BoundsError.needed_value(self/0) in
+    join inline_cont1(t6: string) -> string {
+      let t7 = (t4 + t6) in
+      let t8 = (t7 + " bytes in buffer of length ") in
+      let t9 = std::bytes::BoundsError.length_value(self/0) in
+      join inline_cont2(t10: string) -> string {
+        let t11 = (t8 + t10) in
+        t11
       } in
-      let inline0 = __goml_builtin_int_to_string(t8) in
+      let inline0 = __goml_builtin_int_to_string(t9) in
       jump inline_cont2(inline0)
     } in
-    let inline1 = __goml_builtin_int_to_string(t4) in
+    let inline1 = __goml_builtin_int_to_string(t5) in
     jump inline_cont1(inline1)
   } in
-  let inline2 = __goml_builtin_int_to_string(t0) in
+  let inline2 = __goml_builtin_int_to_string(t1) in
   jump inline_cont0(inline2)
 }
 
 fn trait_impl#Debug#std::bytes::BoundsError#debug(self/0: std::bytes::BoundsError) -> string {
-  let inline0 = std::bytes::BoundsError.offset_value(self/0) in
-  let inline1 = inherent#isize#isize#to_string(inline0) in
-  let inline2 = ("byte range at offset " + inline1) in
-  let inline3 = (inline2 + " needs ") in
-  let inline4 = std::bytes::BoundsError.needed_value(self/0) in
-  let inline5 = inherent#isize#isize#to_string(inline4) in
-  let inline6 = (inline3 + inline5) in
-  let inline7 = (inline6 + " bytes in buffer of length ") in
-  let inline8 = std::bytes::BoundsError.length_value(self/0) in
-  let inline9 = inherent#isize#isize#to_string(inline8) in
-  let inline10 = (inline7 + inline9) in
-  inline10
+  let inline0 = ("" + "byte range at offset ") in
+  let inline1 = std::bytes::BoundsError.offset_value(self/0) in
+  let inline2 = inherent#isize#isize#to_string(inline1) in
+  let inline3 = (inline0 + inline2) in
+  let inline4 = (inline3 + " needs ") in
+  let inline5 = std::bytes::BoundsError.needed_value(self/0) in
+  let inline6 = inherent#isize#isize#to_string(inline5) in
+  let inline7 = (inline4 + inline6) in
+  let inline8 = (inline7 + " bytes in buffer of length ") in
+  let inline9 = std::bytes::BoundsError.length_value(self/0) in
+  let inline10 = inherent#isize#isize#to_string(inline9) in
+  let inline11 = (inline8 + inline10) in
+  inline11
 }
 
 fn trait_impl#PartialEq#std::bytes::BoundsError#eq(
@@ -9813,34 +9815,35 @@ fn std::ascii::escape_default(value/0: u8) -> string {
           let x0 = mtmp0.1 in
           x0
         } else {
-          let t3 = (value/0 >> 4) in
-          join inline_cont0(t4: char) -> string {
-            join inline_cont1(t5: string) -> string {
-              let t6 = ("\\x" + t5) in
-              let t7 = (value/0 & 15) in
-              join inline_cont2(t8: char) -> string {
-                join inline_cont3(t9: string) -> string {
-                  let t10 = (t6 + t9) in
-                  t10
+          let t3 = ("" + "\\x") in
+          let t4 = (value/0 >> 4) in
+          join inline_cont0(t5: char) -> string {
+            join inline_cont1(t6: string) -> string {
+              let t7 = (t3 + t6) in
+              let t8 = (value/0 & 15) in
+              join inline_cont2(t9: char) -> string {
+                join inline_cont3(t10: string) -> string {
+                  let t11 = (t7 + t10) in
+                  t11
                 } in
-                let inline0 = char_to_string(t8) in
+                let inline0 = char_to_string(t9) in
                 jump inline_cont3(inline0)
               } in
-              let inline1 = (t7 as isize) in
+              let inline1 = (t8 as isize) in
               let inline2 = inherent#string#string#get("0123456789abcdef", inline1) in
               jump inline_cont2(inline2)
             } in
-            let inline3 = char_to_string(t4) in
+            let inline3 = char_to_string(t5) in
             jump inline_cont1(inline3)
           } in
-          let inline4 = (t3 as isize) in
+          let inline4 = (t4 as isize) in
           let inline5 = inherent#string#string#get("0123456789abcdef", inline4) in
           jump inline_cont0(inline5)
         }
       } in
       if t0 {
-        let t11 = (value/0 <= 126) in
-        jump k0(t11)
+        let t12 = (value/0 <= 126) in
+        jump k0(t12)
       } else {
         jump k0(false)
       }
@@ -10973,9 +10976,6 @@ fn std::json::write_json_deserialize_frame_path(
         join k0() -> () {
           join inline_cont8(mtmp1: Option__string) -> () {
             match mtmp1 {
-              Tag_0 => {
-                ()
-              },
               Tag_1 => {
                 let x6 = Option__string::Some._0(mtmp1) in
                 join inline_cont9(_wild6: ()) -> () {
@@ -10994,6 +10994,9 @@ fn std::json::write_json_deserialize_frame_path(
                     inline24
                   ) in
                 jump inline_cont9(())
+              },
+              _ => {
+                ()
               },
             }
           } in
@@ -11113,13 +11116,14 @@ fn std::json::json_deserializer_error(
   let t0 = (message/0 + " at path ") in
   let t1 = std::json::json_deserializer_path(deserializer/0) in
   let t2 = (t0 + t1) in
-  let t3 = (t2 + " at byte ") in
+  let t3 = ("" + " at byte ") in
   let t4 = std::json::JsonDeserializer.parser(deserializer/0) in
   let t5 = std::json::JsonParser.index(t4) in
   join inline_cont0(t6: isize) -> string {
     join inline_cont1(t7: string) -> string {
       let t8 = (t3 + t7) in
-      t8
+      let t9 = (t2 + t8) in
+      t9
     } in
     let inline0 = __goml_builtin_int_to_string(t6) in
     jump inline_cont1(inline0)
@@ -11138,28 +11142,29 @@ fn std::json::contextualize_json_error(
     if t1 {
       jp0
     } else {
-      let t2 = (jp0 + " at byte ") in
-      let t3 = std::json::JsonDeserializer.parser(deserializer/0) in
-      let t4 = std::json::JsonParser.index(t3) in
-      join inline_cont0(t5: isize) -> string {
-        join inline_cont1(t6: string) -> string {
-          let t7 = (t2 + t6) in
-          t7
+      let t2 = ("" + jp0) in
+      let t3 = (t2 + " at byte ") in
+      let t4 = std::json::JsonDeserializer.parser(deserializer/0) in
+      let t5 = std::json::JsonParser.index(t4) in
+      join inline_cont0(t6: isize) -> string {
+        join inline_cont1(t7: string) -> string {
+          let t8 = (t3 + t7) in
+          t8
         } in
-        let inline0 = __goml_builtin_int_to_string(t5) in
+        let inline0 = __goml_builtin_int_to_string(t6) in
         jump inline_cont1(inline0)
       } in
-      let inline1 = @intrinsic(ref.get)(t4) in
+      let inline1 = @intrinsic(ref.get)(t5) in
       jump inline_cont0(inline1)
     }
   } in
   if t0 {
     jump k0(message/0)
   } else {
-    let t8 = (message/0 + " at path ") in
-    let t9 = std::json::json_deserializer_path(deserializer/0) in
-    let t10 = (t8 + t9) in
-    jump k0(t10)
+    let t9 = (message/0 + " at path ") in
+    let t10 = std::json::json_deserializer_path(deserializer/0) in
+    let t11 = (t9 + t10) in
+    jump k0(t11)
   }
 }
 
@@ -11175,13 +11180,14 @@ fn std::json::expected_json_value(
   let inline0 = (t4 + " at path ") in
   let inline1 = std::json::json_deserializer_path(deserializer/0) in
   let inline2 = (inline0 + inline1) in
-  let inline3 = (inline2 + " at byte ") in
+  let inline3 = ("" + " at byte ") in
   let inline4 = std::json::JsonDeserializer.parser(deserializer/0) in
   let inline5 = std::json::JsonParser.index(inline4) in
   let inline6 = inherent#Ref#Ref[T]#get__T_isize(inline5) in
   let inline7 = inherent#isize#isize#to_string(inline6) in
   let inline8 = (inline3 + inline7) in
-  inline8
+  let inline9 = (inline2 + inline8) in
+  inline9
 }
 
 fn std::json::json_deserializer(input/0: string) -> std::json::JsonDeserializer {
@@ -12038,13 +12044,14 @@ fn std::json::direct_json_number(
         let inline1 = (inline0 + " at path ") in
         let inline2 = std::json::json_deserializer_path(deserializer/0) in
         let inline3 = (inline1 + inline2) in
-        let inline4 = (inline3 + " at byte ") in
+        let inline4 = ("" + " at byte ") in
         let inline5 = std::json::JsonDeserializer.parser(deserializer/0) in
         let inline6 = std::json::JsonParser.index(inline5) in
         let inline7 = inherent#Ref#Ref[T]#get__T_isize(inline6) in
         let inline8 = inherent#isize#isize#to_string(inline7) in
         let inline9 = (inline4 + inline8) in
-        jump inline_cont2(inline9)
+        let inline10 = (inline3 + inline9) in
+        jump inline_cont2(inline10)
       } else {
         let t7 = std::json::JsonParser.input(parser/0) in
         let t8 = std::json::JsonParser.index(parser/0) in
@@ -12062,42 +12069,43 @@ fn std::json::direct_json_number(
                   let t15 = Result__string__string::Err(t14) in
                   t15
                 } in
-                let inline10 = (t13 + " at path ") in
-                let inline11 = std::json::json_deserializer_path(deserializer/0) in
-                let inline12 = (inline10 + inline11) in
-                let inline13 = (inline12 + " at byte ") in
-                let inline14 = std::json::JsonDeserializer.parser(deserializer/0) in
-                let inline15 = std::json::JsonParser.index(inline14) in
-                let inline16 = inherent#Ref#Ref[T]#get__T_isize(inline15) in
-                let inline17 = inherent#isize#isize#to_string(inline16) in
-                let inline18 = (inline13 + inline17) in
-                jump inline_cont5(inline18)
+                let inline11 = (t13 + " at path ") in
+                let inline12 = std::json::json_deserializer_path(deserializer/0) in
+                let inline13 = (inline11 + inline12) in
+                let inline14 = ("" + " at byte ") in
+                let inline15 = std::json::JsonDeserializer.parser(deserializer/0) in
+                let inline16 = std::json::JsonParser.index(inline15) in
+                let inline17 = inherent#Ref#Ref[T]#get__T_isize(inline16) in
+                let inline18 = inherent#isize#isize#to_string(inline17) in
+                let inline19 = (inline14 + inline18) in
+                let inline20 = (inline13 + inline19) in
+                jump inline_cont5(inline20)
               }
             } in
             if t10 {
               jump k0(true)
             } else {
-              let inline19 = (byte/0 >= 48) in
-              if inline19 {
-                let inline20 = (byte/0 <= 57) in
-                jump k0(inline20)
+              let inline21 = (byte/0 >= 48) in
+              if inline21 {
+                let inline22 = (byte/0 <= 57) in
+                jump k0(inline22)
               } else {
                 jump k0(false)
               }
             }
           } in
-          let inline21 = @runtime(core.string_byte_get)(t7, t9) in
-          jump inline_cont4(inline21)
+          let inline23 = @runtime(core.string_byte_get)(t7, t9) in
+          jump inline_cont4(inline23)
         } in
-        let inline22 = @intrinsic(ref.get)(t8) in
-        jump inline_cont3(inline22)
+        let inline24 = @intrinsic(ref.get)(t8) in
+        jump inline_cont3(inline24)
       }
     } in
-    let inline23 = @runtime(core.string_len)(t2) in
-    jump inline_cont1(inline23)
+    let inline25 = @runtime(core.string_len)(t2) in
+    jump inline_cont1(inline25)
   } in
-  let inline24 = @intrinsic(ref.get)(t0) in
-  jump inline_cont0(inline24)
+  let inline26 = @intrinsic(ref.get)(t0) in
+  jump inline_cont0(inline26)
 }
 
 fn std::json::direct_json_int(
@@ -12106,139 +12114,140 @@ fn std::json::direct_json_int(
 ) -> Result__i64__string {
   let mtmp0 = std::json::direct_json_number(deserializer/0) in
   join k0(jp0: string) -> Result__i64__string {
-    join inline_cont0(mtmp1: Result__isize__std::num::ParseIntError) -> Result__i64__string {
-      join k1(jp1: i64) -> Result__i64__string {
-        let t0 = (width/0 == 8) in
-        join k2(jp2: bool) -> Result__i64__string {
-          if jp2 {
-            join inline_cont1(t1: string) -> Result__i64__string {
-              let t2 = Result__i64__string::Err(t1) in
-              t2
-            } in
-            let inline0 = "i8 is out of range" in
-            let inline1 = (inline0 + " at path ") in
-            let inline2 = std::json::json_deserializer_path(deserializer/0) in
-            let inline3 = (inline1 + inline2) in
-            let inline4 = (inline3 + " at byte ") in
-            let inline5 = std::json::JsonDeserializer.parser(deserializer/0) in
-            let inline6 = std::json::JsonParser.index(inline5) in
-            let inline7 = inherent#Ref#Ref[T]#get__T_isize(inline6) in
-            let inline8 = inherent#isize#isize#to_string(inline7) in
-            let inline9 = (inline4 + inline8) in
-            jump inline_cont1(inline9)
-          } else {
-            let t3 = (width/0 == 16) in
-            join k3(jp3: bool) -> Result__i64__string {
-              if jp3 {
-                join inline_cont2(t4: string) -> Result__i64__string {
-                  let t5 = Result__i64__string::Err(t4) in
-                  t5
-                } in
-                let inline10 = "i16 is out of range" in
-                let inline11 = (inline10 + " at path ") in
-                let inline12 = std::json::json_deserializer_path(deserializer/0) in
-                let inline13 = (inline11 + inline12) in
-                let inline14 = (inline13 + " at byte ") in
-                let inline15 = std::json::JsonDeserializer.parser(deserializer/0) in
-                let inline16 = std::json::JsonParser.index(inline15) in
-                let inline17 = inherent#Ref#Ref[T]#get__T_isize(inline16) in
-                let inline18 = inherent#isize#isize#to_string(inline17) in
-                let inline19 = (inline14 + inline18) in
-                jump inline_cont2(inline19)
-              } else {
-                let t6 = (width/0 == 32) in
-                join k4(jp4: bool) -> Result__i64__string {
-                  if jp4 {
-                    join inline_cont3(t7: string) -> Result__i64__string {
-                      let t8 = Result__i64__string::Err(t7) in
-                      t8
-                    } in
-                    let inline20 = "i32 is out of range" in
-                    let inline21 = (inline20 + " at path ") in
-                    let inline22 = std::json::json_deserializer_path(deserializer/0) in
-                    let inline23 = (inline21 + inline22) in
-                    let inline24 = (inline23 + " at byte ") in
-                    let inline25 = std::json::JsonDeserializer.parser(deserializer/0) in
-                    let inline26 = std::json::JsonParser.index(inline25) in
-                    let inline27 = inherent#Ref#Ref[T]#get__T_isize(inline26) in
-                    let inline28 = inherent#isize#isize#to_string(inline27) in
-                    let inline29 = (inline24 + inline28) in
-                    jump inline_cont3(inline29)
-                  } else {
-                    let t9 = Result__i64__string::Ok(jp1) in
-                    t9
-                  }
-                } in
-                if t6 {
-                  let t10 = (jp1 < -2147483648) in
-                  if t10 {
-                    jump k4(true)
-                  } else {
-                    let t11 = (jp1 > 2147483647) in
-                    jump k4(t11)
-                  }
-                } else {
-                  jump k4(false)
-                }
-              }
-            } in
-            if t3 {
-              let t12 = (jp1 < -32768) in
-              if t12 {
-                jump k3(true)
-              } else {
-                let t13 = (jp1 > 32767) in
-                jump k3(t13)
-              }
-            } else {
-              jump k3(false)
-            }
-          }
-        } in
-        if t0 {
-          let t14 = (jp1 < -128) in
-          if t14 {
-            jump k2(true)
-          } else {
-            let t15 = (jp1 > 127) in
-            jump k2(t15)
-          }
+    let mtmp1 = std::num::parse_int_structured(jp0) in
+    join k1(jp1: i64) -> Result__i64__string {
+      let t0 = (width/0 == 8) in
+      join k2(jp2: bool) -> Result__i64__string {
+        if jp2 {
+          join inline_cont0(t1: string) -> Result__i64__string {
+            let t2 = Result__i64__string::Err(t1) in
+            t2
+          } in
+          let inline0 = "i8 is out of range" in
+          let inline1 = (inline0 + " at path ") in
+          let inline2 = std::json::json_deserializer_path(deserializer/0) in
+          let inline3 = (inline1 + inline2) in
+          let inline4 = ("" + " at byte ") in
+          let inline5 = std::json::JsonDeserializer.parser(deserializer/0) in
+          let inline6 = std::json::JsonParser.index(inline5) in
+          let inline7 = inherent#Ref#Ref[T]#get__T_isize(inline6) in
+          let inline8 = inherent#isize#isize#to_string(inline7) in
+          let inline9 = (inline4 + inline8) in
+          let inline10 = (inline3 + inline9) in
+          jump inline_cont0(inline10)
         } else {
-          jump k2(false)
+          let t3 = (width/0 == 16) in
+          join k3(jp3: bool) -> Result__i64__string {
+            if jp3 {
+              join inline_cont1(t4: string) -> Result__i64__string {
+                let t5 = Result__i64__string::Err(t4) in
+                t5
+              } in
+              let inline11 = "i16 is out of range" in
+              let inline12 = (inline11 + " at path ") in
+              let inline13 = std::json::json_deserializer_path(deserializer/0) in
+              let inline14 = (inline12 + inline13) in
+              let inline15 = ("" + " at byte ") in
+              let inline16 = std::json::JsonDeserializer.parser(deserializer/0) in
+              let inline17 = std::json::JsonParser.index(inline16) in
+              let inline18 = inherent#Ref#Ref[T]#get__T_isize(inline17) in
+              let inline19 = inherent#isize#isize#to_string(inline18) in
+              let inline20 = (inline15 + inline19) in
+              let inline21 = (inline14 + inline20) in
+              jump inline_cont1(inline21)
+            } else {
+              let t6 = (width/0 == 32) in
+              join k4(jp4: bool) -> Result__i64__string {
+                if jp4 {
+                  join inline_cont2(t7: string) -> Result__i64__string {
+                    let t8 = Result__i64__string::Err(t7) in
+                    t8
+                  } in
+                  let inline22 = "i32 is out of range" in
+                  let inline23 = (inline22 + " at path ") in
+                  let inline24 = std::json::json_deserializer_path(deserializer/0) in
+                  let inline25 = (inline23 + inline24) in
+                  let inline26 = ("" + " at byte ") in
+                  let inline27 = std::json::JsonDeserializer.parser(deserializer/0) in
+                  let inline28 = std::json::JsonParser.index(inline27) in
+                  let inline29 = inherent#Ref#Ref[T]#get__T_isize(inline28) in
+                  let inline30 = inherent#isize#isize#to_string(inline29) in
+                  let inline31 = (inline26 + inline30) in
+                  let inline32 = (inline25 + inline31) in
+                  jump inline_cont2(inline32)
+                } else {
+                  let t9 = Result__i64__string::Ok(jp1) in
+                  t9
+                }
+              } in
+              if t6 {
+                let t10 = (jp1 < -2147483648) in
+                if t10 {
+                  jump k4(true)
+                } else {
+                  let t11 = (jp1 > 2147483647) in
+                  jump k4(t11)
+                }
+              } else {
+                jump k4(false)
+              }
+            }
+          } in
+          if t3 {
+            let t12 = (jp1 < -32768) in
+            if t12 {
+              jump k3(true)
+            } else {
+              let t13 = (jp1 > 32767) in
+              jump k3(t13)
+            }
+          } else {
+            jump k3(false)
+          }
         }
       } in
-      match mtmp1 {
-        Tag_0 => {
-          let x0 = Result__isize__std::num::ParseIntError::Ok._0(mtmp1) in
-          let t16 = (x0 as i64) in
-          jump k1(t16)
-        },
-        Tag_1 => {
-          let x1 = Result__isize__std::num::ParseIntError::Err._0(mtmp1) in
-          join inline_cont4(t17: string) -> Result__i64__string {
-            join inline_cont5(t18: string) -> Result__i64__string {
-              let t19 = Result__i64__string::Err(t18) in
-              t19
-            } in
-            let inline30 = (t17 + " at path ") in
-            let inline31 = std::json::json_deserializer_path(deserializer/0) in
-            let inline32 = (inline30 + inline31) in
-            let inline33 = (inline32 + " at byte ") in
-            let inline34 = std::json::JsonDeserializer.parser(deserializer/0) in
-            let inline35 = std::json::JsonParser.index(inline34) in
-            let inline36 = inherent#Ref#Ref[T]#get__T_isize(inline35) in
-            let inline37 = inherent#isize#isize#to_string(inline36) in
-            let inline38 = (inline33 + inline37) in
-            jump inline_cont5(inline38)
-          } in
-          let inline39 = std::num::ParseIntError.details(x1) in
-          let inline40 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline39) in
-          jump inline_cont4(inline40)
-        },
+      if t0 {
+        let t14 = (jp1 < -128) in
+        if t14 {
+          jump k2(true)
+        } else {
+          let t15 = (jp1 > 127) in
+          jump k2(t15)
+        }
+      } else {
+        jump k2(false)
       }
     } in
-    let inline41 = std::num::parse_int_radix_structured(jp0, 10) in
-    jump inline_cont0(inline41)
+    match mtmp1 {
+      Tag_0 => {
+        let x0 = Result__isize__std::num::ParseIntError::Ok._0(mtmp1) in
+        let t16 = (x0 as i64) in
+        jump k1(t16)
+      },
+      Tag_1 => {
+        let x1 = Result__isize__std::num::ParseIntError::Err._0(mtmp1) in
+        join inline_cont3(t17: string) -> Result__i64__string {
+          join inline_cont4(t18: string) -> Result__i64__string {
+            let t19 = Result__i64__string::Err(t18) in
+            t19
+          } in
+          let inline33 = (t17 + " at path ") in
+          let inline34 = std::json::json_deserializer_path(deserializer/0) in
+          let inline35 = (inline33 + inline34) in
+          let inline36 = ("" + " at byte ") in
+          let inline37 = std::json::JsonDeserializer.parser(deserializer/0) in
+          let inline38 = std::json::JsonParser.index(inline37) in
+          let inline39 = inherent#Ref#Ref[T]#get__T_isize(inline38) in
+          let inline40 = inherent#isize#isize#to_string(inline39) in
+          let inline41 = (inline36 + inline40) in
+          let inline42 = (inline35 + inline41) in
+          jump inline_cont4(inline42)
+        } in
+        let inline43 = std::num::ParseIntError.details(x1) in
+        let inline44 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline43) in
+        jump inline_cont3(inline44)
+      },
+    }
   } in
   match mtmp0 {
     Tag_0 => {
@@ -12259,124 +12268,125 @@ fn std::json::direct_json_uint(
 ) -> Result__u64__string {
   let mtmp0 = std::json::direct_json_number(deserializer/0) in
   join k0(jp0: string) -> Result__u64__string {
-    join inline_cont0(mtmp1: Result__usize__std::num::ParseIntError) -> Result__u64__string {
-      join k1(jp1: u64) -> Result__u64__string {
-        let t0 = (width/0 == 8) in
-        join k2(jp2: bool) -> Result__u64__string {
-          if jp2 {
-            join inline_cont1(t1: string) -> Result__u64__string {
-              let t2 = Result__u64__string::Err(t1) in
-              t2
-            } in
-            let inline0 = "u8 is out of range" in
-            let inline1 = (inline0 + " at path ") in
-            let inline2 = std::json::json_deserializer_path(deserializer/0) in
-            let inline3 = (inline1 + inline2) in
-            let inline4 = (inline3 + " at byte ") in
-            let inline5 = std::json::JsonDeserializer.parser(deserializer/0) in
-            let inline6 = std::json::JsonParser.index(inline5) in
-            let inline7 = inherent#Ref#Ref[T]#get__T_isize(inline6) in
-            let inline8 = inherent#isize#isize#to_string(inline7) in
-            let inline9 = (inline4 + inline8) in
-            jump inline_cont1(inline9)
-          } else {
-            let t3 = (width/0 == 16) in
-            join k3(jp3: bool) -> Result__u64__string {
-              if jp3 {
-                join inline_cont2(t4: string) -> Result__u64__string {
-                  let t5 = Result__u64__string::Err(t4) in
-                  t5
-                } in
-                let inline10 = "u16 is out of range" in
-                let inline11 = (inline10 + " at path ") in
-                let inline12 = std::json::json_deserializer_path(deserializer/0) in
-                let inline13 = (inline11 + inline12) in
-                let inline14 = (inline13 + " at byte ") in
-                let inline15 = std::json::JsonDeserializer.parser(deserializer/0) in
-                let inline16 = std::json::JsonParser.index(inline15) in
-                let inline17 = inherent#Ref#Ref[T]#get__T_isize(inline16) in
-                let inline18 = inherent#isize#isize#to_string(inline17) in
-                let inline19 = (inline14 + inline18) in
-                jump inline_cont2(inline19)
-              } else {
-                let t6 = (width/0 == 32) in
-                join k4(jp4: bool) -> Result__u64__string {
-                  if jp4 {
-                    join inline_cont3(t7: string) -> Result__u64__string {
-                      let t8 = Result__u64__string::Err(t7) in
-                      t8
-                    } in
-                    let inline20 = "u32 is out of range" in
-                    let inline21 = (inline20 + " at path ") in
-                    let inline22 = std::json::json_deserializer_path(deserializer/0) in
-                    let inline23 = (inline21 + inline22) in
-                    let inline24 = (inline23 + " at byte ") in
-                    let inline25 = std::json::JsonDeserializer.parser(deserializer/0) in
-                    let inline26 = std::json::JsonParser.index(inline25) in
-                    let inline27 = inherent#Ref#Ref[T]#get__T_isize(inline26) in
-                    let inline28 = inherent#isize#isize#to_string(inline27) in
-                    let inline29 = (inline24 + inline28) in
-                    jump inline_cont3(inline29)
-                  } else {
-                    let t9 = Result__u64__string::Ok(jp1) in
-                    t9
-                  }
-                } in
-                if t6 {
-                  let t10 = (jp1 > 4294967295) in
-                  jump k4(t10)
-                } else {
-                  jump k4(false)
-                }
-              }
-            } in
-            if t3 {
-              let t11 = (jp1 > 65535) in
-              jump k3(t11)
-            } else {
-              jump k3(false)
-            }
-          }
-        } in
-        if t0 {
-          let t12 = (jp1 > 255) in
-          jump k2(t12)
+    let mtmp1 = std::num::parse_uint_structured(jp0) in
+    join k1(jp1: u64) -> Result__u64__string {
+      let t0 = (width/0 == 8) in
+      join k2(jp2: bool) -> Result__u64__string {
+        if jp2 {
+          join inline_cont0(t1: string) -> Result__u64__string {
+            let t2 = Result__u64__string::Err(t1) in
+            t2
+          } in
+          let inline0 = "u8 is out of range" in
+          let inline1 = (inline0 + " at path ") in
+          let inline2 = std::json::json_deserializer_path(deserializer/0) in
+          let inline3 = (inline1 + inline2) in
+          let inline4 = ("" + " at byte ") in
+          let inline5 = std::json::JsonDeserializer.parser(deserializer/0) in
+          let inline6 = std::json::JsonParser.index(inline5) in
+          let inline7 = inherent#Ref#Ref[T]#get__T_isize(inline6) in
+          let inline8 = inherent#isize#isize#to_string(inline7) in
+          let inline9 = (inline4 + inline8) in
+          let inline10 = (inline3 + inline9) in
+          jump inline_cont0(inline10)
         } else {
-          jump k2(false)
+          let t3 = (width/0 == 16) in
+          join k3(jp3: bool) -> Result__u64__string {
+            if jp3 {
+              join inline_cont1(t4: string) -> Result__u64__string {
+                let t5 = Result__u64__string::Err(t4) in
+                t5
+              } in
+              let inline11 = "u16 is out of range" in
+              let inline12 = (inline11 + " at path ") in
+              let inline13 = std::json::json_deserializer_path(deserializer/0) in
+              let inline14 = (inline12 + inline13) in
+              let inline15 = ("" + " at byte ") in
+              let inline16 = std::json::JsonDeserializer.parser(deserializer/0) in
+              let inline17 = std::json::JsonParser.index(inline16) in
+              let inline18 = inherent#Ref#Ref[T]#get__T_isize(inline17) in
+              let inline19 = inherent#isize#isize#to_string(inline18) in
+              let inline20 = (inline15 + inline19) in
+              let inline21 = (inline14 + inline20) in
+              jump inline_cont1(inline21)
+            } else {
+              let t6 = (width/0 == 32) in
+              join k4(jp4: bool) -> Result__u64__string {
+                if jp4 {
+                  join inline_cont2(t7: string) -> Result__u64__string {
+                    let t8 = Result__u64__string::Err(t7) in
+                    t8
+                  } in
+                  let inline22 = "u32 is out of range" in
+                  let inline23 = (inline22 + " at path ") in
+                  let inline24 = std::json::json_deserializer_path(deserializer/0) in
+                  let inline25 = (inline23 + inline24) in
+                  let inline26 = ("" + " at byte ") in
+                  let inline27 = std::json::JsonDeserializer.parser(deserializer/0) in
+                  let inline28 = std::json::JsonParser.index(inline27) in
+                  let inline29 = inherent#Ref#Ref[T]#get__T_isize(inline28) in
+                  let inline30 = inherent#isize#isize#to_string(inline29) in
+                  let inline31 = (inline26 + inline30) in
+                  let inline32 = (inline25 + inline31) in
+                  jump inline_cont2(inline32)
+                } else {
+                  let t9 = Result__u64__string::Ok(jp1) in
+                  t9
+                }
+              } in
+              if t6 {
+                let t10 = (jp1 > 4294967295) in
+                jump k4(t10)
+              } else {
+                jump k4(false)
+              }
+            }
+          } in
+          if t3 {
+            let t11 = (jp1 > 65535) in
+            jump k3(t11)
+          } else {
+            jump k3(false)
+          }
         }
       } in
-      match mtmp1 {
-        Tag_0 => {
-          let x0 = Result__usize__std::num::ParseIntError::Ok._0(mtmp1) in
-          let t13 = (x0 as u64) in
-          jump k1(t13)
-        },
-        Tag_1 => {
-          let x1 = Result__usize__std::num::ParseIntError::Err._0(mtmp1) in
-          join inline_cont4(t14: string) -> Result__u64__string {
-            join inline_cont5(t15: string) -> Result__u64__string {
-              let t16 = Result__u64__string::Err(t15) in
-              t16
-            } in
-            let inline30 = (t14 + " at path ") in
-            let inline31 = std::json::json_deserializer_path(deserializer/0) in
-            let inline32 = (inline30 + inline31) in
-            let inline33 = (inline32 + " at byte ") in
-            let inline34 = std::json::JsonDeserializer.parser(deserializer/0) in
-            let inline35 = std::json::JsonParser.index(inline34) in
-            let inline36 = inherent#Ref#Ref[T]#get__T_isize(inline35) in
-            let inline37 = inherent#isize#isize#to_string(inline36) in
-            let inline38 = (inline33 + inline37) in
-            jump inline_cont5(inline38)
-          } in
-          let inline39 = std::num::ParseIntError.details(x1) in
-          let inline40 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline39) in
-          jump inline_cont4(inline40)
-        },
+      if t0 {
+        let t12 = (jp1 > 255) in
+        jump k2(t12)
+      } else {
+        jump k2(false)
       }
     } in
-    let inline41 = std::num::parse_uint_radix_structured(jp0, 10) in
-    jump inline_cont0(inline41)
+    match mtmp1 {
+      Tag_0 => {
+        let x0 = Result__usize__std::num::ParseIntError::Ok._0(mtmp1) in
+        let t13 = (x0 as u64) in
+        jump k1(t13)
+      },
+      Tag_1 => {
+        let x1 = Result__usize__std::num::ParseIntError::Err._0(mtmp1) in
+        join inline_cont3(t14: string) -> Result__u64__string {
+          join inline_cont4(t15: string) -> Result__u64__string {
+            let t16 = Result__u64__string::Err(t15) in
+            t16
+          } in
+          let inline33 = (t14 + " at path ") in
+          let inline34 = std::json::json_deserializer_path(deserializer/0) in
+          let inline35 = (inline33 + inline34) in
+          let inline36 = ("" + " at byte ") in
+          let inline37 = std::json::JsonDeserializer.parser(deserializer/0) in
+          let inline38 = std::json::JsonParser.index(inline37) in
+          let inline39 = inherent#Ref#Ref[T]#get__T_isize(inline38) in
+          let inline40 = inherent#isize#isize#to_string(inline39) in
+          let inline41 = (inline36 + inline40) in
+          let inline42 = (inline35 + inline41) in
+          jump inline_cont4(inline42)
+        } in
+        let inline43 = std::num::ParseIntError.details(x1) in
+        let inline44 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline43) in
+        jump inline_cont3(inline44)
+      },
+    }
   } in
   match mtmp0 {
     Tag_0 => {
@@ -12983,13 +12993,14 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#error(
   let inline0 = (message/0 + " at path ") in
   let inline1 = std::json::json_deserializer_path(self/0) in
   let inline2 = (inline0 + inline1) in
-  let inline3 = (inline2 + " at byte ") in
+  let inline3 = ("" + " at byte ") in
   let inline4 = std::json::JsonDeserializer.parser(self/0) in
   let inline5 = std::json::JsonParser.index(inline4) in
   let inline6 = inherent#Ref#Ref[T]#get__T_isize(inline5) in
   let inline7 = inherent#isize#isize#to_string(inline6) in
   let inline8 = (inline3 + inline7) in
-  inline8
+  let inline9 = (inline2 + inline8) in
+  inline9
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_any(
@@ -13404,28 +13415,29 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_f
         let inline0 = (t1 + " at path ") in
         let inline1 = std::json::json_deserializer_path(self/0) in
         let inline2 = (inline0 + inline1) in
-        let inline3 = (inline2 + " at byte ") in
+        let inline3 = ("" + " at byte ") in
         let inline4 = std::json::JsonDeserializer.parser(self/0) in
         let inline5 = std::json::JsonParser.index(inline4) in
         let inline6 = inherent#Ref#Ref[T]#get__T_isize(inline5) in
         let inline7 = inherent#isize#isize#to_string(inline6) in
         let inline8 = (inline3 + inline7) in
-        jump inline_cont1(inline8)
+        let inline9 = (inline2 + inline8) in
+        jump inline_cont1(inline9)
       } in
-      let inline9 = std::num::ParseFloatError.details(commute_field1) in
-      let inline10 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline9) in
-      jump inline_cont0(inline10)
+      let inline10 = std::num::ParseFloatError.details(commute_field1) in
+      let inline11 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline10) in
+      jump inline_cont0(inline11)
     } in
-    let inline11 = std::num::parse_float32_value(jp0) in
-    let inline12 = inline11.0 in
-    let inline13 = inline11.1 in
-    let inline14 = inline11.2 in
-    if inline12 {
-      jump commute_arm0(inline13)
+    let inline12 = std::num::parse_float32_value(jp0) in
+    let inline13 = inline12.0 in
+    let inline14 = inline12.1 in
+    let inline15 = inline12.2 in
+    if inline13 {
+      jump commute_arm0(inline14)
     } else {
-      let inline15 =
-        inherent#std::num::ParseFloatError#std::num::ParseFloatError#new(jp0, inline14) in
-      jump commute_arm1(inline15)
+      let inline16 =
+        inherent#std::num::ParseFloatError#std::num::ParseFloatError#new(jp0, inline15) in
+      jump commute_arm1(inline16)
     }
   } in
   match mtmp0 {
@@ -13459,28 +13471,29 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_f
         let inline0 = (t1 + " at path ") in
         let inline1 = std::json::json_deserializer_path(self/0) in
         let inline2 = (inline0 + inline1) in
-        let inline3 = (inline2 + " at byte ") in
+        let inline3 = ("" + " at byte ") in
         let inline4 = std::json::JsonDeserializer.parser(self/0) in
         let inline5 = std::json::JsonParser.index(inline4) in
         let inline6 = inherent#Ref#Ref[T]#get__T_isize(inline5) in
         let inline7 = inherent#isize#isize#to_string(inline6) in
         let inline8 = (inline3 + inline7) in
-        jump inline_cont1(inline8)
+        let inline9 = (inline2 + inline8) in
+        jump inline_cont1(inline9)
       } in
-      let inline9 = std::num::ParseFloatError.details(commute_field1) in
-      let inline10 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline9) in
-      jump inline_cont0(inline10)
+      let inline10 = std::num::ParseFloatError.details(commute_field1) in
+      let inline11 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline10) in
+      jump inline_cont0(inline11)
     } in
-    let inline11 = std::num::parse_float64_value(jp0) in
-    let inline12 = inline11.0 in
-    let inline13 = inline11.1 in
-    let inline14 = inline11.2 in
-    if inline12 {
-      jump commute_arm0(inline13)
+    let inline12 = std::num::parse_float64_value(jp0) in
+    let inline13 = inline12.0 in
+    let inline14 = inline12.1 in
+    let inline15 = inline12.2 in
+    if inline13 {
+      jump commute_arm0(inline14)
     } else {
-      let inline15 =
-        inherent#std::num::ParseFloatError#std::num::ParseFloatError#new(jp0, inline14) in
-      jump commute_arm1(inline15)
+      let inline16 =
+        inherent#std::num::ParseFloatError#std::num::ParseFloatError#new(jp0, inline15) in
+      jump commute_arm1(inline16)
     }
   } in
   match mtmp0 {

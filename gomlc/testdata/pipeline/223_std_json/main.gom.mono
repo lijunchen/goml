@@ -417,7 +417,7 @@ fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#length(
 fn trait_impl#ToString#std::bytes::BoundsError#to_string(
   self/0: std::bytes::BoundsError
 ) -> string {
-  ((((("byte range at offset " +
+  (((((("" + "byte range at offset ") +
     inherent#isize#isize#to_string(std::bytes::BoundsError.offset_value(self/0))) +
     " needs ") +
     inherent#isize#isize#to_string(std::bytes::BoundsError.needed_value(self/0))) +
@@ -8021,7 +8021,7 @@ fn std::ascii::escape_default(value/0: u8) -> string {
           }
       } else {
           {
-            (("\\x" + inherent#char#char#to_string(std::ascii::hex_digit((value/0 >> 4)))) +
+            ((("" + "\\x") + inherent#char#char#to_string(std::ascii::hex_digit((value/0 >> 4)))) +
               inherent#char#char#to_string(std::ascii::hex_digit((value/0 & 15))))
           }
       },
@@ -8832,9 +8832,6 @@ fn std::json::write_json_deserialize_frame_path(
               {
                 let mtmp1 = inherent#Ref#Ref[T]#get__T_Option[string](field/0) in
                 match mtmp1 {
-                  Option__string::None => {
-                    ()
-                  },
                   Option__string::Some(x14) => {
                     {
                       let x14 = Option__string::Some._0(mtmp1) in
@@ -8854,6 +8851,7 @@ fn std::json::write_json_deserialize_frame_path(
                       }
                     }
                   },
+                  _ => (),
                 }
               }
             }
@@ -8955,12 +8953,13 @@ fn std::json::json_deserializer_error(
   deserializer/0: std::json::JsonDeserializer,
   message/0: string
 ) -> string {
-  ((((message/0 + " at path ") + std::json::json_deserializer_path(deserializer/0)) + " at byte ") +
-    inherent#isize#isize#to_string(
-      inherent#Ref#Ref[T]#get__T_isize(
-        std::json::JsonParser.index(std::json::JsonDeserializer.parser(deserializer/0))
-      )
-    ))
+  (((message/0 + " at path ") + std::json::json_deserializer_path(deserializer/0)) +
+    (("" + " at byte ") +
+      inherent#isize#isize#to_string(
+        inherent#Ref#Ref[T]#get__T_isize(
+          std::json::JsonParser.index(std::json::JsonDeserializer.parser(deserializer/0))
+        )
+      )))
 }
 
 fn std::json::contextualize_json_error(
@@ -8983,7 +8982,7 @@ fn std::json::contextualize_json_error(
       }
   } else {
       {
-        ((with_path/0 + " at byte ") +
+        ((("" + with_path/0) + " at byte ") +
           inherent#isize#isize#to_string(
             inherent#Ref#Ref[T]#get__T_isize(
               std::json::JsonParser.index(std::json::JsonDeserializer.parser(deserializer/0))
