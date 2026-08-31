@@ -1382,7 +1382,7 @@ fn uses_linked_hashmap_option_variants() -> () {
     let source = "fn main() -> () { let map: HashMap[i32, i32] = HashMap::new(); map.set(1, 2); match map.get(1) { Option::Some(value) => println(value), Option::None => println(0), } }";
     let output = encode(lower_linked_source(source));
     testing::assert(string_contains(output, "type Option__i32 uint64"));
-    testing::assert(string_contains(output, "uint64(uint32(value)) + 1"));
+    testing::assert(string_contains(output, "uint64(int64(value) + 2147483648) + 1"));
     testing::assert(string_contains(output, "Option__i32(0)"))
 }
 
@@ -1392,7 +1392,7 @@ fn reuses_materialized_hashmap_option_types() -> () {
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "type Option__i32 uint64"));
     testing::assert(string_contains(output, " != Option__i32(0)"));
-    testing::assert(string_contains(output, "int32(uint64("));
+    testing::assert(string_contains(output, "int32(int64(uint64("));
     testing::assert(!string_contains(output, "type Option__i32 interface"))
 }
 
@@ -1629,7 +1629,7 @@ fn protects_index_intrinsics_from_user_functions() -> () {
     testing::assert(string_contains(output, "var inline115 int32 = 90 + inline114"));
     testing::assert(string_contains(output, "var inline105 int32 = 70 + inline104"));
     testing::assert(string_contains(output, "t75 = 120"));
-    testing::assert(string_contains(output, "uint64(uint32(55)) + 1"));
+    testing::assert(string_contains(output, "uint64(int64(55) + 2147483648) + 1"));
     testing::assert(string_contains(output, "array_get__Array_2_5int32(a__17, 1)"));
     testing::assert(string_contains(output, "s__22[1]"));
     testing::assert(string_contains(output, "_goml_runtime_core_string_get("));
