@@ -3557,18 +3557,18 @@ fn std::task::completed_scope_value(result/0: Ref[Option[T]]) -> T {
     {
       let mtmp0 = inherent#Ref#Ref[Option[T]]#get(result/0) in
       match mtmp0 {
-        Option::None => {
-          ()
-        },
         Option::Some(x0) => {
           {
             let x0 = Option::Some._0(mtmp0) in
             {
               let value/0 = x0 in
-              break value/0
+              {
+                break value/0
+              }
             }
           }
         },
+        _ => (),
       }
     }
   }

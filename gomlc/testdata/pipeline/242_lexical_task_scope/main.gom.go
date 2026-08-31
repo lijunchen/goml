@@ -519,14 +519,12 @@ func _goml_m_std_p_task_p_completed__scope__value____T__isize(result__0 *ref_Opt
         var inline0 Option__isize = ref_get__Ref_13Option__isize(result__0)
         mtmp0 = inline0
         switch mtmp0._tag {
-        case 0:
-            continue
         case 1:
             var x0 int = mtmp0._v1_0
             jp0 = x0
             break Loop_loop_expr0
         default:
-            panic("non-exhaustive match")
+            continue
         }
     }
     return jp0

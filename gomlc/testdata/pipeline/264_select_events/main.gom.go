@@ -924,12 +924,10 @@ func _goml_m_std_p_task_p_completed__scope__value____T___o__q_(result__0 *ref__g
         var inline0 _goml_m_Option_____o__q_ = ref_get___goml_m_Ref__10Option_____o__q_(result__0)
         mtmp0 = inline0
         switch mtmp0._tag {
-        case 0:
-            continue
         case 1:
             break Loop_loop_expr0
         default:
-            panic("non-exhaustive match")
+            continue
         }
     }
     return struct{}{}

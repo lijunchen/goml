@@ -873,7 +873,7 @@ fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#error_length(
 }
 
 fn trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0: std::utf8::Utf8Error) -> string {
-  ("invalid UTF-8 at byte " +
+  (("" + "invalid UTF-8 at byte ") +
     inherent#isize#isize#to_string(std::utf8::Utf8Error.valid_up_to_value(self/0)))
 }
 
@@ -2718,14 +2718,12 @@ fn inherent#Ref#Ref[T]#set__T_Option[()](self/0: Ref[Option__()], value/0: Optio
 fn std::task::completed_scope_value__T_()(result/0: Ref[Option__()]) -> () {
   loop let mtmp0 = inherent#Ref#Ref[T]#get__T_Option[()](result/0) in
   match mtmp0 {
-    Option__()::None => {
-      ()
-    },
     Option__()::Some(x0) => {
       let x0 = Option__()::Some._0(mtmp0) in
       let value/0 = x0 in
       break value/0
     },
+    _ => (),
   }
 }
 

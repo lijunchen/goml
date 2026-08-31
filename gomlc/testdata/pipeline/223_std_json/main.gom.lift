@@ -699,7 +699,7 @@ fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#error_length(
 }
 
 fn trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0: std::utf8::Utf8Error) -> string {
-  ("invalid UTF-8 at byte " +
+  (("" + "invalid UTF-8 at byte ") +
     inherent#isize#isize#to_string(std::utf8::Utf8Error.valid_up_to_value(self/0)))
 }
 
@@ -2382,7 +2382,7 @@ fn std::serde::positional_field(
       (index/0 >= inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(fields/0))
   } {
       Result__std::serde::Value__string::Err(
-        ("missing positional field " + inherent#isize#isize#to_string(index/0))
+        (("" + "missing positional field ") + inherent#isize#isize#to_string(index/0))
       )
   } else {
       Result__std::serde::Value__string::Ok(@intrinsic(vec.get)(fields/0, index/0).1)
@@ -10070,9 +10070,6 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result__strin
                               if (escape/0 == 98) {
                                   let mtmp0 = char_from_u0(8) in
                                   match mtmp0 {
-                                    Option__char::None => {
-                                      ()
-                                    },
                                     Option__char::Some(x0) => {
                                       let x0 = Option__char::Some._0(mtmp0) in
                                       let character/0 = x0 in
@@ -10081,14 +10078,12 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result__strin
                                         character/0
                                       )
                                     },
+                                    _ => (),
                                   }
                               } else {
                                   if (escape/0 == 102) {
                                       let mtmp1 = char_from_u0(12) in
                                       match mtmp1 {
-                                        Option__char::None => {
-                                          ()
-                                        },
                                         Option__char::Some(x1) => {
                                           let x1 = Option__char::Some._0(mtmp1) in
                                           let character/1 = x1 in
@@ -10097,6 +10092,7 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result__strin
                                             character/1
                                           )
                                         },
+                                        _ => (),
                                       }
                                   } else {
                                       if (escape/0 == 110) {

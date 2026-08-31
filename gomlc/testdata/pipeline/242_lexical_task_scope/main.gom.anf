@@ -578,12 +578,12 @@ fn std::task::completed_scope_value__T_isize(result/0: Ref[Option__isize]) -> is
     join loop_expr0() -> isize {
       join inline_cont0(mtmp0: Option__isize) -> isize {
         match mtmp0 {
-          Tag_0 => {
-            jump loop_expr0()
-          },
           Tag_1 => {
             let x0 = Option__isize::Some._0(mtmp0) in
             jump exit0(x0)
+          },
+          _ => {
+            jump loop_expr0()
           },
         }
       } in

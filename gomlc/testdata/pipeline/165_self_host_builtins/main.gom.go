@@ -1215,9 +1215,9 @@ func _goml_m_std_p_fs_p_read__file__structured(path__0 string) _goml_m_Result___
     case _goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error_Ok:
         var x0 _goml_m_std_p_bytes_p_Bytes = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error_Ok)._0
         var mtmp1 _goml_m_Result____string____std_p_utf8_p_Utf8Error
-        var inline6 *_goml_vec_uint8 = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(x0)
-        var inline7 _goml_m_Result____string____std_p_utf8_p_Utf8Error = _goml_m_std_p_utf8_p_decode(inline6)
-        mtmp1 = inline7
+        var inline7 *_goml_vec_uint8 = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(x0)
+        var inline8 _goml_m_Result____string____std_p_utf8_p_Utf8Error = _goml_m_std_p_utf8_p_decode(inline7)
+        mtmp1 = inline8
         switch mtmp1._tag {
         case 0:
             var x1 string = mtmp1._v0_0
@@ -1232,10 +1232,11 @@ func _goml_m_std_p_fs_p_read__file__structured(path__0 string) _goml_m_Result___
                 _v1_0: path__0,
             }
             var t2 string
-            var inline3 int = x2.valid_up_to_value
-            var inline4 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline3)
-            var inline5 string = "invalid UTF-8 at byte " + inline4
-            t2 = inline5
+            var inline3 string = "" + "invalid UTF-8 at byte "
+            var inline4 int = x2.valid_up_to_value
+            var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
+            var inline6 string = inline3 + inline5
+            t2 = inline6
             var t3 _goml_m_std_p_fs_p_Error
             var inline0 string = "read file"
             var inline1 _goml_m_std_p_io_p_ErrorDetails = _goml_m_inherent_i_std_p_io_p_ErrorDetails_i_std_p_io_p_ErrorDetails_i_new(InvalidData, inline0, t1, Option__isize{

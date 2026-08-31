@@ -978,20 +978,22 @@ fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#error_length(
 }
 
 fn trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0: std::utf8::Utf8Error) -> string {
-  let t0 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
-  join inline_cont0(t1: string) -> string {
-    let t2 = ("invalid UTF-8 at byte " + t1) in
-    t2
+  let t0 = ("" + "invalid UTF-8 at byte ") in
+  let t1 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
+  join inline_cont0(t2: string) -> string {
+    let t3 = (t0 + t2) in
+    t3
   } in
-  let inline0 = __goml_builtin_int_to_string(t0) in
+  let inline0 = __goml_builtin_int_to_string(t1) in
   jump inline_cont0(inline0)
 }
 
 fn trait_impl#Debug#std::utf8::Utf8Error#debug(self/0: std::utf8::Utf8Error) -> string {
-  let inline0 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
-  let inline1 = inherent#isize#isize#to_string(inline0) in
-  let inline2 = ("invalid UTF-8 at byte " + inline1) in
-  inline2
+  let inline0 = ("" + "invalid UTF-8 at byte ") in
+  let inline1 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
+  let inline2 = inherent#isize#isize#to_string(inline1) in
+  let inline3 = (inline0 + inline2) in
+  inline3
 }
 
 fn trait_impl#PartialEq#std::utf8::Utf8Error#eq(
@@ -2185,16 +2187,17 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
               let inline2 = std::io::Error { details: inline1 } in
               jump inline_cont2(inline2)
             } in
-            let inline3 = std::utf8::Utf8Error.valid_up_to_value(x2) in
-            let inline4 = inherent#isize#isize#to_string(inline3) in
-            let inline5 = ("invalid UTF-8 at byte " + inline4) in
-            jump inline_cont1(inline5)
+            let inline3 = ("" + "invalid UTF-8 at byte ") in
+            let inline4 = std::utf8::Utf8Error.valid_up_to_value(x2) in
+            let inline5 = inherent#isize#isize#to_string(inline4) in
+            let inline6 = (inline3 + inline5) in
+            jump inline_cont1(inline6)
           },
         }
       } in
-      let inline6 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
-      let inline7 = std::utf8::decode(inline6) in
-      jump inline_cont0(inline7)
+      let inline7 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
+      let inline8 = std::utf8::decode(inline7) in
+      jump inline_cont0(inline8)
     },
     Tag_1 => {
       let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
@@ -3761,26 +3764,27 @@ fn std::serde::positional_field(
   let t0 = (index/0 < 0) in
   join k0(jp0: bool) -> Result__std::serde::Value__string {
     if jp0 {
-      join inline_cont0(t1: string) -> Result__std::serde::Value__string {
-        let t2 = ("missing positional field " + t1) in
-        let t3 = Result__std::serde::Value__string::Err(t2) in
-        t3
+      let t1 = ("" + "missing positional field ") in
+      join inline_cont0(t2: string) -> Result__std::serde::Value__string {
+        let t3 = (t1 + t2) in
+        let t4 = Result__std::serde::Value__string::Err(t3) in
+        t4
       } in
       let inline0 = __goml_builtin_int_to_string(index/0) in
       jump inline_cont0(inline0)
     } else {
-      let t4 = @intrinsic(vec.get)(fields/0, index/0) in
-      let t5 = t4.1 in
-      let t6 = Result__std::serde::Value__string::Ok(t5) in
-      t6
+      let t5 = @intrinsic(vec.get)(fields/0, index/0) in
+      let t6 = t5.1 in
+      let t7 = Result__std::serde::Value__string::Ok(t6) in
+      t7
     }
   } in
   if t0 {
     jump k0(true)
   } else {
-    join inline_cont1(t7: isize) -> Result__std::serde::Value__string {
-      let t8 = (index/0 >= t7) in
-      jump k0(t8)
+    join inline_cont1(t8: isize) -> Result__std::serde::Value__string {
+      let t9 = (index/0 >= t8) in
+      jump k0(t9)
     } in
     let inline1 = @intrinsic(vec.len)(fields/0) in
     jump inline_cont1(inline1)
@@ -16861,9 +16865,6 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result__strin
                           if t57 {
                             let mtmp0 = char_from_u0(8) in
                             match mtmp0 {
-                              Tag_0 => {
-                                jump k5()
-                              },
                               Tag_1 => {
                                 let x0 = Option__char::Some._0(mtmp0) in
                                 let t58 =
@@ -16873,15 +16874,15 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result__strin
                                   ) in
                                 jump k5()
                               },
+                              _ => {
+                                jump k5()
+                              },
                             }
                           } else {
                             let t59 = (escape/0 == 102) in
                             if t59 {
                               let mtmp1 = char_from_u0(12) in
                               match mtmp1 {
-                                Tag_0 => {
-                                  jump k5()
-                                },
                                 Tag_1 => {
                                   let x1 = Option__char::Some._0(mtmp1) in
                                   let t60 =
@@ -16889,6 +16890,9 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result__strin
                                       builder/0,
                                       x1
                                     ) in
+                                  jump k5()
+                                },
+                                _ => {
                                   jump k5()
                                 },
                               }

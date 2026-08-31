@@ -970,20 +970,22 @@ fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#error_length(
 }
 
 fn trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0: std::utf8::Utf8Error) -> string {
-  let t0 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
-  join inline_cont0(t1: string) -> string {
-    let t2 = ("invalid UTF-8 at byte " + t1) in
-    t2
+  let t0 = ("" + "invalid UTF-8 at byte ") in
+  let t1 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
+  join inline_cont0(t2: string) -> string {
+    let t3 = (t0 + t2) in
+    t3
   } in
-  let inline0 = __goml_builtin_int_to_string(t0) in
+  let inline0 = __goml_builtin_int_to_string(t1) in
   jump inline_cont0(inline0)
 }
 
 fn trait_impl#Debug#std::utf8::Utf8Error#debug(self/0: std::utf8::Utf8Error) -> string {
-  let inline0 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
-  let inline1 = inherent#isize#isize#to_string(inline0) in
-  let inline2 = ("invalid UTF-8 at byte " + inline1) in
-  inline2
+  let inline0 = ("" + "invalid UTF-8 at byte ") in
+  let inline1 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
+  let inline2 = inherent#isize#isize#to_string(inline1) in
+  let inline3 = (inline0 + inline2) in
+  inline3
 }
 
 fn trait_impl#PartialEq#std::utf8::Utf8Error#eq(
@@ -2177,16 +2179,17 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
               let inline2 = std::io::Error { details: inline1 } in
               jump inline_cont2(inline2)
             } in
-            let inline3 = std::utf8::Utf8Error.valid_up_to_value(x2) in
-            let inline4 = inherent#isize#isize#to_string(inline3) in
-            let inline5 = ("invalid UTF-8 at byte " + inline4) in
-            jump inline_cont1(inline5)
+            let inline3 = ("" + "invalid UTF-8 at byte ") in
+            let inline4 = std::utf8::Utf8Error.valid_up_to_value(x2) in
+            let inline5 = inherent#isize#isize#to_string(inline4) in
+            let inline6 = (inline3 + inline5) in
+            jump inline_cont1(inline6)
           },
         }
       } in
-      let inline6 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
-      let inline7 = std::utf8::decode(inline6) in
-      jump inline_cont0(inline7)
+      let inline7 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
+      let inline8 = std::utf8::decode(inline7) in
+      jump inline_cont0(inline8)
     },
     Tag_1 => {
       let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
@@ -2706,16 +2709,17 @@ fn std::fs::read_file_structured(path/0: string) -> Result__string__std::fs::Err
               let inline2 = std::fs::Error { details: inline1 } in
               jump inline_cont2(inline2)
             } in
-            let inline3 = std::utf8::Utf8Error.valid_up_to_value(x2) in
-            let inline4 = inherent#isize#isize#to_string(inline3) in
-            let inline5 = ("invalid UTF-8 at byte " + inline4) in
-            jump inline_cont1(inline5)
+            let inline3 = ("" + "invalid UTF-8 at byte ") in
+            let inline4 = std::utf8::Utf8Error.valid_up_to_value(x2) in
+            let inline5 = inherent#isize#isize#to_string(inline4) in
+            let inline6 = (inline3 + inline5) in
+            jump inline_cont1(inline6)
           },
         }
       } in
-      let inline6 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
-      let inline7 = std::utf8::decode(inline6) in
-      jump inline_cont0(inline7)
+      let inline7 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
+      let inline8 = std::utf8::decode(inline7) in
+      jump inline_cont0(inline8)
     },
     Tag_1 => {
       let x3 = Result__std::bytes::Bytes__std::fs::Error::Err._0(mtmp0) in

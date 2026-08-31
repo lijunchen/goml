@@ -2130,11 +2130,6 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
                                         if t57 {
                                             var mtmp0 Option__char = char_from_u32(8)
                                             switch mtmp0._tag {
-                                            case 0:
-                                                var t52 *ref_int_x = value__0.index
-                                                var t53 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t52)
-                                                segment__0 = t53
-                                                continue
                                             case 1:
                                                 var x0 rune = mtmp0._v1_0
                                                 _goml_m_inherent_i_std_p_text__he83b4afafc069a3c24c64018b13ca033_r_i_write__char(builder__0, x0)
@@ -2143,18 +2138,16 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
                                                 segment__0 = t53
                                                 continue
                                             default:
-                                                panic("non-exhaustive match")
+                                                var t52 *ref_int_x = value__0.index
+                                                var t53 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t52)
+                                                segment__0 = t53
+                                                continue
                                             }
                                         } else {
                                             var t59 bool = escape__0 == 102
                                             if t59 {
                                                 var mtmp1 Option__char = char_from_u32(12)
                                                 switch mtmp1._tag {
-                                                case 0:
-                                                    var t52 *ref_int_x = value__0.index
-                                                    var t53 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t52)
-                                                    segment__0 = t53
-                                                    continue
                                                 case 1:
                                                     var x1 rune = mtmp1._v1_0
                                                     _goml_m_inherent_i_std_p_text__he83b4afafc069a3c24c64018b13ca033_r_i_write__char(builder__0, x1)
@@ -2163,7 +2156,10 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
                                                     segment__0 = t53
                                                     continue
                                                 default:
-                                                    panic("non-exhaustive match")
+                                                    var t52 *ref_int_x = value__0.index
+                                                    var t53 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t52)
+                                                    segment__0 = t53
+                                                    continue
                                                 }
                                             } else {
                                                 var t61 bool = escape__0 == 110
