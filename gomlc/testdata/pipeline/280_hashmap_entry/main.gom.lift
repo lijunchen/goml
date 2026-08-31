@@ -159,17 +159,14 @@ fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/
 fn inherent#HashMapEntry#HashMapEntry[K,V]#remove_entry__K_Key__V_isize(
   self/0: HashMapEntry__Key__isize
 ) -> Option__(Key,isize) {
-  let mtmp0 = inherent#HashMapEntry#HashMapEntry[K,V]#remove__K_Key__V_isize(self/0) in
-  match mtmp0 {
-    Option__isize::None => {
-      Option__(Key,isize)::None
-    },
-    Option__isize::Some(x0) => {
-      let x0 = Option__isize::Some._0(mtmp0) in
-      let value/0 = x0 in
-      Option__(Key,isize)::Some((HashMapEntry__Key__isize.key(self/0), value/0))
-    },
-  }
+  inherent#Option#Option[T]#map__T_isize__U_(Key,isize)(
+    inherent#HashMapEntry#HashMapEntry[K,V]#remove__K_Key__V_isize(self/0),
+    pack_closure[inherent#closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4#closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4#apply](
+      closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4 {
+        self_0: self/0
+      }
+    )
+  )
 }
 
 fn inherent#Option#Option[T]#unwrap_or__T_(Key,isize)(
@@ -275,6 +272,22 @@ fn inherent#HashMapEntry#HashMapEntry[K,V]#remove__K_Key__V_isize(
     HashMapEntry__Key__isize.values(self/0),
     HashMapEntry__Key__isize.key(self/0)
   )
+}
+
+fn inherent#Option#Option[T]#map__T_isize__U_(Key,isize)(
+  self/0: Option__isize,
+  map_fn/0: (isize) -> (Key, isize)
+) -> Option__(Key,isize) {
+  match self/0 {
+    Option__isize::None => {
+      Option__(Key,isize)::None
+    },
+    Option__isize::Some(x0) => {
+      let x0 = Option__isize::Some._0(self/0) in
+      let value/0 = x0 in
+      Option__(Key,isize)::Some(map_fn/0(value/0))
+    },
+  }
 }
 
 fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
@@ -425,4 +438,13 @@ fn inherent#closure_env_main_3#closure_env_main_3#apply(
   value/0: isize
 ) -> isize {
   (value/0 + 1)
+}
+
+fn inherent#closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4#closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4#apply(
+  env0: closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4,
+  value/0: isize
+) -> (Key, isize) {
+  let self/0 =
+    closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4.self_0(env0) in
+  (HashMapEntry__Key__isize.key(self/0), value/0)
 }

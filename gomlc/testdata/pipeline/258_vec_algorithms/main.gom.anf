@@ -4653,46 +4653,41 @@ fn inherent#FrozenVec#FrozenVec[T]#contains__T_isize(
   self/0: FrozenVec__isize,
   expected/0: isize
 ) -> bool {
-  let index/0 = 0 in
-  join exit0() -> bool {
-    false
-  } in
-  joinrec {
-    join loop0() -> bool {
-      join inline_cont0(t0: isize) -> bool {
-        let t1 = (index/0 < t0) in
-        if t1 {
-          join inline_cont1(t2: isize) -> bool {
-            join inline_cont2(t3: bool) -> bool {
-              join k0() -> bool {
-                let compound_old0 = index/0 in
-                let compound_value0 = 1 in
-                let t4 = (compound_old0 + compound_value0) in
-                let t5 = index/0 = t4 in
-                jump loop0()
-              } in
-              if t3 {
-                true
-              } else {
-                jump k0()
-              }
-            } in
-            let inline0 = (t2 == expected/0) in
-            jump inline_cont2(inline0)
-          } in
-          let inline1 = FrozenVec__isize.values(self/0) in
-          let inline2 = @intrinsic(vec.get)(inline1, index/0) in
-          jump inline_cont1(inline2)
-        } else {
-          jump exit0()
-        }
-      } in
-      let inline3 = FrozenVec__isize.values(self/0) in
-      let inline4 = inherent#Vec#Vec[T]#len__T_isize(inline3) in
-      jump inline_cont0(inline4)
+  let t0 = FrozenVec__isize.values(self/0) in
+  join inline_cont0(for_iter0: FnIterator__isize) -> bool {
+    join exit0() -> bool {
+      false
     } in
+    joinrec {
+      join loop0() -> bool {
+        join inline_cont1(for_next0: Option__isize) -> bool {
+          match for_next0 {
+            Tag_0 => {
+              jump exit0()
+            },
+            Tag_1 => {
+              let x0 = Option__isize::Some._0(for_next0) in
+              join inline_cont2(t1: bool) -> bool {
+                if t1 {
+                  true
+                } else {
+                  jump loop0()
+                }
+              } in
+              let inline0 = (x0 == expected/0) in
+              jump inline_cont2(inline0)
+            },
+          }
+        } in
+        let inline1 = FnIterator__isize.next_fn(for_iter0) in
+        let inline2 = inline1() in
+        jump inline_cont1(inline2)
+      } in
+    } in
+    jump loop0()
   } in
-  jump loop0()
+  let inline3 = inherent#Vec#Vec[T]#iter__T_isize(t0) in
+  jump inline_cont0(inline3)
 }
 
 fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
@@ -5298,16 +5293,21 @@ fn inherent#Vec#Vec[T]#copy__T_isize(self/0: Vec[isize]) -> Vec[isize] {
   jump inline_cont0(inline3)
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#len__T_isize(self/0: FrozenVec__isize) -> isize {
-  let t0 = FrozenVec__isize.values(self/0) in
-  let inline0 = @intrinsic(vec.len)(t0) in
-  inline0
-}
-
-fn inherent#FrozenVec#FrozenVec[T]#get__T_isize(self/0: FrozenVec__isize, index/0: isize) -> isize {
-  let t0 = FrozenVec__isize.values(self/0) in
-  let t1 = @intrinsic(vec.get)(t0, index/0) in
-  t1
+fn trait_impl#IntoIterator#Vec[isize]#into_iter(self/0: Vec[isize]) -> FnIterator__isize {
+  let inline0 = @intrinsic(ref.new)(0) in
+  let inline1 = inherent#Vec#Vec[T]#len__T_isize(self/0) in
+  let inline2 =
+    closure_env_inherent_Vec_Vec_T_iter_T_isize_14 {
+      index_0: inline0,
+      len_1: inline1,
+      self_2: self/0
+    } in
+  let inline3 =
+    pack_closure[inherent#closure_env_inherent_Vec_Vec_T_iter_T_isize_14#closure_env_inherent_Vec_Vec_T_iter_T_isize_14#apply](
+      inline2
+    ) in
+  let inline4 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline3) in
+  inline4
 }
 
 fn inherent#Option#Option[T]#is_some__T_isize(self/0: Option__isize) -> bool {
@@ -5906,6 +5906,26 @@ fn inherent#Vec#Vec[T]#stable_sort_by__T_(isize,isize)(
   jump inline_cont0(inline18)
 }
 
+fn inherent#Vec#Vec[T]#iter__T_isize(self/0: Vec[isize]) -> FnIterator__isize {
+  let index/0 = @intrinsic(ref.new)(0) in
+  join inline_cont0(len/0: isize) -> FnIterator__isize {
+    let t0 =
+      closure_env_inherent_Vec_Vec_T_iter_T_isize_14 {
+        index_0: index/0,
+        len_1: len/0,
+        self_2: self/0
+      } in
+    let t1 =
+      pack_closure[inherent#closure_env_inherent_Vec_Vec_T_iter_T_isize_14#closure_env_inherent_Vec_Vec_T_iter_T_isize_14#apply](
+        t0
+      ) in
+    let inline0 = FnIterator__isize { next_fn: t1 } in
+    inline0
+  } in
+  let inline1 = @intrinsic(vec.len)(self/0) in
+  jump inline_cont0(inline1)
+}
+
 fn decimal_string(value/0: u64) -> string {
   let t0 = (value/0 == 0) in
   join k0() -> string {
@@ -6155,6 +6175,25 @@ fn inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#
   if t0 {
     let t1 = (value/0 + 1) in
     let _wild0 = @intrinsic(ref.set)(current/0, t1) in
+    let t2 = Option__isize::Some(value/0) in
+    t2
+  } else {
+    Tag_0
+  }
+}
+
+fn inherent#closure_env_inherent_Vec_Vec_T_iter_T_isize_14#closure_env_inherent_Vec_Vec_T_iter_T_isize_14#apply(
+  env0: closure_env_inherent_Vec_Vec_T_iter_T_isize_14
+) -> Option__isize {
+  let index/0 = closure_env_inherent_Vec_Vec_T_iter_T_isize_14.index_0(env0) in
+  let len/0 = closure_env_inherent_Vec_Vec_T_iter_T_isize_14.len_1(env0) in
+  let self/0 = closure_env_inherent_Vec_Vec_T_iter_T_isize_14.self_2(env0) in
+  let current/0 = @intrinsic(ref.get)(index/0) in
+  let t0 = (current/0 < len/0) in
+  if t0 {
+    let value/0 = @intrinsic(vec.get)(self/0, current/0) in
+    let t1 = (current/0 + 1) in
+    let _wild0 = @intrinsic(ref.set)(index/0, t1) in
     let t2 = Option__isize::Some(value/0) in
     t2
   } else {

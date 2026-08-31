@@ -4368,18 +4368,30 @@ fn inherent#Slice#Slice[T]#len[T](self/0: Slice[T]) -> isize {
 
 fn inherent#Slice#Slice[T]#to_vec[T](self/0: Slice[T]) -> Vec[T] {
   let result/0 = inherent#Vec#Vec[T]#with_capacity(inherent#Slice#Slice[T]#len(self/0)) in
-  let index/0 = 0 in
   let _wild0 =
-    while (index/0 < inherent#Slice#Slice[T]#len(self/0)) {
-        {
-          let _wild1 = inherent#Vec#Vec[T]#push(result/0, @intrinsic(slice.get)(self/0, index/0)) in
-          let _wild2 =
-            {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+    {
+      let for_iter0 = trait_call[IntoIterator::into_iter](self/0) in
+      while true {
+          {
+            let for_next0 = trait_call[Iterator::next](for_iter0) in
+            match for_next0 {
+              Option::None => {
+                break
+              },
+              Option::Some(x0) => {
+                {
+                  let x0 = Option::Some._0(for_next0) in
+                  {
+                    let value/0 = x0 in
+                    {
+                      inherent#Vec#Vec[T]#push(result/0, value/0)
+                    }
+                  }
+                }
+              },
+            }
+          }
+      }
     } in
   result/0
 }

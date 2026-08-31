@@ -256,6 +256,25 @@ type _goml_vec_uint32 struct {
     items []uint32
 }
 
+type ref_int_x struct {
+    value int
+}
+
+func ref__Ref_3int(value int) *ref_int_x {
+    return &ref_int_x{
+        value: value,
+    }
+}
+
+func ref_get__Ref_3int(reference *ref_int_x) int {
+    return reference.value
+}
+
+func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
+    reference.value = value
+    return struct{}{}
+}
+
 type Tuple3_4bool_6string_6string struct {
     _0 bool
     _1 string
@@ -435,10 +454,20 @@ type _goml_m_std_p_fs_p_DirEntry struct {
     file_type_value _goml_m_std_p_fs_p_FileType
 }
 
+type FnIterator__u8 struct {
+    next_fn func() Option__u8
+}
+
 type closure_env_std_io_read_stdin_to_string_0 struct {}
 
 type closure_env_std_fs_read_file_structured_1 struct {
     path_0 string
+}
+
+type closure_env_inherent_Slice_Slice_T_iter_T_u8_2 struct {
+    index_0 *ref_int_x
+    len_1 int
+    self_2 []uint8
 }
 
 type Ordering int32
@@ -1431,28 +1460,29 @@ func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_get____T__u8(self__0 []uint8, ind
 
 func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_to__vec____T__u8(self__0 []uint8) *_goml_vec_uint8 {
     var t0 int
-    var inline3 int = len(self__0)
-    t0 = inline3
+    var inline5 int = len(self__0)
+    t0 = inline5
     var result__0 *_goml_vec_uint8
-    var inline2 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t0)
-    result__0 = inline2
-    var index__0 int = 0
+    var inline4 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t0)
+    result__0 = inline4
+    var for_iter0 FnIterator__u8
+    var inline3 FnIterator__u8 = _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_iter____T__u8(self__0)
+    for_iter0 = inline3
     Loop_loop0:
     for {
-        var t1 int
-        var inline1 int = len(self__0)
-        t1 = inline1
-        var t2 bool = index__0 < t1
-        if t2 {
-            var t3 uint8 = self__0[index__0]
-            vec_push__Vec_5uint8(result__0, t3)
-            var compound_old0 int = index__0
-            var compound_value0 int = 1
-            var t4 int = compound_old0 + compound_value0
-            index__0 = t4
-            continue
-        } else {
+        var for_next0 Option__u8
+        var inline1 func() Option__u8 = for_iter0.next_fn
+        var inline2 Option__u8 = inline1()
+        for_next0 = inline2
+        switch for_next0._tag {
+        case 0:
             break Loop_loop0
+        case 1:
+            var x0 uint8 = for_next0._v1_0
+            vec_push__Vec_5uint8(result__0, x0)
+            continue
+        default:
+            panic("non-exhaustive match")
         }
     }
     return result__0
@@ -1810,6 +1840,25 @@ func signed_decimal_string(value__0 int64) string {
     }
 }
 
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_iter____T__u8(self__0 []uint8) FnIterator__u8 {
+    var index__0 *ref_int_x = ref__Ref_3int(0)
+    var len__0 int
+    var inline1 int = len(self__0)
+    len__0 = inline1
+    var t0 closure_env_inherent_Slice_Slice_T_iter_T_u8_2 = closure_env_inherent_Slice_Slice_T_iter_T_u8_2{
+        index_0: index__0,
+        len_1: len__0,
+        self_2: self__0,
+    }
+    var t1 func() Option__u8 = func() Option__u8 {
+        return _goml_m_inherent_i_closure__en_h481af7ced3d7a03f70b6419e8b58e2d0___u8__2_i_apply(t0)
+    }
+    var inline0 FnIterator__u8 = FnIterator__u8{
+        next_fn: t1,
+    }
+    return inline0
+}
+
 func utf8_invalid_decode() Tuple3_4bool_4char_3int {
     var t0 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
         _0: false,
@@ -1985,6 +2034,30 @@ func _goml_m_inherent_i_closure__en_h3dd0cb03305303b9cfff8ae48a351c84_ured__1_i_
         details: inline1,
     }
     return inline2
+}
+
+func _goml_m_inherent_i_closure__en_h481af7ced3d7a03f70b6419e8b58e2d0___u8__2_i_apply(env0 closure_env_inherent_Slice_Slice_T_iter_T_u8_2) Option__u8 {
+    var index__0 *ref_int_x = env0.index_0
+    var len__0 int = env0.len_1
+    var self__0 []uint8 = env0.self_2
+    var current__0 int = ref_get__Ref_3int(index__0)
+    var t0 bool = current__0 < len__0
+    if t0 {
+        var value__0 uint8
+        var inline0 uint8 = self__0[current__0]
+        value__0 = inline0
+        var t1 int = current__0 + 1
+        ref_set__Ref_3int(index__0, t1)
+        var t2 Option__u8 = Option__u8{
+            _tag: 1,
+            _v1_0: value__0,
+        }
+        return t2
+    } else {
+        return Option__u8{
+            _tag: 0,
+        }
+    }
 }
 
 func main() {

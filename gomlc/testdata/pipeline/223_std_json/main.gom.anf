@@ -3538,35 +3538,35 @@ fn std::serde::schema_field_index(
     Tag_1 => {
       let x1 = std::serde::FieldKey::Name._0(key/0) in
       let index/0 = 0 in
+      let for_limit0 = @intrinsic(vec.len)(fields/0) in
+      let for_index0 = 0 in
       join exit0() -> isize {
         -1
       } in
       joinrec {
         join loop0() -> isize {
-          join inline_cont1(t3: isize) -> isize {
-            let t4 = (index/0 < t3) in
-            if t4 {
-              let t5 = @intrinsic(vec.get)(fields/0, index/0) in
-              let t6 = t5.0 in
-              let t7 = (t6 == x1) in
-              join k1() -> isize {
-                let compound_old0 = index/0 in
-                let compound_value0 = 1 in
-                let t8 = (compound_old0 + compound_value0) in
-                let t9 = index/0 = t8 in
-                jump loop0()
-              } in
-              if t7 {
-                index/0
-              } else {
-                jump k1()
-              }
+          let t3 = (for_index0 < for_limit0) in
+          if t3 {
+            let for_item0 = @intrinsic(vec.get)(fields/0, for_index0) in
+            let t4 = (for_index0 + 1) in
+            let _wild0 = for_index0 = t4 in
+            let t5 = for_item0.0 in
+            let t6 = (t5 == x1) in
+            join k1() -> isize {
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              let t7 = (compound_old0 + compound_value0) in
+              let t8 = index/0 = t7 in
+              jump loop0()
+            } in
+            if t6 {
+              index/0
             } else {
-              jump exit0()
+              jump k1()
             }
-          } in
-          let inline1 = @intrinsic(vec.len)(fields/0) in
-          jump inline_cont1(inline1)
+          } else {
+            jump exit0()
+          }
         } in
       } in
       jump loop0()
@@ -3582,35 +3582,35 @@ fn std::serde::schema_variant_index(
     Tag_0 => {
       let x0 = std::serde::VariantKey::Index._0(key/0) in
       let index/0 = 0 in
+      let for_limit0 = @intrinsic(vec.len)(variants/0) in
+      let for_index0 = 0 in
       join exit0() -> isize {
         -1
       } in
       joinrec {
         join loop0() -> isize {
-          join inline_cont0(t0: isize) -> isize {
-            let t1 = (index/0 < t0) in
-            if t1 {
-              let t2 = @intrinsic(vec.get)(variants/0, index/0) in
-              let t3 = std::serde::VariantSchema.index(t2) in
-              let t4 = (t3 == x0) in
-              join k0() -> isize {
-                let compound_old0 = index/0 in
-                let compound_value0 = 1 in
-                let t5 = (compound_old0 + compound_value0) in
-                let t6 = index/0 = t5 in
-                jump loop0()
-              } in
-              if t4 {
-                index/0
-              } else {
-                jump k0()
-              }
+          let t0 = (for_index0 < for_limit0) in
+          if t0 {
+            let for_item0 = @intrinsic(vec.get)(variants/0, for_index0) in
+            let t1 = (for_index0 + 1) in
+            let _wild0 = for_index0 = t1 in
+            let t2 = std::serde::VariantSchema.index(for_item0) in
+            let t3 = (t2 == x0) in
+            join k0() -> isize {
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              let t4 = (compound_old0 + compound_value0) in
+              let t5 = index/0 = t4 in
+              jump loop0()
+            } in
+            if t3 {
+              index/0
             } else {
-              jump exit0()
+              jump k0()
             }
-          } in
-          let inline0 = @intrinsic(vec.len)(variants/0) in
-          jump inline_cont0(inline0)
+          } else {
+            jump exit0()
+          }
         } in
       } in
       jump loop0()
@@ -3618,35 +3618,35 @@ fn std::serde::schema_variant_index(
     Tag_1 => {
       let x1 = std::serde::VariantKey::Name._0(key/0) in
       let index/1 = 0 in
+      let for_limit1 = @intrinsic(vec.len)(variants/0) in
+      let for_index1 = 0 in
       join exit1() -> isize {
         -1
       } in
       joinrec {
         join loop1() -> isize {
-          join inline_cont1(t7: isize) -> isize {
-            let t8 = (index/1 < t7) in
-            if t8 {
-              let t9 = @intrinsic(vec.get)(variants/0, index/1) in
-              let t10 = std::serde::VariantSchema.name(t9) in
-              let t11 = (t10 == x1) in
-              join k1() -> isize {
-                let compound_old1 = index/1 in
-                let compound_value1 = 1 in
-                let t12 = (compound_old1 + compound_value1) in
-                let t13 = index/1 = t12 in
-                jump loop1()
-              } in
-              if t11 {
-                index/1
-              } else {
-                jump k1()
-              }
+          let t6 = (for_index1 < for_limit1) in
+          if t6 {
+            let for_item1 = @intrinsic(vec.get)(variants/0, for_index1) in
+            let t7 = (for_index1 + 1) in
+            let _wild1 = for_index1 = t7 in
+            let t8 = std::serde::VariantSchema.name(for_item1) in
+            let t9 = (t8 == x1) in
+            join k1() -> isize {
+              let compound_old1 = index/1 in
+              let compound_value1 = 1 in
+              let t10 = (compound_old1 + compound_value1) in
+              let t11 = index/1 = t10 in
+              jump loop1()
+            } in
+            if t9 {
+              index/1
             } else {
-              jump exit1()
+              jump k1()
             }
-          } in
-          let inline1 = @intrinsic(vec.len)(variants/0) in
-          jump inline_cont1(inline1)
+          } else {
+            jump exit1()
+          }
         } in
       } in
       jump loop1()
@@ -8214,7 +8214,8 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes
 ) -> Result__()__string {
   join inline_cont0(t0: isize) -> Result__()__string {
     join inline_cont1(values/0: Vec[std::serde::Value]) -> Result__()__string {
-      let index/0 = 0 in
+      let for_limit0 = @intrinsic(slice.len)(value/0) in
+      let for_index0 = 0 in
       join exit0() -> Result__()__string {
         let t1 = std::serde::Value::Sequence(values/0) in
         let t2 = std::serde::append_serialized_value(self/0, t1) in
@@ -8222,35 +8223,26 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes
       } in
       joinrec {
         join loop0() -> Result__()__string {
-          join inline_cont2(t3: isize) -> Result__()__string {
-            let t4 = (index/0 < t3) in
-            if t4 {
-              let t5 = @intrinsic(slice.get)(value/0, index/0) in
-              let t6 = std::serde::Value::Uint8(t5) in
-              join inline_cont3(_wild0: ()) -> Result__()__string {
-                let compound_old0 = index/0 in
-                let compound_value0 = 1 in
-                let t7 = (compound_old0 + compound_value0) in
-                let t8 = index/0 = t7 in
-                jump loop0()
-              } in
-              let inline0 = @intrinsic(vec.push)(values/0, t6) in
-              jump inline_cont3(())
-            } else {
-              jump exit0()
-            }
-          } in
-          let inline1 = @intrinsic(slice.len)(value/0) in
-          jump inline_cont2(inline1)
+          let t3 = (for_index0 < for_limit0) in
+          if t3 {
+            let for_item0 = @intrinsic(slice.get)(value/0, for_index0) in
+            let t4 = (for_index0 + 1) in
+            let _wild0 = for_index0 = t4 in
+            let t5 = std::serde::Value::Uint8(for_item0) in
+            let inline0 = @intrinsic(vec.push)(values/0, t5) in
+            jump loop0()
+          } else {
+            jump exit0()
+          }
         } in
       } in
       jump loop0()
     } in
-    let inline2 = @intrinsic(vec.with_capacity)(t0) in
-    jump inline_cont1(inline2)
+    let inline1 = @intrinsic(vec.with_capacity)(t0) in
+    jump inline_cont1(inline1)
   } in
-  let inline3 = @intrinsic(slice.len)(value/0) in
-  jump inline_cont0(inline3)
+  let inline2 = @intrinsic(slice.len)(value/0) in
+  jump inline_cont0(inline2)
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_optional(
@@ -19521,7 +19513,9 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
   join k0() -> Result__()__string {
     let t0 = std::json::JsonSerializer.builder(self/0) in
     join inline_cont0(_wild0: ()) -> Result__()__string {
-      let index/0 = 0 in
+      let first/0 = true in
+      let for_limit0 = @intrinsic(slice.len)(value/0) in
+      let for_index0 = 0 in
       join exit0() -> Result__()__string {
         let t1 = std::json::JsonSerializer.builder(self/0) in
         join inline_cont1(_wild1: ()) -> Result__()__string {
@@ -19536,55 +19530,46 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
       } in
       joinrec {
         join loop0() -> Result__()__string {
-          join inline_cont2(t3: isize) -> Result__()__string {
-            let t4 = (index/0 < t3) in
-            if t4 {
-              let t5 = (index/0 > 0) in
-              join k1() -> Result__()__string {
-                let t6 = std::json::JsonSerializer.builder(self/0) in
-                let t7 = @intrinsic(slice.get)(value/0, index/0) in
-                join inline_cont3(t8: string) -> Result__()__string {
-                  let _wild2 =
-                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                      t6,
-                      t8
-                    ) in
-                  let compound_old0 = index/0 in
-                  let compound_value0 = 1 in
-                  let t9 = (compound_old0 + compound_value0) in
-                  let t10 = index/0 = t9 in
-                  jump loop0()
-                } in
-                let inline3 = __goml_builtin_uint8_to_string(t7) in
-                jump inline_cont3(inline3)
+          let t3 = (for_index0 < for_limit0) in
+          if t3 {
+            let for_item0 = @intrinsic(slice.get)(value/0, for_index0) in
+            let t4 = (for_index0 + 1) in
+            let _wild2 = for_index0 = t4 in
+            join k1() -> Result__()__string {
+              let t5 = std::json::JsonSerializer.builder(self/0) in
+              join inline_cont2(t6: string) -> Result__()__string {
+                let t7 =
+                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(t5, t6) in
+                jump loop0()
               } in
-              if t5 {
-                let t11 = std::json::JsonSerializer.builder(self/0) in
-                let inline4 = ',' in
-                let inline5 = inherent#char#char#to_string(inline4) in
-                let inline6 =
-                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                    t11,
-                    inline5
-                  ) in
-                jump k1()
-              } else {
-                jump k1()
-              }
+              let inline3 = __goml_builtin_uint8_to_string(for_item0) in
+              jump inline_cont2(inline3)
+            } in
+            if first/0 {
+              let _wild3 = first/0 = false in
+              jump k1()
             } else {
-              jump exit0()
+              let t8 = std::json::JsonSerializer.builder(self/0) in
+              let inline4 = ',' in
+              let inline5 = inherent#char#char#to_string(inline4) in
+              let inline6 =
+                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                  t8,
+                  inline5
+                ) in
+              jump k1()
             }
-          } in
-          let inline7 = @intrinsic(slice.len)(value/0) in
-          jump inline_cont2(inline7)
+          } else {
+            jump exit0()
+          }
         } in
       } in
       jump loop0()
     } in
-    let inline8 = '[' in
-    let inline9 = inherent#char#char#to_string(inline8) in
-    let inline10 =
-      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(t0, inline9) in
+    let inline7 = '[' in
+    let inline8 = inherent#char#char#to_string(inline7) in
+    let inline9 =
+      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(t0, inline8) in
     jump inline_cont0(())
   } in
   match mtmp0 {
@@ -19593,8 +19578,8 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
     },
     Tag_1 => {
       let x0 = Result__()__string::Err._0(mtmp0) in
-      let t12 = Result__()__string::Err(x0) in
-      t12
+      let t9 = Result__()__string::Err(x0) in
+      t9
     },
   }
 }
@@ -21791,40 +21776,39 @@ fn inherent#Slice#Slice[T]#get__T_u8(self/0: Slice[u8], index/0: isize) -> u8 {
 fn inherent#Slice#Slice[T]#to_vec__T_u8(self/0: Slice[u8]) -> Vec[u8] {
   join inline_cont0(t0: isize) -> Vec[u8] {
     join inline_cont1(result/0: Vec[u8]) -> Vec[u8] {
-      let index/0 = 0 in
-      join exit0() -> Vec[u8] {
-        result/0
-      } in
-      joinrec {
-        join loop0() -> Vec[u8] {
-          join inline_cont2(t1: isize) -> Vec[u8] {
-            let t2 = (index/0 < t1) in
-            if t2 {
-              let t3 = @intrinsic(slice.get)(self/0, index/0) in
-              join inline_cont3(_wild0: ()) -> Vec[u8] {
-                let compound_old0 = index/0 in
-                let compound_value0 = 1 in
-                let t4 = (compound_old0 + compound_value0) in
-                let t5 = index/0 = t4 in
-                jump loop0()
-              } in
-              let inline0 = @intrinsic(vec.push)(result/0, t3) in
-              jump inline_cont3(())
-            } else {
-              jump exit0()
-            }
-          } in
-          let inline1 = @intrinsic(slice.len)(self/0) in
-          jump inline_cont2(inline1)
+      join inline_cont2(for_iter0: FnIterator__u8) -> Vec[u8] {
+        join exit0() -> Vec[u8] {
+          result/0
         } in
+        joinrec {
+          join loop0() -> Vec[u8] {
+            join inline_cont3(for_next0: Option__u8) -> Vec[u8] {
+              match for_next0 {
+                Tag_0 => {
+                  jump exit0()
+                },
+                Tag_1 => {
+                  let x0 = Option__u8::Some._0(for_next0) in
+                  let inline0 = @intrinsic(vec.push)(result/0, x0) in
+                  jump loop0()
+                },
+              }
+            } in
+            let inline1 = FnIterator__u8.next_fn(for_iter0) in
+            let inline2 = inline1() in
+            jump inline_cont3(inline2)
+          } in
+        } in
+        jump loop0()
       } in
-      jump loop0()
+      let inline3 = inherent#Slice#Slice[T]#iter__T_u0(self/0) in
+      jump inline_cont2(inline3)
     } in
-    let inline2 = @intrinsic(vec.with_capacity)(t0) in
-    jump inline_cont1(inline2)
+    let inline4 = @intrinsic(vec.with_capacity)(t0) in
+    jump inline_cont1(inline4)
   } in
-  let inline3 = @intrinsic(slice.len)(self/0) in
-  jump inline_cont0(inline3)
+  let inline5 = @intrinsic(slice.len)(self/0) in
+  jump inline_cont0(inline5)
 }
 
 fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
@@ -21975,13 +21959,6 @@ fn __goml_builtin_string_parse_float64(value/0: string) -> (bool, f64) {
 
 fn inherent#Vec#Vec[T]#len__T_(string,std::serde::Schema)(
   self/0: Vec[(string, std::serde::Schema)]
-) -> isize {
-  let t0 = @intrinsic(vec.len)(self/0) in
-  t0
-}
-
-fn inherent#Vec#Vec[T]#len__T_std::serde::VariantSchema(
-  self/0: Vec[std::serde::VariantSchema]
 ) -> isize {
   let t0 = @intrinsic(vec.len)(self/0) in
   t0
@@ -24045,6 +24022,29 @@ fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
   t0
 }
 
+fn trait_impl#IntoIterator#Slice[u8]#into_iter(self/0: Slice[u8]) -> FnIterator__u8 {
+  let inline0 = @intrinsic(ref.new)(0) in
+  let inline1 = inherent#Slice#Slice[T]#len__T_u0(self/0) in
+  let inline2 =
+    closure_env_inherent_Slice_Slice_T_iter_T_u8_16 {
+      index_0: inline0,
+      len_1: inline1,
+      self_2: self/0
+    } in
+  let inline3 =
+    pack_closure[inherent#closure_env_inherent_Slice_Slice_T_iter_T_u8_16#closure_env_inherent_Slice_Slice_T_iter_T_u8_16#apply](
+      inline2
+    ) in
+  let inline4 = inherent#FnIterator#FnIterator[T]#from_fn__T_u0(inline3) in
+  inline4
+}
+
+fn trait_impl#Iterator#FnIterator__u8#next(self/0: FnIterator__u8) -> Option__u8 {
+  let t0 = FnIterator__u8.next_fn(self/0) in
+  let t1 = t0() in
+  t1
+}
+
 fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {
   let length/0 = inherent#string#string#byte_len(value/0) in
   let t0 = (index/0 < 0) in
@@ -25240,6 +25240,26 @@ fn signed_decimal_string(value/0: i64) -> string {
     let t6 = decimal_string(t5) in
     t6
   }
+}
+
+fn inherent#Slice#Slice[T]#iter__T_u8(self/0: Slice[u8]) -> FnIterator__u8 {
+  let index/0 = @intrinsic(ref.new)(0) in
+  join inline_cont0(len/0: isize) -> FnIterator__u8 {
+    let t0 =
+      closure_env_inherent_Slice_Slice_T_iter_T_u8_16 {
+        index_0: index/0,
+        len_1: len/0,
+        self_2: self/0
+      } in
+    let t1 =
+      pack_closure[inherent#closure_env_inherent_Slice_Slice_T_iter_T_u8_16#closure_env_inherent_Slice_Slice_T_iter_T_u8_16#apply](
+        t0
+      ) in
+    let inline0 = FnIterator__u8 { next_fn: t1 } in
+    inline0
+  } in
+  let inline1 = @intrinsic(slice.len)(self/0) in
+  jump inline_cont0(inline1)
 }
 
 fn utf8_invalid_decode() -> (bool, char, isize) {
@@ -26666,6 +26686,11 @@ fn ascii_is_lowercase(value/0: u8) -> bool {
   } else {
     false
   }
+}
+
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_u8(next_fn/0: () -> Option__u8) -> FnIterator__u8 {
+  let t0 = FnIterator__u8 { next_fn: next_fn/0 } in
+  t0
 }
 
 fn string_equals_ascii_case(value/0: string, expected/0: string) -> bool {
@@ -28313,6 +28338,28 @@ fn inherent#closure_env_goml_builtin_range_15#closure_env_goml_builtin_range_15#
     let _wild0 = @intrinsic(ref.set)(current/0, t1) in
     let t2 = Option__isize::Some(value/0) in
     t2
+  } else {
+    Tag_0
+  }
+}
+
+fn inherent#closure_env_inherent_Slice_Slice_T_iter_T_u8_16#closure_env_inherent_Slice_Slice_T_iter_T_u8_16#apply(
+  env0: closure_env_inherent_Slice_Slice_T_iter_T_u8_16
+) -> Option__u8 {
+  let index/0 = closure_env_inherent_Slice_Slice_T_iter_T_u8_16.index_0(env0) in
+  let len/0 = closure_env_inherent_Slice_Slice_T_iter_T_u8_16.len_1(env0) in
+  let self/0 = closure_env_inherent_Slice_Slice_T_iter_T_u8_16.self_2(env0) in
+  let current/0 = @intrinsic(ref.get)(index/0) in
+  let t0 = (current/0 < len/0) in
+  if t0 {
+    join inline_cont0(value/0: u8) -> Option__u8 {
+      let t1 = (current/0 + 1) in
+      let _wild0 = @intrinsic(ref.set)(index/0, t1) in
+      let t2 = Option__u8::Some(value/0) in
+      t2
+    } in
+    let inline0 = @intrinsic(slice.get)(self/0, current/0) in
+    jump inline_cont0(inline0)
   } else {
     Tag_0
   }

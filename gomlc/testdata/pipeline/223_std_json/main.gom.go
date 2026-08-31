@@ -578,6 +578,10 @@ type _goml_m_FnIterator_____o_isize_c_char_q_ struct {
     next_fn func() _goml_m_Option_____o_isize_c_char_q_
 }
 
+type FnIterator__u8 struct {
+    next_fn func() Option__u8
+}
+
 type FnIterator__char struct {
     next_fn func() Option__char
 }
@@ -633,6 +637,12 @@ type closure_env_inherent_string_string_chars_14 struct {
 type closure_env_goml_builtin_range_15 struct {
     current_0 *ref_int_x
     end_1 int
+}
+
+type closure_env_inherent_Slice_Slice_T_iter_T_u8_16 struct {
+    index_0 *ref_int_x
+    len_1 int
+    self_2 []uint8
 }
 
 type Ordering int32

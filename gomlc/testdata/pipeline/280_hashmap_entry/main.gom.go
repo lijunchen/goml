@@ -394,6 +394,10 @@ type closure_env_main_2 struct {}
 
 type closure_env_main_3 struct {}
 
+type closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4 struct {
+    self_0 HashMapEntry__Key__isize
+}
+
 type Ordering int32
 
 type Option__isize struct {
@@ -628,28 +632,30 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__0 
 }
 
 func _goml_m_inherent_i_HashMapEntr_he7df3efa35857dbe82e86ebc4eb03056_Key____V__isize(self__0 HashMapEntry__Key__isize) _goml_m_Option_____o_Key_c_isize_q_ {
-    var mtmp0 Option__isize
-    var inline0 *hashmap_Key_int_x = self__0.values
-    var inline1 Key = self__0.key
-    var inline2 Option__isize = _goml_m_inherent_i_HashMap_i_H_h0e46f47d3ada08b881ff6860cdc9491c_Key____V__isize(inline0, inline1)
-    mtmp0 = inline2
-    switch mtmp0._tag {
+    var t0 Option__isize
+    var inline3 *hashmap_Key_int_x = self__0.values
+    var inline4 Key = self__0.key
+    var inline5 Option__isize = _goml_m_inherent_i_HashMap_i_H_h0e46f47d3ada08b881ff6860cdc9491c_Key____V__isize(inline3, inline4)
+    t0 = inline5
+    var t1 closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4 = closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4{
+        self_0: self__0,
+    }
+    var t2 func(int) Tuple2_3Key_3int = func(p0 int) Tuple2_3Key_3int {
+        return _goml_m_inherent_i_closure__en_h51dad037a23a0205e1d674d00df14e80_size__4_i_apply(t1, p0)
+    }
+    switch t0._tag {
     case 0:
         return _goml_m_Option_____o_Key_c_isize_q_{
             _tag: 0,
         }
     case 1:
-        var x0 int = mtmp0._v1_0
-        var t0 Key = self__0.key
-        var t1 Tuple2_3Key_3int = Tuple2_3Key_3int{
-            _0: t0,
-            _1: x0,
-        }
-        var t2 _goml_m_Option_____o_Key_c_isize_q_ = _goml_m_Option_____o_Key_c_isize_q_{
+        var inline0 int = t0._v1_0
+        var inline1 Tuple2_3Key_3int = t2(inline0)
+        var inline2 _goml_m_Option_____o_Key_c_isize_q_ = _goml_m_Option_____o_Key_c_isize_q_{
             _tag: 1,
-            _v1_0: t1,
+            _v1_0: inline1,
         }
-        return t2
+        return inline2
     default:
         panic("non-exhaustive match")
     }
@@ -821,6 +827,16 @@ func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(en
 func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(env0 closure_env_main_3, value__0 int) int {
     var t0 int = value__0 + 1
     return t0
+}
+
+func _goml_m_inherent_i_closure__en_h51dad037a23a0205e1d674d00df14e80_size__4_i_apply(env0 closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4, value__0 int) Tuple2_3Key_3int {
+    var self__0 HashMapEntry__Key__isize = env0.self_0
+    var t0 Key = self__0.key
+    var t1 Tuple2_3Key_3int = Tuple2_3Key_3int{
+        _0: t0,
+        _1: value__0,
+    }
+    return t1
 }
 
 func main() {

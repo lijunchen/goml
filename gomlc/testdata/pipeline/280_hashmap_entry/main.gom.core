@@ -3187,23 +3187,10 @@ fn inherent#HashMapEntry#HashMapEntry[K,V]#remove[K, V](self/0: HashMapEntry[K, 
 fn inherent#HashMapEntry#HashMapEntry[K,V]#remove_entry[K, V](self/0: HashMapEntry[K, V]) -> Option[
   (K, V)
 ] {
-  {
-    let mtmp0 = inherent#HashMapEntry#HashMapEntry[K,V]#remove(self/0) in
-    match mtmp0 {
-      Option::None => {
-        Option::None
-      },
-      Option::Some(x0) => {
-        {
-          let x0 = Option::Some._0(mtmp0) in
-          {
-            let value/0 = x0 in
-            Option::Some((HashMapEntry.key(self/0), value/0))
-          }
-        }
-      },
-    }
-  }
+  inherent#Option#Option[V]#map(
+    inherent#HashMapEntry#HashMapEntry[K,V]#remove(self/0),
+    |value/0: V| => (HashMapEntry.key(self/0), value/0)
+  )
 }
 
 fn inherent#Ref#Ref[T]#new[T](value/0: T) -> Ref[T] {
@@ -3286,6 +3273,49 @@ fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/0: Result[T, E], fallback/0:
     Result::Err(x1) => {
       {
         fallback/0
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#map[T, U](self/0: Option[T], map_fn/0: (T) -> U) -> Option[U] {
+  match self/0 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x0) => {
+      {
+        let x0 = Option::Some._0(self/0) in
+        {
+          let value/0 = x0 in
+          Option::Some(map_fn/0(value/0))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map[T, E, U](self/0: Result[T, E], map_fn/0: (T) -> U) -> Result[
+  U,
+  E
+] {
+  match self/0 {
+    Result::Ok(x0) => {
+      {
+        let x0 = Result::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result::Ok(map_fn/0(value/0))
+        }
+      }
+    },
+    Result::Err(x1) => {
+      {
+        let x1 = Result::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result::Err(error/0)
+        }
       }
     },
   }

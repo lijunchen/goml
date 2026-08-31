@@ -239,24 +239,31 @@ fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/
 fn inherent#HashMapEntry#HashMapEntry[K,V]#remove_entry__K_Key__V_isize(
   self/0: HashMapEntry__Key__isize
 ) -> Option__(Key,isize) {
-  join inline_cont0(mtmp0: Option__isize) -> Option__(Key,isize) {
-    match mtmp0 {
+  join inline_cont0(t0: Option__isize) -> Option__(Key,isize) {
+    let t1 =
+      closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4 {
+        self_0: self/0
+      } in
+    let t2 =
+      pack_closure[inherent#closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4#closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4#apply](
+        t1
+      ) in
+    match t0 {
       Tag_0 => {
         Tag_0
       },
       Tag_1 => {
-        let x0 = Option__isize::Some._0(mtmp0) in
-        let t0 = HashMapEntry__Key__isize.key(self/0) in
-        let t1 = (t0, x0) in
-        let t2 = Option__(Key,isize)::Some(t1) in
-        t2
+        let inline0 = Option__isize::Some._0(t0) in
+        let inline1 = t2(inline0) in
+        let inline2 = Option__(Key,isize)::Some(inline1) in
+        inline2
       },
     }
   } in
-  let inline0 = HashMapEntry__Key__isize.values(self/0) in
-  let inline1 = HashMapEntry__Key__isize.key(self/0) in
-  let inline2 = inherent#HashMap#HashMap[K,V]#remove_value__K_Key__V_isize(inline0, inline1) in
-  jump inline_cont0(inline2)
+  let inline3 = HashMapEntry__Key__isize.values(self/0) in
+  let inline4 = HashMapEntry__Key__isize.key(self/0) in
+  let inline5 = inherent#HashMap#HashMap[K,V]#remove_value__K_Key__V_isize(inline3, inline4) in
+  jump inline_cont0(inline5)
 }
 
 fn inherent#Option#Option[T]#unwrap_or__T_(Key,isize)(
@@ -383,6 +390,23 @@ fn inherent#HashMapEntry#HashMapEntry[K,V]#remove__K_Key__V_isize(
   let t1 = HashMapEntry__Key__isize.key(self/0) in
   let inline0 = @intrinsic(hashmap.remove_value)(t0, t1) in
   inline0
+}
+
+fn inherent#Option#Option[T]#map__T_isize__U_(Key,isize)(
+  self/0: Option__isize,
+  map_fn/0: (isize) -> (Key, isize)
+) -> Option__(Key,isize) {
+  match self/0 {
+    Tag_0 => {
+      Tag_0
+    },
+    Tag_1 => {
+      let x0 = Option__isize::Some._0(self/0) in
+      let t0 = map_fn/0(x0) in
+      let t1 = Option__(Key,isize)::Some(t0) in
+      t1
+    },
+  }
 }
 
 fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
@@ -601,4 +625,15 @@ fn inherent#closure_env_main_3#closure_env_main_3#apply(
 ) -> isize {
   let t0 = (value/0 + 1) in
   t0
+}
+
+fn inherent#closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4#closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4#apply(
+  env0: closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4,
+  value/0: isize
+) -> (Key, isize) {
+  let self/0 =
+    closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isize_4.self_0(env0) in
+  let t0 = HashMapEntry__Key__isize.key(self/0) in
+  let t1 = (t0, value/0) in
+  t1
 }

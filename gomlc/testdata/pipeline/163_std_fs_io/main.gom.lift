@@ -2228,16 +2228,20 @@ fn inherent#Slice#Slice[T]#get__T_u8(self/0: Slice[u8], index/0: isize) -> u8 {
 fn inherent#Slice#Slice[T]#to_vec__T_u8(self/0: Slice[u8]) -> Vec[u8] {
   let result/0 =
     inherent#Vec#Vec[T]#with_capacity__T_u0(inherent#Slice#Slice[T]#len__T_u0(self/0)) in
-  let index/0 = 0 in
   let _wild0 =
-    while (index/0 < inherent#Slice#Slice[T]#len__T_u0(self/0)) {
-        let _wild1 =
-          inherent#Vec#Vec[T]#push__T_u0(result/0, @intrinsic(slice.get)(self/0, index/0)) in
-        let _wild2 =
-          let compound_old0 = index/0 in
-          let compound_value0 = 1 in
-          index/0 = (compound_old0 + compound_value0) in
-        ()
+    let for_iter0 = trait_impl#IntoIterator#Slice[u8]#into_iter(self/0) in
+    while true {
+        let for_next0 = trait_impl#Iterator#FnIterator__u8#next(for_iter0) in
+        match for_next0 {
+          Option__u8::None => {
+            break
+          },
+          Option__u8::Some(x0) => {
+            let x0 = Option__u8::Some._0(for_next0) in
+            let value/0 = x0 in
+            inherent#Vec#Vec[T]#push__T_u0(result/0, value/0)
+          },
+        }
     } in
   result/0
 }
@@ -2408,6 +2412,14 @@ fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
   (self/0 == other/0)
 }
 
+fn trait_impl#IntoIterator#Slice[u8]#into_iter(self/0: Slice[u8]) -> FnIterator__u8 {
+  inherent#Slice#Slice[T]#iter__T_u0(self/0)
+}
+
+fn trait_impl#Iterator#FnIterator__u8#next(self/0: FnIterator__u8) -> Option__u8 {
+  FnIterator__u8.next_fn(self/0)()
+}
+
 fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {
   let length/0 = inherent#string#string#byte_len(value/0) in
   let _wild0 =
@@ -2564,6 +2576,20 @@ fn signed_decimal_string(value/0: i64) -> string {
   }
 }
 
+fn inherent#Slice#Slice[T]#iter__T_u8(self/0: Slice[u8]) -> FnIterator__u8 {
+  let index/0 = @intrinsic(ref.new)(0) in
+  let len/0 = inherent#Slice#Slice[T]#len__T_u0(self/0) in
+  inherent#FnIterator#FnIterator[T]#from_fn__T_u0(
+    pack_closure[inherent#closure_env_inherent_Slice_Slice_T_iter_T_u8_2#closure_env_inherent_Slice_Slice_T_iter_T_u8_2#apply](
+      closure_env_inherent_Slice_Slice_T_iter_T_u8_2 {
+        index_0: index/0,
+        len_1: len/0,
+        self_2: self/0
+      }
+    )
+  )
+}
+
 fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
@@ -2649,6 +2675,10 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_u8(next_fn/0: () -> Option__u8) -> FnIterator__u8 {
+  FnIterator__u8 { next_fn: next_fn/0 }
+}
+
 fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
   if utf8_valid_scalar(value/0) {
       let mtmp0 = @runtime(core.char_from_uint32)(value/0) in
@@ -2658,6 +2688,10 @@ fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
   } else {
       Option__char::None
   }
+}
+
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  @runtime(core.int_hash)(self/0)
 }
 
 fn inherent#closure_env_std_io_read_stdin_to_string_0#closure_env_std_io_read_stdin_to_string_0#apply(
@@ -2685,4 +2719,20 @@ fn inherent#closure_env_std_fs_read_file_structured_1#closure_env_std_fs_read_fi
     Option__isize::None,
     trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
   )
+}
+
+fn inherent#closure_env_inherent_Slice_Slice_T_iter_T_u8_2#closure_env_inherent_Slice_Slice_T_iter_T_u8_2#apply(
+  env0: closure_env_inherent_Slice_Slice_T_iter_T_u8_2
+) -> Option__u8 {
+  let index/0 = closure_env_inherent_Slice_Slice_T_iter_T_u8_2.index_0(env0) in
+  let len/0 = closure_env_inherent_Slice_Slice_T_iter_T_u8_2.len_1(env0) in
+  let self/0 = closure_env_inherent_Slice_Slice_T_iter_T_u8_2.self_2(env0) in
+  let current/0 = @intrinsic(ref.get)(index/0) in
+  if (current/0 < len/0) {
+      let value/0 = inherent#Slice#Slice[T]#get__T_u0(self/0, current/0) in
+      let _wild0 = @intrinsic(ref.set)(index/0, (current/0 + 1)) in
+      Option__u8::Some(value/0)
+  } else {
+      Option__u8::None
+  }
 }

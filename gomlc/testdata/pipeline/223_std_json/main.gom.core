@@ -4533,28 +4533,36 @@ fn inherent#Slice#Slice[T]#contains[T](self/0: Slice[T], expected/0: T) -> bool 
 }
 
 fn inherent#FrozenVec#FrozenVec[T]#contains[T](self/0: FrozenVec[T], expected/0: T) -> bool {
-  let index/0 = 0 in
   let _wild0 =
-    while (index/0 < inherent#FrozenVec#FrozenVec[T]#len(self/0)) {
-        {
-          let _wild1 =
-            if trait_call[PartialEq::eq](
-              inherent#FrozenVec#FrozenVec[T]#get(self/0, index/0),
-              expected/0
-            ) {
+    {
+      let for_iter0 = trait_call[IntoIterator::into_iter](FrozenVec.values(self/0)) in
+      while true {
+          {
+            let for_next0 = trait_call[Iterator::next](for_iter0) in
+            match for_next0 {
+              Option::None => {
+                break
+              },
+              Option::Some(x0) => {
                 {
-                  return true
+                  let x0 = Option::Some._0(for_next0) in
+                  {
+                    let value/0 = x0 in
+                    {
+                      if trait_call[PartialEq::eq](value/0, expected/0) {
+                          {
+                            return true
+                          }
+                      } else {
+                          ()
+                      }
+                    }
+                  }
                 }
-            } else {
-                ()
-            } in
-          let _wild2 =
-            {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+              },
+            }
+          }
+      }
     } in
   false
 }
@@ -4613,18 +4621,30 @@ fn inherent#Slice#Slice[T]#len[T](self/0: Slice[T]) -> isize {
 
 fn inherent#Slice#Slice[T]#to_vec[T](self/0: Slice[T]) -> Vec[T] {
   let result/0 = inherent#Vec#Vec[T]#with_capacity(inherent#Slice#Slice[T]#len(self/0)) in
-  let index/0 = 0 in
   let _wild0 =
-    while (index/0 < inherent#Slice#Slice[T]#len(self/0)) {
-        {
-          let _wild1 = inherent#Vec#Vec[T]#push(result/0, @intrinsic(slice.get)(self/0, index/0)) in
-          let _wild2 =
-            {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+    {
+      let for_iter0 = trait_call[IntoIterator::into_iter](self/0) in
+      while true {
+          {
+            let for_next0 = trait_call[Iterator::next](for_iter0) in
+            match for_next0 {
+              Option::None => {
+                break
+              },
+              Option::Some(x0) => {
+                {
+                  let x0 = Option::Some._0(for_next0) in
+                  {
+                    let value/0 = x0 in
+                    {
+                      inherent#Vec#Vec[T]#push(result/0, value/0)
+                    }
+                  }
+                }
+              },
+            }
+          }
+      }
     } in
   result/0
 }
@@ -7797,23 +7817,35 @@ fn std::serde::schema_field_index(
           {
             let index/1 = 0 in
             let _wild0 =
-              while (index/1 < inherent#Vec#Vec[(string,std::serde::Schema)]#len(fields/0)) {
-                  {
-                    let _wild1 =
-                      if (@intrinsic(vec.get)(fields/0, index/1).0 == name/0) {
-                          {
-                            return index/1
-                          }
-                      } else {
-                          ()
-                      } in
-                    let _wild2 =
+              {
+                let for_source0 = fields/0 in
+                let for_limit0 = @intrinsic(vec.len)(for_source0) in
+                let for_index0 = 0 in
+                while (for_index0 < for_limit0) {
+                    {
+                      let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+                      let _wild1 = for_index0 = (for_index0 + 1) in
                       {
-                        let compound_old0 = index/1 in
-                        let compound_value0 = 1 in
-                        index/1 = (compound_old0 + compound_value0)
-                      } in
-                  }
+                        let field/0 = for_item0 in
+                        {
+                          let _wild2 =
+                            if (field/0.0 == name/0) {
+                                {
+                                  return index/1
+                                }
+                            } else {
+                                ()
+                            } in
+                          let _wild3 =
+                            {
+                              let compound_old0 = index/1 in
+                              let compound_value0 = 1 in
+                              index/1 = (compound_old0 + compound_value0)
+                            } in
+                        }
+                      }
+                    }
+                }
               } in
             -1
           }
@@ -7836,26 +7868,35 @@ fn std::serde::schema_variant_index(
           {
             let index/0 = 0 in
             let _wild0 =
-              while (index/0 < inherent#Vec#Vec[std::serde::VariantSchema]#len(variants/0)) {
-                  {
-                    let _wild1 =
-                      if (std::serde::VariantSchema.index(
-                        @intrinsic(vec.get)(variants/0, index/0)
-                      ) ==
-                        expected/0) {
-                          {
-                            return index/0
-                          }
-                      } else {
-                          ()
-                      } in
-                    let _wild2 =
+              {
+                let for_source0 = variants/0 in
+                let for_limit0 = @intrinsic(vec.len)(for_source0) in
+                let for_index0 = 0 in
+                while (for_index0 < for_limit0) {
+                    {
+                      let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+                      let _wild1 = for_index0 = (for_index0 + 1) in
                       {
-                        let compound_old0 = index/0 in
-                        let compound_value0 = 1 in
-                        index/0 = (compound_old0 + compound_value0)
-                      } in
-                  }
+                        let variant/0 = for_item0 in
+                        {
+                          let _wild2 =
+                            if (std::serde::VariantSchema.index(variant/0) == expected/0) {
+                                {
+                                  return index/0
+                                }
+                            } else {
+                                ()
+                            } in
+                          let _wild3 =
+                            {
+                              let compound_old0 = index/0 in
+                              let compound_value0 = 1 in
+                              index/0 = (compound_old0 + compound_value0)
+                            } in
+                        }
+                      }
+                    }
+                }
               } in
             -1
           }
@@ -7869,27 +7910,36 @@ fn std::serde::schema_variant_index(
           let expected/1 = x1 in
           {
             let index/1 = 0 in
-            let _wild3 =
-              while (index/1 < inherent#Vec#Vec[std::serde::VariantSchema]#len(variants/0)) {
-                  {
-                    let _wild4 =
-                      if (std::serde::VariantSchema.name(
-                        @intrinsic(vec.get)(variants/0, index/1)
-                      ) ==
-                        expected/1) {
-                          {
-                            return index/1
-                          }
-                      } else {
-                          ()
-                      } in
-                    let _wild5 =
+            let _wild4 =
+              {
+                let for_source1 = variants/0 in
+                let for_limit1 = @intrinsic(vec.len)(for_source1) in
+                let for_index1 = 0 in
+                while (for_index1 < for_limit1) {
+                    {
+                      let for_item1 = @intrinsic(vec.get)(for_source1, for_index1) in
+                      let _wild5 = for_index1 = (for_index1 + 1) in
                       {
-                        let compound_old1 = index/1 in
-                        let compound_value1 = 1 in
-                        index/1 = (compound_old1 + compound_value1)
-                      } in
-                  }
+                        let variant/1 = for_item1 in
+                        {
+                          let _wild6 =
+                            if (std::serde::VariantSchema.name(variant/1) == expected/1) {
+                                {
+                                  return index/1
+                                }
+                            } else {
+                                ()
+                            } in
+                          let _wild7 =
+                            {
+                              let compound_old1 = index/1 in
+                              let compound_value1 = 1 in
+                              index/1 = (compound_old1 + compound_value1)
+                            } in
+                        }
+                      }
+                    }
+                }
               } in
             -1
           }
@@ -8420,76 +8470,84 @@ fn std::serde::deserialize_tuple_schema(
     ) in
   let index/0 = 0 in
   let _wild1 =
-    while (index/0 < inherent#Vec#Vec[std::serde::Schema]#len(schemas/0)) {
-        {
-          let _wild2 =
+    {
+      let for_source0 = schemas/0 in
+      let for_limit0 = @intrinsic(vec.len)(for_source0) in
+      let for_index0 = 0 in
+      while (for_index0 < for_limit0) {
+          {
+            let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+            let _wild2 = for_index0 = (for_index0 + 1) in
             {
-              let mtmp1 =
-                trait_call[std::serde::Deserializer::begin_tuple_element](
-                  deserializer/0,
-                  index/0
-                ) in
-              match mtmp1 {
-                Result::Ok(x2) => {
-                  {
-                    let x2 = Result::Ok._0(mtmp1) in
-                    {
-                      let try_value/1 = x2 in
-                      try_value/1
-                    }
-                  }
-                },
-                Result::Err(x3) => {
-                  {
-                    let x3 = Result::Err._0(mtmp1) in
-                    {
-                      let try_residual/1 = x3 in
-                      return Result::Err(try_residual/1)
-                    }
-                  }
-                },
-              }
-            } in
-          let _wild3 =
-            inherent#Vec#Vec[std::serde::Value]#push(
-              values/0,
+              let schema/0 = for_item0 in
               {
-                let mtmp2 =
-                  std::serde::deserialize_schema_from(
-                    deserializer/0,
-                    @intrinsic(vec.get)(schemas/0, index/0)
+                let _wild3 =
+                  {
+                    let mtmp1 =
+                      trait_call[std::serde::Deserializer::begin_tuple_element](
+                        deserializer/0,
+                        index/0
+                      ) in
+                    match mtmp1 {
+                      Result::Ok(x2) => {
+                        {
+                          let x2 = Result::Ok._0(mtmp1) in
+                          {
+                            let try_value/1 = x2 in
+                            try_value/1
+                          }
+                        }
+                      },
+                      Result::Err(x3) => {
+                        {
+                          let x3 = Result::Err._0(mtmp1) in
+                          {
+                            let try_residual/1 = x3 in
+                            return Result::Err(try_residual/1)
+                          }
+                        }
+                      },
+                    }
+                  } in
+                let _wild4 =
+                  inherent#Vec#Vec[std::serde::Value]#push(
+                    values/0,
+                    {
+                      let mtmp2 = std::serde::deserialize_schema_from(deserializer/0, schema/0) in
+                      match mtmp2 {
+                        Result::Ok(x4) => {
+                          {
+                            let x4 = Result::Ok._0(mtmp2) in
+                            {
+                              let try_value/2 = x4 in
+                              try_value/2
+                            }
+                          }
+                        },
+                        Result::Err(x5) => {
+                          {
+                            let x5 = Result::Err._0(mtmp2) in
+                            {
+                              let try_residual/2 = x5 in
+                              return Result::Err(try_residual/2)
+                            }
+                          }
+                        },
+                      }
+                    }
                   ) in
-                match mtmp2 {
-                  Result::Ok(x4) => {
-                    {
-                      let x4 = Result::Ok._0(mtmp2) in
-                      {
-                        let try_value/2 = x4 in
-                        try_value/2
-                      }
-                    }
-                  },
-                  Result::Err(x5) => {
-                    {
-                      let x5 = Result::Err._0(mtmp2) in
-                      {
-                        let try_residual/2 = x5 in
-                        return Result::Err(try_residual/2)
-                      }
-                    }
-                  },
-                }
+                let _wild5 =
+                  {
+                    let compound_old0 = index/0 in
+                    let compound_value0 = 1 in
+                    index/0 = (compound_old0 + compound_value0)
+                  } in
               }
-            ) in
-          let _wild4 =
-            {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+            }
+          }
+      }
     } in
-  let _wild5 =
+  let _wild6 =
     {
       let mtmp3 = trait_call[std::serde::Deserializer::end_tuple](deserializer/0) in
       match mtmp3 {
@@ -11036,71 +11094,80 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
               } in
             let index/0 = 0 in
             let _wild1 =
-              while (index/0 < inherent#Vec#Vec[std::serde::Value]#len(values/0)) {
-                  {
-                    let _wild2 =
+              {
+                let for_source0 = values/0 in
+                let for_limit0 = @intrinsic(vec.len)(for_source0) in
+                let for_index0 = 0 in
+                while (for_index0 < for_limit0) {
+                    {
+                      let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+                      let _wild2 = for_index0 = (for_index0 + 1) in
                       {
-                        let mtmp1 =
-                          trait_call[std::serde::Serializer::begin_sequence_element](
-                            serializer/0,
-                            index/0
-                          ) in
-                        match mtmp1 {
-                          Result::Ok(x19) => {
+                        let value/17 = for_item0 in
+                        {
+                          let _wild3 =
                             {
-                              let x19 = Result::Ok._0(mtmp1) in
-                              {
-                                let try_value/1 = x19 in
-                                try_value/1
+                              let mtmp1 =
+                                trait_call[std::serde::Serializer::begin_sequence_element](
+                                  serializer/0,
+                                  index/0
+                                ) in
+                              match mtmp1 {
+                                Result::Ok(x19) => {
+                                  {
+                                    let x19 = Result::Ok._0(mtmp1) in
+                                    {
+                                      let try_value/1 = x19 in
+                                      try_value/1
+                                    }
+                                  }
+                                },
+                                Result::Err(x20) => {
+                                  {
+                                    let x20 = Result::Err._0(mtmp1) in
+                                    {
+                                      let try_residual/1 = x20 in
+                                      return Result::Err(try_residual/1)
+                                    }
+                                  }
+                                },
                               }
-                            }
-                          },
-                          Result::Err(x20) => {
+                            } in
+                          let _wild4 =
                             {
-                              let x20 = Result::Err._0(mtmp1) in
-                              {
-                                let try_residual/1 = x20 in
-                                return Result::Err(try_residual/1)
+                              let mtmp2 =
+                                std::serde::serialize_value_into(value/17, serializer/0) in
+                              match mtmp2 {
+                                Result::Ok(x21) => {
+                                  {
+                                    let x21 = Result::Ok._0(mtmp2) in
+                                    {
+                                      let try_value/2 = x21 in
+                                      try_value/2
+                                    }
+                                  }
+                                },
+                                Result::Err(x22) => {
+                                  {
+                                    let x22 = Result::Err._0(mtmp2) in
+                                    {
+                                      let try_residual/2 = x22 in
+                                      return Result::Err(try_residual/2)
+                                    }
+                                  }
+                                },
                               }
-                            }
-                          },
+                            } in
+                          let _wild5 =
+                            {
+                              let compound_old0 = index/0 in
+                              let compound_value0 = 1 in
+                              index/0 = (compound_old0 + compound_value0)
+                            } in
                         }
-                      } in
-                    let _wild3 =
-                      {
-                        let mtmp2 =
-                          std::serde::serialize_value_into(
-                            @intrinsic(vec.get)(values/0, index/0),
-                            serializer/0
-                          ) in
-                        match mtmp2 {
-                          Result::Ok(x21) => {
-                            {
-                              let x21 = Result::Ok._0(mtmp2) in
-                              {
-                                let try_value/2 = x21 in
-                                try_value/2
-                              }
-                            }
-                          },
-                          Result::Err(x22) => {
-                            {
-                              let x22 = Result::Err._0(mtmp2) in
-                              {
-                                let try_residual/2 = x22 in
-                                return Result::Err(try_residual/2)
-                              }
-                            }
-                          },
-                        }
-                      } in
-                    let _wild4 =
-                      {
-                        let compound_old0 = index/0 in
-                        let compound_value0 = 1 in
-                        index/0 = (compound_old0 + compound_value0)
-                      } in
-                  }
+                      }
+                    }
+                }
               } in
             trait_call[std::serde::Serializer::end_sequence](serializer/0)
           }
@@ -11113,7 +11180,7 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
         {
           let values/1 = x23 in
           {
-            let _wild5 =
+            let _wild6 =
               {
                 let mtmp3 =
                   trait_call[std::serde::Serializer::begin_tuple](
@@ -11142,72 +11209,81 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
                 }
               } in
             let index/1 = 0 in
-            let _wild6 =
-              while (index/1 < inherent#Vec#Vec[std::serde::Value]#len(values/1)) {
-                  {
-                    let _wild7 =
+            let _wild7 =
+              {
+                let for_source1 = values/1 in
+                let for_limit1 = @intrinsic(vec.len)(for_source1) in
+                let for_index1 = 0 in
+                while (for_index1 < for_limit1) {
+                    {
+                      let for_item1 = @intrinsic(vec.get)(for_source1, for_index1) in
+                      let _wild8 = for_index1 = (for_index1 + 1) in
                       {
-                        let mtmp4 =
-                          trait_call[std::serde::Serializer::begin_tuple_element](
-                            serializer/0,
-                            index/1
-                          ) in
-                        match mtmp4 {
-                          Result::Ok(x26) => {
+                        let value/18 = for_item1 in
+                        {
+                          let _wild9 =
                             {
-                              let x26 = Result::Ok._0(mtmp4) in
-                              {
-                                let try_value/4 = x26 in
-                                try_value/4
+                              let mtmp4 =
+                                trait_call[std::serde::Serializer::begin_tuple_element](
+                                  serializer/0,
+                                  index/1
+                                ) in
+                              match mtmp4 {
+                                Result::Ok(x26) => {
+                                  {
+                                    let x26 = Result::Ok._0(mtmp4) in
+                                    {
+                                      let try_value/4 = x26 in
+                                      try_value/4
+                                    }
+                                  }
+                                },
+                                Result::Err(x27) => {
+                                  {
+                                    let x27 = Result::Err._0(mtmp4) in
+                                    {
+                                      let try_residual/4 = x27 in
+                                      return Result::Err(try_residual/4)
+                                    }
+                                  }
+                                },
                               }
-                            }
-                          },
-                          Result::Err(x27) => {
+                            } in
+                          let _wild10 =
                             {
-                              let x27 = Result::Err._0(mtmp4) in
-                              {
-                                let try_residual/4 = x27 in
-                                return Result::Err(try_residual/4)
+                              let mtmp5 =
+                                std::serde::serialize_value_into(value/18, serializer/0) in
+                              match mtmp5 {
+                                Result::Ok(x28) => {
+                                  {
+                                    let x28 = Result::Ok._0(mtmp5) in
+                                    {
+                                      let try_value/5 = x28 in
+                                      try_value/5
+                                    }
+                                  }
+                                },
+                                Result::Err(x29) => {
+                                  {
+                                    let x29 = Result::Err._0(mtmp5) in
+                                    {
+                                      let try_residual/5 = x29 in
+                                      return Result::Err(try_residual/5)
+                                    }
+                                  }
+                                },
                               }
-                            }
-                          },
+                            } in
+                          let _wild11 =
+                            {
+                              let compound_old1 = index/1 in
+                              let compound_value1 = 1 in
+                              index/1 = (compound_old1 + compound_value1)
+                            } in
                         }
-                      } in
-                    let _wild8 =
-                      {
-                        let mtmp5 =
-                          std::serde::serialize_value_into(
-                            @intrinsic(vec.get)(values/1, index/1),
-                            serializer/0
-                          ) in
-                        match mtmp5 {
-                          Result::Ok(x28) => {
-                            {
-                              let x28 = Result::Ok._0(mtmp5) in
-                              {
-                                let try_value/5 = x28 in
-                                try_value/5
-                              }
-                            }
-                          },
-                          Result::Err(x29) => {
-                            {
-                              let x29 = Result::Err._0(mtmp5) in
-                              {
-                                let try_residual/5 = x29 in
-                                return Result::Err(try_residual/5)
-                              }
-                            }
-                          },
-                        }
-                      } in
-                    let _wild9 =
-                      {
-                        let compound_old1 = index/1 in
-                        let compound_value1 = 1 in
-                        index/1 = (compound_old1 + compound_value1)
-                      } in
-                  }
+                      }
+                    }
+                }
               } in
             trait_call[std::serde::Serializer::end_tuple](serializer/0)
           }
@@ -11221,7 +11297,7 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
           let values/2 = x30 in
           if inherent#Vec#Vec[std::serde::Value]#is_empty(values/2) {
               {
-                let _wild10 =
+                let _wild12 =
                   {
                     let mtmp6 =
                       trait_call[std::serde::Serializer::begin_optional](serializer/0, false) in
@@ -11251,7 +11327,7 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
           } else {
               if (inherent#Vec#Vec[std::serde::Value]#len(values/2) == 1) {
                   {
-                    let _wild11 =
+                    let _wild13 =
                       {
                         let mtmp7 =
                           trait_call[std::serde::Serializer::begin_optional](serializer/0, true) in
@@ -11276,7 +11352,7 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
                           },
                         }
                       } in
-                    let _wild12 =
+                    let _wild14 =
                       {
                         let mtmp8 =
                           std::serde::serialize_value_into(
@@ -11321,7 +11397,7 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
         {
           let fields/0 = x37 in
           {
-            let _wild13 =
+            let _wild15 =
               {
                 let mtmp9 =
                   trait_call[std::serde::Serializer::begin_struct](
@@ -11351,73 +11427,82 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
                 }
               } in
             let index/2 = 0 in
-            let _wild14 =
-              while (index/2 < inherent#Vec#Vec[(string,std::serde::Value)]#len(fields/0)) {
-                  {
-                    let _wild15 =
+            let _wild16 =
+              {
+                let for_source2 = fields/0 in
+                let for_limit2 = @intrinsic(vec.len)(for_source2) in
+                let for_index2 = 0 in
+                while (for_index2 < for_limit2) {
+                    {
+                      let for_item2 = @intrinsic(vec.get)(for_source2, for_index2) in
+                      let _wild17 = for_index2 = (for_index2 + 1) in
                       {
-                        let mtmp10 =
-                          trait_call[std::serde::Serializer::begin_struct_field](
-                            serializer/0,
-                            index/2,
-                            @intrinsic(vec.get)(fields/0, index/2).0
-                          ) in
-                        match mtmp10 {
-                          Result::Ok(x40) => {
+                        let field/0 = for_item2 in
+                        {
+                          let _wild18 =
                             {
-                              let x40 = Result::Ok._0(mtmp10) in
-                              {
-                                let try_value/10 = x40 in
-                                try_value/10
+                              let mtmp10 =
+                                trait_call[std::serde::Serializer::begin_struct_field](
+                                  serializer/0,
+                                  index/2,
+                                  field/0.0
+                                ) in
+                              match mtmp10 {
+                                Result::Ok(x40) => {
+                                  {
+                                    let x40 = Result::Ok._0(mtmp10) in
+                                    {
+                                      let try_value/10 = x40 in
+                                      try_value/10
+                                    }
+                                  }
+                                },
+                                Result::Err(x41) => {
+                                  {
+                                    let x41 = Result::Err._0(mtmp10) in
+                                    {
+                                      let try_residual/10 = x41 in
+                                      return Result::Err(try_residual/10)
+                                    }
+                                  }
+                                },
                               }
-                            }
-                          },
-                          Result::Err(x41) => {
+                            } in
+                          let _wild19 =
                             {
-                              let x41 = Result::Err._0(mtmp10) in
-                              {
-                                let try_residual/10 = x41 in
-                                return Result::Err(try_residual/10)
+                              let mtmp11 =
+                                std::serde::serialize_value_into(field/0.1, serializer/0) in
+                              match mtmp11 {
+                                Result::Ok(x42) => {
+                                  {
+                                    let x42 = Result::Ok._0(mtmp11) in
+                                    {
+                                      let try_value/11 = x42 in
+                                      try_value/11
+                                    }
+                                  }
+                                },
+                                Result::Err(x43) => {
+                                  {
+                                    let x43 = Result::Err._0(mtmp11) in
+                                    {
+                                      let try_residual/11 = x43 in
+                                      return Result::Err(try_residual/11)
+                                    }
+                                  }
+                                },
                               }
-                            }
-                          },
+                            } in
+                          let _wild20 =
+                            {
+                              let compound_old2 = index/2 in
+                              let compound_value2 = 1 in
+                              index/2 = (compound_old2 + compound_value2)
+                            } in
                         }
-                      } in
-                    let _wild16 =
-                      {
-                        let mtmp11 =
-                          std::serde::serialize_value_into(
-                            @intrinsic(vec.get)(fields/0, index/2).1,
-                            serializer/0
-                          ) in
-                        match mtmp11 {
-                          Result::Ok(x42) => {
-                            {
-                              let x42 = Result::Ok._0(mtmp11) in
-                              {
-                                let try_value/11 = x42 in
-                                try_value/11
-                              }
-                            }
-                          },
-                          Result::Err(x43) => {
-                            {
-                              let x43 = Result::Err._0(mtmp11) in
-                              {
-                                let try_residual/11 = x43 in
-                                return Result::Err(try_residual/11)
-                              }
-                            }
-                          },
-                        }
-                      } in
-                    let _wild17 =
-                      {
-                        let compound_old2 = index/2 in
-                        let compound_value2 = 1 in
-                        index/2 = (compound_old2 + compound_value2)
-                      } in
-                  }
+                      }
+                    }
+                }
               } in
             trait_call[std::serde::Serializer::end_struct](serializer/0)
           }
@@ -11439,7 +11524,7 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
               {
                 let index/3 = x44 in
                 {
-                  let _wild18 =
+                  let _wild21 =
                     {
                       let mtmp12 =
                         trait_call[std::serde::Serializer::begin_variant](
@@ -11471,74 +11556,83 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
                         },
                       }
                     } in
-                  let field/0 = 0 in
-                  let _wild19 =
-                    while (field/0 < inherent#Vec#Vec[(string,std::serde::Value)]#len(fields/1)) {
-                        {
-                          let _wild20 =
+                  let field_index/0 = 0 in
+                  let _wild22 =
+                    {
+                      let for_source3 = fields/1 in
+                      let for_limit3 = @intrinsic(vec.len)(for_source3) in
+                      let for_index3 = 0 in
+                      while (for_index3 < for_limit3) {
+                          {
+                            let for_item3 = @intrinsic(vec.get)(for_source3, for_index3) in
+                            let _wild23 = for_index3 = (for_index3 + 1) in
                             {
-                              let mtmp13 =
-                                trait_call[std::serde::Serializer::begin_variant_field](
-                                  serializer/0,
-                                  field/0,
-                                  @intrinsic(vec.get)(fields/1, field/0).0
-                                ) in
-                              match mtmp13 {
-                                Result::Ok(x50) => {
+                              let field/1 = for_item3 in
+                              {
+                                let _wild24 =
                                   {
-                                    let x50 = Result::Ok._0(mtmp13) in
-                                    {
-                                      let try_value/13 = x50 in
-                                      try_value/13
+                                    let mtmp13 =
+                                      trait_call[std::serde::Serializer::begin_variant_field](
+                                        serializer/0,
+                                        field_index/0,
+                                        field/1.0
+                                      ) in
+                                    match mtmp13 {
+                                      Result::Ok(x50) => {
+                                        {
+                                          let x50 = Result::Ok._0(mtmp13) in
+                                          {
+                                            let try_value/13 = x50 in
+                                            try_value/13
+                                          }
+                                        }
+                                      },
+                                      Result::Err(x51) => {
+                                        {
+                                          let x51 = Result::Err._0(mtmp13) in
+                                          {
+                                            let try_residual/13 = x51 in
+                                            return Result::Err(try_residual/13)
+                                          }
+                                        }
+                                      },
                                     }
-                                  }
-                                },
-                                Result::Err(x51) => {
+                                  } in
+                                let _wild25 =
                                   {
-                                    let x51 = Result::Err._0(mtmp13) in
-                                    {
-                                      let try_residual/13 = x51 in
-                                      return Result::Err(try_residual/13)
+                                    let mtmp14 =
+                                      std::serde::serialize_value_into(field/1.1, serializer/0) in
+                                    match mtmp14 {
+                                      Result::Ok(x52) => {
+                                        {
+                                          let x52 = Result::Ok._0(mtmp14) in
+                                          {
+                                            let try_value/14 = x52 in
+                                            try_value/14
+                                          }
+                                        }
+                                      },
+                                      Result::Err(x53) => {
+                                        {
+                                          let x53 = Result::Err._0(mtmp14) in
+                                          {
+                                            let try_residual/14 = x53 in
+                                            return Result::Err(try_residual/14)
+                                          }
+                                        }
+                                      },
                                     }
-                                  }
-                                },
+                                  } in
+                                let _wild26 =
+                                  {
+                                    let compound_old3 = field_index/0 in
+                                    let compound_value3 = 1 in
+                                    field_index/0 = (compound_old3 + compound_value3)
+                                  } in
                               }
-                            } in
-                          let _wild21 =
-                            {
-                              let mtmp14 =
-                                std::serde::serialize_value_into(
-                                  @intrinsic(vec.get)(fields/1, field/0).1,
-                                  serializer/0
-                                ) in
-                              match mtmp14 {
-                                Result::Ok(x52) => {
-                                  {
-                                    let x52 = Result::Ok._0(mtmp14) in
-                                    {
-                                      let try_value/14 = x52 in
-                                      try_value/14
-                                    }
-                                  }
-                                },
-                                Result::Err(x53) => {
-                                  {
-                                    let x53 = Result::Err._0(mtmp14) in
-                                    {
-                                      let try_residual/14 = x53 in
-                                      return Result::Err(try_residual/14)
-                                    }
-                                  }
-                                },
-                              }
-                            } in
-                          let _wild22 =
-                            {
-                              let compound_old3 = field/0 in
-                              let compound_value3 = 1 in
-                              field/0 = (compound_old3 + compound_value3)
-                            } in
-                        }
+                            }
+                          }
+                      }
                     } in
                   trait_call[std::serde::Serializer::end_variant](serializer/0)
                 }
@@ -15186,22 +15280,26 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes
 ) -> Result[(), string] {
   let values/0 =
     inherent#Vec#Vec[std::serde::Value]#with_capacity(inherent#Slice#Slice[u8]#len(value/0)) in
-  let index/0 = 0 in
   let _wild0 =
-    while (index/0 < inherent#Slice#Slice[u8]#len(value/0)) {
-        {
-          let _wild1 =
-            inherent#Vec#Vec[std::serde::Value]#push(
-              values/0,
-              std::serde::Value::Uint8(@intrinsic(slice.get)(value/0, index/0))
-            ) in
-          let _wild2 =
+    {
+      let for_source0 = value/0 in
+      let for_limit0 = @intrinsic(slice.len)(for_source0) in
+      let for_index0 = 0 in
+      while (for_index0 < for_limit0) {
+          {
+            let for_item0 = @intrinsic(slice.get)(for_source0, for_index0) in
+            let _wild1 = for_index0 = (for_index0 + 1) in
             {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+              let byte_value/0 = for_item0 in
+              {
+                inherent#Vec#Vec[std::serde::Value]#push(
+                  values/0,
+                  std::serde::Value::Uint8(byte_value/0)
+                )
+              }
+            }
+          }
+      }
     } in
   std::serde::append_serialized_value(self/0, std::serde::Value::Sequence(values/0))
 }
@@ -24277,33 +24375,40 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
       std::json::JsonSerializer.builder(self/0),
       '['
     ) in
-  let index/0 = 0 in
+  let first/0 = true in
   let _wild2 =
-    while (index/0 < inherent#Slice#Slice[u8]#len(value/0)) {
-        {
-          let _wild3 =
-            if (index/0 > 0) {
-                {
-                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
-                    std::json::JsonSerializer.builder(self/0),
-                    ','
-                  )
-                }
-            } else {
-                ()
-            } in
-          let _wild4 =
-            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-              std::json::JsonSerializer.builder(self/0),
-              trait_call[ToString::to_string](@intrinsic(slice.get)(value/0, index/0))
-            ) in
-          let _wild5 =
+    {
+      let for_source0 = value/0 in
+      let for_limit0 = @intrinsic(slice.len)(for_source0) in
+      let for_index0 = 0 in
+      while (for_index0 < for_limit0) {
+          {
+            let for_item0 = @intrinsic(slice.get)(for_source0, for_index0) in
+            let _wild3 = for_index0 = (for_index0 + 1) in
             {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+              let byte_value/0 = for_item0 in
+              {
+                let _wild4 =
+                  if first/0 {
+                      {
+                        let _wild5 = first/0 = false in
+                      }
+                  } else {
+                      {
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                          std::json::JsonSerializer.builder(self/0),
+                          ','
+                        )
+                      }
+                  } in
+                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                  std::json::JsonSerializer.builder(self/0),
+                  trait_call[ToString::to_string](byte_value/0)
+                )
+              }
+            }
+          }
+      }
     } in
   let _wild6 =
     inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(

@@ -2720,23 +2720,35 @@ fn std::serde::schema_field_index(
           {
             let index/1 = 0 in
             let _wild0 =
-              while (index/1 < inherent#Vec#Vec[T]#len__T_(string,std::serde::Schema)(fields/0)) {
-                  {
-                    let _wild1 =
-                      if (@intrinsic(vec.get)(fields/0, index/1).0 == name/0) {
-                          {
-                            return index/1
-                          }
-                      } else {
-                          ()
-                      } in
-                    let _wild2 =
+              {
+                let for_source0 = fields/0 in
+                let for_limit0 = @intrinsic(vec.len)(for_source0) in
+                let for_index0 = 0 in
+                while (for_index0 < for_limit0) {
+                    {
+                      let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+                      let _wild1 = for_index0 = (for_index0 + 1) in
                       {
-                        let compound_old0 = index/1 in
-                        let compound_value0 = 1 in
-                        index/1 = (compound_old0 + compound_value0)
-                      } in
-                  }
+                        let field/0 = for_item0 in
+                        {
+                          let _wild2 =
+                            if (field/0.0 == name/0) {
+                                {
+                                  return index/1
+                                }
+                            } else {
+                                ()
+                            } in
+                          let _wild3 =
+                            {
+                              let compound_old0 = index/1 in
+                              let compound_value0 = 1 in
+                              index/1 = (compound_old0 + compound_value0)
+                            } in
+                        }
+                      }
+                    }
+                }
               } in
             -1
           }
@@ -2759,26 +2771,35 @@ fn std::serde::schema_variant_index(
           {
             let index/0 = 0 in
             let _wild0 =
-              while (index/0 < inherent#Vec#Vec[T]#len__T_std::serde::VariantSchema(variants/0)) {
-                  {
-                    let _wild1 =
-                      if (std::serde::VariantSchema.index(
-                        @intrinsic(vec.get)(variants/0, index/0)
-                      ) ==
-                        expected/0) {
-                          {
-                            return index/0
-                          }
-                      } else {
-                          ()
-                      } in
-                    let _wild2 =
+              {
+                let for_source0 = variants/0 in
+                let for_limit0 = @intrinsic(vec.len)(for_source0) in
+                let for_index0 = 0 in
+                while (for_index0 < for_limit0) {
+                    {
+                      let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+                      let _wild1 = for_index0 = (for_index0 + 1) in
                       {
-                        let compound_old0 = index/0 in
-                        let compound_value0 = 1 in
-                        index/0 = (compound_old0 + compound_value0)
-                      } in
-                  }
+                        let variant/0 = for_item0 in
+                        {
+                          let _wild2 =
+                            if (std::serde::VariantSchema.index(variant/0) == expected/0) {
+                                {
+                                  return index/0
+                                }
+                            } else {
+                                ()
+                            } in
+                          let _wild3 =
+                            {
+                              let compound_old0 = index/0 in
+                              let compound_value0 = 1 in
+                              index/0 = (compound_old0 + compound_value0)
+                            } in
+                        }
+                      }
+                    }
+                }
               } in
             -1
           }
@@ -2792,27 +2813,36 @@ fn std::serde::schema_variant_index(
           let expected/1 = x1 in
           {
             let index/1 = 0 in
-            let _wild3 =
-              while (index/1 < inherent#Vec#Vec[T]#len__T_std::serde::VariantSchema(variants/0)) {
-                  {
-                    let _wild4 =
-                      if (std::serde::VariantSchema.name(
-                        @intrinsic(vec.get)(variants/0, index/1)
-                      ) ==
-                        expected/1) {
-                          {
-                            return index/1
-                          }
-                      } else {
-                          ()
-                      } in
-                    let _wild5 =
+            let _wild4 =
+              {
+                let for_source1 = variants/0 in
+                let for_limit1 = @intrinsic(vec.len)(for_source1) in
+                let for_index1 = 0 in
+                while (for_index1 < for_limit1) {
+                    {
+                      let for_item1 = @intrinsic(vec.get)(for_source1, for_index1) in
+                      let _wild5 = for_index1 = (for_index1 + 1) in
                       {
-                        let compound_old1 = index/1 in
-                        let compound_value1 = 1 in
-                        index/1 = (compound_old1 + compound_value1)
-                      } in
-                  }
+                        let variant/1 = for_item1 in
+                        {
+                          let _wild6 =
+                            if (std::serde::VariantSchema.name(variant/1) == expected/1) {
+                                {
+                                  return index/1
+                                }
+                            } else {
+                                ()
+                            } in
+                          let _wild7 =
+                            {
+                              let compound_old1 = index/1 in
+                              let compound_value1 = 1 in
+                              index/1 = (compound_old1 + compound_value1)
+                            } in
+                        }
+                      }
+                    }
+                }
               } in
             -1
           }
@@ -6741,22 +6771,26 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes
     inherent#Vec#Vec[T]#with_capacity__T_std::serde::Value(
       inherent#Slice#Slice[T]#len__T_u0(value/0)
     ) in
-  let index/0 = 0 in
   let _wild0 =
-    while (index/0 < inherent#Slice#Slice[T]#len__T_u0(value/0)) {
-        {
-          let _wild1 =
-            inherent#Vec#Vec[T]#push__T_std::serde::Value(
-              values/0,
-              std::serde::Value::Uint8(@intrinsic(slice.get)(value/0, index/0))
-            ) in
-          let _wild2 =
+    {
+      let for_source0 = value/0 in
+      let for_limit0 = @intrinsic(slice.len)(for_source0) in
+      let for_index0 = 0 in
+      while (for_index0 < for_limit0) {
+          {
+            let for_item0 = @intrinsic(slice.get)(for_source0, for_index0) in
+            let _wild1 = for_index0 = (for_index0 + 1) in
             {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+              let byte_value/0 = for_item0 in
+              {
+                inherent#Vec#Vec[T]#push__T_std::serde::Value(
+                  values/0,
+                  std::serde::Value::Uint8(byte_value/0)
+                )
+              }
+            }
+          }
+      }
     } in
   std::serde::append_serialized_value(self/0, std::serde::Value::Sequence(values/0))
 }
@@ -15956,33 +15990,40 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
       std::json::JsonSerializer.builder(self/0),
       '['
     ) in
-  let index/0 = 0 in
+  let first/0 = true in
   let _wild2 =
-    while (index/0 < inherent#Slice#Slice[T]#len__T_u0(value/0)) {
-        {
-          let _wild3 =
-            if (index/0 > 0) {
-                {
-                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
-                    std::json::JsonSerializer.builder(self/0),
-                    ','
-                  )
-                }
-            } else {
-                ()
-            } in
-          let _wild4 =
-            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-              std::json::JsonSerializer.builder(self/0),
-              trait_impl#ToString#u8#to_string(@intrinsic(slice.get)(value/0, index/0))
-            ) in
-          let _wild5 =
+    {
+      let for_source0 = value/0 in
+      let for_limit0 = @intrinsic(slice.len)(for_source0) in
+      let for_index0 = 0 in
+      while (for_index0 < for_limit0) {
+          {
+            let for_item0 = @intrinsic(slice.get)(for_source0, for_index0) in
+            let _wild3 = for_index0 = (for_index0 + 1) in
             {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+              let byte_value/0 = for_item0 in
+              {
+                let _wild4 =
+                  if first/0 {
+                      {
+                        let _wild5 = first/0 = false in
+                      }
+                  } else {
+                      {
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                          std::json::JsonSerializer.builder(self/0),
+                          ','
+                        )
+                      }
+                  } in
+                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                  std::json::JsonSerializer.builder(self/0),
+                  trait_impl#ToString#u8#to_string(byte_value/0)
+                )
+              }
+            }
+          }
+      }
     } in
   let _wild6 =
     inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
@@ -17934,19 +17975,30 @@ fn inherent#Slice#Slice[T]#get__T_u8(self/0: Slice[u8], index/0: isize) -> u8 {
 fn inherent#Slice#Slice[T]#to_vec__T_u8(self/0: Slice[u8]) -> Vec[u8] {
   let result/0 =
     inherent#Vec#Vec[T]#with_capacity__T_u0(inherent#Slice#Slice[T]#len__T_u0(self/0)) in
-  let index/0 = 0 in
   let _wild0 =
-    while (index/0 < inherent#Slice#Slice[T]#len__T_u0(self/0)) {
-        {
-          let _wild1 =
-            inherent#Vec#Vec[T]#push__T_u0(result/0, @intrinsic(slice.get)(self/0, index/0)) in
-          let _wild2 =
-            {
-              let compound_old0 = index/0 in
-              let compound_value0 = 1 in
-              index/0 = (compound_old0 + compound_value0)
-            } in
-        }
+    {
+      let for_iter0 = trait_impl#IntoIterator#Slice[u8]#into_iter(self/0) in
+      while true {
+          {
+            let for_next0 = trait_impl#Iterator#FnIterator__u8#next(for_iter0) in
+            match for_next0 {
+              Option__u8::None => {
+                break
+              },
+              Option__u8::Some(x0) => {
+                {
+                  let x0 = Option__u8::Some._0(for_next0) in
+                  {
+                    let value/0 = x0 in
+                    {
+                      inherent#Vec#Vec[T]#push__T_u0(result/0, value/0)
+                    }
+                  }
+                }
+              },
+            }
+          }
+      }
     } in
   result/0
 }
@@ -18127,12 +18179,6 @@ fn __goml_builtin_string_parse_float64(value/0: string) -> (bool, f64) {
 
 fn inherent#Vec#Vec[T]#len__T_(string,std::serde::Schema)(
   self/0: Vec[(string, std::serde::Schema)]
-) -> isize {
-  @intrinsic(vec.len)(self/0)
-}
-
-fn inherent#Vec#Vec[T]#len__T_std::serde::VariantSchema(
-  self/0: Vec[std::serde::VariantSchema]
 ) -> isize {
   @intrinsic(vec.len)(self/0)
 }
@@ -19814,6 +19860,14 @@ fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
   (self/0 == other/0)
 }
 
+fn trait_impl#IntoIterator#Slice[u8]#into_iter(self/0: Slice[u8]) -> FnIterator__u8 {
+  inherent#Slice#Slice[T]#iter__T_u0(self/0)
+}
+
+fn trait_impl#Iterator#FnIterator__u8#next(self/0: FnIterator__u8) -> Option__u8 {
+  FnIterator__u8.next_fn(self/0)()
+}
+
 fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {
   let length/0 = inherent#string#string#byte_len(value/0) in
   let _wild0 =
@@ -20717,6 +20771,27 @@ fn signed_decimal_string(value/0: i64) -> string {
         decimal_string((value/0 as u64))
       }
   }
+}
+
+fn inherent#Slice#Slice[T]#iter__T_u8(self/0: Slice[u8]) -> FnIterator__u8 {
+  let index/0 = @intrinsic(ref.new)(0) in
+  let len/0 = inherent#Slice#Slice[T]#len__T_u0(self/0) in
+  inherent#FnIterator#FnIterator[T]#from_fn__T_u0(
+    || {
+      let current/0 = @intrinsic(ref.get)(index/0) in
+      if (current/0 < len/0) {
+          {
+            let value/0 = inherent#Slice#Slice[T]#get__T_u0(self/0, current/0) in
+            let _wild0 = @intrinsic(ref.set)(index/0, (current/0 + 1)) in
+            Option__u8::Some(value/0)
+          }
+      } else {
+          {
+            Option__u8::None
+          }
+      }
+    }
+  )
 }
 
 fn utf8_invalid_decode() -> (bool, char, isize) {
@@ -21882,6 +21957,10 @@ fn ascii_is_lowercase(value/0: u8) -> bool {
   } else {
       false
   }
+}
+
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_u8(next_fn/0: () -> Option__u8) -> FnIterator__u8 {
+  FnIterator__u8 { next_fn: next_fn/0 }
 }
 
 fn string_equals_ascii_case(value/0: string, expected/0: string) -> bool {

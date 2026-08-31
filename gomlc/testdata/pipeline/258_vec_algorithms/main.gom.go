@@ -243,6 +243,12 @@ type closure_env_goml_builtin_range_13 struct {
     end_1 int
 }
 
+type closure_env_inherent_Vec_Vec_T_iter_T_isize_14 struct {
+    index_0 *ref_int_x
+    len_1 int
+    self_2 *_goml_vec_int
+}
+
 type FrozenVec__isize struct {
     values *_goml_vec_int
 }
@@ -1005,33 +1011,31 @@ func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_contains____T__isize(self__0 []in
 }
 
 func _goml_m_inherent_i_FrozenVec_i_FrozenVec_l_T_r__i_contains____T__isize(self__0 FrozenVec__isize, expected__0 int) bool {
-    var index__0 int = 0
+    var t0 *_goml_vec_int = self__0.values
+    var for_iter0 FnIterator__isize
+    var inline3 FnIterator__isize = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__isize(t0)
+    for_iter0 = inline3
     Loop_loop0:
     for {
-        var t0 int
-        var inline3 *_goml_vec_int = self__0.values
-        var inline4 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(inline3)
-        t0 = inline4
-        var t1 bool = index__0 < t0
-        if t1 {
-            var t2 int
-            var inline1 *_goml_vec_int = self__0.values
-            var inline2 int = vec_get__Vec_3int(inline1, index__0)
-            t2 = inline2
-            var t3 bool
-            var inline0 bool = t2 == expected__0
-            t3 = inline0
-            if t3 {
+        var for_next0 Option__isize
+        var inline1 func() Option__isize = for_iter0.next_fn
+        var inline2 Option__isize = inline1()
+        for_next0 = inline2
+        switch for_next0._tag {
+        case 0:
+            break Loop_loop0
+        case 1:
+            var x0 int = for_next0._v1_0
+            var t1 bool
+            var inline0 bool = x0 == expected__0
+            t1 = inline0
+            if t1 {
                 return true
             } else {
-                var compound_old0 int = index__0
-                var compound_value0 int = 1
-                var t4 int = compound_old0 + compound_value0
-                index__0 = t4
                 continue
             }
-        } else {
-            break Loop_loop0
+        default:
+            panic("non-exhaustive match")
         }
     }
     return false
@@ -1039,11 +1043,6 @@ func _goml_m_inherent_i_FrozenVec_i_FrozenVec_l_T_r__i_contains____T__isize(self
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
     return self__0
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(self__0 *_goml_vec_int) int {
-    var t0 int = vec_len__Vec_3int(self__0)
-    return t0
 }
 
 func __goml_builtin_int_to_string(value__0 int) string {
@@ -1903,6 +1902,25 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T___o_isize_c_isi
     }
 }
 
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__isize(self__0 *_goml_vec_int) FnIterator__isize {
+    var index__0 *ref_int_x = ref__Ref_3int(0)
+    var len__0 int
+    var inline1 int = vec_len__Vec_3int(self__0)
+    len__0 = inline1
+    var t0 closure_env_inherent_Vec_Vec_T_iter_T_isize_14 = closure_env_inherent_Vec_Vec_T_iter_T_isize_14{
+        index_0: index__0,
+        len_1: len__0,
+        self_2: self__0,
+    }
+    var t1 func() Option__isize = func() Option__isize {
+        return _goml_m_inherent_i_closure__en_h9c0087c1b8c373cdd04a2f248cb43de6_ize__14_i_apply(t0)
+    }
+    var inline0 FnIterator__isize = FnIterator__isize{
+        next_fn: t1,
+    }
+    return inline0
+}
+
 func decimal_string(value__0 uint64) string {
     var t0 bool = value__0 == 0
     if t0 {
@@ -2056,6 +2074,28 @@ func _goml_m_inherent_i_closure__en_h705ec68e290747cc19a5685005dd16c1_nge__13_i_
     if t0 {
         var t1 int = value__0 + 1
         ref_set__Ref_3int(current__0, t1)
+        var t2 Option__isize = Option__isize{
+            _tag: 1,
+            _v1_0: value__0,
+        }
+        return t2
+    } else {
+        return Option__isize{
+            _tag: 0,
+        }
+    }
+}
+
+func _goml_m_inherent_i_closure__en_h9c0087c1b8c373cdd04a2f248cb43de6_ize__14_i_apply(env0 closure_env_inherent_Vec_Vec_T_iter_T_isize_14) Option__isize {
+    var index__0 *ref_int_x = env0.index_0
+    var len__0 int = env0.len_1
+    var self__0 *_goml_vec_int = env0.self_2
+    var current__0 int = ref_get__Ref_3int(index__0)
+    var t0 bool = current__0 < len__0
+    if t0 {
+        var value__0 int = vec_get__Vec_3int(self__0, current__0)
+        var t1 int = current__0 + 1
+        ref_set__Ref_3int(index__0, t1)
         var t2 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: value__0,

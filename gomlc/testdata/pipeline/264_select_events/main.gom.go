@@ -302,6 +302,10 @@ func ref_set__Ref_13Option__isize(reference *ref_Option__isize_x, value Option__
     return struct{}{}
 }
 
+type ref_int_x struct {
+    value int
+}
+
 type Tuple3_4bool_6string_6string struct {
     _0 bool
     _1 string
@@ -511,6 +515,10 @@ type _goml_m_std_p_task_p_Task____isize struct {
     ready chan struct{}
 }
 
+type FnIterator__u8 struct {
+    next_fn func() Option__u8
+}
+
 type closure_env_std_io_read_stdin_to_string_0 struct {}
 
 type closure_env_main_1 struct {}
@@ -530,6 +538,12 @@ type closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5 struct {
     body_1 func(_goml_m_std_p_task_p_CancelToken) int
     token_2 _goml_m_std_p_task_p_CancelToken
     ready_3 chan struct{}
+}
+
+type closure_env_inherent_Slice_Slice_T_iter_T_u8_6 struct {
+    index_0 *ref_int_x
+    len_1 int
+    self_2 []uint8
 }
 
 type Ordering int32
