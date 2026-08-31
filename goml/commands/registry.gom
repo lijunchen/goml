@@ -77,9 +77,7 @@ fn config_registry_source() -> Result[string, string] {
             }
         }
     }
-    Result::Err(
-        "registry.default is not configured in " + config + "; set it or use --local-registry",
-    )
+    Result::Err(f"registry.default is not configured in {config}; set it or use --local-registry")
 }
 
 fn option_local_registry(args: Vec[string], index: isize) -> Result[(Option[string], isize), string] {
@@ -133,9 +131,7 @@ pub fn update_registry(args: Vec[string]) -> Result[(), string] {
     let cache = registry::cached_root()?;
     if fs::exists(cache) {
         if !fs::is_dir(path::join(cache, ".git")) {
-            return Result::Err(
-                "cached registry path " + cache + " exists but is not a git repository",
-            )
+            return Result::Err(f"cached registry path {cache} exists but is not a git repository")
         }
         run_git(Vec::from_array(["-C", cache, "remote", "set-url", "origin", source]))?;
         run_git(Vec::from_array(["-C", cache, "pull", "--ff-only"]))?
@@ -206,7 +202,7 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
     let mut in_dependencies = false;
     let mut inserted = false;
     let mut dependency_section_exists = false;
-    let entry = "\"" + name + "\" = \"" + version + "\"";
+    let entry = f"\"{name}\" = \"{version}\"";
     let lines = text::lines(source);
     for line in lines {
         match section_name(line) {
@@ -309,7 +305,7 @@ fn command_registry_root(local: Option[string]) -> Result[string, string] {
     };
     if !fs::is_dir(root) {
         return Result::Err(
-            "registry cache not found at " + root + "; run `goml update` or use --local-registry",
+            f"registry cache not found at {root}; run `goml update` or use --local-registry",
         )
     }
     match registry::validate(root) {
@@ -369,7 +365,7 @@ pub fn add_dependency(args: Vec[string]) -> Result[(), string] {
     };
     let module = module_root()?;
     upsert_dependency(path::join(module, manifest::FILENAME), name, version)?;
-    io::println("added " + name + " = " + version);
+    io::println(f"added {name} = {version}");
     Result::Ok(())
 }
 

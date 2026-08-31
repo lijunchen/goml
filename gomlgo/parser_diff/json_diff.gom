@@ -74,7 +74,7 @@ fn compare_object(
     for entry in expected {
         if !ignored_field(mode, entry.0) {
             match json::field(actual_value, entry.0) {
-                Some(value) => match compare_json(
+                Some(value) => if let Some(value) = compare_json(
                     value,
                     entry.1,
                     path + "." + entry.0,
@@ -82,8 +82,7 @@ fn compare_object(
                     mode,
                     offset,
                 ) {
-                    Some(value) => return Option::Some(value),
-                    None => {},
+                    return Option::Some(value)
                 },
                 None => return Option::Some(
                     Difference {
@@ -130,7 +129,7 @@ fn compare_array(
         )
     } else {
         for index in 0..expected.len() {
-            match compare_json(
+            if let Some(value) = compare_json(
                 actual[index],
                 expected[index],
                 f"{path}[{index}]",
@@ -138,8 +137,7 @@ fn compare_array(
                 mode,
                 offset,
             ) {
-                Some(value) => return Option::Some(value),
-                None => {},
+                return Option::Some(value)
             }
         }
         Option::None

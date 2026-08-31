@@ -228,10 +228,8 @@ impl Serializer for ValueSerializer {
 
     fn serialize_bytes(self: ValueSerializer, value: Slice[byte]) -> Result[(), string] {
         let values: Vec[Value] = Vec::with_capacity(value.len());
-        let mut index = 0;
-        while index < value.len() {
-            values.push(Value::Uint8(value[index]));
-            index += 1;
+        for byte_value in value {
+            values.push(Value::Uint8(byte_value))
         }
         append_serialized_value(self, Value::Sequence(values))
     }

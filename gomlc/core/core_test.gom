@@ -479,7 +479,7 @@ fn links_builtin_core_before_user_core() -> () {
         struct_defs_to_tast(builtins.structs),
     );
     let linked = link_with_builtins(builtins, user);
-    testing::assert(linked.functions.get(0).root == false);
+    testing::assert(!linked.functions.get(0).root);
     testing::assert_eq(linked.functions.get(0).name, first_builtin_name);
     testing::assert_eq(linked.functions.get(linked.functions.len() - 1).name, "main");
     testing::assert(counter.get() > 50)

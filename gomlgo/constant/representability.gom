@@ -217,10 +217,9 @@ pub fn round_constant(value: ConstValue, kind: go_types::BasicKind, sizes: go_ty
                 },
                 None => Option::None,
             },
-            go_types::BasicKind::UntypedComplex => match constant_to_numeric_complex(value) {
-                Some((real, imaginary)) => Option::Some(ConstValue::Complex { real, imaginary }),
-                None => Option::None,
-            },
+            go_types::BasicKind::UntypedComplex => constant_to_numeric_complex(value).map(
+                |components| ConstValue::Complex { real: components.0, imaginary: components.1 },
+            ),
             go_types::BasicKind::Bool | go_types::BasicKind::UntypedBool => match value {
                 ConstValue::Bool(value) => Option::Some(ConstValue::Bool(value)),
                 _ => Option::None,

@@ -369,23 +369,16 @@ pub fn load_files(config: ExecutionConfig, files: Vec[string]) -> Result[
     }
     let toolchain = discover_toolchain(config.go_binary)?;
     if native_api_file(names[0]) {
-        match native_api_listed(
+        if let Some(value) = native_api_listed(
             toolchain,
             directory,
             names[0],
             fs::read_bytes_structured(first).map_err(|error| error.to_string())?,
         ) {
-            Some(value) => {
-                let loaded = load_checked_packages_with_order(
-                    config,
-                    value.0,
-                    Option::Some(value.1),
-                )?;
-                if loaded.program.is_some() {
-                    return Result::Ok(loaded)
-                }
-            },
-            None => {},
+            let loaded = load_checked_packages_with_order(config, value.0, Option::Some(value.1))?;
+            if loaded.program.is_some() {
+                return Result::Ok(loaded)
+            }
         }
     }
     let listed = list_go_files(config, toolchain, directory, names)?;

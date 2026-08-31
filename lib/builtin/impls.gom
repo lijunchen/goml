@@ -1443,12 +1443,10 @@ impl[T: PartialEq] Slice[T] {
 
 impl[T: PartialEq] FrozenVec[T] {
     fn contains(self: Self, expected: T) -> bool {
-        let mut index = 0;
-        while index < self.len() {
-            if PartialEq::eq(self.get(index), expected) {
+        for value in self.values {
+            if PartialEq::eq(value, expected) {
                 return true
             }
-            index += 1;
         }
         false
     }
@@ -1528,10 +1526,8 @@ impl[T] Slice[T] {
 
     fn to_vec(self: Self) -> Vec[T] {
         let result: Vec[T] = Vec::with_capacity(self.len());
-        let mut index = 0;
-        while index < self.len() {
-            result.push(self[index]);
-            index += 1;
+        for value in self {
+            result.push(value)
         }
         result
     }
@@ -1736,10 +1732,7 @@ impl[K: Hash + Eq, V] HashMapEntry[K, V] {
     }
 
     fn remove_entry(self: Self) -> Option[(K, V)] {
-        match self.remove() {
-            Some(value) => Option::Some((self.key, value)),
-            None => Option::None,
-        }
+        self.remove().map(|value| (self.key, value))
     }
 }
 

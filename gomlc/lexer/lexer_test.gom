@@ -55,8 +55,8 @@ fn lexes_compound_assignment_tokens() -> () {
     let tokens = lex("+= -= *= /= %= &= |= ^= <<= >>=");
     let builder = text::StringBuilder::new();
     for token in tokens {
-        if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
-            if builder.is_empty() == false {
+        if !token_kind_equal(token.kind, TokenKind::Whitespace) {
+            if !builder.is_empty() {
                 builder.write_string(" ")
             }
             builder.write_string(token_kind_name(token.kind))
@@ -73,8 +73,8 @@ fn lexes_interpolated_string_segments() -> () {
     let tokens = lex("f\"hi {{x}} {value + 1}!\"");
     let builder = text::StringBuilder::new();
     for token in tokens {
-        if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
-            if builder.is_empty() == false {
+        if !token_kind_equal(token.kind, TokenKind::Whitespace) {
+            if !builder.is_empty() {
                 builder.write_string("|")
             }
             builder.write_string(token_kind_name(token.kind));
@@ -109,8 +109,8 @@ fn lexes_keywords_and_identifiers() -> () {
     let expected = "ExternKeyword PackageKeyword UseKeyword Ident AsKeyword PubKeyword Ident Ident Ident FnKeyword TraitKeyword ImplKeyword ForKeyword EnumKeyword StructKeyword TypeKeyword ConstKeyword StaticKeyword WhereKeyword MatchKeyword IfKeyword ElseKeyword LetKeyword MutKeyword InKeyword ReturnKeyword GoKeyword DeferKeyword WhileKeyword BreakKeyword ContinueKeyword DynKeyword TrueKeyword FalseKeyword WildcardKeyword Ident BoolKeyword IsizeKeyword I8Keyword I16Keyword I32Keyword I64Keyword UsizeKeyword U8Keyword U16Keyword U32Keyword U64Keyword F32Keyword F64Keyword Ident Ident Ident Ident Ident Ident Ident Ident Ident Ident Ident Ident StringKeyword CharKeyword Ident Ident Ident Ident Ident";
     let builder = text::StringBuilder::new();
     for token in tokens {
-        if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
-            if builder.is_empty() == false {
+        if !token_kind_equal(token.kind, TokenKind::Whitespace) {
+            if !builder.is_empty() {
                 builder.write_string(" ")
             }
             builder.write_string(token_kind_name(token.kind))
@@ -126,8 +126,8 @@ fn lexes_radix_and_byte_literals() -> () {
     );
     let builder = text::StringBuilder::new();
     for token in tokens {
-        if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
-            if builder.is_empty() == false {
+        if !token_kind_equal(token.kind, TokenKind::Whitespace) {
+            if !builder.is_empty() {
                 builder.write_string(" ")
             }
             builder.write_string(token_kind_name(token.kind));
@@ -148,8 +148,8 @@ fn lexes_numeric_literals() -> () {
     );
     let builder = text::StringBuilder::new();
     for token in tokens {
-        if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
-            if builder.is_empty() == false {
+        if !token_kind_equal(token.kind, TokenKind::Whitespace) {
+            if !builder.is_empty() {
                 builder.write_string(" ")
             }
             builder.write_string(token_kind_name(token.kind));

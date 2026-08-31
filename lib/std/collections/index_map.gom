@@ -128,12 +128,10 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         };
         let old_entries = self.entries.get();
         let next_entries: Vec[Option[IndexMapEntry[K, V]]] = Vec::with_capacity(desired_entries);
-        let mut old_index = 0;
-        while old_index < old_entries.len() {
-            if let Some(entry) = old_entries[old_index] {
+        for old_entry in old_entries {
+            if let Some(entry) = old_entry {
                 next_entries.push(Option::Some(entry))
             }
-            old_index += 1;
         }
         self.entries.set(next_entries);
         self.indices.set(index_map_empty_indices(index_map_capacity_for_entries(desired_entries)));
@@ -246,36 +244,30 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
 
     pub fn entries(self: IndexMap[K, V]) -> Vec[(K, V)] {
         let result = Vec::with_capacity(self.len.get());
-        let mut index = 0;
-        while index < self.entries.get().len() {
-            if let Some(entry) = self.entries.get()[index] {
+        for value in self.entries.get() {
+            if let Some(entry) = value {
                 result.push((entry.key, entry.value))
             }
-            index += 1;
         }
         result
     }
 
     pub fn keys(self: IndexMap[K, V]) -> Vec[K] {
         let result = Vec::with_capacity(self.len.get());
-        let mut index = 0;
-        while index < self.entries.get().len() {
-            if let Some(entry) = self.entries.get()[index] {
+        for value in self.entries.get() {
+            if let Some(entry) = value {
                 result.push(entry.key)
             }
-            index += 1;
         }
         result
     }
 
     pub fn values(self: IndexMap[K, V]) -> Vec[V] {
         let result = Vec::with_capacity(self.len.get());
-        let mut index = 0;
-        while index < self.entries.get().len() {
-            if let Some(entry) = self.entries.get()[index] {
+        for value in self.entries.get() {
+            if let Some(entry) = value {
                 result.push(entry.value)
             }
-            index += 1;
         }
         result
     }

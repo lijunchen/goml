@@ -46,17 +46,11 @@ impl[T: cmp::Ord] BTreeSet[T] {
     }
 
     pub fn first(self: BTreeSet[T]) -> Option[T] {
-        match self.entries.first() {
-            Some((value, ())) => Option::Some(value),
-            None => Option::None,
-        }
+        self.entries.first().map(|entry| entry.0)
     }
 
     pub fn last(self: BTreeSet[T]) -> Option[T] {
-        match self.entries.last() {
-            Some((value, ())) => Option::Some(value),
-            None => Option::None,
-        }
+        self.entries.last().map(|entry| entry.0)
     }
 
     pub fn clear(self: BTreeSet[T]) -> () {
@@ -65,12 +59,7 @@ impl[T: cmp::Ord] BTreeSet[T] {
 
     pub fn iter(self: BTreeSet[T]) -> FnIterator[T] {
         let iterator = self.entries.iter();
-        FnIterator::from_fn(
-            || match iterator.next() {
-                Some((value, ())) => Option::Some(value),
-                None => Option::None,
-            },
-        )
+        FnIterator::from_fn(|| iterator.next().map(|entry| entry.0))
     }
 
     pub fn to_vec(self: BTreeSet[T]) -> Vec[T] {

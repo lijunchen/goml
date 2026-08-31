@@ -46,17 +46,17 @@ fn successful_output(output: process::Output, operation: string) -> Result[strin
         let stderr = text::trim(process_text(process::Output::stderr(output)));
         Result::Err(
             if stderr == "" {
-                operation + " failed"
+                f"{operation} failed"
             } else {
-                operation + " failed: " + stderr
+                f"{operation} failed: {stderr}"
             },
         )
     }
 }
 
 fn required_json_string(value: json::Value, name: string) -> Result[string, string] {
-    let field = json::field(value, name).ok_or("go tool JSON omitted " + name)?;
-    json::as_string(field).ok_or("go tool JSON field " + name + " must be a string")
+    let field = json::field(value, name).ok_or(f"go tool JSON omitted {name}")?;
+    json::as_string(field).ok_or(f"go tool JSON field {name} must be a string")
 }
 
 fn optional_json_string(value: json::Value, name: string) -> string {
@@ -72,13 +72,11 @@ fn optional_json_strings(value: json::Value, name: string) -> Result[Vec[string]
         return Result::Ok(Vec::new())
     };
     let Some(items) = json::as_array(field) else {
-        return Result::Err("go tool JSON field " + name + " must be an array")
+        return Result::Err(f"go tool JSON field {name} must be an array")
     };
     let result: Vec[string] = Vec::with_capacity(items.len());
     for item in items {
-        let value = json::as_string(item).ok_or(
-            "go tool JSON field " + name + " must contain strings",
-        )?;
+        let value = json::as_string(item).ok_or(f"go tool JSON field {name} must contain strings")?;
         result.push(value)
     }
     Result::Ok(result)
@@ -183,14 +181,11 @@ fn package_module_bool(value: json::Value, name: string) -> bool {
 }
 
 fn decode_list_package(value: json::Value) -> Result[GoListPackage, string] {
-    match json::field(value, "Error") {
-        Some(error) => {
-            let message = optional_json_string(error, "Err");
-            if message != "" {
-                return Result::Err(message)
-            }
-        },
-        None => {},
+    if let Some(error) = json::field(value, "Error") {
+        let message = optional_json_string(error, "Err");
+        if message != "" {
+            return Result::Err(message)
+        }
     }
     Result::Ok(
         GoListPackage {

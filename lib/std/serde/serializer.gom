@@ -68,9 +68,9 @@ pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Resul
         Value::Sequence(values) => {
             serializer.begin_sequence(values.len())?;
             let mut index = 0;
-            while index < values.len() {
+            for value in values {
                 serializer.begin_sequence_element(index)?;
-                serialize_value_into(values[index], serializer)?;
+                serialize_value_into(value, serializer)?;
                 index += 1;
             }
             serializer.end_sequence()
@@ -78,9 +78,9 @@ pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Resul
         Value::Tuple(values) => {
             serializer.begin_tuple(values.len())?;
             let mut index = 0;
-            while index < values.len() {
+            for value in values {
                 serializer.begin_tuple_element(index)?;
-                serialize_value_into(values[index], serializer)?;
+                serialize_value_into(value, serializer)?;
                 index += 1;
             }
             serializer.end_tuple()
@@ -98,20 +98,20 @@ pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Resul
         Value::Struct(fields) => {
             serializer.begin_struct("", fields.len())?;
             let mut index = 0;
-            while index < fields.len() {
-                serializer.begin_struct_field(index, fields[index].0)?;
-                serialize_value_into(fields[index].1, serializer)?;
+            for field in fields {
+                serializer.begin_struct_field(index, field.0)?;
+                serialize_value_into(field.1, serializer)?;
                 index += 1;
             }
             serializer.end_struct()
         },
         Value::Variant { index, name, kind, fields } => {
             serializer.begin_variant("", index, name, kind, fields.len())?;
-            let mut field = 0;
-            while field < fields.len() {
-                serializer.begin_variant_field(field, fields[field].0)?;
-                serialize_value_into(fields[field].1, serializer)?;
-                field += 1;
+            let mut field_index = 0;
+            for field in fields {
+                serializer.begin_variant_field(field_index, field.0)?;
+                serialize_value_into(field.1, serializer)?;
+                field_index += 1;
             }
             serializer.end_variant()
         },

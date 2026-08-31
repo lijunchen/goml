@@ -197,11 +197,11 @@ fn resolve_derive_export_target(
     export_name: string,
     display_name: string,
 ) -> Result[(string, string), string] {
-    let mut current = package_name + "::" + export_name;
+    let mut current = f"{package_name}::{export_name}";
     let seen: collections::HashSet[string] = collections::HashSet::new();
     while true {
         if !seen.insert(current) {
-            return Result::Err("cyclic derive re-export `" + display_name + "`")
+            return Result::Err(f"cyclic derive re-export `{display_name}`")
         }
         let targets: Vec[string] = Vec::new();
         for value in environment.reexports {
@@ -210,16 +210,16 @@ fn resolve_derive_export_target(
             }
         }
         if targets.len() > 1 {
-            return Result::Err("ambiguous derive re-export `" + display_name + "`")
+            return Result::Err(f"ambiguous derive re-export `{display_name}`")
         } else if targets.is_empty() {
             return split_derive_export_target(current).ok_or(
-                "invalid derive export target `" + current + "`",
+                f"invalid derive export target `{current}`",
             )
         } else {
             current = targets[0];
         }
     }
-    Result::Err("invalid derive export target `" + current + "`")
+    Result::Err(f"invalid derive export target `{current}`")
 }
 
 fn package_alias_target(file: ast::File, alias: string) -> Option[string] {
@@ -252,11 +252,9 @@ fn resolve_package_derive(
         }
     }
     if matches.is_empty() {
-        Result::Err(
-            "package `" + package_name + "` does not export comptime derive `" + export_name + "`",
-        )
+        Result::Err(f"package `{package_name}` does not export comptime derive `{export_name}`")
     } else if matches.len() > 1 {
-        Result::Err("ambiguous derive target `" + display_name + "`")
+        Result::Err(f"ambiguous derive target `{display_name}`")
     } else {
         Result::Ok(matches[0])
     }
@@ -268,12 +266,10 @@ fn resolve_qualified_derive(file: ast::File, environment: DeriveEnvironment, tar
 ] {
     let segments = text::split(target, "::");
     if segments.len() != 2 {
-        return Result::Err(
-            "custom derive target `" + target + "` must use an imported package alias",
-        )
+        return Result::Err(f"custom derive target `{target}` must use an imported package alias")
     }
     let package_name = package_alias_target(file, segments[0]).ok_or(
-        "derive target package `" + segments[0] + "` is not imported in this file",
+        f"derive target package `{segments[0]}` is not imported in this file",
     )?;
     resolve_package_derive(environment, package_name, segments[1], target)
 }

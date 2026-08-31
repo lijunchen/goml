@@ -229,10 +229,9 @@ pub fn constant_from_exact(kind: string, value: string) -> Option[ConstValue] {
                 Err(_) => Option::None,
             },
         },
-        COMPLEX_EXACT_KIND => match parse_exact_complex(value) {
-            Some((real, imaginary)) => Option::Some(ConstValue::Complex { real, imaginary }),
-            None => Option::None,
-        },
+        COMPLEX_EXACT_KIND => parse_exact_complex(value).map(
+            |components| ConstValue::Complex { real: components.0, imaginary: components.1 },
+        ),
         _ => Option::None,
     }
 }

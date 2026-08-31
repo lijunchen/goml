@@ -184,7 +184,7 @@ fn registry_versions(root: string, module_name: string) -> Result[Vec[string], s
         }
     }
     if result.is_empty() {
-        Result::Err("module " + module_name + " not found in registry index")
+        Result::Err(f"module {module_name} not found in registry index")
     } else {
         Result::Ok(result)
     }
@@ -195,7 +195,7 @@ fn select_registry_version(root: string, requirement: DependencyRequirement) -> 
     string,
 ] {
     let Some(minimum) = parse_sem_version(requirement.version) else {
-        return Result::Err("invalid semver `" + requirement.version + "`")
+        return Result::Err(f"invalid semver `{requirement.version}`")
     };
     let versions = registry_versions(root, requirement.name)?;
     let mut selected: Option[string] = Option::None;
@@ -210,11 +210,11 @@ fn select_registry_version(root: string, requirement: DependencyRequirement) -> 
                 selected = Option::Some(version);
                 selected_version = Option::Some(parsed);
             },
-            None => return Result::Err("invalid registry semver `" + version + "`"),
+            None => return Result::Err(f"invalid registry semver `{version}`"),
         }
     }
     selected.ok_or(
-        "registry has no version for " + requirement.name + " satisfying >= " + requirement.version,
+        f"registry has no version for {requirement.name} satisfying >= {requirement.version}",
     )
 }
 
@@ -260,7 +260,7 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
         };
         let version = select_registry_version(registry, requirement)?;
         let Some(parsed) = parse_sem_version(version) else {
-            return Result::Err("invalid registry semver `" + version + "`")
+            return Result::Err(f"invalid registry semver `{version}`")
         };
         let update = match selected.get(requirement.name) {
             Some(current) => match parse_sem_version(current.version) {
@@ -277,12 +277,10 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
             match manifest_module_path(module_manifest) {
                 Some(name) => if name != requirement.name {
                     return Result::Err(
-                        "registry module " + requirement.name + " declares module path " + name,
+                        f"registry module {requirement.name} declares module path {name}",
                     )
                 },
-                None => return Result::Err(
-                    "registry module " + requirement.name + " has no module path",
-                ),
+                None => return Result::Err(f"registry module {requirement.name} has no module path"),
             }
             let _ = selected.insert(
                 requirement.name,

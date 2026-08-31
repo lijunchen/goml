@@ -61,12 +61,7 @@ impl[T: Eq + Hash] IndexSet[T] {
 
     pub fn iter(self: IndexSet[T]) -> FnIterator[T] {
         let iterator = self.entries.iter();
-        FnIterator::from_fn(
-            || match iterator.next() {
-                Some((value, ())) => Option::Some(value),
-                None => Option::None,
-            },
-        )
+        FnIterator::from_fn(|| iterator.next().map(|entry| entry.0))
     }
 }
 

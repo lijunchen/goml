@@ -75,12 +75,11 @@ fn compare_file(file: string, mode: Mode) -> Result[bool, string] {
             Some(root) => ast::to_json(root),
             None => return Result::Err(file + ": missing GoML AST"),
         };
-        match compare_ast(actual_ast, expected.ast, mode) {
-            Some(value) => return Result::Err(
+        if let Some(value) = compare_ast(actual_ast, expected.ast, mode) {
+            return Result::Err(
                 file + ": " + mode_name(mode)
                     + f" mismatch\npath={value.path}\noffset={value.offset}\nexpected={value.expected}\nactual={value.actual}",
-            ),
-            None => {},
+            )
         }
     }
     Result::Ok(actual_ok)

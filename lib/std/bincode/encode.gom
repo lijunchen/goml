@@ -432,10 +432,8 @@ impl serde::Serializer for BincodeSerializer {
     fn serialize_bytes(self: BincodeSerializer, value: Slice[byte]) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_length(self.output, value.len(), self.config)?;
-        let mut index = 0;
-        while index < value.len() {
-            self.output.push(value[index]);
-            index += 1;
+        for byte_value in value {
+            self.output.push(byte_value)
         }
         Result::Ok(())
     }

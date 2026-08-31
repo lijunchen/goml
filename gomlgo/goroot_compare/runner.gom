@@ -89,11 +89,10 @@ fn collect_packages(
     if excluded_directory(name) || (!include_cmd && directory == path::join(root, "cmd")) {
         return Result::Ok(())
     }
-    match directory_import_path(root, directory) {
-        Some(import_path) => if let Ok(_) = loader::selected_sources(config, import_path) {
+    if let Some(import_path) = directory_import_path(root, directory) {
+        if let Ok(_) = loader::selected_sources(config, import_path) {
             packages.push(import_path)
-        },
-        None => {},
+        }
     }
     for child in fs::read_dir(directory).map_err(|error| error.to_string())? {
         let entry = path::join(directory, child);

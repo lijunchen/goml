@@ -568,13 +568,8 @@ fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, val
             location: _,
         }) => {
             set_register(scheduled.frame, target, value)?;
-            match ok {
-                Some(target) => set_register(
-                    scheduled.frame,
-                    target,
-                    Value::Local(LocalValue::Bool(true)),
-                )?,
-                None => {},
+            if let Some(target) = ok {
+                set_register(scheduled.frame, target, Value::Local(LocalValue::Bool(true)))?
             }
             scheduled.instruction.set(scheduled.instruction.get() + 1);
             scheduled.waiting.set(false);
@@ -587,13 +582,8 @@ fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, val
         }) => match cases[waiting.case_index].operation {
             bytecode::SelectOperation::Receive { channel: _, value: target, ok } => {
                 set_register(scheduled.frame, target, value)?;
-                match ok {
-                    Some(target) => set_register(
-                        scheduled.frame,
-                        target,
-                        Value::Local(LocalValue::Bool(true)),
-                    )?,
-                    None => {},
+                if let Some(target) = ok {
+                    set_register(scheduled.frame, target, Value::Local(LocalValue::Bool(true)))?
                 }
                 select_case_enter(
                     scheduler,
@@ -928,13 +918,10 @@ fn start_native_callback(
 
 fn poll_native_callbacks(scheduler: Scheduler) -> Result[bool, string] {
     for binding in scheduler.state.native_callbacks {
-        match take_native_callback_request(binding.queue) {
-            Some(request) => {
-                let _ = take_native_completion(scheduler.native_completions);
-                start_native_callback(scheduler, binding, request)?;
-                return Result::Ok(true)
-            },
-            None => {},
+        if let Some(request) = take_native_callback_request(binding.queue) {
+            let _ = take_native_completion(scheduler.native_completions);
+            start_native_callback(scheduler, binding, request)?;
+            return Result::Ok(true)
         }
     }
     Result::Ok(false)
@@ -1036,13 +1023,12 @@ fn complete_scheduled_native(
 
 fn poll_scheduled_native(scheduler: Scheduler) -> Result[Option[InvocationOutcome], string] {
     for index in 0..scheduler.goroutines.len() {
-        match scheduler.goroutines[index].native.get() {
-            Some(pending) => if native_completion_ready(pending.invocation) {
+        if let Some(pending) = scheduler.goroutines[index].native.get() {
+            if native_completion_ready(pending.invocation) {
                 if let Some(outcome) = complete_scheduled_native(scheduler, index, pending)? {
                     return Result::Ok(Option::Some(outcome))
                 }
-            },
-            None => {},
+            }
         }
     }
     Result::Ok(Option::None)
@@ -1116,13 +1102,8 @@ fn complete_native_channel(
                 value,
                 Value::Host { type_id: element_type, value: host },
             )?;
-            match ok {
-                Some(target) => set_register(
-                    pending.owner.frame,
-                    target,
-                    Value::Local(LocalValue::Bool(open)),
-                )?,
-                None => {},
+            if let Some(target) = ok {
+                set_register(pending.owner.frame, target, Value::Local(LocalValue::Bool(open)))?
             }
             advance_scheduled(pending.owner)
         },
@@ -1148,13 +1129,12 @@ fn complete_native_channel(
                             value: host,
                         },
                     )?;
-                    match ok {
-                        Some(register_id) => set_register(
+                    if let Some(register_id) = ok {
+                        set_register(
                             pending.owner.frame,
                             register_id,
                             Value::Local(LocalValue::Bool(open)),
-                        )?,
-                        None => {},
+                        )?
                     }
                 },
                 bytecode::SelectOperation::Default => {},
@@ -1168,11 +1148,10 @@ fn complete_native_channel(
 
 fn poll_scheduled_native_channels(scheduler: Scheduler) -> Result[(), string] {
     for index in 0..scheduler.goroutines.len() {
-        match scheduler.goroutines[index].native_channel.get() {
-            Some(pending) => if native_channel_invocation_ready_value(pending.invocation.value) {
+        if let Some(pending) = scheduler.goroutines[index].native_channel.get() {
+            if native_channel_invocation_ready_value(pending.invocation.value) {
                 complete_native_channel(scheduler, index, pending)?
-            },
-            None => {},
+            }
         }
     }
     Result::Ok(())
@@ -1183,11 +1162,10 @@ fn update_scheduled_panic(scheduled: ScheduledFrame, outcome: InvocationOutcome)
 ] {
     match outcome {
         InvocationOutcome::Returned(_) => {
-            match scheduled.panic.get() {
-                Some(active) => if !active.active.get() {
+            if let Some(active) = scheduled.panic.get() {
+                if !active.active.get() {
                     scheduled.panic.set(Option::None)
-                },
-                None => {},
+                }
             }
             Option::None
         },
@@ -1208,16 +1186,13 @@ fn complete_scheduled_frame(
     let completed = scheduled_top(goroutine)?;
     let _ = goroutine.frames.pop().ok_or("scheduled frame stack is empty")?;
     release_frame_slots(scheduler.state, completed.frame);
-    match completed.callback.get() {
-        Some(callback) => {
-            if !goroutine.frames.is_empty() {
-                return Result::Err("native callback root returned with caller frames")
-            }
-            complete_native_callback(scheduler.state, callback, outcome)?;
-            goroutine.state.set(2);
-            return Result::Ok(Option::None)
-        },
-        None => {},
+    if let Some(callback) = completed.callback.get() {
+        if !goroutine.frames.is_empty() {
+            return Result::Err("native callback root returned with caller frames")
+        }
+        complete_native_callback(scheduler.state, callback, outcome)?;
+        goroutine.state.set(2);
+        return Result::Ok(Option::None)
     }
     match outcome {
         InvocationOutcome::Exited(code) => {
@@ -1335,12 +1310,9 @@ fn resume_scheduled_finish(scheduler: Scheduler, goroutine_index: isize) -> Resu
                         return Result::Err(message)
                     },
                 };
-                match update_scheduled_panic(scheduled, outcome) {
-                    Some(outcome) => {
-                        goroutine.state.set(2);
-                        return Result::Ok(Option::Some(outcome))
-                    },
-                    None => {},
+                if let Some(outcome) = update_scheduled_panic(scheduled, outcome) {
+                    goroutine.state.set(2);
+                    return Result::Ok(Option::Some(outcome))
                 }
             },
             Err(message) => if runtime_fault(message) {
@@ -1567,13 +1539,12 @@ fn execute_scheduled_select(
             match attempt_receive(scheduler, goroutine_index, channel_id)? {
                 ReceiveAttempt::Received { value: received, ok: received_ok } => {
                     set_register(scheduled.frame, value, received)?;
-                    match ok {
-                        Some(target) => set_register(
+                    if let Some(target) = ok {
+                        set_register(
                             scheduled.frame,
                             target,
                             Value::Local(LocalValue::Bool(received_ok)),
-                        )?,
-                        None => {},
+                        )?
                     }
                     wake_channel(scheduler, channel_id)?;
                     select_case_enter(
@@ -1818,13 +1789,12 @@ fn execute_scheduled_instruction(
             match attempt_receive(scheduler, goroutine_index, channel_id)? {
                 ReceiveAttempt::Received { value: received, ok: received_ok } => {
                     set_register(scheduled.frame, value, received)?;
-                    match ok {
-                        Some(target) => set_register(
+                    if let Some(target) = ok {
+                        set_register(
                             scheduled.frame,
                             target,
                             Value::Local(LocalValue::Bool(received_ok)),
-                        )?,
-                        None => {},
+                        )?
                     }
                     advance_scheduled(scheduled);
                     wake_channel(scheduler, channel_id)?;

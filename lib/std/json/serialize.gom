@@ -232,13 +232,14 @@ impl serde::Serializer for JsonSerializer {
     fn serialize_bytes(self: JsonSerializer, value: Slice[byte]) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_char('[');
-        let mut index = 0;
-        while index < value.len() {
-            if index > 0 {
+        let mut first = true;
+        for byte_value in value {
+            if first {
+                first = false;
+            } else {
                 self.builder.write_char(',')
             }
-            self.builder.write_string(value[index].to_string());
-            index += 1;
+            self.builder.write_string(byte_value.to_string())
         }
         self.builder.write_char(']');
         Result::Ok(())
