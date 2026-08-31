@@ -122,8 +122,8 @@ fn std::iter::map__A_i32__B_i32__I_Counter(
   map_fn/0: (i32) -> i32
 ) -> FnIterator__i32 {
   inherent#FnIterator#FnIterator[T]#from_fn__T_i0(
-    pack_closure[inherent#closure_env_std_iter_map_A_i32_B_i32_I_Counter_4#closure_env_std_iter_map_A_i32_B_i32_I_Counter_4#apply](
-      closure_env_std_iter_map_A_i32_B_i32_I_Counter_4 {
+    pack_closure[inherent#closure_env_std_iter_map_A_i32_B_i32_I_Counter_5#closure_env_std_iter_map_A_i32_B_i32_I_Counter_5#apply](
+      closure_env_std_iter_map_A_i32_B_i32_I_Counter_5 {
         iterator_0: iterator/0,
         map_fn_1: map_fn/0
       }
@@ -136,8 +136,8 @@ fn std::iter::filter__I_FnIterator[i32]__T_i32(
   predicate/0: (i32) -> bool
 ) -> FnIterator__i32 {
   inherent#FnIterator#FnIterator[T]#from_fn__T_i0(
-    pack_closure[inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#apply](
-      closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5 {
+    pack_closure[inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6#apply](
+      closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6 {
         iterator_0: iterator/0,
         predicate_1: predicate/0
       }
@@ -158,8 +158,8 @@ fn std::iter::take__I_FnIterator[i32](
       }
     ) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_i0(
-    pack_closure[inherent#closure_env_std_iter_take_I_FnIterator_i32_6#closure_env_std_iter_take_I_FnIterator_i32_6#apply](
-      closure_env_std_iter_take_I_FnIterator_i32_6 {
+    pack_closure[inherent#closure_env_std_iter_take_I_FnIterator_i32_7#closure_env_std_iter_take_I_FnIterator_i32_7#apply](
+      closure_env_std_iter_take_I_FnIterator_i32_7 {
         remaining_0: remaining/0,
         iterator_1: iterator/0
       }
@@ -229,8 +229,8 @@ fn std::iter::map__A_isize__B_string__I_FnIterator[isize](
   map_fn/0: (isize) -> string
 ) -> FnIterator__string {
   inherent#FnIterator#FnIterator[T]#from_fn__T_string(
-    pack_closure[inherent#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7#apply](
-      closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7 {
+    pack_closure[inherent#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9#apply](
+      closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9 {
         iterator_0: iterator/0,
         map_fn_1: map_fn/0
       }
@@ -248,6 +248,22 @@ fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
 
 fn trait_impl#ToString#string#to_string(self/0: string) -> string {
   self/0
+}
+
+fn inherent#Option#Option[T]#map__T_i32__U_i32(
+  self/0: Option__i32,
+  map_fn/0: (i32) -> i32
+) -> Option__i32 {
+  match self/0 {
+    Option__i32::None => {
+      Option__i32::None
+    },
+    Option__i32::Some(x0) => {
+      let x0 = Option__i32::Some._0(self/0) in
+      let value/0 = x0 in
+      Option__i32::Some(map_fn/0(value/0))
+    },
+  }
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_i32(
@@ -275,8 +291,8 @@ fn trait_impl#Iterator#FnIterator__isize#next(self/0: FnIterator__isize) -> Opti
 fn __goml_builtin_range(start/0: isize, end/0: isize) -> FnIterator__isize {
   let current/0 = @intrinsic(ref.new)(start/0) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
-    pack_closure[inherent#closure_env_goml_builtin_range_8#closure_env_goml_builtin_range_8#apply](
-      closure_env_goml_builtin_range_8 { current_0: current/0, end_1: end/0 }
+    pack_closure[inherent#closure_env_goml_builtin_range_10#closure_env_goml_builtin_range_10#apply](
+      closure_env_goml_builtin_range_10 { current_0: current/0, end_1: end/0 }
     )
   )
 }
@@ -295,6 +311,22 @@ fn trait_impl#Iterator#FnIterator__string#next(self/0: FnIterator__string) -> Op
 
 fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Option#Option[T]#map__T_isize__U_string(
+  self/0: Option__isize,
+  map_fn/0: (isize) -> string
+) -> Option__string {
+  match self/0 {
+    Option__isize::None => {
+      Option__string::None
+    },
+    Option__isize::Some(x0) => {
+      let x0 = Option__isize::Some._0(self/0) in
+      let value/0 = x0 in
+      Option__string::Some(map_fn/0(value/0))
+    },
+  }
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_string(
@@ -422,28 +454,31 @@ fn inherent#closure_env_main_3#closure_env_main_3#apply(
 }
 
 fn inherent#closure_env_std_iter_map_A_i32_B_i32_I_Counter_4#closure_env_std_iter_map_A_i32_B_i32_I_Counter_4#apply(
-  env0: closure_env_std_iter_map_A_i32_B_i32_I_Counter_4
-) -> Option__i32 {
-  let iterator/0 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_4.iterator_0(env0) in
-  let map_fn/0 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_4.map_fn_1(env0) in
-  let mtmp0 = trait_impl#Iterator#Counter#next(iterator/0) in
-  match mtmp0 {
-    Option__i32::None => {
-      Option__i32::None
-    },
-    Option__i32::Some(x0) => {
-      let x0 = Option__i32::Some._0(mtmp0) in
-      let value/0 = x0 in
-      Option__i32::Some(map_fn/0(value/0))
-    },
-  }
+  env0: closure_env_std_iter_map_A_i32_B_i32_I_Counter_4,
+  value/0: i32
+) -> i32 {
+  let map_fn/0 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_4.map_fn_0(env0) in
+  map_fn/0(value/0)
 }
 
-fn inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#apply(
-  env0: closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5
+fn inherent#closure_env_std_iter_map_A_i32_B_i32_I_Counter_5#closure_env_std_iter_map_A_i32_B_i32_I_Counter_5#apply(
+  env0: closure_env_std_iter_map_A_i32_B_i32_I_Counter_5
 ) -> Option__i32 {
-  let iterator/0 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5.iterator_0(env0) in
-  let predicate/0 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5.predicate_1(env0) in
+  let iterator/0 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_5.iterator_0(env0) in
+  let map_fn/0 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_5.map_fn_1(env0) in
+  inherent#Option#Option[T]#map__T_i32__U_i0(
+    trait_impl#Iterator#Counter#next(iterator/0),
+    pack_closure[inherent#closure_env_std_iter_map_A_i32_B_i32_I_Counter_4#closure_env_std_iter_map_A_i32_B_i32_I_Counter_4#apply](
+      closure_env_std_iter_map_A_i32_B_i32_I_Counter_4 { map_fn_0: map_fn/0 }
+    )
+  )
+}
+
+fn inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6#apply(
+  env0: closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6
+) -> Option__i32 {
+  let iterator/0 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6.iterator_0(env0) in
+  let predicate/0 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6.predicate_1(env0) in
   let _wild0 =
     while true {
         let mtmp0 = trait_impl#Iterator#FnIterator__i32#next(iterator/0) in
@@ -463,11 +498,11 @@ fn inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#closure_env_std
   Option__i32::None
 }
 
-fn inherent#closure_env_std_iter_take_I_FnIterator_i32_6#closure_env_std_iter_take_I_FnIterator_i32_6#apply(
-  env0: closure_env_std_iter_take_I_FnIterator_i32_6
+fn inherent#closure_env_std_iter_take_I_FnIterator_i32_7#closure_env_std_iter_take_I_FnIterator_i32_7#apply(
+  env0: closure_env_std_iter_take_I_FnIterator_i32_7
 ) -> Option__i32 {
-  let remaining/0 = closure_env_std_iter_take_I_FnIterator_i32_6.remaining_0(env0) in
-  let iterator/0 = closure_env_std_iter_take_I_FnIterator_i32_6.iterator_1(env0) in
+  let remaining/0 = closure_env_std_iter_take_I_FnIterator_i32_7.remaining_0(env0) in
+  let iterator/0 = closure_env_std_iter_take_I_FnIterator_i32_7.iterator_1(env0) in
   if (inherent#Ref#Ref[T]#get__T_isize(remaining/0) == 0) {
       Option__i32::None
   } else {
@@ -480,30 +515,33 @@ fn inherent#closure_env_std_iter_take_I_FnIterator_i32_6#closure_env_std_iter_ta
   }
 }
 
-fn inherent#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7#apply(
-  env0: closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7
-) -> Option__string {
-  let iterator/0 =
-    closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7.iterator_0(env0) in
-  let map_fn/0 = closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7.map_fn_1(env0) in
-  let mtmp0 = trait_impl#Iterator#FnIterator__isize#next(iterator/0) in
-  match mtmp0 {
-    Option__isize::None => {
-      Option__string::None
-    },
-    Option__isize::Some(x0) => {
-      let x0 = Option__isize::Some._0(mtmp0) in
-      let value/0 = x0 in
-      Option__string::Some(map_fn/0(value/0))
-    },
-  }
+fn inherent#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8#apply(
+  env0: closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8,
+  value/0: isize
+) -> string {
+  let map_fn/0 = closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8.map_fn_0(env0) in
+  map_fn/0(value/0)
 }
 
-fn inherent#closure_env_goml_builtin_range_8#closure_env_goml_builtin_range_8#apply(
-  env0: closure_env_goml_builtin_range_8
+fn inherent#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9#apply(
+  env0: closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9
+) -> Option__string {
+  let iterator/0 =
+    closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9.iterator_0(env0) in
+  let map_fn/0 = closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9.map_fn_1(env0) in
+  inherent#Option#Option[T]#map__T_isize__U_string(
+    trait_impl#Iterator#FnIterator__isize#next(iterator/0),
+    pack_closure[inherent#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8#closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8#apply](
+      closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8 { map_fn_0: map_fn/0 }
+    )
+  )
+}
+
+fn inherent#closure_env_goml_builtin_range_10#closure_env_goml_builtin_range_10#apply(
+  env0: closure_env_goml_builtin_range_10
 ) -> Option__isize {
-  let current/0 = closure_env_goml_builtin_range_8.current_0(env0) in
-  let end/0 = closure_env_goml_builtin_range_8.end_1(env0) in
+  let current/0 = closure_env_goml_builtin_range_10.current_0(env0) in
+  let end/0 = closure_env_goml_builtin_range_10.end_1(env0) in
   let value/0 = @intrinsic(ref.get)(current/0) in
   if (value/0 < end/0) {
       let _wild0 = @intrinsic(ref.set)(current/0, (value/0 + 1)) in

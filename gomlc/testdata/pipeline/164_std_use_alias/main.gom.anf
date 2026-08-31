@@ -2162,49 +2162,35 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
     Tag_0 => {
       let x0 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp0) in
       join inline_cont0(
-        mtmp1: Result__string__std::utf8::Utf8Error
+        t0: Result__string__std::utf8::Utf8Error
       ) -> Result__string__std::io::Error {
-        match mtmp1 {
+        let t1 = closure_env_std_io_read_stdin_to_string_0 {} in
+        let t2 =
+          pack_closure[inherent#closure_env_std_io_read_stdin_to_string_0#closure_env_std_io_read_stdin_to_string_0#apply](
+            t1
+          ) in
+        match t0 {
           Tag_0 => {
-            let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
-            let t0 = Result__string__std::io::Error::Ok(x1) in
-            t0
+            let inline0 = Result__string__std::utf8::Utf8Error::Ok._0(t0) in
+            let inline1 = Result__string__std::io::Error::Ok(inline0) in
+            inline1
           },
           Tag_1 => {
-            let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
-            join inline_cont1(t1: string) -> Result__string__std::io::Error {
-              join inline_cont2(t2: std::io::Error) -> Result__string__std::io::Error {
-                let t3 = Result__string__std::io::Error::Err(t2) in
-                t3
-              } in
-              let inline0 = "read stdin" in
-              let inline1 =
-                inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
-                  Tag_4,
-                  inline0,
-                  Tag_0,
-                  Tag_0,
-                  t1
-                ) in
-              let inline2 = std::io::Error { details: inline1 } in
-              jump inline_cont2(inline2)
-            } in
-            let inline3 = ("" + "invalid UTF-8 at byte ") in
-            let inline4 = std::utf8::Utf8Error.valid_up_to_value(x2) in
-            let inline5 = inherent#isize#isize#to_string(inline4) in
-            let inline6 = (inline3 + inline5) in
-            jump inline_cont1(inline6)
+            let inline2 = Result__string__std::utf8::Utf8Error::Err._0(t0) in
+            let inline3 = t2(inline2) in
+            let inline4 = Result__string__std::io::Error::Err(inline3) in
+            inline4
           },
         }
       } in
-      let inline7 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
-      let inline8 = std::utf8::decode(inline7) in
-      jump inline_cont0(inline8)
+      let inline5 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
+      let inline6 = std::utf8::decode(inline5) in
+      jump inline_cont0(inline6)
     },
     Tag_1 => {
-      let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
-      let t4 = Result__string__std::io::Error::Err(x3) in
-      t4
+      let x1 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
+      let t3 = Result__string__std::io::Error::Err(x1) in
+      t3
     },
   }
 }
@@ -3538,9 +3524,9 @@ fn std::text::find_bytes(value/0: string, expected/0: string) -> Option__isize {
 fn std::text::char_indices(value/0: string) -> FnIterator__(isize,char) {
   let inline0 = @intrinsic(ref.new)(0) in
   let inline1 =
-    closure_env_inherent_string_string_char_indices_0 { index_0: inline0, self_1: value/0 } in
+    closure_env_inherent_string_string_char_indices_1 { index_0: inline0, self_1: value/0 } in
   let inline2 =
-    pack_closure[inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inherent_string_string_char_indices_0#apply](
+    pack_closure[inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inherent_string_string_char_indices_1#apply](
       inline1
     ) in
   let inline3 = inherent#FnIterator#FnIterator[T]#from_fn__T_(isize,char)(inline2) in
@@ -4312,6 +4298,25 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
   }
 }
 
+fn inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+  self/0: Result__string__std::utf8::Utf8Error,
+  map_fn/0: (std::utf8::Utf8Error) -> std::io::Error
+) -> Result__string__std::io::Error {
+  match self/0 {
+    Tag_0 => {
+      let x0 = Result__string__std::utf8::Utf8Error::Ok._0(self/0) in
+      let t0 = Result__string__std::io::Error::Ok(x0) in
+      t0
+    },
+    Tag_1 => {
+      let x1 = Result__string__std::utf8::Utf8Error::Err._0(self/0) in
+      let t1 = map_fn/0(x1) in
+      let t2 = Result__string__std::io::Error::Err(t1) in
+      t2
+    },
+  }
+}
+
 fn inherent#string#string#get(self/0: string, index/0: isize) -> char {
   let inline0 = string_decode_utf8_at(self/0, index/0) in
   let inline1 = inline0.0 in
@@ -4432,9 +4437,9 @@ fn inherent#string#string#find_bytes(self/0: string, expected/0: string) -> Opti
 
 fn inherent#string#string#char_indices(self/0: string) -> FnIterator__(isize,char) {
   let index/0 = @intrinsic(ref.new)(0) in
-  let t0 = closure_env_inherent_string_string_char_indices_0 { index_0: index/0, self_1: self/0 } in
+  let t0 = closure_env_inherent_string_string_char_indices_1 { index_0: index/0, self_1: self/0 } in
   let t1 =
-    pack_closure[inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inherent_string_string_char_indices_0#apply](
+    pack_closure[inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inherent_string_string_char_indices_1#apply](
       t0
     ) in
   let inline0 = FnIterator__(isize,char) { next_fn: t1 } in
@@ -4474,9 +4479,9 @@ fn inherent#string#string#char_count(self/0: string) -> isize {
     jump inline_cont1(t0)
   } in
   let inline2 = @intrinsic(ref.new)(0) in
-  let inline3 = closure_env_inherent_string_string_chars_1 { self_0: self/0, index_1: inline2 } in
+  let inline3 = closure_env_inherent_string_string_chars_2 { self_0: self/0, index_1: inline2 } in
   let inline4 =
-    pack_closure[inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_string_string_chars_1#apply](
+    pack_closure[inherent#closure_env_inherent_string_string_chars_2#closure_env_inherent_string_string_chars_2#apply](
       inline3
     ) in
   let inline5 = inherent#FnIterator#FnIterator[T]#from_fn__T_char(inline4) in
@@ -4606,12 +4611,12 @@ fn inherent#string#string#slice_chars(
           } in
           let inline5 = @intrinsic(ref.new)(0) in
           let inline6 =
-            closure_env_inherent_string_string_char_indices_0 {
+            closure_env_inherent_string_string_char_indices_1 {
               index_0: inline5,
               self_1: self/0
             } in
           let inline7 =
-            pack_closure[inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inherent_string_string_char_indices_0#apply](
+            pack_closure[inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inherent_string_string_char_indices_1#apply](
               inline6
             ) in
           let inline8 = inherent#FnIterator#FnIterator[T]#from_fn__T_(isize,char)(inline7) in
@@ -4947,9 +4952,9 @@ fn inherent#string#string#lines(self/0: string) -> Vec[string] {
           } in
           let inline8 = 0 in
           let inline9 = @intrinsic(ref.new)(inline8) in
-          let inline10 = closure_env_goml_builtin_range_2 { current_0: inline9, end_1: t2 } in
+          let inline10 = closure_env_goml_builtin_range_3 { current_0: inline9, end_1: t2 } in
           let inline11 =
-            pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+            pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
               inline10
             ) in
           let inline12 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline11) in
@@ -5112,9 +5117,9 @@ fn inherent#Vec#Vec[T]#join__T_string(self/0: Vec[string], separator/0: string) 
                     let inline4 = 0 in
                     let inline5 = @intrinsic(ref.new)(inline4) in
                     let inline6 =
-                      closure_env_goml_builtin_range_2 { current_0: inline5, end_1: t5 } in
+                      closure_env_goml_builtin_range_3 { current_0: inline5, end_1: t5 } in
                     let inline7 =
-                      pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+                      pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
                         inline6
                       ) in
                     let inline8 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline7) in
@@ -5158,9 +5163,9 @@ fn inherent#Vec#Vec[T]#join__T_string(self/0: Vec[string], separator/0: string) 
         } in
         let inline15 = 0 in
         let inline16 = @intrinsic(ref.new)(inline15) in
-        let inline17 = closure_env_goml_builtin_range_2 { current_0: inline16, end_1: t1 } in
+        let inline17 = closure_env_goml_builtin_range_3 { current_0: inline16, end_1: t1 } in
         let inline18 =
-          pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+          pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
             inline17
           ) in
         let inline19 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline18) in
@@ -5213,9 +5218,9 @@ fn inherent#string#string#repeat(self/0: string, count/0: isize) -> string {
         } in
         let inline3 = 0 in
         let inline4 = @intrinsic(ref.new)(inline3) in
-        let inline5 = closure_env_goml_builtin_range_2 { current_0: inline4, end_1: count/0 } in
+        let inline5 = closure_env_goml_builtin_range_3 { current_0: inline4, end_1: count/0 } in
         let inline6 =
-          pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+          pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
             inline5
           ) in
         let inline7 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline6) in
@@ -5277,9 +5282,9 @@ fn inherent#string#string#is_ascii(self/0: string) -> bool {
     } in
     let inline3 = 0 in
     let inline4 = @intrinsic(ref.new)(inline3) in
-    let inline5 = closure_env_goml_builtin_range_2 { current_0: inline4, end_1: t0 } in
+    let inline5 = closure_env_goml_builtin_range_3 { current_0: inline4, end_1: t0 } in
     let inline6 =
-      pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+      pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
         inline5
       ) in
     let inline7 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline6) in
@@ -5345,9 +5350,9 @@ fn inherent#string#string#eq_ignore_ascii_case(self/0: string, other/0: string) 
           } in
           let inline7 = 0 in
           let inline8 = @intrinsic(ref.new)(inline7) in
-          let inline9 = closure_env_goml_builtin_range_2 { current_0: inline8, end_1: t3 } in
+          let inline9 = closure_env_goml_builtin_range_3 { current_0: inline8, end_1: t3 } in
           let inline10 =
-            pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+            pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
               inline9
             ) in
           let inline11 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline10) in
@@ -5411,9 +5416,9 @@ fn inherent#string#string#to_ascii_lowercase(self/0: string) -> string {
       } in
       let inline5 = 0 in
       let inline6 = @intrinsic(ref.new)(inline5) in
-      let inline7 = closure_env_goml_builtin_range_2 { current_0: inline6, end_1: t0 } in
+      let inline7 = closure_env_goml_builtin_range_3 { current_0: inline6, end_1: t0 } in
       let inline8 =
-        pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+        pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
           inline7
         ) in
       let inline9 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline8) in
@@ -5473,9 +5478,9 @@ fn inherent#string#string#to_ascii_uppercase(self/0: string) -> string {
       } in
       let inline5 = 0 in
       let inline6 = @intrinsic(ref.new)(inline5) in
-      let inline7 = closure_env_goml_builtin_range_2 { current_0: inline6, end_1: t0 } in
+      let inline7 = closure_env_goml_builtin_range_3 { current_0: inline6, end_1: t0 } in
       let inline8 =
-        pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+        pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
           inline7
         ) in
       let inline9 = inherent#FnIterator#FnIterator[T]#from_fn__T_isize(inline8) in
@@ -5962,9 +5967,9 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_(isize,char)(
 
 fn inherent#string#string#chars(self/0: string) -> FnIterator__char {
   let index/0 = @intrinsic(ref.new)(0) in
-  let t0 = closure_env_inherent_string_string_chars_1 { self_0: self/0, index_1: index/0 } in
+  let t0 = closure_env_inherent_string_string_chars_2 { self_0: self/0, index_1: index/0 } in
   let t1 =
-    pack_closure[inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_string_string_chars_1#apply](
+    pack_closure[inherent#closure_env_inherent_string_string_chars_2#closure_env_inherent_string_string_chars_2#apply](
       t0
     ) in
   let inline0 = FnIterator__char { next_fn: t1 } in
@@ -6078,9 +6083,9 @@ fn inherent#Vec#Vec[T]#pop__T_string(self/0: Vec[string]) -> Option__string {
 
 fn __goml_builtin_range(start/0: isize, end/0: isize) -> FnIterator__isize {
   let current/0 = @intrinsic(ref.new)(start/0) in
-  let t0 = closure_env_goml_builtin_range_2 { current_0: current/0, end_1: end/0 } in
+  let t0 = closure_env_goml_builtin_range_3 { current_0: current/0, end_1: end/0 } in
   let t1 =
-    pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
+    pack_closure[inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply](
       t0
     ) in
   let inline0 = FnIterator__isize { next_fn: t1 } in
@@ -6536,11 +6541,29 @@ fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
   t0
 }
 
-fn inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inherent_string_string_char_indices_0#apply(
-  env0: closure_env_inherent_string_string_char_indices_0
+fn inherent#closure_env_std_io_read_stdin_to_string_0#closure_env_std_io_read_stdin_to_string_0#apply(
+  env0: closure_env_std_io_read_stdin_to_string_0,
+  error/0: std::utf8::Utf8Error
+) -> std::io::Error {
+  join inline_cont0(t0: string) -> std::io::Error {
+    let inline0 = "read stdin" in
+    let inline1 =
+      inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(Tag_4, inline0, Tag_0, Tag_0, t0) in
+    let inline2 = std::io::Error { details: inline1 } in
+    inline2
+  } in
+  let inline3 = ("" + "invalid UTF-8 at byte ") in
+  let inline4 = std::utf8::Utf8Error.valid_up_to_value(error/0) in
+  let inline5 = inherent#isize#isize#to_string(inline4) in
+  let inline6 = (inline3 + inline5) in
+  jump inline_cont0(inline6)
+}
+
+fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inherent_string_string_char_indices_1#apply(
+  env0: closure_env_inherent_string_string_char_indices_1
 ) -> Option__(isize,char) {
-  let index/0 = closure_env_inherent_string_string_char_indices_0.index_0(env0) in
-  let self/0 = closure_env_inherent_string_string_char_indices_0.self_1(env0) in
+  let index/0 = closure_env_inherent_string_string_char_indices_1.index_0(env0) in
+  let self/0 = closure_env_inherent_string_string_char_indices_1.self_1(env0) in
   let current/0 = @intrinsic(ref.get)(index/0) in
   join commute_arm0(commute_field0: (char, isize)) -> Option__(isize,char) {
     let x0 = commute_field0.0 in
@@ -6563,11 +6586,11 @@ fn inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inhere
   }
 }
 
-fn inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_string_string_chars_1#apply(
-  env0: closure_env_inherent_string_string_chars_1
+fn inherent#closure_env_inherent_string_string_chars_2#closure_env_inherent_string_string_chars_2#apply(
+  env0: closure_env_inherent_string_string_chars_2
 ) -> Option__char {
-  let self/0 = closure_env_inherent_string_string_chars_1.self_0(env0) in
-  let index/0 = closure_env_inherent_string_string_chars_1.index_1(env0) in
+  let self/0 = closure_env_inherent_string_string_chars_2.self_0(env0) in
+  let index/0 = closure_env_inherent_string_string_chars_2.index_1(env0) in
   let t0 = @intrinsic(ref.get)(index/0) in
   join commute_arm0(commute_field0: (char, isize)) -> Option__char {
     let x0 = commute_field0.0 in
@@ -6590,11 +6613,11 @@ fn inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_stri
   }
 }
 
-fn inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply(
-  env0: closure_env_goml_builtin_range_2
+fn inherent#closure_env_goml_builtin_range_3#closure_env_goml_builtin_range_3#apply(
+  env0: closure_env_goml_builtin_range_3
 ) -> Option__isize {
-  let current/0 = closure_env_goml_builtin_range_2.current_0(env0) in
-  let end/0 = closure_env_goml_builtin_range_2.end_1(env0) in
+  let current/0 = closure_env_goml_builtin_range_3.current_0(env0) in
+  let end/0 = closure_env_goml_builtin_range_3.end_1(env0) in
   let value/0 = @intrinsic(ref.get)(current/0) in
   let t0 = (value/0 < end/0) in
   if t0 {

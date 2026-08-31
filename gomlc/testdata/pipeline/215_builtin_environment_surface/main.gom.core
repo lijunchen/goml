@@ -3099,6 +3099,49 @@ fn inherent#Option#Option[T]#is_some[T](self/0: Option[T]) -> bool {
   }
 }
 
+fn inherent#Option#Option[T]#map[T, U](self/0: Option[T], map_fn/0: (T) -> U) -> Option[U] {
+  match self/0 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x0) => {
+      {
+        let x0 = Option::Some._0(self/0) in
+        {
+          let value/0 = x0 in
+          Option::Some(map_fn/0(value/0))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map[T, E, U](self/0: Result[T, E], map_fn/0: (T) -> U) -> Result[
+  U,
+  E
+] {
+  match self/0 {
+    Result::Ok(x0) => {
+      {
+        let x0 = Result::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result::Ok(map_fn/0(value/0))
+        }
+      }
+    },
+    Result::Err(x1) => {
+      {
+        let x1 = Result::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result::Err(error/0)
+        }
+      }
+    },
+  }
+}
+
 fn __goml_builtin_range(start/0: isize, end/0: isize) -> FnIterator[isize] {
   let current/0 = @intrinsic(ref.new)(start/0) in
   inherent#FnIterator#FnIterator#from_fn(
@@ -3181,23 +3224,10 @@ fn std::iter::from_fn(next_fn/0: () -> Option[T]) -> FnIterator[T] {
 fn std::iter::map(iterator/0: I, map_fn/0: (A) -> B) -> FnIterator[B] {
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      {
-        let mtmp0 = trait_call[Iterator::next](iterator/0) in
-        match mtmp0 {
-          Option::None => {
-            Option::None
-          },
-          Option::Some(x0) => {
-            {
-              let x0 = Option::Some._0(mtmp0) in
-              {
-                let value/0 = x0 in
-                Option::Some(map_fn/0(value/0))
-              }
-            }
-          },
-        }
-      }
+      inherent#Option#Option[A]#map(
+        trait_call[Iterator::next](iterator/0),
+        |value/0: A| => map_fn/0(value/0)
+      )
     }
   )
 }
@@ -3487,23 +3517,10 @@ fn std::iter::zip(left/0: A, right/0: B) -> FnIterator[(A::Item, B::Item)] {
               let x0 = Option::Some._0(mtmp0) in
               {
                 let left_value/0 = x0 in
-                {
-                  let mtmp1 = trait_call[Iterator::next](right/0) in
-                  match mtmp1 {
-                    Option::None => {
-                      Option::None
-                    },
-                    Option::Some(x1) => {
-                      {
-                        let x1 = Option::Some._0(mtmp1) in
-                        {
-                          let right_value/0 = x1 in
-                          Option::Some((left_value/0, right_value/0))
-                        }
-                      }
-                    },
-                  }
-                }
+                inherent#Option#Option[B::Item]#map(
+                  trait_call[Iterator::next](right/0),
+                  |right_value/0: B::Item| => (left_value/0, right_value/0)
+                )
               }
             }
           },

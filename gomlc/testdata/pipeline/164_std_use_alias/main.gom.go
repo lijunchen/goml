@@ -278,17 +278,19 @@ type FnIterator__isize struct {
     next_fn func() Option__isize
 }
 
-type closure_env_inherent_string_string_char_indices_0 struct {
+type closure_env_std_io_read_stdin_to_string_0 struct {}
+
+type closure_env_inherent_string_string_char_indices_1 struct {
     index_0 *ref_int_x
     self_1 string
 }
 
-type closure_env_inherent_string_string_chars_1 struct {
+type closure_env_inherent_string_string_chars_2 struct {
     self_0 string
     index_1 *ref_int_x
 }
 
-type closure_env_goml_builtin_range_2 struct {
+type closure_env_goml_builtin_range_3 struct {
     current_0 *ref_int_x
     end_1 int
 }

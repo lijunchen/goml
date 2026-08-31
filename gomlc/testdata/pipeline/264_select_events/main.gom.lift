@@ -1477,32 +1477,17 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
     Result__std::bytes::Bytes__std::io::Error::Ok(x0) => {
       let x0 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp0) in
       let data/0 = x0 in
-      let mtmp1 = trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0) in
-      match mtmp1 {
-        Result__string__std::utf8::Utf8Error::Ok(x1) => {
-          let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
-          let value/0 = x1 in
-          Result__string__std::io::Error::Ok(value/0)
-        },
-        Result__string__std::utf8::Utf8Error::Err(x2) => {
-          let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
-          let error/0 = x2 in
-          Result__string__std::io::Error::Err(
-            inherent#std::io::Error#std::io::Error#new(
-              std::io::ErrorKind::InvalidData,
-              "read stdin",
-              Option__string::None,
-              Option__isize::None,
-              trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
-            )
-          )
-        },
-      }
+      inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+        trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0),
+        pack_closure[inherent#closure_env_std_io_read_stdin_to_string_0#closure_env_std_io_read_stdin_to_string_0#apply](
+          closure_env_std_io_read_stdin_to_string_0 {}
+        )
+      )
     },
-    Result__std::bytes::Bytes__std::io::Error::Err(x3) => {
-      let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
-      let error/1 = x3 in
-      Result__string__std::io::Error::Err(error/1)
+    Result__std::bytes::Bytes__std::io::Error::Err(x1) => {
+      let x1 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
+      let error/0 = x1 in
+      Result__string__std::io::Error::Err(error/0)
     },
   }
 }
@@ -2179,10 +2164,10 @@ fn main() -> () {
     } in
   let _wild3 =
     std::task::scope__T_()(
-      pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](closure_env_main_1 {})
+      pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](closure_env_main_2 {})
     ) in
   std::task::scope__T_()(
-    pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](closure_env_main_2 {})
+    pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](closure_env_main_3 {})
   )
 }
 
@@ -2467,6 +2452,24 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
   }
 }
 
+fn inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+  self/0: Result__string__std::utf8::Utf8Error,
+  map_fn/0: (std::utf8::Utf8Error) -> std::io::Error
+) -> Result__string__std::io::Error {
+  match self/0 {
+    Result__string__std::utf8::Utf8Error::Ok(x0) => {
+      let x0 = Result__string__std::utf8::Utf8Error::Ok._0(self/0) in
+      let value/0 = x0 in
+      Result__string__std::io::Error::Ok(value/0)
+    },
+    Result__string__std::utf8::Utf8Error::Err(x1) => {
+      let x1 = Result__string__std::utf8::Utf8Error::Err._0(self/0) in
+      let error/0 = x1 in
+      Result__string__std::io::Error::Err(map_fn/0(error/0))
+    },
+  }
+}
+
 fn inherent#Option#Option[T]#unwrap_or__T_std::time::Duration(
   self/0: Option__std::time::Duration,
   fallback/0: std::time::Duration
@@ -2497,8 +2500,8 @@ fn std::task::scope__T_()(body/0: (std::task::Scope) -> ()) -> () {
   let _wild0 =
     std::internal::task::run(
       handle/0,
-      pack_closure[inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply](
-        closure_env_std_task_scope_T_3 { result_0: result/0, body_1: body/0, handle_2: handle/0 }
+      pack_closure[inherent#closure_env_std_task_scope_T_4#closure_env_std_task_scope_T_4#apply](
+        closure_env_std_task_scope_T_4 { result_0: result/0, body_1: body/0, handle_2: handle/0 }
       )
     ) in
   std::task::completed_scope_value__T_()(result/0)
@@ -2515,8 +2518,8 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
   let _wild0 =
     std::internal::task::spawn(
       std::task::Scope.handle(self/0),
-      pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#apply](
-        closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4 {
+      pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#apply](
+        closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5 {
           result_0: result/0,
           body_1: body/0,
           token_2: token/0,
@@ -2935,21 +2938,34 @@ fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
   @runtime(core.int_hash)(self/0)
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env0: closure_env_main_0,
+fn inherent#closure_env_std_io_read_stdin_to_string_0#closure_env_std_io_read_stdin_to_string_0#apply(
+  env0: closure_env_std_io_read_stdin_to_string_0,
+  error/0: std::utf8::Utf8Error
+) -> std::io::Error {
+  inherent#std::io::Error#std::io::Error#new(
+    std::io::ErrorKind::InvalidData,
+    "read stdin",
+    Option__string::None,
+    Option__isize::None,
+    trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
+  )
+}
+
+fn inherent#closure_env_main_1#closure_env_main_1#apply(
+  env0: closure_env_main_1,
   _/0: std::task::CancelToken
 ) -> isize {
   42
 }
 
-fn inherent#closure_env_main_1#closure_env_main_1#apply(
-  env0: closure_env_main_1,
+fn inherent#closure_env_main_2#closure_env_main_2#apply(
+  env0: closure_env_main_2,
   scope/0: std::task::Scope
 ) -> () {
   let work/0 =
     inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
       scope/0,
-      pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](closure_env_main_0 {})
+      pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](closure_env_main_1 {})
     ) in
   select {
     recv(inherent#std::task::Task#std::task::Task[T]#done__T_isize(work/0)) as _/0 => {
@@ -2958,8 +2974,8 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(
   }
 }
 
-fn inherent#closure_env_main_2#closure_env_main_2#apply(
-  env0: closure_env_main_2,
+fn inherent#closure_env_main_3#closure_env_main_3#apply(
+  env0: closure_env_main_3,
   scope/0: std::task::Scope
 ) -> () {
   let cancel/0 = inherent#std::task::Scope#std::task::Scope#token(scope/0) in
@@ -2971,26 +2987,26 @@ fn inherent#closure_env_main_2#closure_env_main_2#apply(
   }
 }
 
-fn inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply(
-  env0: closure_env_std_task_scope_T_3
+fn inherent#closure_env_std_task_scope_T_4#closure_env_std_task_scope_T_4#apply(
+  env0: closure_env_std_task_scope_T_4
 ) -> () {
-  let result/0 = closure_env_std_task_scope_T_3.result_0(env0) in
-  let body/0 = closure_env_std_task_scope_T_3.body_1(env0) in
-  let handle/0 = closure_env_std_task_scope_T_3.handle_2(env0) in
+  let result/0 = closure_env_std_task_scope_T_4.result_0(env0) in
+  let body/0 = closure_env_std_task_scope_T_4.body_1(env0) in
+  let handle/0 = closure_env_std_task_scope_T_4.handle_2(env0) in
   inherent#Ref#Ref[T]#set__T_Option[()](
     result/0,
     Option__()::Some(body/0(std::task::Scope { handle: handle/0 }))
   )
 }
 
-fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#apply(
-  env0: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4
+fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#apply(
+  env0: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5
 ) -> () {
   let result/0 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.result_0(env0) in
-  let body/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.body_1(env0) in
-  let token/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.token_2(env0) in
-  let ready/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.ready_3(env0) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5.result_0(env0) in
+  let body/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5.body_1(env0) in
+  let token/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5.token_2(env0) in
+  let ready/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5.ready_3(env0) in
   let _wild0 =
     inherent#Ref#Ref[T]#set__T_Option[isize](result/0, Option__isize::Some(body/0(token/0))) in
   inherent#Channel#Channel[T]#close__T_()(ready/0)

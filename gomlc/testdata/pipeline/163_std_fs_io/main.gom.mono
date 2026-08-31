@@ -1431,46 +1431,24 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
           let x0 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp0) in
           {
             let data/0 = x0 in
-            {
-              let mtmp1 =
-                trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0) in
-              match mtmp1 {
-                Result__string__std::utf8::Utf8Error::Ok(x1) => {
-                  {
-                    let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
-                    {
-                      let value/0 = x1 in
-                      Result__string__std::io::Error::Ok(value/0)
-                    }
-                  }
-                },
-                Result__string__std::utf8::Utf8Error::Err(x2) => {
-                  {
-                    let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
-                    {
-                      let error/0 = x2 in
-                      Result__string__std::io::Error::Err(
-                        inherent#std::io::Error#std::io::Error#new(
-                          std::io::ErrorKind::InvalidData,
-                          "read stdin",
-                          Option__string::None,
-                          Option__isize::None,
-                          trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
-                        )
-                      )
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+              trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0),
+              |error/0| inherent#std::io::Error#std::io::Error#new(
+                std::io::ErrorKind::InvalidData,
+                "read stdin",
+                Option__string::None,
+                Option__isize::None,
+                trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
+              )
+            )
           }
         }
       },
-      Result__std::bytes::Bytes__std::io::Error::Err(x3) => {
+      Result__std::bytes::Bytes__std::io::Error::Err(x1) => {
         {
-          let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
+          let x1 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
           {
-            let error/1 = x3 in
+            let error/1 = x1 in
             Result__string__std::io::Error::Err(error/1)
           }
         }
@@ -1874,46 +1852,24 @@ fn std::fs::read_file_structured(path/0: string) -> Result__string__std::fs::Err
           let x0 = Result__std::bytes::Bytes__std::fs::Error::Ok._0(mtmp0) in
           {
             let data/0 = x0 in
-            {
-              let mtmp1 =
-                trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0) in
-              match mtmp1 {
-                Result__string__std::utf8::Utf8Error::Ok(x1) => {
-                  {
-                    let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
-                    {
-                      let value/0 = x1 in
-                      Result__string__std::fs::Error::Ok(value/0)
-                    }
-                  }
-                },
-                Result__string__std::utf8::Utf8Error::Err(x2) => {
-                  {
-                    let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
-                    {
-                      let error/0 = x2 in
-                      Result__string__std::fs::Error::Err(
-                        inherent#std::fs::Error#std::fs::Error#new(
-                          std::io::ErrorKind::InvalidData,
-                          "read file",
-                          Option__string::Some(path/0),
-                          Option__isize::None,
-                          trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
-                        )
-                      )
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::fs::Error__T_string(
+              trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0),
+              |error/0| inherent#std::fs::Error#std::fs::Error#new(
+                std::io::ErrorKind::InvalidData,
+                "read file",
+                Option__string::Some(path/0),
+                Option__isize::None,
+                trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
+              )
+            )
           }
         }
       },
-      Result__std::bytes::Bytes__std::fs::Error::Err(x3) => {
+      Result__std::bytes::Bytes__std::fs::Error::Err(x1) => {
         {
-          let x3 = Result__std::bytes::Bytes__std::fs::Error::Err._0(mtmp0) in
+          let x1 = Result__std::bytes::Bytes__std::fs::Error::Err._0(mtmp0) in
           {
-            let error/1 = x3 in
+            let error/1 = x1 in
             Result__string__std::fs::Error::Err(error/1)
           }
         }
@@ -2314,46 +2270,48 @@ fn std::fs::read_dir_structured(path/0: string) -> Result__Vec[std::fs::DirEntry
                                     {
                                       let entry_path/0 =
                                         std::internal::host::path_join(path/0, name/0) in
-                                      {
-                                        let mtmp1 = std::fs::symlink_metadata(entry_path/0) in
-                                        match mtmp1 {
-                                          Result__std::fs::Metadata__std::fs::Error::Ok(x6) => {
-                                            {
-                                              let x6 =
-                                                Result__std::fs::Metadata__std::fs::Error::Ok._0(
-                                                  mtmp1
-                                                ) in
+                                      let value/0 =
+                                        {
+                                          let mtmp1 = std::fs::symlink_metadata(entry_path/0) in
+                                          match mtmp1 {
+                                            Result__std::fs::Metadata__std::fs::Error::Ok(x6) => {
                                               {
-                                                let value/0 = x6 in
-                                                inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
-                                                  entries/0,
-                                                  std::fs::DirEntry {
-                                                    name_value: name/0,
-                                                    path_value: entry_path/0,
-                                                    file_type_value: inherent#std::fs::Metadata#std::fs::Metadata#file_type(
-                                                      value/0
-                                                    )
-                                                  }
-                                                )
+                                                let x6 =
+                                                  Result__std::fs::Metadata__std::fs::Error::Ok._0(
+                                                    mtmp1
+                                                  ) in
+                                                {
+                                                  let try_value/0 = x6 in
+                                                  try_value/0
+                                                }
                                               }
-                                            }
-                                          },
-                                          Result__std::fs::Metadata__std::fs::Error::Err(x7) => {
-                                            {
-                                              let x7 =
-                                                Result__std::fs::Metadata__std::fs::Error::Err._0(
-                                                  mtmp1
-                                                ) in
+                                            },
+                                            Result__std::fs::Metadata__std::fs::Error::Err(x7) => {
                                               {
-                                                let error/0 = x7 in
-                                                return Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(
-                                                  error/0
-                                                )
+                                                let x7 =
+                                                  Result__std::fs::Metadata__std::fs::Error::Err._0(
+                                                    mtmp1
+                                                  ) in
+                                                {
+                                                  let try_residual/0 = x7 in
+                                                  return Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(
+                                                    try_residual/0
+                                                  )
+                                                }
                                               }
-                                            }
-                                          },
+                                            },
+                                          }
+                                        } in
+                                      inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
+                                        entries/0,
+                                        std::fs::DirEntry {
+                                          name_value: name/0,
+                                          path_value: entry_path/0,
+                                          file_type_value: inherent#std::fs::Metadata#std::fs::Metadata#file_type(
+                                            value/0
+                                          )
                                         }
-                                      }
+                                      )
                                     }
                                   }
                                 }
@@ -2913,6 +2871,58 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
         },
       }
     }
+  }
+}
+
+fn inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+  self/0: Result__string__std::utf8::Utf8Error,
+  map_fn/0: (std::utf8::Utf8Error) -> std::io::Error
+) -> Result__string__std::io::Error {
+  match self/0 {
+    Result__string__std::utf8::Utf8Error::Ok(x0) => {
+      {
+        let x0 = Result__string__std::utf8::Utf8Error::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__string__std::io::Error::Ok(value/0)
+        }
+      }
+    },
+    Result__string__std::utf8::Utf8Error::Err(x1) => {
+      {
+        let x1 = Result__string__std::utf8::Utf8Error::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__string__std::io::Error::Err(map_fn/0(error/0))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::fs::Error__T_string(
+  self/0: Result__string__std::utf8::Utf8Error,
+  map_fn/0: (std::utf8::Utf8Error) -> std::fs::Error
+) -> Result__string__std::fs::Error {
+  match self/0 {
+    Result__string__std::utf8::Utf8Error::Ok(x0) => {
+      {
+        let x0 = Result__string__std::utf8::Utf8Error::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__string__std::fs::Error::Ok(value/0)
+        }
+      }
+    },
+    Result__string__std::utf8::Utf8Error::Err(x1) => {
+      {
+        let x1 = Result__string__std::utf8::Utf8Error::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__string__std::fs::Error::Err(map_fn/0(error/0))
+        }
+      }
+    },
   }
 }
 

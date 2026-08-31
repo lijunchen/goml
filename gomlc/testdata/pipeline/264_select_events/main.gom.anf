@@ -2413,49 +2413,35 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
     Tag_0 => {
       let x0 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp0) in
       join inline_cont0(
-        mtmp1: Result__string__std::utf8::Utf8Error
+        t0: Result__string__std::utf8::Utf8Error
       ) -> Result__string__std::io::Error {
-        match mtmp1 {
+        let t1 = closure_env_std_io_read_stdin_to_string_0 {} in
+        let t2 =
+          pack_closure[inherent#closure_env_std_io_read_stdin_to_string_0#closure_env_std_io_read_stdin_to_string_0#apply](
+            t1
+          ) in
+        match t0 {
           Tag_0 => {
-            let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
-            let t0 = Result__string__std::io::Error::Ok(x1) in
-            t0
+            let inline0 = Result__string__std::utf8::Utf8Error::Ok._0(t0) in
+            let inline1 = Result__string__std::io::Error::Ok(inline0) in
+            inline1
           },
           Tag_1 => {
-            let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
-            join inline_cont1(t1: string) -> Result__string__std::io::Error {
-              join inline_cont2(t2: std::io::Error) -> Result__string__std::io::Error {
-                let t3 = Result__string__std::io::Error::Err(t2) in
-                t3
-              } in
-              let inline0 = "read stdin" in
-              let inline1 =
-                inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
-                  Tag_4,
-                  inline0,
-                  Tag_0,
-                  Tag_0,
-                  t1
-                ) in
-              let inline2 = std::io::Error { details: inline1 } in
-              jump inline_cont2(inline2)
-            } in
-            let inline3 = ("" + "invalid UTF-8 at byte ") in
-            let inline4 = std::utf8::Utf8Error.valid_up_to_value(x2) in
-            let inline5 = inherent#isize#isize#to_string(inline4) in
-            let inline6 = (inline3 + inline5) in
-            jump inline_cont1(inline6)
+            let inline2 = Result__string__std::utf8::Utf8Error::Err._0(t0) in
+            let inline3 = t2(inline2) in
+            let inline4 = Result__string__std::io::Error::Err(inline3) in
+            inline4
           },
         }
       } in
-      let inline7 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
-      let inline8 = std::utf8::decode(inline7) in
-      jump inline_cont0(inline8)
+      let inline5 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
+      let inline6 = std::utf8::decode(inline5) in
+      jump inline_cont0(inline6)
     },
     Tag_1 => {
-      let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
-      let t4 = Result__string__std::io::Error::Err(x3) in
-      t4
+      let x1 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
+      let t3 = Result__string__std::io::Error::Err(x1) in
+      t3
     },
   }
 }
@@ -3671,23 +3657,23 @@ fn main() -> () {
               join inline_cont5(_wild0: ()) -> () {
                 join inline_cont6(t4: Receiver[()]) -> () {
                   join k1() -> () {
-                    let t5 = closure_env_main_1 {} in
+                    let t5 = closure_env_main_2 {} in
                     let t6 =
-                      pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t5) in
+                      pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t5) in
                     join inline_cont7(_wild1: ()) -> () {
-                      let t7 = closure_env_main_2 {} in
+                      let t7 = closure_env_main_3 {} in
                       let t8 =
-                        pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t7) in
+                        pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t7) in
                       let inline0 = std::internal::task::root_scope() in
                       let inline1 = inherent#Ref#Ref[T]#new__T_Option[()](Tag_0) in
                       let inline2 =
-                        closure_env_std_task_scope_T_3 {
+                        closure_env_std_task_scope_T_4 {
                           result_0: inline1,
                           body_1: t8,
                           handle_2: inline0
                         } in
                       let inline3 =
-                        pack_closure[inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply](
+                        pack_closure[inherent#closure_env_std_task_scope_T_4#closure_env_std_task_scope_T_4#apply](
                           inline2
                         ) in
                       let inline4 = std::internal::task::run(inline0, inline3) in
@@ -3697,13 +3683,13 @@ fn main() -> () {
                     let inline6 = std::internal::task::root_scope() in
                     let inline7 = inherent#Ref#Ref[T]#new__T_Option[()](Tag_0) in
                     let inline8 =
-                      closure_env_std_task_scope_T_3 {
+                      closure_env_std_task_scope_T_4 {
                         result_0: inline7,
                         body_1: t6,
                         handle_2: inline6
                       } in
                     let inline9 =
-                      pack_closure[inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply](
+                      pack_closure[inherent#closure_env_std_task_scope_T_4#closure_env_std_task_scope_T_4#apply](
                         inline8
                       ) in
                     let inline10 = std::internal::task::run(inline6, inline9) in
@@ -4176,6 +4162,25 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
   }
 }
 
+fn inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+  self/0: Result__string__std::utf8::Utf8Error,
+  map_fn/0: (std::utf8::Utf8Error) -> std::io::Error
+) -> Result__string__std::io::Error {
+  match self/0 {
+    Tag_0 => {
+      let x0 = Result__string__std::utf8::Utf8Error::Ok._0(self/0) in
+      let t0 = Result__string__std::io::Error::Ok(x0) in
+      t0
+    },
+    Tag_1 => {
+      let x1 = Result__string__std::utf8::Utf8Error::Err._0(self/0) in
+      let t1 = map_fn/0(x1) in
+      let t2 = Result__string__std::io::Error::Err(t1) in
+      t2
+    },
+  }
+}
+
 fn inherent#Option#Option[T]#unwrap_or__T_std::time::Duration(
   self/0: Option__std::time::Duration,
   fallback/0: std::time::Duration
@@ -4213,9 +4218,9 @@ fn std::task::scope__T_()(body/0: (std::task::Scope) -> ()) -> () {
   join inline_cont0(handle/0: std::internal::task::ScopeHandle) -> () {
     join inline_cont1(result/0: Ref[Option__()]) -> () {
       let t0 =
-        closure_env_std_task_scope_T_3 { result_0: result/0, body_1: body/0, handle_2: handle/0 } in
+        closure_env_std_task_scope_T_4 { result_0: result/0, body_1: body/0, handle_2: handle/0 } in
       let t1 =
-        pack_closure[inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply](
+        pack_closure[inherent#closure_env_std_task_scope_T_4#closure_env_std_task_scope_T_4#apply](
           t0
         ) in
       join inline_cont2(_wild0: ()) -> () {
@@ -4247,14 +4252,14 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
         let token/0 = std::task::CancelToken { value: t1 } in
         let t2 = std::task::Scope.handle(self/0) in
         let t3 =
-          closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4 {
+          closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5 {
             result_0: result/0,
             body_1: body/0,
             token_2: token/0,
             ready_3: ready/0
           } in
         let t4 =
-          pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#apply](
+          pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#apply](
             t3
           ) in
         join inline_cont3(_wild0: ()) -> std::task::Task__isize {
@@ -4985,19 +4990,37 @@ fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
   t0
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env0: closure_env_main_0,
+fn inherent#closure_env_std_io_read_stdin_to_string_0#closure_env_std_io_read_stdin_to_string_0#apply(
+  env0: closure_env_std_io_read_stdin_to_string_0,
+  error/0: std::utf8::Utf8Error
+) -> std::io::Error {
+  join inline_cont0(t0: string) -> std::io::Error {
+    let inline0 = "read stdin" in
+    let inline1 =
+      inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(Tag_4, inline0, Tag_0, Tag_0, t0) in
+    let inline2 = std::io::Error { details: inline1 } in
+    inline2
+  } in
+  let inline3 = ("" + "invalid UTF-8 at byte ") in
+  let inline4 = std::utf8::Utf8Error.valid_up_to_value(error/0) in
+  let inline5 = inherent#isize#isize#to_string(inline4) in
+  let inline6 = (inline3 + inline5) in
+  jump inline_cont0(inline6)
+}
+
+fn inherent#closure_env_main_1#closure_env_main_1#apply(
+  env0: closure_env_main_1,
   _/0: std::task::CancelToken
 ) -> isize {
   42
 }
 
-fn inherent#closure_env_main_1#closure_env_main_1#apply(
-  env0: closure_env_main_1,
+fn inherent#closure_env_main_2#closure_env_main_2#apply(
+  env0: closure_env_main_2,
   scope/0: std::task::Scope
 ) -> () {
-  let t0 = closure_env_main_0 {} in
-  let t1 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t0) in
+  let t0 = closure_env_main_1 {} in
+  let t1 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t0) in
   join inline_cont0(work/0: std::task::Task__isize) -> () {
     join inline_cont1(t2: Receiver[()]) -> () {
       select {
@@ -5020,14 +5043,14 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(
   let inline8 = std::task::CancelToken { value: inline7 } in
   let inline9 = std::task::Scope.handle(scope/0) in
   let inline10 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4 {
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5 {
       result_0: inline4,
       body_1: t1,
       token_2: inline8,
       ready_3: inline5
     } in
   let inline11 =
-    pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#apply](
+    pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#apply](
       inline10
     ) in
   let inline12 = std::internal::task::spawn(inline9, inline11) in
@@ -5035,8 +5058,8 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(
   jump inline_cont0(inline13)
 }
 
-fn inherent#closure_env_main_2#closure_env_main_2#apply(
-  env0: closure_env_main_2,
+fn inherent#closure_env_main_3#closure_env_main_3#apply(
+  env0: closure_env_main_3,
   scope/0: std::task::Scope
 ) -> () {
   join inline_cont0(cancel/0: std::task::CancelToken) -> () {
@@ -5066,12 +5089,12 @@ fn inherent#closure_env_main_2#closure_env_main_2#apply(
   jump inline_cont0(inline9)
 }
 
-fn inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply(
-  env0: closure_env_std_task_scope_T_3
+fn inherent#closure_env_std_task_scope_T_4#closure_env_std_task_scope_T_4#apply(
+  env0: closure_env_std_task_scope_T_4
 ) -> () {
-  let result/0 = closure_env_std_task_scope_T_3.result_0(env0) in
-  let body/0 = closure_env_std_task_scope_T_3.body_1(env0) in
-  let handle/0 = closure_env_std_task_scope_T_3.handle_2(env0) in
+  let result/0 = closure_env_std_task_scope_T_4.result_0(env0) in
+  let body/0 = closure_env_std_task_scope_T_4.body_1(env0) in
+  let handle/0 = closure_env_std_task_scope_T_4.handle_2(env0) in
   let t0 = std::task::Scope { handle: handle/0 } in
   let t1 = body/0(t0) in
   let t2 = Option__()::Some(t1) in
@@ -5079,14 +5102,14 @@ fn inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply(
   ()
 }
 
-fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#apply(
-  env0: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4
+fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5#apply(
+  env0: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5
 ) -> () {
   let result/0 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.result_0(env0) in
-  let body/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.body_1(env0) in
-  let token/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.token_2(env0) in
-  let ready/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.ready_3(env0) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5.result_0(env0) in
+  let body/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5.body_1(env0) in
+  let token/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5.token_2(env0) in
+  let ready/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_5.ready_3(env0) in
   let t0 = body/0(token/0) in
   let t1 = Option__isize::Some(t0) in
   join inline_cont0(_wild0: ()) -> () {

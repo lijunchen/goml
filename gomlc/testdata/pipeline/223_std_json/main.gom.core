@@ -4915,6 +4915,49 @@ fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/0: Result[T, E], fallback/0:
   }
 }
 
+fn inherent#Option#Option[T]#map[T, U](self/0: Option[T], map_fn/0: (T) -> U) -> Option[U] {
+  match self/0 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x0) => {
+      {
+        let x0 = Option::Some._0(self/0) in
+        {
+          let value/0 = x0 in
+          Option::Some(map_fn/0(value/0))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map[T, E, U](self/0: Result[T, E], map_fn/0: (T) -> U) -> Result[
+  U,
+  E
+] {
+  match self/0 {
+    Result::Ok(x0) => {
+      {
+        let x0 = Result::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result::Ok(map_fn/0(value/0))
+        }
+      }
+    },
+    Result::Err(x1) => {
+      {
+        let x1 = Result::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result::Err(error/0)
+        }
+      }
+    },
+  }
+}
+
 fn inherent#Result#Result[T,E]#map_err[T, E, F](self/0: Result[T, E], map_fn/0: (E) -> F) -> Result[
   T,
   F
@@ -6428,45 +6471,24 @@ fn std::io::read_stdin_to_string() -> Result[string, std::io::Error] {
           let x0 = Result::Ok._0(mtmp0) in
           {
             let data/0 = x0 in
-            {
-              let mtmp1 = trait_call[std::utf8::BytesUtf8::to_string_utf8](data/0) in
-              match mtmp1 {
-                Result::Ok(x1) => {
-                  {
-                    let x1 = Result::Ok._0(mtmp1) in
-                    {
-                      let value/0 = x1 in
-                      Result::Ok(value/0)
-                    }
-                  }
-                },
-                Result::Err(x2) => {
-                  {
-                    let x2 = Result::Err._0(mtmp1) in
-                    {
-                      let error/0 = x2 in
-                      Result::Err(
-                        inherent#std::io::Error#std::io::Error#new(
-                          std::io::ErrorKind::InvalidData,
-                          "read stdin",
-                          Option::None,
-                          Option::None,
-                          trait_call[ToString::to_string](error/0)
-                        )
-                      )
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[string,std::utf8::Utf8Error]#map_err(
+              trait_call[std::utf8::BytesUtf8::to_string_utf8](data/0),
+              |error/0: std::utf8::Utf8Error| => inherent#std::io::Error#std::io::Error#new(
+                std::io::ErrorKind::InvalidData,
+                "read stdin",
+                Option::None,
+                Option::None,
+                trait_call[ToString::to_string](error/0)
+              )
+            )
           }
         }
       },
-      Result::Err(x3) => {
+      Result::Err(x1) => {
         {
-          let x3 = Result::Err._0(mtmp0) in
+          let x1 = Result::Err._0(mtmp0) in
           {
-            let error/1 = x3 in
+            let error/1 = x1 in
             Result::Err(error/1)
           }
         }
@@ -11193,7 +11215,7 @@ fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S)
         let x30 = std::serde::Value::Optional._0(value/0) in
         {
           let values/2 = x30 in
-          if (inherent#Vec#Vec[std::serde::Value]#len(values/2) == 0) {
+          if inherent#Vec#Vec[std::serde::Value]#is_empty(values/2) {
               {
                 let _wild10 =
                   {
@@ -12321,29 +12343,10 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           let x3 = std::serde::Value::Number._0(mtmp0) in
           {
             let value/1 = x3 in
-            {
-              let mtmp2 = std::serde::parse_int(value/1) in
-              match mtmp2 {
-                Result::Ok(x4) => {
-                  {
-                    let x4 = Result::Ok._0(mtmp2) in
-                    {
-                      let value/2 = x4 in
-                      Result::Ok((value/2 as i64))
-                    }
-                  }
-                },
-                Result::Err(x5) => {
-                  {
-                    let x5 = Result::Err._0(mtmp2) in
-                    {
-                      let error/0 = x5 in
-                      Result::Err(error/0)
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[isize,string]#map(
+              std::serde::parse_int(value/1),
+              |value/2: isize| => (value/2 as i64)
+            )
           }
         }
       },
@@ -12705,29 +12708,10 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           let x3 = std::serde::Value::Number._0(mtmp0) in
           {
             let value/1 = x3 in
-            {
-              let mtmp2 = std::serde::parse_uint(value/1) in
-              match mtmp2 {
-                Result::Ok(x4) => {
-                  {
-                    let x4 = Result::Ok._0(mtmp2) in
-                    {
-                      let value/2 = x4 in
-                      Result::Ok((value/2 as u64))
-                    }
-                  }
-                },
-                Result::Err(x5) => {
-                  {
-                    let x5 = Result::Err._0(mtmp2) in
-                    {
-                      let error/0 = x5 in
-                      Result::Err(error/0)
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[usize,string]#map(
+              std::serde::parse_uint(value/1),
+              |value/2: usize| => (value/2 as u64)
+            )
           }
         }
       },
@@ -13046,7 +13030,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_optio
         let x2 = std::serde::Value::Optional._0(value/0) in
         {
           let values/0 = x2 in
-          if (inherent#Vec#Vec[std::serde::Value]#len(values/0) == 0) {
+          if inherent#Vec#Vec[std::serde::Value]#is_empty(values/0) {
               {
                 let _wild1 =
                   inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#push(
@@ -18042,15 +18026,22 @@ fn std::json::direct_json_int(
       }
     } in
   let value/0 =
-    {
-      let mtmp1 = std::num::parse_int_structured(text/0) in
+    ({
+      let mtmp1 =
+        inherent#Result#Result[isize,std::num::ParseIntError]#map_err(
+          std::num::parse_int_structured(text/0),
+          |error/0: std::num::ParseIntError| => std::json::json_deserializer_error(
+            deserializer/0,
+            trait_call[ToString::to_string](error/0)
+          )
+        ) in
       match mtmp1 {
         Result::Ok(x2) => {
           {
             let x2 = Result::Ok._0(mtmp1) in
             {
-              let value/1 = x2 in
-              (value/1 as i64)
+              let try_value/1 = x2 in
+              try_value/1
             }
           }
         },
@@ -18058,18 +18049,13 @@ fn std::json::direct_json_int(
           {
             let x3 = Result::Err._0(mtmp1) in
             {
-              let error/0 = x3 in
-              return Result::Err(
-                std::json::json_deserializer_error(
-                  deserializer/0,
-                  trait_call[ToString::to_string](error/0)
-                )
-              )
+              let try_residual/1 = x3 in
+              return Result::Err(try_residual/1)
             }
           }
         },
       }
-    } in
+    } as i64) in
   if if (width/0 == 8) {
       if (value/0 < -128) {
           true
@@ -18148,15 +18134,22 @@ fn std::json::direct_json_uint(
       }
     } in
   let value/0 =
-    {
-      let mtmp1 = std::num::parse_uint_structured(text/0) in
+    ({
+      let mtmp1 =
+        inherent#Result#Result[usize,std::num::ParseIntError]#map_err(
+          std::num::parse_uint_structured(text/0),
+          |error/0: std::num::ParseIntError| => std::json::json_deserializer_error(
+            deserializer/0,
+            trait_call[ToString::to_string](error/0)
+          )
+        ) in
       match mtmp1 {
         Result::Ok(x2) => {
           {
             let x2 = Result::Ok._0(mtmp1) in
             {
-              let value/1 = x2 in
-              (value/1 as u64)
+              let try_value/1 = x2 in
+              try_value/1
             }
           }
         },
@@ -18164,18 +18157,13 @@ fn std::json::direct_json_uint(
           {
             let x3 = Result::Err._0(mtmp1) in
             {
-              let error/0 = x3 in
-              return Result::Err(
-                std::json::json_deserializer_error(
-                  deserializer/0,
-                  trait_call[ToString::to_string](error/0)
-                )
-              )
+              let try_residual/1 = x3 in
+              return Result::Err(try_residual/1)
             }
           }
         },
       }
-    } in
+    } as u64) in
   if if (width/0 == 8) {
       (value/0 > 255)
   } else {
@@ -19146,31 +19134,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_f
         },
       }
     } in
-  {
-    let mtmp1 = std::num::parse_float32_structured(text/0) in
-    match mtmp1 {
-      Result::Ok(x2) => {
-        {
-          let x2 = Result::Ok._0(mtmp1) in
-          {
-            let value/0 = x2 in
-            Result::Ok(value/0)
-          }
-        }
-      },
-      Result::Err(x3) => {
-        {
-          let x3 = Result::Err._0(mtmp1) in
-          {
-            let error/0 = x3 in
-            Result::Err(
-              std::json::json_deserializer_error(self/0, trait_call[ToString::to_string](error/0))
-            )
-          }
-        }
-      },
-    }
-  }
+  inherent#Result#Result[f32,std::num::ParseFloatError]#map_err(
+    std::num::parse_float32_structured(text/0),
+    |error/0: std::num::ParseFloatError| => std::json::json_deserializer_error(
+      self/0,
+      trait_call[ToString::to_string](error/0)
+    )
+  )
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_float64(
@@ -19200,31 +19170,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_f
         },
       }
     } in
-  {
-    let mtmp1 = std::num::parse_float64_structured(text/0) in
-    match mtmp1 {
-      Result::Ok(x2) => {
-        {
-          let x2 = Result::Ok._0(mtmp1) in
-          {
-            let value/0 = x2 in
-            Result::Ok(value/0)
-          }
-        }
-      },
-      Result::Err(x3) => {
-        {
-          let x3 = Result::Err._0(mtmp1) in
-          {
-            let error/0 = x3 in
-            Result::Err(
-              std::json::json_deserializer_error(self/0, trait_call[ToString::to_string](error/0))
-            )
-          }
-        }
-      },
-    }
-  }
+  inherent#Result#Result[f64,std::num::ParseFloatError]#map_err(
+    std::num::parse_float64_structured(text/0),
+    |error/0: std::num::ParseFloatError| => std::json::json_deserializer_error(
+      self/0,
+      trait_call[ToString::to_string](error/0)
+    )
+  )
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_number(
@@ -22894,29 +22846,10 @@ fn std::json::parse_json_value(value/0: std::json::JsonParser) -> Result[std::js
               std::json::parse_json_array(value/0)
             },
             34 => {
-              {
-                let mtmp1 = std::json::parse_json_string(value/0) in
-                match mtmp1 {
-                  Result::Ok(x0) => {
-                    {
-                      let x0 = Result::Ok._0(mtmp1) in
-                      {
-                        let text/0 = x0 in
-                        Result::Ok(std::json::Value::String(text/0))
-                      }
-                    }
-                  },
-                  Result::Err(x1) => {
-                    {
-                      let x1 = Result::Err._0(mtmp1) in
-                      {
-                        let error/0 = x1 in
-                        Result::Err(error/0)
-                      }
-                    }
-                  },
-                }
-              }
+              inherent#Result#Result[string,string]#map(
+                std::json::parse_json_string(value/0),
+                |text/0: string| => std::json::Value::String(text/0)
+              )
             },
             116 => {
               std::json::parse_json_literal(value/0, "true", std::json::Value::Bool(true))
@@ -25602,7 +25535,7 @@ fn std::json::serde_items_to_json(items/0: Vec[std::serde::Value]) -> Vec[std::j
 }
 
 fn std::json::serde_optional_to_json(items/0: Vec[std::serde::Value]) -> std::json::Value {
-  if (inherent#Vec#Vec[std::serde::Value]#len(items/0) == 0) {
+  if inherent#Vec#Vec[std::serde::Value]#is_empty(items/0) {
       {
         std::json::Value::Null
       }
@@ -26053,32 +25986,39 @@ fn std::json::from_string(input/0: string) -> Result[T, string] {
   let deserializer/0 = std::json::json_deserializer(input/0) in
   let decoded/0 = trait_call[std::serde::Deserialize::deserialize](deserializer/0) in
   let value/0 =
-    match decoded/0 {
-      Result::Ok(x0) => {
-        {
-          let x0 = Result::Ok._0(decoded/0) in
+    {
+      let mtmp0 =
+        inherent#Result#Result[T,string]#map_err(
+          decoded/0,
+          |error/0: string| => std::json::contextualize_json_error(deserializer/0, error/0)
+        ) in
+      match mtmp0 {
+        Result::Ok(x0) => {
           {
-            let value/1 = x0 in
-            value/1
+            let x0 = Result::Ok._0(mtmp0) in
+            {
+              let try_value/0 = x0 in
+              try_value/0
+            }
           }
-        }
-      },
-      Result::Err(x1) => {
-        {
-          let x1 = Result::Err._0(decoded/0) in
+        },
+        Result::Err(x1) => {
           {
-            let error/0 = x1 in
-            return Result::Err(std::json::contextualize_json_error(deserializer/0, error/0))
+            let x1 = Result::Err._0(mtmp0) in
+            {
+              let try_residual/0 = x1 in
+              return Result::Err(try_residual/0)
+            }
           }
-        }
-      },
+        },
+      }
     } in
   {
-    let mtmp0 = std::json::finish_json_deserializer(deserializer/0) in
-    match mtmp0 {
+    let mtmp1 = std::json::finish_json_deserializer(deserializer/0) in
+    match mtmp1 {
       Result::Ok(x2) => {
         {
-          let x2 = Result::Ok._0(mtmp0) in
+          let x2 = Result::Ok._0(mtmp1) in
           match x2 {
             () => {
               Result::Ok(value/0)
@@ -26088,7 +26028,7 @@ fn std::json::from_string(input/0: string) -> Result[T, string] {
       },
       Result::Err(x3) => {
         {
-          let x3 = Result::Err._0(mtmp0) in
+          let x3 = Result::Err._0(mtmp1) in
           {
             let error/1 = x3 in
             Result::Err(std::json::contextualize_json_error(deserializer/0, error/1))

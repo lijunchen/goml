@@ -1436,46 +1436,24 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
           let x0 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp0) in
           {
             let data/0 = x0 in
-            {
-              let mtmp1 =
-                trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0) in
-              match mtmp1 {
-                Result__string__std::utf8::Utf8Error::Ok(x1) => {
-                  {
-                    let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
-                    {
-                      let value/0 = x1 in
-                      Result__string__std::io::Error::Ok(value/0)
-                    }
-                  }
-                },
-                Result__string__std::utf8::Utf8Error::Err(x2) => {
-                  {
-                    let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
-                    {
-                      let error/0 = x2 in
-                      Result__string__std::io::Error::Err(
-                        inherent#std::io::Error#std::io::Error#new(
-                          std::io::ErrorKind::InvalidData,
-                          "read stdin",
-                          Option__string::None,
-                          Option__isize::None,
-                          trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
-                        )
-                      )
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+              trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0),
+              |error/0| inherent#std::io::Error#std::io::Error#new(
+                std::io::ErrorKind::InvalidData,
+                "read stdin",
+                Option__string::None,
+                Option__isize::None,
+                trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
+              )
+            )
           }
         }
       },
-      Result__std::bytes::Bytes__std::io::Error::Err(x3) => {
+      Result__std::bytes::Bytes__std::io::Error::Err(x1) => {
         {
-          let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
+          let x1 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
           {
-            let error/1 = x3 in
+            let error/1 = x1 in
             Result__string__std::io::Error::Err(error/1)
           }
         }
@@ -3866,29 +3844,10 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           let x3 = std::serde::Value::Number._0(mtmp0) in
           {
             let value/1 = x3 in
-            {
-              let mtmp2 = std::serde::parse_int(value/1) in
-              match mtmp2 {
-                Result__isize__string::Ok(x4) => {
-                  {
-                    let x4 = Result__isize__string::Ok._0(mtmp2) in
-                    {
-                      let value/2 = x4 in
-                      Result__i64__string::Ok((value/2 as i64))
-                    }
-                  }
-                },
-                Result__isize__string::Err(x5) => {
-                  {
-                    let x5 = Result__isize__string::Err._0(mtmp2) in
-                    {
-                      let error/0 = x5 in
-                      Result__i64__string::Err(error/0)
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[T,E]#map__E_string__T_isize__U_i0(
+              std::serde::parse_int(value/1),
+              |value/2| (value/2 as i64)
+            )
           }
         }
       },
@@ -4250,29 +4209,10 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           let x3 = std::serde::Value::Number._0(mtmp0) in
           {
             let value/1 = x3 in
-            {
-              let mtmp2 = std::serde::parse_uint(value/1) in
-              match mtmp2 {
-                Result__usize__string::Ok(x4) => {
-                  {
-                    let x4 = Result__usize__string::Ok._0(mtmp2) in
-                    {
-                      let value/2 = x4 in
-                      Result__u64__string::Ok((value/2 as u64))
-                    }
-                  }
-                },
-                Result__usize__string::Err(x5) => {
-                  {
-                    let x5 = Result__usize__string::Err._0(mtmp2) in
-                    {
-                      let error/0 = x5 in
-                      Result__u64__string::Err(error/0)
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[T,E]#map__E_string__T_usize__U_u0(
+              std::serde::parse_uint(value/1),
+              |value/2| (value/2 as u64)
+            )
           }
         }
       },
@@ -4591,7 +4531,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_optio
         let x2 = std::serde::Value::Optional._0(value/0) in
         {
           let values/0 = x2 in
-          if (inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0) == 0) {
+          if inherent#Vec#Vec[T]#is_empty__T_std::serde::Value(values/0) {
               {
                 let _wild1 =
                   inherent#Vec#Vec[T]#push__T_std::serde::ValueDeserializeFrame(
@@ -9671,34 +9611,36 @@ fn std::json::direct_json_int(
       }
     } in
   let value/0 =
-    {
-      let mtmp1 = std::num::parse_int_structured(text/0) in
+    ({
+      let mtmp1 =
+        inherent#Result#Result[T,E]#map_err__E_std::num::ParseIntError__F_string__T_isize(
+          std::num::parse_int_structured(text/0),
+          |error/0| std::json::json_deserializer_error(
+            deserializer/0,
+            trait_impl#ToString#std::num::ParseIntError#to_string(error/0)
+          )
+        ) in
       match mtmp1 {
-        Result__isize__std::num::ParseIntError::Ok(x2) => {
+        Result__isize__string::Ok(x2) => {
           {
-            let x2 = Result__isize__std::num::ParseIntError::Ok._0(mtmp1) in
+            let x2 = Result__isize__string::Ok._0(mtmp1) in
             {
-              let value/1 = x2 in
-              (value/1 as i64)
+              let try_value/1 = x2 in
+              try_value/1
             }
           }
         },
-        Result__isize__std::num::ParseIntError::Err(x3) => {
+        Result__isize__string::Err(x3) => {
           {
-            let x3 = Result__isize__std::num::ParseIntError::Err._0(mtmp1) in
+            let x3 = Result__isize__string::Err._0(mtmp1) in
             {
-              let error/0 = x3 in
-              return Result__i64__string::Err(
-                std::json::json_deserializer_error(
-                  deserializer/0,
-                  trait_impl#ToString#std::num::ParseIntError#to_string(error/0)
-                )
-              )
+              let try_residual/1 = x3 in
+              return Result__i64__string::Err(try_residual/1)
             }
           }
         },
       }
-    } in
+    } as i64) in
   if if (width/0 == 8) {
       if (value/0 < -128) {
           true
@@ -9781,34 +9723,36 @@ fn std::json::direct_json_uint(
       }
     } in
   let value/0 =
-    {
-      let mtmp1 = std::num::parse_uint_structured(text/0) in
+    ({
+      let mtmp1 =
+        inherent#Result#Result[T,E]#map_err__E_std::num::ParseIntError__F_string__T_usize(
+          std::num::parse_uint_structured(text/0),
+          |error/0| std::json::json_deserializer_error(
+            deserializer/0,
+            trait_impl#ToString#std::num::ParseIntError#to_string(error/0)
+          )
+        ) in
       match mtmp1 {
-        Result__usize__std::num::ParseIntError::Ok(x2) => {
+        Result__usize__string::Ok(x2) => {
           {
-            let x2 = Result__usize__std::num::ParseIntError::Ok._0(mtmp1) in
+            let x2 = Result__usize__string::Ok._0(mtmp1) in
             {
-              let value/1 = x2 in
-              (value/1 as u64)
+              let try_value/1 = x2 in
+              try_value/1
             }
           }
         },
-        Result__usize__std::num::ParseIntError::Err(x3) => {
+        Result__usize__string::Err(x3) => {
           {
-            let x3 = Result__usize__std::num::ParseIntError::Err._0(mtmp1) in
+            let x3 = Result__usize__string::Err._0(mtmp1) in
             {
-              let error/0 = x3 in
-              return Result__u64__string::Err(
-                std::json::json_deserializer_error(
-                  deserializer/0,
-                  trait_impl#ToString#std::num::ParseIntError#to_string(error/0)
-                )
-              )
+              let try_residual/1 = x3 in
+              return Result__u64__string::Err(try_residual/1)
             }
           }
         },
       }
-    } in
+    } as u64) in
   if if (width/0 == 8) {
       (value/0 > 255)
   } else {
@@ -10789,34 +10733,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_f
         },
       }
     } in
-  {
-    let mtmp1 = std::num::parse_float32_structured(text/0) in
-    match mtmp1 {
-      Result__f32__std::num::ParseFloatError::Ok(x2) => {
-        {
-          let x2 = Result__f32__std::num::ParseFloatError::Ok._0(mtmp1) in
-          {
-            let value/0 = x2 in
-            Result__f32__string::Ok(value/0)
-          }
-        }
-      },
-      Result__f32__std::num::ParseFloatError::Err(x3) => {
-        {
-          let x3 = Result__f32__std::num::ParseFloatError::Err._0(mtmp1) in
-          {
-            let error/0 = x3 in
-            Result__f32__string::Err(
-              std::json::json_deserializer_error(
-                self/0,
-                trait_impl#ToString#std::num::ParseFloatError#to_string(error/0)
-              )
-            )
-          }
-        }
-      },
-    }
-  }
+  inherent#Result#Result[T,E]#map_err__E_std::num::ParseFloatError__F_string__T_f0(
+    std::num::parse_float32_structured(text/0),
+    |error/0| std::json::json_deserializer_error(
+      self/0,
+      trait_impl#ToString#std::num::ParseFloatError#to_string(error/0)
+    )
+  )
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_float64(
@@ -10846,34 +10769,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_f
         },
       }
     } in
-  {
-    let mtmp1 = std::num::parse_float64_structured(text/0) in
-    match mtmp1 {
-      Result__f64__std::num::ParseFloatError::Ok(x2) => {
-        {
-          let x2 = Result__f64__std::num::ParseFloatError::Ok._0(mtmp1) in
-          {
-            let value/0 = x2 in
-            Result__f64__string::Ok(value/0)
-          }
-        }
-      },
-      Result__f64__std::num::ParseFloatError::Err(x3) => {
-        {
-          let x3 = Result__f64__std::num::ParseFloatError::Err._0(mtmp1) in
-          {
-            let error/0 = x3 in
-            Result__f64__string::Err(
-              std::json::json_deserializer_error(
-                self/0,
-                trait_impl#ToString#std::num::ParseFloatError#to_string(error/0)
-              )
-            )
-          }
-        }
-      },
-    }
-  }
+  inherent#Result#Result[T,E]#map_err__E_std::num::ParseFloatError__F_string__T_f0(
+    std::num::parse_float64_structured(text/0),
+    |error/0| std::json::json_deserializer_error(
+      self/0,
+      trait_impl#ToString#std::num::ParseFloatError#to_string(error/0)
+    )
+  )
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_number(
@@ -14630,29 +14532,10 @@ fn std::json::parse_json_value(value/0: std::json::JsonParser) -> Result__std::j
               std::json::parse_json_array(value/0)
             },
             34 => {
-              {
-                let mtmp1 = std::json::parse_json_string(value/0) in
-                match mtmp1 {
-                  Result__string__string::Ok(x0) => {
-                    {
-                      let x0 = Result__string__string::Ok._0(mtmp1) in
-                      {
-                        let text/0 = x0 in
-                        Result__std::json::Value__string::Ok(std::json::Value::String(text/0))
-                      }
-                    }
-                  },
-                  Result__string__string::Err(x1) => {
-                    {
-                      let x1 = Result__string__string::Err._0(mtmp1) in
-                      {
-                        let error/0 = x1 in
-                        Result__std::json::Value__string::Err(error/0)
-                      }
-                    }
-                  },
-                }
-              }
+              inherent#Result#Result[T,E]#map__E_string__T_string__U_std::json::Value(
+                std::json::parse_json_string(value/0),
+                |text/0| std::json::Value::String(text/0)
+              )
             },
             116 => {
               std::json::parse_json_literal(value/0, "true", std::json::Value::Bool(true))
@@ -17345,7 +17228,7 @@ fn std::json::serde_items_to_json(items/0: Vec[std::serde::Value]) -> Vec[std::j
 }
 
 fn std::json::serde_optional_to_json(items/0: Vec[std::serde::Value]) -> std::json::Value {
-  if (inherent#Vec#Vec[T]#len__T_std::serde::Value(items/0) == 0) {
+  if inherent#Vec#Vec[T]#is_empty__T_std::serde::Value(items/0) {
       {
         std::json::Value::Null
       }
@@ -18205,6 +18088,32 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
   }
 }
 
+fn inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+  self/0: Result__string__std::utf8::Utf8Error,
+  map_fn/0: (std::utf8::Utf8Error) -> std::io::Error
+) -> Result__string__std::io::Error {
+  match self/0 {
+    Result__string__std::utf8::Utf8Error::Ok(x0) => {
+      {
+        let x0 = Result__string__std::utf8::Utf8Error::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__string__std::io::Error::Ok(value/0)
+        }
+      }
+    },
+    Result__string__std::utf8::Utf8Error::Err(x1) => {
+      {
+        let x1 = Result__string__std::utf8::Utf8Error::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__string__std::io::Error::Err(map_fn/0(error/0))
+        }
+      }
+    },
+  }
+}
+
 fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
   @runtime(core.string_byte_get)(self/0, index/0)
 }
@@ -18498,6 +18407,58 @@ fn trait_impl#ToString#f64#to_string(self/0: f64) -> string {
   __goml_builtin_float64_to_string(self/0)
 }
 
+fn inherent#Result#Result[T,E]#map__E_string__T_isize__U_i64(
+  self/0: Result__isize__string,
+  map_fn/0: (isize) -> i64
+) -> Result__i64__string {
+  match self/0 {
+    Result__isize__string::Ok(x0) => {
+      {
+        let x0 = Result__isize__string::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__i64__string::Ok(map_fn/0(value/0))
+        }
+      }
+    },
+    Result__isize__string::Err(x1) => {
+      {
+        let x1 = Result__isize__string::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__i64__string::Err(error/0)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map__E_string__T_usize__U_u64(
+  self/0: Result__usize__string,
+  map_fn/0: (usize) -> u64
+) -> Result__u64__string {
+  match self/0 {
+    Result__usize__string::Ok(x0) => {
+      {
+        let x0 = Result__usize__string::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__u64__string::Ok(map_fn/0(value/0))
+        }
+      }
+    },
+    Result__usize__string::Err(x1) => {
+      {
+        let x1 = Result__usize__string::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__u64__string::Err(error/0)
+        }
+      }
+    },
+  }
+}
+
 fn inherent#string#string#len(self/0: string) -> isize {
   @runtime(core.string_len)(self/0)
 }
@@ -18511,6 +18472,10 @@ fn inherent#Vec#Vec[T]#push__T_std::serde::ValueDeserializeFrame(
   elem/0: std::serde::ValueDeserializeFrame
 ) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Vec#Vec[T]#is_empty__T_std::serde::Value(self/0: Vec[std::serde::Value]) -> bool {
+  (@intrinsic(vec.len)(self/0) == 0)
 }
 
 fn inherent#Vec#Vec[T]#len__T_std::serde::ValueDeserializeFrame(
@@ -19712,6 +19677,32 @@ fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(
   elem/0: (string, std::json::Value)
 ) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Result#Result[T,E]#map__E_string__T_string__U_std::json::Value(
+  self/0: Result__string__string,
+  map_fn/0: (string) -> std::json::Value
+) -> Result__std::json::Value__string {
+  match self/0 {
+    Result__string__string::Ok(x0) => {
+      {
+        let x0 = Result__string__string::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__std::json::Value__string::Ok(map_fn/0(value/0))
+        }
+      }
+    },
+    Result__string__string::Err(x1) => {
+      {
+        let x1 = Result__string__string::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__std::json::Value__string::Err(error/0)
+        }
+      }
+    },
+  }
 }
 
 fn inherent#Vec#Vec[T]#new__T_std::json::JsonSerializeFrame() -> Vec[

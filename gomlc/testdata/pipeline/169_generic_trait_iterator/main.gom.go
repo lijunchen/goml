@@ -154,26 +154,34 @@ type closure_env_main_2 struct {}
 type closure_env_main_3 struct {}
 
 type closure_env_std_iter_map_A_i32_B_i32_I_Counter_4 struct {
+    map_fn_0 func(int32) int32
+}
+
+type closure_env_std_iter_map_A_i32_B_i32_I_Counter_5 struct {
     iterator_0 Counter
     map_fn_1 func(int32) int32
 }
 
-type closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5 struct {
+type closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6 struct {
     iterator_0 FnIterator__i32
     predicate_1 func(int32) bool
 }
 
-type closure_env_std_iter_take_I_FnIterator_i32_6 struct {
+type closure_env_std_iter_take_I_FnIterator_i32_7 struct {
     remaining_0 *ref_int_x
     iterator_1 FnIterator__i32
 }
 
-type closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7 struct {
+type closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8 struct {
+    map_fn_0 func(int) string
+}
+
+type closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9 struct {
     iterator_0 FnIterator__isize
     map_fn_1 func(int) string
 }
 
-type closure_env_goml_builtin_range_8 struct {
+type closure_env_goml_builtin_range_10 struct {
     current_0 *ref_int_x
     end_1 int
 }
@@ -237,12 +245,12 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t9, p0)
     }
     var mapped__0 FnIterator__i32
-    var inline27 closure_env_std_iter_map_A_i32_B_i32_I_Counter_4 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_4{
+    var inline27 closure_env_std_iter_map_A_i32_B_i32_I_Counter_5 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_5{
         iterator_0: t8,
         map_fn_1: t10,
     }
     var inline28 func() Option__i32 = func() Option__i32 {
-        return _goml_m_inherent_i_closure__en_h645d7a9bc4d79b01cd03faf046af5461_nter__4_i_apply(inline27)
+        return _goml_m_inherent_i_closure__en_h39f5b01177a579a305108bc4e47ab576_nter__5_i_apply(inline27)
     }
     var inline29 FnIterator__i32 = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__i32(inline28)
     mapped__0 = inline29
@@ -251,12 +259,12 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t11, p0)
     }
     var filtered__0 FnIterator__i32
-    var inline24 closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5{
+    var inline24 closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6{
         iterator_0: mapped__0,
         predicate_1: t12,
     }
     var inline25 func() Option__i32 = func() Option__i32 {
-        return _goml_m_inherent_i_closure__en_h8f163b2d5b8bf9739c89e2204772b07d__i32__5_i_apply(inline24)
+        return _goml_m_inherent_i_closure__en_h920672151d9ffb42cb9c90456440c3f4__i32__6_i_apply(inline24)
     }
     var inline26 FnIterator__i32 = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__i32(inline25)
     filtered__0 = inline26
@@ -270,12 +278,12 @@ func main0() struct{} {
         inline19 = 0
     }
     var inline20 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(inline19)
-    var inline21 closure_env_std_iter_take_I_FnIterator_i32_6 = closure_env_std_iter_take_I_FnIterator_i32_6{
+    var inline21 closure_env_std_iter_take_I_FnIterator_i32_7 = closure_env_std_iter_take_I_FnIterator_i32_7{
         remaining_0: inline20,
         iterator_1: filtered__0,
     }
     var inline22 func() Option__i32 = func() Option__i32 {
-        return _goml_m_inherent_i_closure__en_hbf515b0203b88ffdb3eaded6d77747ee__i32__6_i_apply(inline21)
+        return _goml_m_inherent_i_closure__en_h62d5c49070b32f607a729bd540373bb1__i32__7_i_apply(inline21)
     }
     var inline23 FnIterator__i32 = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__i32(inline22)
     limited__0 = inline23
@@ -321,12 +329,12 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t17, p0)
     }
     var t19 FnIterator__string
-    var inline2 closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7 = closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7{
+    var inline2 closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9 = closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9{
         iterator_0: t16,
         map_fn_1: t18,
     }
     var inline3 func() Option__string = func() Option__string {
-        return _goml_m_inherent_i_closure__en_h646bacd23126c6108881c7c439733cbb_size__7_i_apply(inline2)
+        return _goml_m_inherent_i_closure__en_h38480fcf7085e17f84e4b3380fa38e2f_size__9_i_apply(inline2)
     }
     var inline4 FnIterator__string = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__string(inline3)
     t19 = inline4
@@ -451,12 +459,12 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(value__0 int) *ref_in
 
 func __goml_builtin_range(start__0 int, end__0 int) FnIterator__isize {
     var current__0 *ref_int_x = ref__Ref_3int(start__0)
-    var t0 closure_env_goml_builtin_range_8 = closure_env_goml_builtin_range_8{
+    var t0 closure_env_goml_builtin_range_10 = closure_env_goml_builtin_range_10{
         current_0: current__0,
         end_1: end__0,
     }
     var t1 func() Option__isize = func() Option__isize {
-        return _goml_m_inherent_i_closure__en_he266c1d56cf5cac23de741e24d448aa5_ange__8_i_apply(t0)
+        return _goml_m_inherent_i_closure__en_hfe17758c34b24eefa68773778f3d9cb8_nge__10_i_apply(t0)
     }
     var inline0 FnIterator__isize = FnIterator__isize{
         next_fn: t1,
@@ -605,33 +613,59 @@ func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(en
     return t1
 }
 
-func _goml_m_inherent_i_closure__en_h645d7a9bc4d79b01cd03faf046af5461_nter__4_i_apply(env0 closure_env_std_iter_map_A_i32_B_i32_I_Counter_4) Option__i32 {
+func _goml_m_inherent_i_closure__en_h645d7a9bc4d79b01cd03faf046af5461_nter__4_i_apply(env0 closure_env_std_iter_map_A_i32_B_i32_I_Counter_4, value__0 int32) int32 {
+    var map_fn__0 func(int32) int32 = env0.map_fn_0
+    var t0 int32 = map_fn__0(value__0)
+    return t0
+}
+
+func _goml_m_inherent_i_closure__en_h39f5b01177a579a305108bc4e47ab576_nter__5_i_apply(env0 closure_env_std_iter_map_A_i32_B_i32_I_Counter_5) Option__i32 {
     var iterator__0 Counter = env0.iterator_0
     var map_fn__0 func(int32) int32 = env0.map_fn_1
-    var commute_field0 int32
-    var inline0 *ref_int32_x = iterator__0.current
-    var inline1 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline0)
-    var inline2 int32 = iterator__0.end
-    var inline3 bool = inline1 < inline2
-    if inline3 {
-        var inline4 *ref_int32_x = iterator__0.current
-        var inline5 int32 = inline1 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline4, inline5)
-        commute_field0 = inline1
-        var t0 int32 = map_fn__0(commute_field0)
-        var t1 Option__i32 = Option__i32{
+    var t0 Option__i32
+    var inline3 *ref_int32_x = iterator__0.current
+    var inline4 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline3)
+    var inline5 int32 = iterator__0.end
+    var inline6 bool = inline4 < inline5
+    if inline6 {
+        var inline7 *ref_int32_x = iterator__0.current
+        var inline8 int32 = inline4 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline7, inline8)
+        var inline10 Option__i32 = Option__i32{
             _tag: 1,
-            _v1_0: t0,
+            _v1_0: inline4,
         }
-        return t1
+        t0 = inline10
     } else {
-        return Option__i32{
+        t0 = Option__i32{
             _tag: 0,
         }
     }
+    var t1 closure_env_std_iter_map_A_i32_B_i32_I_Counter_4 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_4{
+        map_fn_0: map_fn__0,
+    }
+    var t2 func(int32) int32 = func(p0 int32) int32 {
+        return _goml_m_inherent_i_closure__en_h645d7a9bc4d79b01cd03faf046af5461_nter__4_i_apply(t1, p0)
+    }
+    switch t0._tag {
+    case 0:
+        return Option__i32{
+            _tag: 0,
+        }
+    case 1:
+        var inline0 int32 = t0._v1_0
+        var inline1 int32 = t2(inline0)
+        var inline2 Option__i32 = Option__i32{
+            _tag: 1,
+            _v1_0: inline1,
+        }
+        return inline2
+    default:
+        panic("non-exhaustive match")
+    }
 }
 
-func _goml_m_inherent_i_closure__en_h8f163b2d5b8bf9739c89e2204772b07d__i32__5_i_apply(env0 closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5) Option__i32 {
+func _goml_m_inherent_i_closure__en_h920672151d9ffb42cb9c90456440c3f4__i32__6_i_apply(env0 closure_env_std_iter_filter_I_FnIterator_i32_T_i32_6) Option__i32 {
     var iterator__0 FnIterator__i32 = env0.iterator_0
     var predicate__0 func(int32) bool = env0.predicate_1
     Loop_loop0:
@@ -662,7 +696,7 @@ func _goml_m_inherent_i_closure__en_h8f163b2d5b8bf9739c89e2204772b07d__i32__5_i_
     }
 }
 
-func _goml_m_inherent_i_closure__en_hbf515b0203b88ffdb3eaded6d77747ee__i32__6_i_apply(env0 closure_env_std_iter_take_I_FnIterator_i32_6) Option__i32 {
+func _goml_m_inherent_i_closure__en_h62d5c49070b32f607a729bd540373bb1__i32__7_i_apply(env0 closure_env_std_iter_take_I_FnIterator_i32_7) Option__i32 {
     var remaining__0 *ref_int_x = env0.remaining_0
     var iterator__0 FnIterator__i32 = env0.iterator_1
     var t0 int
@@ -685,32 +719,44 @@ func _goml_m_inherent_i_closure__en_hbf515b0203b88ffdb3eaded6d77747ee__i32__6_i_
     }
 }
 
-func _goml_m_inherent_i_closure__en_h646bacd23126c6108881c7c439733cbb_size__7_i_apply(env0 closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_7) Option__string {
+func _goml_m_inherent_i_closure__en_he6638ea00a62480db992a15b1db4c712_size__8_i_apply(env0 closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8, value__0 int) string {
+    var map_fn__0 func(int) string = env0.map_fn_0
+    var t0 string = map_fn__0(value__0)
+    return t0
+}
+
+func _goml_m_inherent_i_closure__en_h38480fcf7085e17f84e4b3380fa38e2f_size__9_i_apply(env0 closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_9) Option__string {
     var iterator__0 FnIterator__isize = env0.iterator_0
     var map_fn__0 func(int) string = env0.map_fn_1
-    var mtmp0 Option__isize
-    var inline0 func() Option__isize = iterator__0.next_fn
-    var inline1 Option__isize = inline0()
-    mtmp0 = inline1
-    switch mtmp0._tag {
+    var t0 Option__isize
+    var inline3 func() Option__isize = iterator__0.next_fn
+    var inline4 Option__isize = inline3()
+    t0 = inline4
+    var t1 closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8 = closure_env_std_iter_map_A_isize_B_string_I_FnIterator_isize_8{
+        map_fn_0: map_fn__0,
+    }
+    var t2 func(int) string = func(p0 int) string {
+        return _goml_m_inherent_i_closure__en_he6638ea00a62480db992a15b1db4c712_size__8_i_apply(t1, p0)
+    }
+    switch t0._tag {
     case 0:
         return Option__string{
             _tag: 0,
         }
     case 1:
-        var x0 int = mtmp0._v1_0
-        var t0 string = map_fn__0(x0)
-        var t1 Option__string = Option__string{
+        var inline0 int = t0._v1_0
+        var inline1 string = t2(inline0)
+        var inline2 Option__string = Option__string{
             _tag: 1,
-            _v1_0: t0,
+            _v1_0: inline1,
         }
-        return t1
+        return inline2
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_closure__en_he266c1d56cf5cac23de741e24d448aa5_ange__8_i_apply(env0 closure_env_goml_builtin_range_8) Option__isize {
+func _goml_m_inherent_i_closure__en_hfe17758c34b24eefa68773778f3d9cb8_nge__10_i_apply(env0 closure_env_goml_builtin_range_10) Option__isize {
     var current__0 *ref_int_x = env0.current_0
     var end__0 int = env0.end_1
     var value__0 int = ref_get__Ref_3int(current__0)

@@ -1626,46 +1626,24 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
           let x0 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp0) in
           {
             let data/0 = x0 in
-            {
-              let mtmp1 =
-                trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0) in
-              match mtmp1 {
-                Result__string__std::utf8::Utf8Error::Ok(x1) => {
-                  {
-                    let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
-                    {
-                      let value/0 = x1 in
-                      Result__string__std::io::Error::Ok(value/0)
-                    }
-                  }
-                },
-                Result__string__std::utf8::Utf8Error::Err(x2) => {
-                  {
-                    let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
-                    {
-                      let error/0 = x2 in
-                      Result__string__std::io::Error::Err(
-                        inherent#std::io::Error#std::io::Error#new(
-                          std::io::ErrorKind::InvalidData,
-                          "read stdin",
-                          Option__string::None,
-                          Option__isize::None,
-                          trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
-                        )
-                      )
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+              trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0),
+              |error/0| inherent#std::io::Error#std::io::Error#new(
+                std::io::ErrorKind::InvalidData,
+                "read stdin",
+                Option__string::None,
+                Option__isize::None,
+                trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
+              )
+            )
           }
         }
       },
-      Result__std::bytes::Bytes__std::io::Error::Err(x3) => {
+      Result__std::bytes::Bytes__std::io::Error::Err(x1) => {
         {
-          let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
+          let x1 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
           {
-            let error/1 = x3 in
+            let error/1 = x1 in
             Result__string__std::io::Error::Err(error/1)
           }
         }
@@ -2849,6 +2827,32 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
         },
       }
     }
+  }
+}
+
+fn inherent#Result#Result[T,E]#map_err__E_std::utf8::Utf8Error__F_std::io::Error__T_string(
+  self/0: Result__string__std::utf8::Utf8Error,
+  map_fn/0: (std::utf8::Utf8Error) -> std::io::Error
+) -> Result__string__std::io::Error {
+  match self/0 {
+    Result__string__std::utf8::Utf8Error::Ok(x0) => {
+      {
+        let x0 = Result__string__std::utf8::Utf8Error::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__string__std::io::Error::Ok(value/0)
+        }
+      }
+    },
+    Result__string__std::utf8::Utf8Error::Err(x1) => {
+      {
+        let x1 = Result__string__std::utf8::Utf8Error::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__string__std::io::Error::Err(map_fn/0(error/0))
+        }
+      }
+    },
   }
 }
 

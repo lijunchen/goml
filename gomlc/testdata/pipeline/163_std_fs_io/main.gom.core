@@ -3336,6 +3336,32 @@ fn trait_impl#Hash#usize#hash(self/0: usize) -> u64 {
   @runtime(core.uint_hash)(self/0)
 }
 
+fn inherent#Result#Result[T,E]#map_err[T, E, F](self/0: Result[T, E], map_fn/0: (E) -> F) -> Result[
+  T,
+  F
+] {
+  match self/0 {
+    Result::Ok(x0) => {
+      {
+        let x0 = Result::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result::Ok(value/0)
+        }
+      }
+    },
+    Result::Err(x1) => {
+      {
+        let x1 = Result::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result::Err(map_fn/0(error/0))
+        }
+      }
+    },
+  }
+}
+
 fn trait_impl#PartialEq#Ordering#eq(self/0: Ordering, other/0: Ordering) -> bool {
   match self/0 {
     Ordering::Less => {
@@ -4792,45 +4818,24 @@ fn std::io::read_stdin_to_string() -> Result[string, std::io::Error] {
           let x0 = Result::Ok._0(mtmp0) in
           {
             let data/0 = x0 in
-            {
-              let mtmp1 = trait_call[std::utf8::BytesUtf8::to_string_utf8](data/0) in
-              match mtmp1 {
-                Result::Ok(x1) => {
-                  {
-                    let x1 = Result::Ok._0(mtmp1) in
-                    {
-                      let value/0 = x1 in
-                      Result::Ok(value/0)
-                    }
-                  }
-                },
-                Result::Err(x2) => {
-                  {
-                    let x2 = Result::Err._0(mtmp1) in
-                    {
-                      let error/0 = x2 in
-                      Result::Err(
-                        inherent#std::io::Error#std::io::Error#new(
-                          std::io::ErrorKind::InvalidData,
-                          "read stdin",
-                          Option::None,
-                          Option::None,
-                          trait_call[ToString::to_string](error/0)
-                        )
-                      )
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[string,std::utf8::Utf8Error]#map_err(
+              trait_call[std::utf8::BytesUtf8::to_string_utf8](data/0),
+              |error/0: std::utf8::Utf8Error| => inherent#std::io::Error#std::io::Error#new(
+                std::io::ErrorKind::InvalidData,
+                "read stdin",
+                Option::None,
+                Option::None,
+                trait_call[ToString::to_string](error/0)
+              )
+            )
           }
         }
       },
-      Result::Err(x3) => {
+      Result::Err(x1) => {
         {
-          let x3 = Result::Err._0(mtmp0) in
+          let x1 = Result::Err._0(mtmp0) in
           {
-            let error/1 = x3 in
+            let error/1 = x1 in
             Result::Err(error/1)
           }
         }
@@ -5246,45 +5251,24 @@ fn std::fs::read_file_structured(path/0: string) -> Result[string, std::fs::Erro
           let x0 = Result::Ok._0(mtmp0) in
           {
             let data/0 = x0 in
-            {
-              let mtmp1 = trait_call[std::utf8::BytesUtf8::to_string_utf8](data/0) in
-              match mtmp1 {
-                Result::Ok(x1) => {
-                  {
-                    let x1 = Result::Ok._0(mtmp1) in
-                    {
-                      let value/0 = x1 in
-                      Result::Ok(value/0)
-                    }
-                  }
-                },
-                Result::Err(x2) => {
-                  {
-                    let x2 = Result::Err._0(mtmp1) in
-                    {
-                      let error/0 = x2 in
-                      Result::Err(
-                        inherent#std::fs::Error#std::fs::Error#new(
-                          std::io::ErrorKind::InvalidData,
-                          "read file",
-                          Option::Some(path/0),
-                          Option::None,
-                          trait_call[ToString::to_string](error/0)
-                        )
-                      )
-                    }
-                  }
-                },
-              }
-            }
+            inherent#Result#Result[string,std::utf8::Utf8Error]#map_err(
+              trait_call[std::utf8::BytesUtf8::to_string_utf8](data/0),
+              |error/0: std::utf8::Utf8Error| => inherent#std::fs::Error#std::fs::Error#new(
+                std::io::ErrorKind::InvalidData,
+                "read file",
+                Option::Some(path/0),
+                Option::None,
+                trait_call[ToString::to_string](error/0)
+              )
+            )
           }
         }
       },
-      Result::Err(x3) => {
+      Result::Err(x1) => {
         {
-          let x3 = Result::Err._0(mtmp0) in
+          let x1 = Result::Err._0(mtmp0) in
           {
-            let error/1 = x3 in
+            let error/1 = x1 in
             Result::Err(error/1)
           }
         }
@@ -5685,38 +5669,40 @@ fn std::fs::read_dir_structured(path/0: string) -> Result[Vec[std::fs::DirEntry]
                                     {
                                       let entry_path/0 =
                                         std::internal::host::path_join(path/0, name/0) in
-                                      {
-                                        let mtmp1 = std::fs::symlink_metadata(entry_path/0) in
-                                        match mtmp1 {
-                                          Result::Ok(x6) => {
-                                            {
-                                              let x6 = Result::Ok._0(mtmp1) in
+                                      let value/0 =
+                                        {
+                                          let mtmp1 = std::fs::symlink_metadata(entry_path/0) in
+                                          match mtmp1 {
+                                            Result::Ok(x6) => {
                                               {
-                                                let value/0 = x6 in
-                                                inherent#Vec#Vec[std::fs::DirEntry]#push(
-                                                  entries/0,
-                                                  std::fs::DirEntry {
-                                                    name_value: name/0,
-                                                    path_value: entry_path/0,
-                                                    file_type_value: inherent#std::fs::Metadata#std::fs::Metadata#file_type(
-                                                      value/0
-                                                    )
-                                                  }
-                                                )
+                                                let x6 = Result::Ok._0(mtmp1) in
+                                                {
+                                                  let try_value/0 = x6 in
+                                                  try_value/0
+                                                }
                                               }
-                                            }
-                                          },
-                                          Result::Err(x7) => {
-                                            {
-                                              let x7 = Result::Err._0(mtmp1) in
+                                            },
+                                            Result::Err(x7) => {
                                               {
-                                                let error/0 = x7 in
-                                                return Result::Err(error/0)
+                                                let x7 = Result::Err._0(mtmp1) in
+                                                {
+                                                  let try_residual/0 = x7 in
+                                                  return Result::Err(try_residual/0)
+                                                }
                                               }
-                                            }
-                                          },
+                                            },
+                                          }
+                                        } in
+                                      inherent#Vec#Vec[std::fs::DirEntry]#push(
+                                        entries/0,
+                                        std::fs::DirEntry {
+                                          name_value: name/0,
+                                          path_value: entry_path/0,
+                                          file_type_value: inherent#std::fs::Metadata#std::fs::Metadata#file_type(
+                                            value/0
+                                          )
                                         }
-                                      }
+                                      )
                                     }
                                   }
                                 }

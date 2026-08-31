@@ -435,6 +435,12 @@ type _goml_m_std_p_fs_p_DirEntry struct {
     file_type_value _goml_m_std_p_fs_p_FileType
 }
 
+type closure_env_std_io_read_stdin_to_string_0 struct {}
+
+type closure_env_std_fs_read_file_structured_1 struct {
+    path_0 string
+}
+
 type Ordering int32
 
 type _goml_m_std_p_io_p_ErrorKind int32
@@ -1236,51 +1242,39 @@ func _goml_m_std_p_fs_p_read__file__structured(path__0 string) _goml_m_Result___
     switch mtmp0.(type) {
     case _goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error_Ok:
         var x0 _goml_m_std_p_bytes_p_Bytes = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error_Ok)._0
-        var mtmp1 _goml_m_Result____string____std_p_utf8_p_Utf8Error
-        var inline7 *_goml_vec_uint8 = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(x0)
-        var inline8 _goml_m_Result____string____std_p_utf8_p_Utf8Error = _goml_m_std_p_utf8_p_decode(inline7)
-        mtmp1 = inline8
-        switch mtmp1._tag {
+        var t0 _goml_m_Result____string____std_p_utf8_p_Utf8Error
+        var inline5 *_goml_vec_uint8 = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(x0)
+        var inline6 _goml_m_Result____string____std_p_utf8_p_Utf8Error = _goml_m_std_p_utf8_p_decode(inline5)
+        t0 = inline6
+        var t1 closure_env_std_fs_read_file_structured_1 = closure_env_std_fs_read_file_structured_1{
+            path_0: path__0,
+        }
+        var t2 func(_goml_m_std_p_utf8_p_Utf8Error) _goml_m_std_p_fs_p_Error = func(p0 _goml_m_std_p_utf8_p_Utf8Error) _goml_m_std_p_fs_p_Error {
+            return _goml_m_inherent_i_closure__en_h3dd0cb03305303b9cfff8ae48a351c84_ured__1_i_apply(t1, p0)
+        }
+        switch t0._tag {
         case 0:
-            var x1 string = mtmp1._v0_0
-            var t0 _goml_m_Result____string____std_p_fs_p_Error = _goml_m_Result____string____std_p_fs_p_Error_Ok{
-                _0: x1,
+            var inline0 string = t0._v0_0
+            var inline1 _goml_m_Result____string____std_p_fs_p_Error = _goml_m_Result____string____std_p_fs_p_Error_Ok{
+                _0: inline0,
             }
-            return t0
+            return inline1
         case 1:
-            var x2 _goml_m_std_p_utf8_p_Utf8Error = mtmp1._v1_0
-            var t1 Option__string = Option__string{
-                _tag: 1,
-                _v1_0: path__0,
+            var inline2 _goml_m_std_p_utf8_p_Utf8Error = t0._v1_0
+            var inline3 _goml_m_std_p_fs_p_Error = t2(inline2)
+            var inline4 _goml_m_Result____string____std_p_fs_p_Error = _goml_m_Result____string____std_p_fs_p_Error_Err{
+                _0: inline3,
             }
-            var t2 string
-            var inline3 string = "" + "invalid UTF-8 at byte "
-            var inline4 int = x2.valid_up_to_value
-            var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
-            var inline6 string = inline3 + inline5
-            t2 = inline6
-            var t3 _goml_m_std_p_fs_p_Error
-            var inline0 string = "read file"
-            var inline1 _goml_m_std_p_io_p_ErrorDetails = _goml_m_inherent_i_std_p_io_p_ErrorDetails_i_std_p_io_p_ErrorDetails_i_new(InvalidData, inline0, t1, Option__isize{
-                _tag: 0,
-            }, t2)
-            var inline2 _goml_m_std_p_fs_p_Error = _goml_m_std_p_fs_p_Error{
-                details: inline1,
-            }
-            t3 = inline2
-            var t4 _goml_m_Result____string____std_p_fs_p_Error = _goml_m_Result____string____std_p_fs_p_Error_Err{
-                _0: t3,
-            }
-            return t4
+            return inline4
         default:
             panic("non-exhaustive match")
         }
     case _goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error_Err:
-        var x3 _goml_m_std_p_fs_p_Error = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error_Err)._0
-        var t5 _goml_m_Result____string____std_p_fs_p_Error = _goml_m_Result____string____std_p_fs_p_Error_Err{
-            _0: x3,
+        var x1 _goml_m_std_p_fs_p_Error = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error_Err)._0
+        var t3 _goml_m_Result____string____std_p_fs_p_Error = _goml_m_Result____string____std_p_fs_p_Error_Err{
+            _0: x1,
         }
-        return t5
+        return t3
     default:
         panic("non-exhaustive match")
     }
@@ -1969,6 +1963,28 @@ func __goml_builtin_char_from_uint32(value__0 uint32) Option__char {
             _tag: 0,
         }
     }
+}
+
+func _goml_m_inherent_i_closure__en_h3dd0cb03305303b9cfff8ae48a351c84_ured__1_i_apply(env0 closure_env_std_fs_read_file_structured_1, error__0 _goml_m_std_p_utf8_p_Utf8Error) _goml_m_std_p_fs_p_Error {
+    var path__0 string = env0.path_0
+    var t0 Option__string = Option__string{
+        _tag: 1,
+        _v1_0: path__0,
+    }
+    var t1 string
+    var inline3 string = "" + "invalid UTF-8 at byte "
+    var inline4 int = error__0.valid_up_to_value
+    var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
+    var inline6 string = inline3 + inline5
+    t1 = inline6
+    var inline0 string = "read file"
+    var inline1 _goml_m_std_p_io_p_ErrorDetails = _goml_m_inherent_i_std_p_io_p_ErrorDetails_i_std_p_io_p_ErrorDetails_i_new(InvalidData, inline0, t0, Option__isize{
+        _tag: 0,
+    }, t1)
+    var inline2 _goml_m_std_p_fs_p_Error = _goml_m_std_p_fs_p_Error{
+        details: inline1,
+    }
+    return inline2
 }
 
 func main() {
