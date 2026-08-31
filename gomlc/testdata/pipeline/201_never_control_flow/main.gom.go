@@ -82,7 +82,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func continue_branch() struct{} {
     var count__0 *ref_int_x

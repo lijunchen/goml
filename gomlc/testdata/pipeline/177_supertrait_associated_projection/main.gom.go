@@ -67,7 +67,7 @@ type Count struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Parent_i_Count_i_get(self__0 Count) int32 {
     var t0 int32 = self__0.value

@@ -63,7 +63,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func fib(x__0 int32) int32 {
     var mtmp0 bool = x__0 < 2

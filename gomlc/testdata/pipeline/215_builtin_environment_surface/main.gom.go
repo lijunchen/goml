@@ -170,11 +170,11 @@ type closure_env_goml_builtin_range_1 struct {
     end_1 int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -355,7 +355,7 @@ func _goml_m_std_p_iter_p_fold____A__isize____I__FnIterator_l_isize_r_____T__isi
         mtmp0 = inline1
         switch mtmp0._tag {
         case 1:
-            var x0 int = mtmp0._v1_0
+            var x0 int = mtmp0._p0
             var t0 int = combine__0(accumulator__0, x0)
             accumulator__0 = t0
             continue
@@ -543,8 +543,8 @@ func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_
         var t1 int = value__0 + 1
         ref_set__Ref_3int(current__0, t1)
         var t2 Option__isize = Option__isize{
+            _p0: value__0,
             _tag: 1,
-            _v1_0: value__0,
         }
         return t2
     } else {

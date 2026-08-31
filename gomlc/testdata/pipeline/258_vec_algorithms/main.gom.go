@@ -253,7 +253,7 @@ type FrozenVec__isize struct {
     values *_goml_vec_int
 }
 
-type Ordering int32
+type Ordering uint8
 
 const (
     Less Ordering = 0
@@ -262,13 +262,13 @@ const (
 )
 
 type Option__Ordering struct {
-    _tag int32
-    _v1_0 Ordering
+    _p0 Ordering
+    _tag uint8
 }
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_string_i_cmp(self__0 string, other__0 string) Ordering {
@@ -544,13 +544,13 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_position____T__isize(self__0 *_goml_v
         case 0:
             break Loop_loop0
         case 1:
-            var x0 int = for_next0._v1_0
+            var x0 int = for_next0._p0
             var t2 int = vec_get__Vec_3int(self__0, x0)
             var t3 bool = predicate__0(t2)
             if t3 {
                 var t4 Option__isize = Option__isize{
+                    _p0: x0,
                     _tag: 1,
-                    _v1_0: x0,
                 }
                 return t4
             } else {
@@ -570,7 +570,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__0 
     case 0:
         return fallback__0
     case 1:
-        var x0 int = self__0._v1_0
+        var x0 int = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")
@@ -622,7 +622,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__isize(self__0 *_goml_vec_i
         case 0:
             break Loop_loop0
         case 1:
-            var x1 int = for_next1._v1_0
+            var x1 int = for_next1._p0
             var t10 int = vec_get__Vec_3int(self__0, x1)
             var t11 string
             var inline13 string = __goml_builtin_int_to_string(t10)
@@ -667,7 +667,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__isize(self__0 *_goml_vec_i
         case 0:
             break Loop_loop1
         case 1:
-            var x0 int = for_next0._v1_0
+            var x0 int = for_next0._p0
             var t8 bool = x0 > 0
             if t8 {
                 vec_push__Vec_6string(result__0, separator__0)
@@ -734,8 +734,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_binary__search__by____T__isize(self__
     }
     if jp0 {
         var t2 Option__isize = Option__isize{
+            _p0: low__0,
             _tag: 1,
-            _v1_0: low__0,
         }
         return t2
     } else {
@@ -783,7 +783,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_min__by____T__isize(self__0 *_goml_ve
             case 0:
                 break Loop_loop0
             case 1:
-                var x0 int = for_next0._v1_0
+                var x0 int = for_next0._p0
                 var value__0 int = vec_get__Vec_3int(self__0, x0)
                 var t4 int = compare__0(value__0, best__0)
                 var t5 bool = t4 < 0
@@ -798,8 +798,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_min__by____T__isize(self__0 *_goml_ve
             }
         }
         var t3 Option__isize = Option__isize{
+            _p0: best__0,
             _tag: 1,
-            _v1_0: best__0,
         }
         return t3
     }
@@ -843,7 +843,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_max__by____T__isize(self__0 *_goml_ve
             case 0:
                 break Loop_loop0
             case 1:
-                var x0 int = for_next0._v1_0
+                var x0 int = for_next0._p0
                 var value__0 int = vec_get__Vec_3int(self__0, x0)
                 var t4 int = compare__0(value__0, best__0)
                 var t5 bool = t4 > 0
@@ -858,8 +858,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_max__by____T__isize(self__0 *_goml_ve
             }
         }
         var t3 Option__isize = Option__isize{
+            _p0: best__0,
             _tag: 1,
-            _v1_0: best__0,
         }
         return t3
     }
@@ -910,7 +910,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__0 *_goml_vec_
         case 0:
             break Loop_loop0
         case 1:
-            var x1 int = for_next1._v1_0
+            var x1 int = for_next1._p0
             var t10 string = vec_get__Vec_6string(self__0, x1)
             var t11 string
             t11 = t10
@@ -954,7 +954,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__0 *_goml_vec_
         case 0:
             break Loop_loop1
         case 1:
-            var x0 int = for_next0._v1_0
+            var x0 int = for_next0._p0
             var t8 bool = x0 > 0
             if t8 {
                 vec_push__Vec_6string(result__0, separator__0)
@@ -1025,7 +1025,7 @@ func _goml_m_inherent_i_FrozenVec_i_FrozenVec_l_T_r__i_contains____T__isize(self
         case 0:
             break Loop_loop0
         case 1:
-            var x0 int = for_next0._v1_0
+            var x0 int = for_next0._p0
             var t1 bool
             var inline0 bool = x0 == expected__0
             t1 = inline0
@@ -1096,7 +1096,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T__isize(self__0 
             case 0:
                 break Loop_loop0
             case 1:
-                var x1 int = for_next1._v1_0
+                var x1 int = for_next1._p0
                 var t37 int = vec_get__Vec_3int(self__0, x1)
                 vec_push__Vec_3int(buffer__0, t37)
                 continue
@@ -1248,7 +1248,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T__isize(self__0 
                     case 0:
                         break Loop_loop3
                     case 1:
-                        var x0 int = for_next0._v1_0
+                        var x0 int = for_next0._p0
                         vec_get__Vec_3int(self__0, x0)
                         var value0 int = vec_get__Vec_3int(buffer__0, x0)
                         vec_set__Vec_3int(self__0, x0, value0)
@@ -1383,7 +1383,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_dedup__by____T__isize(self__0 *_goml_
             case 0:
                 break Loop_loop0
             case 1:
-                var x0 int = for_next0._v1_0
+                var x0 int = for_next0._p0
                 var value__0 int = vec_get__Vec_3int(self__0, x0)
                 var t4 int = output__0 - 1
                 var t5 int = vec_get__Vec_3int(self__0, t4)
@@ -1507,7 +1507,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T__string(self__0
             case 0:
                 break Loop_loop0
             case 1:
-                var x1 int = for_next1._v1_0
+                var x1 int = for_next1._p0
                 var t37 string = vec_get__Vec_6string(self__0, x1)
                 vec_push__Vec_6string(buffer__0, t37)
                 continue
@@ -1659,7 +1659,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T__string(self__0
                     case 0:
                         break Loop_loop3
                     case 1:
-                        var x0 int = for_next0._v1_0
+                        var x0 int = for_next0._p0
                         vec_get__Vec_6string(self__0, x0)
                         var value0 string = vec_get__Vec_6string(buffer__0, x0)
                         vec_set__Vec_6string(self__0, x0, value0)
@@ -1722,7 +1722,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T___o_isize_c_isi
             case 0:
                 break Loop_loop0
             case 1:
-                var x1 int = for_next1._v1_0
+                var x1 int = for_next1._p0
                 var t37 Tuple2_3int_3int = vec_get__Vec_16Tuple2_3int_3int(self__0, x1)
                 vec_push__Vec_16Tuple2_3int_3int(buffer__0, t37)
                 continue
@@ -1874,7 +1874,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T___o_isize_c_isi
                     case 0:
                         break Loop_loop3
                     case 1:
-                        var x0 int = for_next0._v1_0
+                        var x0 int = for_next0._p0
                         vec_get__Vec_16Tuple2_3int_3int(self__0, x0)
                         var value0 Tuple2_3int_3int = vec_get__Vec_16Tuple2_3int_3int(buffer__0, x0)
                         vec_set__Vec_16Tuple2_3int_3int(self__0, x0, value0)
@@ -2075,8 +2075,8 @@ func _goml_m_inherent_i_closure__en_h705ec68e290747cc19a5685005dd16c1_nge__13_i_
         var t1 int = value__0 + 1
         ref_set__Ref_3int(current__0, t1)
         var t2 Option__isize = Option__isize{
+            _p0: value__0,
             _tag: 1,
-            _v1_0: value__0,
         }
         return t2
     } else {
@@ -2097,8 +2097,8 @@ func _goml_m_inherent_i_closure__en_h9c0087c1b8c373cdd04a2f248cb43de6_ize__14_i_
         var t1 int = current__0 + 1
         ref_set__Ref_3int(index__0, t1)
         var t2 Option__isize = Option__isize{
+            _p0: value__0,
             _tag: 1,
-            _v1_0: value__0,
         }
         return t2
     } else {

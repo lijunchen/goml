@@ -28,19 +28,19 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func cut_prefix(case_id__0 int32) Option__string {
     var t0 bool = case_id__0 == 0
     if t0 {
         var t1 Option__string = Option__string{
+            _p0: "ml",
             _tag: 1,
-            _v1_0: "ml",
         }
         return t1
     } else {
@@ -65,7 +65,7 @@ func main0() struct{} {
         case 0:
             t1 = "none"
         case 1:
-            var inline12 string = t0._v1_0
+            var inline12 string = t0._p0
             var inline13 string = "some " + inline12
             t1 = inline13
         default:
@@ -87,7 +87,7 @@ func main0() struct{} {
             case 0:
                 t3 = "none"
             case 1:
-                var inline2 string = t2._v1_0
+                var inline2 string = t2._p0
                 var inline3 string = "some " + inline2
                 t3 = inline3
             default:
@@ -97,12 +97,12 @@ func main0() struct{} {
             _goml_runtime_core_string_println(inline0)
             return struct{}{}
         case 1:
-            var inline9 string = inline5._v1_0
+            var inline9 string = inline5._p0
             inline6 = inline9
             var inline7 string = inline6 + "!"
             var inline8 Option__string = Option__string{
+                _p0: inline7,
                 _tag: 1,
-                _v1_0: inline7,
             }
             t2 = inline8
             var t3 string
@@ -110,7 +110,7 @@ func main0() struct{} {
             case 0:
                 t3 = "none"
             case 1:
-                var inline2 string = t2._v1_0
+                var inline2 string = t2._p0
                 var inline3 string = "some " + inline2
                 t3 = inline3
             default:
@@ -123,12 +123,12 @@ func main0() struct{} {
             panic("non-exhaustive match")
         }
     case 1:
-        var inline19 string = inline15._v1_0
+        var inline19 string = inline15._p0
         inline16 = inline19
         var inline17 string = inline16 + "!"
         var inline18 Option__string = Option__string{
+            _p0: inline17,
             _tag: 1,
-            _v1_0: inline17,
         }
         t0 = inline18
         var t1 string
@@ -136,7 +136,7 @@ func main0() struct{} {
         case 0:
             t1 = "none"
         case 1:
-            var inline12 string = t0._v1_0
+            var inline12 string = t0._p0
             var inline13 string = "some " + inline12
             t1 = inline13
         default:
@@ -158,7 +158,7 @@ func main0() struct{} {
             case 0:
                 t3 = "none"
             case 1:
-                var inline2 string = t2._v1_0
+                var inline2 string = t2._p0
                 var inline3 string = "some " + inline2
                 t3 = inline3
             default:
@@ -168,12 +168,12 @@ func main0() struct{} {
             _goml_runtime_core_string_println(inline0)
             return struct{}{}
         case 1:
-            var inline9 string = inline5._v1_0
+            var inline9 string = inline5._p0
             inline6 = inline9
             var inline7 string = inline6 + "!"
             var inline8 Option__string = Option__string{
+                _p0: inline7,
                 _tag: 1,
-                _v1_0: inline7,
             }
             t2 = inline8
             var t3 string
@@ -181,7 +181,7 @@ func main0() struct{} {
             case 0:
                 t3 = "none"
             case 1:
-                var inline2 string = t2._v1_0
+                var inline2 string = t2._p0
                 var inline3 string = "some " + inline2
                 t3 = inline3
             default:

@@ -65,7 +65,7 @@ type ParsedFloat struct {
 
 type closure_env_f_0 struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func add_after_match(flag__0 bool) int32 {
     var jp0 int32

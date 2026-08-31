@@ -33,12 +33,11 @@ type closure_env_run_0 struct {
     prefix_1 string
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Result__string__string struct {
-    _tag int32
-    _v0_0 string
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -57,11 +56,11 @@ func main0() struct{} {
     var t1 string
     switch t0._tag {
     case 0:
-        var inline13 string = t0._v0_0
+        var inline13 string = t0._p0
         var inline14 string = "ok " + inline13
         t1 = inline14
     case 1:
-        var inline15 string = t0._v1_0
+        var inline15 string = t0._p0
         var inline16 string = "err " + inline15
         t1 = inline16
     default:
@@ -84,11 +83,11 @@ func main0() struct{} {
     var t3 string
     switch t2._tag {
     case 0:
-        var inline2 string = t2._v0_0
+        var inline2 string = t2._p0
         var inline3 string = "ok " + inline2
         t3 = inline3
     case 1:
-        var inline4 string = t2._v1_0
+        var inline4 string = t2._p0
         var inline5 string = "err " + inline4
         t3 = inline5
     default:
@@ -109,34 +108,34 @@ func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env0
     var mtmp0 Result__string__string
     if ok__0 {
         var inline0 Result__string__string = Result__string__string{
+            _p0: "body",
             _tag: 0,
-            _v0_0: "body",
         }
         mtmp0 = inline0
     } else {
         var inline1 Result__string__string = Result__string__string{
+            _p0: "parse failed",
             _tag: 1,
-            _v1_0: "parse failed",
         }
         mtmp0 = inline1
     }
     var jp0 string
     switch mtmp0._tag {
     case 0:
-        var x0 string = mtmp0._v0_0
+        var x0 string = mtmp0._p0
         jp0 = x0
         var t0 string = prefix__0 + ":"
         var t1 string = t0 + jp0
         var t2 Result__string__string = Result__string__string{
+            _p0: t1,
             _tag: 0,
-            _v0_0: t1,
         }
         return t2
     case 1:
-        var x1 string = mtmp0._v1_0
+        var x1 string = mtmp0._p0
         var t3 Result__string__string = Result__string__string{
+            _p0: x1,
             _tag: 1,
-            _v1_0: x1,
         }
         return t3
     default:

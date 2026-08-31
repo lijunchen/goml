@@ -71,7 +71,7 @@ type closure_env_make_pairer_T_string_1 struct {
     x_0 string
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var int_pairer__0 func(string) string

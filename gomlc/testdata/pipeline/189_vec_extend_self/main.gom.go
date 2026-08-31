@@ -107,7 +107,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func print_values(values__0 *_goml_vec_int32) struct{} {
     var t0 int

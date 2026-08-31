@@ -78,7 +78,7 @@ func hashmap_get__HashMap_10DerivedKey_6string(m *hashmap_DerivedKey_string_x, k
     if ok {
         return Option__string{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__string{
@@ -183,7 +183,7 @@ func hashmap_get__HashMap_9CustomKey_6string(m *hashmap_CustomKey_string_x, key 
     if ok {
         return Option__string{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__string{
@@ -262,7 +262,7 @@ type Rank struct {
     value int
 }
 
-type Ordering int32
+type Ordering uint8
 
 const (
     Less Ordering = 0
@@ -271,13 +271,13 @@ const (
 )
 
 type Option__Ordering struct {
-    _tag int32
-    _v1_0 Ordering
+    _p0 Ordering
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_DerivedKey_i_eq(self__0 DerivedKey, other__0 DerivedKey) bool {
@@ -376,7 +376,7 @@ func main0() struct{} {
     case 0:
         t15 = inline18
     case 1:
-        var inline19 string = t14._v1_0
+        var inline19 string = t14._p0
         t15 = inline19
     default:
         panic("non-exhaustive match")
@@ -610,7 +610,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__0
     case 0:
         return fallback__0
     case 1:
-        var x0 string = self__0._v1_0
+        var x0 string = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")

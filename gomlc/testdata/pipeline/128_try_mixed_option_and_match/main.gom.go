@@ -63,58 +63,45 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func mixed(primary__0 bool, secondary__0 bool) Option__string {
     var mtmp0 Option__i32
     if primary__0 {
-        var inline3 Option__i32 = Option__i32{
-            _tag: 1,
-            _v1_0: 4,
-        }
+        var inline3 Option__i32 = Option__i32(uint64(int64(4) + 2147483648) + 1)
         mtmp0 = inline3
     } else {
-        mtmp0 = Option__i32{
-            _tag: 0,
-        }
+        mtmp0 = Option__i32(0)
     }
     var jp0 int32
-    switch mtmp0._tag {
-    case 0:
+    switch mtmp0 != Option__i32(0) {
+    case false:
         return Option__string{
             _tag: 0,
         }
-    case 1:
-        var x1 int32 = mtmp0._v1_0
+    case true:
+        var x1 int32 = int32(int64(uint64(mtmp0) - 1) - 2147483648)
         jp0 = x1
         var mtmp1 Option__i32
         if secondary__0 {
-            var inline2 Option__i32 = Option__i32{
-                _tag: 1,
-                _v1_0: 9,
-            }
+            var inline2 Option__i32 = Option__i32(uint64(int64(9) + 2147483648) + 1)
             mtmp1 = inline2
         } else {
-            mtmp1 = Option__i32{
-                _tag: 0,
-            }
+            mtmp1 = Option__i32(0)
         }
         var jp1 string
-        switch mtmp1._tag {
-        case 0:
+        switch mtmp1 != Option__i32(0) {
+        case false:
             jp1 = "extra=none"
-        case 1:
-            var x0 int32 = mtmp1._v1_0
+        case true:
+            var x0 int32 = int32(int64(uint64(mtmp1) - 1) - 2147483648)
             var t5 string
             var inline1 string = __goml_builtin_int32_to_string(x0)
             t5 = inline1
@@ -130,8 +117,8 @@ func mixed(primary__0 bool, secondary__0 bool) Option__string {
         var t2 string = t1 + ","
         var t3 string = t2 + jp1
         var t4 Option__string = Option__string{
+            _p0: t3,
             _tag: 1,
-            _v1_0: t3,
         }
         return t4
     default:
@@ -146,7 +133,7 @@ func main0() struct{} {
     case 0:
         t1 = "none"
     case 1:
-        var inline10 string = t0._v1_0
+        var inline10 string = t0._p0
         var inline11 string = "some=" + inline10
         t1 = inline11
     default:
@@ -160,7 +147,7 @@ func main0() struct{} {
     case 0:
         t3 = "none"
     case 1:
-        var inline6 string = t2._v1_0
+        var inline6 string = t2._p0
         var inline7 string = "some=" + inline6
         t3 = inline7
     default:
@@ -174,7 +161,7 @@ func main0() struct{} {
     case 0:
         t5 = "none"
     case 1:
-        var inline2 string = t4._v1_0
+        var inline2 string = t4._p0
         var inline3 string = "some=" + inline2
         t5 = inline3
     default:

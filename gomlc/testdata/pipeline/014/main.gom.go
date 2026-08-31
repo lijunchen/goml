@@ -33,7 +33,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func test_nested_match(x__0 Tuple2_4bool_4bool, y__0 Tuple2_4bool_4bool) struct{} {
     var x0 bool = x__0._0

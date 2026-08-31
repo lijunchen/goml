@@ -67,7 +67,7 @@ type Wrap__i32 struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 type dyn__Show_vtable struct {
     show func(any) string

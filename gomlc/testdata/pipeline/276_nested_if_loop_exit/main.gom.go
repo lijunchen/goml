@@ -82,7 +82,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func then_break_outer_continue(flag__0 bool) int {
     var rounds__0 *ref_int_x

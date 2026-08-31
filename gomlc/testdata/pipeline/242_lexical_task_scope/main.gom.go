@@ -337,22 +337,21 @@ type closure_env_std_task_scope_with_T_isize_11 struct {
     handle_2 _goml_m_std_p_internal_p_task_p_ScopeHandle
 }
 
-type Ordering int32
+type Ordering uint8
 
-type _goml_m_std_p_task_p_WaitResult_____o__q_ struct {
-    _tag int32
-    _v0_0 struct{}
-}
+type _goml_m_std_p_task_p_WaitResult_____o__q_ uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
-type _goml_m_Option_____o__q_ struct {
-    _tag int32
-    _v1_0 struct{}
-}
+type _goml_m_Option_____o__q_ uint8
+
+const (
+    _goml_m_Option_____o__q__None _goml_m_Option_____o__q_ = 0
+    _goml_m_Option_____o__q__Some _goml_m_Option_____o__q_ = 1
+)
 
 func _goml_m_std_p_internal_p_task_p_root__scope() _goml_m_std_p_internal_p_task_p_ScopeHandle {
     var t0 int64
@@ -494,7 +493,7 @@ func _goml_m_inherent_i_std_p_task__h53c24a9f0a217bb05f370161a3b86100_oin____T__
         mtmp1 = inline0
         switch mtmp1._tag {
         case 1:
-            var x0 int = mtmp1._v1_0
+            var x0 int = mtmp1._p0
             jp0 = x0
             break Loop_loop_expr0
         default:
@@ -518,7 +517,7 @@ func _goml_m_std_p_task_p_completed__scope__value____T__isize(result__0 *ref_Opt
         mtmp0 = inline0
         switch mtmp0._tag {
         case 1:
-            var x0 int = mtmp0._v1_0
+            var x0 int = mtmp0._p0
             jp0 = x0
             break Loop_loop_expr0
         default:
@@ -700,9 +699,7 @@ func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(en
     var t5 func(_goml_m_std_p_task_p_CancelToken) struct{} = func(p0 _goml_m_std_p_task_p_CancelToken) struct{} {
         return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t4, p0)
     }
-    var inline0 *ref__goml_m_Option_____o__q__x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(_goml_m_Option_____o__q_{
-        _tag: 0,
-    })
+    var inline0 *ref__goml_m_Option_____o__q__x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(_goml_m_Option_____o__q__None)
     var inline1 chan struct{} = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T___o__q_(0)
     var inline2 _goml_m_std_p_internal_p_task_p_ScopeHandle = scope__0.handle
     var inline3 _goml_m_std_p_internal_p_task_p_CancelToken = _goml_m_std_p_internal_p_task_p_token(inline2)
@@ -809,8 +806,8 @@ func _goml_m_inherent_i_closure__en_h79e1b97c71c1c66e8a54d8d6a22e1edf_size__8_i_
     }
     var t1 int = body__0(t0)
     var t2 Option__isize = Option__isize{
+        _p0: t1,
         _tag: 1,
-        _v1_0: t1,
     }
     ref_set__Ref_13Option__isize(result__0, t2)
     return struct{}{}
@@ -823,8 +820,8 @@ func _goml_m_inherent_i_closure__en_h2edb97eafd7aca63bdc79db1f12910bf_size__9_i_
     var ready__0 chan struct{} = env0.ready_3
     var t0 int = body__0(token__0)
     var t1 Option__isize = Option__isize{
+        _p0: t0,
         _tag: 1,
-        _v1_0: t0,
     }
     ref_set__Ref_13Option__isize(result__0, t1)
     func(p0 chan struct{}) struct{} {
@@ -839,11 +836,8 @@ func _goml_m_inherent_i_closure__en_he1d9c8f9e38e0bccbae1cb701d05cd60___T__10_i_
     var body__0 func(_goml_m_std_p_task_p_CancelToken) struct{} = env0.body_1
     var token__0 _goml_m_std_p_task_p_CancelToken = env0.token_2
     var ready__0 chan struct{} = env0.ready_3
-    var t0 struct{} = body__0(token__0)
-    var t1 _goml_m_Option_____o__q_ = _goml_m_Option_____o__q_{
-        _tag: 1,
-        _v1_0: t0,
-    }
+    body__0(token__0)
+    var t1 _goml_m_Option_____o__q_ = _goml_m_Option_____o__q__Some
     ref_set___goml_m_Ref__10Option_____o__q_(result__0, t1)
     func(p0 chan struct{}) struct{} {
         close(p0)
@@ -861,8 +855,8 @@ func _goml_m_inherent_i_closure__en_h51a4106953b36d9d5cb4938997ce2588_ize__11_i_
     }
     var t1 int = body__0(t0)
     var t2 Option__isize = Option__isize{
+        _p0: t1,
         _tag: 1,
-        _v1_0: t1,
     }
     ref_set__Ref_13Option__isize(result__0, t2)
     return struct{}{}

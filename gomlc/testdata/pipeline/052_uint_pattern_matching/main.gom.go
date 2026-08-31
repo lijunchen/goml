@@ -41,7 +41,7 @@ type Counter struct {
     end uint64
 }
 
-type Ordering int32
+type Ordering uint8
 
 func is_flag8(value__0 uint8) bool {
     switch value__0 {

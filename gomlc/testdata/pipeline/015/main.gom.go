@@ -63,33 +63,35 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type IntList interface {
-    isIntList()
+type IntList struct {
+    _node *IntList_node
 }
 
-type Nil struct {}
-
-func (_ Nil) isIntList() {}
-
-type Cons struct {
-    _0 int32
-    _1 IntList
+type IntList_node struct {
+    _p1 IntList
+    _p0 int32
+    _tag uint8
 }
 
-func (_ Cons) isIntList() {}
+func _goml_enum_tag_IntList(value IntList) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
+}
 
 func print_int_list(xs__0 IntList) struct{} {
-    switch xs__0.(type) {
-    case Nil:
+    switch _goml_enum_tag_IntList(xs__0) {
+    case 0:
         var inline0 string = "Nil"
         var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline0)
         _goml_runtime_core_string_println(inline1)
         return struct{}{}
-    case Cons:
-        var x0 int32 = xs__0.(Cons)._0
-        var x1 IntList = xs__0.(Cons)._1
+    case 1:
+        var x0 int32 = xs__0._node._p0
+        var x1 IntList = xs__0._node._p1
         var inline15 string = "Cons"
         var inline16 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline15)
         _goml_runtime_core_string_println(inline16)
@@ -115,15 +117,18 @@ func print_int_list(xs__0 IntList) struct{} {
 }
 
 func int_list_rev_aux(xs__0 IntList, acc__0 IntList) IntList {
-    switch xs__0.(type) {
-    case Nil:
+    switch _goml_enum_tag_IntList(xs__0) {
+    case 0:
         return acc__0
-    case Cons:
-        var x0 int32 = xs__0.(Cons)._0
-        var x1 IntList = xs__0.(Cons)._1
-        var t0 IntList = Cons{
-            _0: x0,
-            _1: acc__0,
+    case 1:
+        var x0 int32 = xs__0._node._p0
+        var x1 IntList = xs__0._node._p1
+        var t0 IntList = IntList{
+            _node: &IntList_node{
+                _p0: x0,
+                _p1: acc__0,
+                _tag: 1,
+            },
         }
         var t1 IntList = int_list_rev_aux(x1, t0)
         return t1
@@ -133,11 +138,11 @@ func int_list_rev_aux(xs__0 IntList, acc__0 IntList) IntList {
 }
 
 func int_list_length(xs__0 IntList) int32 {
-    switch xs__0.(type) {
-    case Nil:
+    switch _goml_enum_tag_IntList(xs__0) {
+    case 0:
         return 0
-    case Cons:
-        var x0 IntList = xs__0.(Cons)._1
+    case 1:
+        var x0 IntList = xs__0._node._p1
         var t0 int32 = int_list_length(x0)
         var t1 int32 = 1 + t0
         return t1
@@ -147,7 +152,7 @@ func int_list_length(xs__0 IntList) int32 {
 }
 
 func main0() struct{} {
-    var x__0 IntList = Nil{}
+    var x__0 IntList = IntList{}
     print_int_list(x__0)
     var inline22 string = ""
     var inline23 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline22)
@@ -156,9 +161,12 @@ func main0() struct{} {
     var inline19 int32 = int_list_length(x__0)
     var inline20 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline19)
     println__T_string(inline20)
-    var x__1 IntList = Cons{
-        _0: 1,
-        _1: Nil{},
+    var x__1 IntList = IntList{
+        _node: &IntList_node{
+            _p0: 1,
+            _p1: IntList{},
+            _tag: 1,
+        },
     }
     print_int_list(x__1)
     var inline15 string = ""
@@ -168,17 +176,26 @@ func main0() struct{} {
     var inline12 int32 = int_list_length(x__1)
     var inline13 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline12)
     println__T_string(inline13)
-    var t0 IntList = Cons{
-        _0: 3,
-        _1: Nil{},
+    var t0 IntList = IntList{
+        _node: &IntList_node{
+            _p0: 3,
+            _p1: IntList{},
+            _tag: 1,
+        },
     }
-    var t1 IntList = Cons{
-        _0: 2,
-        _1: t0,
+    var t1 IntList = IntList{
+        _node: &IntList_node{
+            _p0: 2,
+            _p1: t0,
+            _tag: 1,
+        },
     }
-    var x__2 IntList = Cons{
-        _0: 1,
-        _1: t1,
+    var x__2 IntList = IntList{
+        _node: &IntList_node{
+            _p0: 1,
+            _p1: t1,
+            _tag: 1,
+        },
     }
     print_int_list(x__2)
     var inline8 string = ""
@@ -189,7 +206,7 @@ func main0() struct{} {
     var inline6 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline5)
     println__T_string(inline6)
     var y__0 IntList
-    var inline3 IntList = int_list_rev_aux(x__2, Nil{})
+    var inline3 IntList = int_list_rev_aux(x__2, IntList{})
     y__0 = inline3
     print_int_list(y__0)
     var inline0 string = ""

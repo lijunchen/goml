@@ -71,7 +71,7 @@ type Box__string struct {
     value string
 }
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Provider_i_Number_i_get(self__0 Number) int32 {
     var t0 int32 = self__0.value

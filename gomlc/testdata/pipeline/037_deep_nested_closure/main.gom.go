@@ -91,7 +91,7 @@ type closure_env_f1_3 struct {
     a_0 int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var a__0 int32 = 10

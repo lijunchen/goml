@@ -77,7 +77,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Measure_i_Vec_l_i32_r__i_measure(self__0 *_goml_vec_int32) int {
     var inline0 int = vec_len__Vec_5int32(self__0)

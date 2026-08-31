@@ -68,53 +68,40 @@ type Point struct {
     y int32
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Maybe__i32 struct {
-    _tag int32
-    _v0_0 int32
-}
+type Maybe__i32 uint64
 
 func main0() struct{} {
     var some_number__0 Maybe__i32
     var inline16 bool = true
     if inline16 {
-        var inline17 Maybe__i32 = Maybe__i32{
-            _tag: 0,
-            _v0_0: 42,
-        }
+        var inline17 Maybe__i32 = Maybe__i32(uint64(int64(42) + 2147483648) + 1)
         some_number__0 = inline17
     } else {
-        some_number__0 = Maybe__i32{
-            _tag: 1,
-        }
+        some_number__0 = Maybe__i32(0)
     }
     var none_number__0 Maybe__i32
     var inline14 bool = false
     if inline14 {
-        var inline15 Maybe__i32 = Maybe__i32{
-            _tag: 0,
-            _v0_0: 42,
-        }
+        var inline15 Maybe__i32 = Maybe__i32(uint64(int64(42) + 2147483648) + 1)
         none_number__0 = inline15
     } else {
-        none_number__0 = Maybe__i32{
-            _tag: 1,
-        }
+        none_number__0 = Maybe__i32(0)
     }
     var t0 string
     t0 = "Point"
     var inline12 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t0)
     _goml_runtime_core_string_println(inline12)
     var t1 string
-    switch some_number__0._tag {
-    case 0:
-        var inline8 int32 = some_number__0._v0_0
+    switch some_number__0 != Maybe__i32(0) {
+    case true:
+        var inline8 int32 = int32(int64(uint64(some_number__0) - 1) - 2147483648)
         var inline9 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline8)
         var inline10 string = "Just(" + inline9
         var inline11 string = inline10 + ")"
         t1 = inline11
-    case 1:
+    case false:
         t1 = "Nothing"
     default:
         panic("non-exhaustive match")
@@ -122,14 +109,14 @@ func main0() struct{} {
     var inline6 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
     _goml_runtime_core_string_println(inline6)
     var t2 string
-    switch none_number__0._tag {
-    case 0:
-        var inline2 int32 = none_number__0._v0_0
+    switch none_number__0 != Maybe__i32(0) {
+    case true:
+        var inline2 int32 = int32(int64(uint64(none_number__0) - 1) - 2147483648)
         var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
         var inline4 string = "Just(" + inline3
         var inline5 string = inline4 + ")"
         t2 = inline5
-    case 1:
+    case false:
         t2 = "Nothing"
     default:
         panic("non-exhaustive match")

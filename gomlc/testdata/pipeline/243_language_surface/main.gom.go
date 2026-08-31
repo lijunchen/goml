@@ -118,11 +118,11 @@ type closure_env_increment_0 struct {
     captured_0 *ref_int_x
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type dyn__Source_vtable struct {

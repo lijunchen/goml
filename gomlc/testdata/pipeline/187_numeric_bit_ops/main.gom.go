@@ -91,12 +91,9 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__char struct {
-    _tag int32
-    _v1_0 rune
-}
+type Option__char uint64
 
 func show_u8(value__0 uint8) struct{} {
     var inline0 string = _goml_m_trait__impl_i_ToString_i_u8_i_to__string(value__0)
@@ -372,13 +369,13 @@ func casts() struct{} {
     var inline7 uint32 = 128512
     var inline8 Option__char = __goml_builtin_char_from_uint32(inline7)
     mtmp0 = inline8
-    switch mtmp0._tag {
-    case 0:
+    switch mtmp0 != Option__char(0) {
+    case false:
         var inline1 string = "invalid"
         var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1)
         _goml_runtime_core_string_println(inline2)
-    case 1:
-        var x0 rune = mtmp0._v1_0
+    case true:
+        var x0 rune = rune(uint64(mtmp0) - 1)
         var t15 string
         var inline6 string = char_to_string(x0)
         t15 = inline6
@@ -506,15 +503,10 @@ func __goml_builtin_char_from_uint32(value__0 uint32) Option__char {
     if t0 {
         var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
         var x0 rune = mtmp0._1
-        var t1 Option__char = Option__char{
-            _tag: 1,
-            _v1_0: x0,
-        }
+        var t1 Option__char = Option__char(uint64(uint32(x0)) + 1)
         return t1
     } else {
-        return Option__char{
-            _tag: 0,
-        }
+        return Option__char(0)
     }
 }
 

@@ -19,12 +19,11 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type _goml_m_Result_____o__q_____string struct {
-    _tag int32
-    _v0_0 struct{}
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func main0() struct{} {

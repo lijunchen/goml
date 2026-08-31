@@ -63,12 +63,9 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__u8 struct {
-    _tag int32
-    _v0_0 uint8
-}
+type Option__u8 uint16
 
 func main0() struct{} {
     var x0 uint8 = 42

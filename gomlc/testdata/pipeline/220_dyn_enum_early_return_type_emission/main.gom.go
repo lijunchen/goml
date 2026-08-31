@@ -63,17 +63,12 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Boxed interface {
-    isBoxed()
+type Boxed struct {
+    _p0 dyn__Display
+    _tag uint8
 }
-
-type One struct {
-    _0 dyn__Display
-}
-
-func (_ One) isBoxed() {}
 
 type dyn__Display_vtable struct {
     show func(any) string

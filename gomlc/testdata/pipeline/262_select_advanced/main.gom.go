@@ -82,11 +82,11 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -176,8 +176,8 @@ func main0() struct{} {
     case _goml_m_value____0_i_select__value, _goml_m_value____0_i_select__open = <-select_channel_1_0:
         if _goml_m_value____0_i_select__open {
             value__0 = Option__isize{
+                _p0: _goml_m_value____0_i_select__value,
                 _tag: 1,
-                _v1_0: _goml_m_value____0_i_select__value,
             }
         }
         var inline8 int = -1
@@ -185,7 +185,7 @@ func main0() struct{} {
         case 0:
             jp1 = inline8
         case 1:
-            var inline9 int = value__0._v1_0
+            var inline9 int = value__0._p0
             jp1 = inline9
         default:
             panic("non-exhaustive match")
@@ -195,8 +195,8 @@ func main0() struct{} {
         case _goml_m_value____1_i_select__value, _goml_m_value____1_i_select__open = <-select_channel_1_1:
             if _goml_m_value____1_i_select__open {
                 value__1 = Option__isize{
+                    _p0: _goml_m_value____1_i_select__value,
                     _tag: 1,
-                    _v1_0: _goml_m_value____1_i_select__value,
                 }
             }
             var inline10 int = -1
@@ -204,7 +204,7 @@ func main0() struct{} {
             case 0:
                 jp1 = inline10
             case 1:
-                var inline11 int = value__1._v1_0
+                var inline11 int = value__1._p0
                 jp1 = inline11
             default:
                 panic("non-exhaustive match")
@@ -244,15 +244,15 @@ func main0() struct{} {
     case _goml_m__d_select__recv__1184____0_i_select__value, _goml_m__d_select__recv__1184____0_i_select__open = <-select_channel_2_0:
         if _goml_m__d_select__recv__1184____0_i_select__open {
             _goml_m__d_select__recv__1184____0 = Option__isize{
+                _p0: _goml_m__d_select__recv__1184____0_i_select__value,
                 _tag: 1,
-                _v1_0: _goml_m__d_select__recv__1184____0_i_select__value,
             }
         }
         switch _goml_m__d_select__recv__1184____0._tag {
         case 0:
             jp2 = 0
         case 1:
-            var x0 int = _goml_m__d_select__recv__1184____0._v1_0
+            var x0 int = _goml_m__d_select__recv__1184____0._p0
             var t6 int = x0 + 1
             jp2 = t6
         default:

@@ -199,7 +199,7 @@ func hashmap_get__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key Logged
     if ok {
         return Option__isize{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__isize{
@@ -357,7 +357,7 @@ func hashmap_get__HashMap_3int_3int(m *hashmap_int_int_x, key int) Option__isize
     if ok {
         return Option__isize{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__isize{
@@ -450,7 +450,7 @@ func hashmap_get__HashMap_10DerivedKey_3int(m *hashmap_DerivedKey_int_x, key Der
     if ok {
         return Option__isize{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__isize{
@@ -540,13 +540,10 @@ func hashmap_get__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key st
     value, ok, _, _ = hashmap_lookup__HashMap_6string_8Vec_3int(m, key)
     if ok {
         return _goml_m_Option____Vec_l_isize_r_{
-            _tag: 1,
-            _v1_0: value,
+            _value: value,
         }
     }
-    return _goml_m_Option____Vec_l_isize_r_{
-        _tag: 0,
-    }
+    return _goml_m_Option____Vec_l_isize_r_{}
 }
 
 func hashmap_set__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key string, value *_goml_vec_int) struct{} {
@@ -640,16 +637,15 @@ type DerivedKey struct {
     id int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type _goml_m_Option____Vec_l_isize_r_ struct {
-    _tag int32
-    _v1_0 *_goml_vec_int
+    _value *_goml_vec_int
 }
 
 func _goml_m_trait__impl_i_Hash_i_DerivedKey_i_hash(self__0 DerivedKey) uint64 {
@@ -816,7 +812,7 @@ func main0() struct{} {
     case 0:
         jp0 = 0
     case 1:
-        var x1 int = mtmp0._v1_0
+        var x1 int = mtmp0._p0
         jp0 = x1
     default:
         panic("non-exhaustive match")
@@ -942,7 +938,7 @@ func main0() struct{} {
     case 0:
         t67 = inline17
     case 1:
-        var inline18 int = t66._v1_0
+        var inline18 int = t66._p0
         t67 = inline18
     default:
         panic("non-exhaustive match")
@@ -964,7 +960,7 @@ func main0() struct{} {
     case 0:
         t73 = inline13
     case 1:
-        var inline14 int = t72._v1_0
+        var inline14 int = t72._p0
         t73 = inline14
     default:
         panic("non-exhaustive match")
@@ -986,7 +982,7 @@ func main0() struct{} {
     case 0:
         t79 = inline9
     case 1:
-        var inline10 int = t78._v1_0
+        var inline10 int = t78._p0
         t79 = inline10
     default:
         panic("non-exhaustive match")
@@ -1070,11 +1066,11 @@ func main0() struct{} {
     var inline5 _goml_m_Option____Vec_l_isize_r_ = hashmap_get__HashMap_6string_8Vec_3int(nested_map__0, inline4)
     mtmp1 = inline5
     var jp1 int
-    switch mtmp1._tag {
-    case 0:
+    switch mtmp1._value != nil {
+    case false:
         jp1 = 0
-    case 1:
-        var x0 *_goml_vec_int = mtmp1._v1_0
+    case true:
+        var x0 *_goml_vec_int = mtmp1._value
         var t105 int = vec_get__Vec_3int(x0, 0)
         jp1 = t105
     default:
@@ -1181,7 +1177,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__0 
     case 0:
         return fallback__0
     case 1:
-        var x0 int = self__0._v1_0
+        var x0 int = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")

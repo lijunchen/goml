@@ -78,16 +78,16 @@ type closure_env_roundtrip_T_string_0 struct {
     value_1 string
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -109,8 +109,8 @@ func main0() struct{} {
     var inline25 bool = inline23._1
     if inline25 {
         var inline26 Option__isize = Option__isize{
+            _p0: inline24,
             _tag: 1,
-            _v1_0: inline24,
         }
         mtmp0 = inline26
     } else {
@@ -123,7 +123,7 @@ func main0() struct{} {
     case 0:
         jp0 = -1
     case 1:
-        var x2 int = mtmp0._v1_0
+        var x2 int = mtmp0._p0
         jp0 = x2
     default:
         panic("non-exhaustive match")
@@ -144,8 +144,8 @@ func main0() struct{} {
     var inline19 bool = inline17._1
     if inline19 {
         var inline20 Option__isize = Option__isize{
+            _p0: inline18,
             _tag: 1,
-            _v1_0: inline18,
         }
         mtmp1 = inline20
     } else {
@@ -158,7 +158,7 @@ func main0() struct{} {
     case 0:
         jp1 = -1
     case 1:
-        var x1 int = mtmp1._v1_0
+        var x1 int = mtmp1._p0
         jp1 = x1
     default:
         panic("non-exhaustive match")
@@ -179,8 +179,8 @@ func main0() struct{} {
     var inline13 bool = inline11._1
     if inline13 {
         var inline14 Option__isize = Option__isize{
+            _p0: inline12,
             _tag: 1,
-            _v1_0: inline12,
         }
         mtmp2 = inline14
     } else {
@@ -219,7 +219,7 @@ func main0() struct{} {
     case 0:
         jp3 = "closed"
     case 1:
-        var x0 string = mtmp3._v1_0
+        var x0 string = mtmp3._p0
         jp3 = x0
     default:
         panic("non-exhaustive match")
@@ -287,8 +287,8 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__0 cha
     var x1 bool = mtmp0._1
     if x1 {
         var t0 Option__string = Option__string{
+            _p0: x0,
             _tag: 1,
-            _v1_0: x0,
         }
         return t0
     } else {

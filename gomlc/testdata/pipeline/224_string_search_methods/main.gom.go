@@ -76,11 +76,11 @@ type closure_env_goml_builtin_range_0 struct {
     end_1 int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -260,7 +260,7 @@ func _goml_m_inherent_i_string_i_string_i_contains(self__0 string, expected__0 s
                 case 0:
                     break Loop_loop0
                 case 1:
-                    var x0 int = for_next0._v1_0
+                    var x0 int = for_next0._p0
                     var t10 int
                     var inline3 int = _goml_runtime_core_string_len(expected__0)
                     t10 = inline3
@@ -398,8 +398,8 @@ func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_
         var t1 int = value__0 + 1
         ref_set__Ref_3int(current__0, t1)
         var t2 Option__isize = Option__isize{
+            _p0: value__0,
             _tag: 1,
-            _v1_0: value__0,
         }
         return t2
     } else {

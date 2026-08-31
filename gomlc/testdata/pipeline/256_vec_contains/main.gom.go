@@ -83,7 +83,7 @@ type Pair struct {
     right int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var t0 [3]int = [3]int{1, 2, 3}

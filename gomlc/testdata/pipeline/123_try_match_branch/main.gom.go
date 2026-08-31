@@ -63,88 +63,87 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Choice struct {
-    _tag int32
-    _v0_0 bool
-    _v1_0 bool
-    _v2_0 int32
+    _p1 int32
+    _p0 bool
+    _tag uint8
 }
 
 type Result__i32__string struct {
-    _tag int32
-    _v0_0 int32
-    _v1_0 string
+    _p1 string
+    _p0 int32
+    _tag uint8
 }
 
 func choose(choice__0 Choice) Result__i32__string {
     var jp0 int32
     switch choice__0._tag {
     case 0:
-        var x0 bool = choice__0._v0_0
+        var x0 bool = choice__0._p0
         var commute_field0 int32
         var commute_field1 string
         if x0 {
             commute_field0 = 10
             jp0 = commute_field0
             var t0 Result__i32__string = Result__i32__string{
+                _p0: jp0,
                 _tag: 0,
-                _v0_0: jp0,
             }
             return t0
         } else {
             commute_field1 = "left failed"
             var t1 Result__i32__string = Result__i32__string{
+                _p1: commute_field1,
                 _tag: 1,
-                _v1_0: commute_field1,
             }
             return t1
         }
     case 1:
-        var x1 bool = choice__0._v1_0
+        var x1 bool = choice__0._p0
         var mtmp0 Result__i32__string
         if x1 {
             var inline0 Result__i32__string = Result__i32__string{
+                _p0: 20,
                 _tag: 0,
-                _v0_0: 20,
             }
             mtmp0 = inline0
         } else {
             var inline1 Result__i32__string = Result__i32__string{
+                _p1: "right failed",
                 _tag: 1,
-                _v1_0: "right failed",
             }
             mtmp0 = inline1
         }
         var jp1 int32
         switch mtmp0._tag {
         case 0:
-            var x2 int32 = mtmp0._v0_0
+            var x2 int32 = mtmp0._p0
             jp1 = x2
             var t2 int32 = jp1 + 1
             jp0 = t2
             var t0 Result__i32__string = Result__i32__string{
+                _p0: jp0,
                 _tag: 0,
-                _v0_0: jp0,
             }
             return t0
         case 1:
-            var x3 string = mtmp0._v1_0
+            var x3 string = mtmp0._p1
             var t3 Result__i32__string = Result__i32__string{
+                _p1: x3,
                 _tag: 1,
-                _v1_0: x3,
             }
             return t3
         default:
             panic("non-exhaustive match")
         }
     case 2:
-        var x4 int32 = choice__0._v2_0
+        var x4 int32 = choice__0._p1
         jp0 = x4
         var t0 Result__i32__string = Result__i32__string{
+            _p0: jp0,
             _tag: 0,
-            _v0_0: jp0,
         }
         return t0
     default:
@@ -155,14 +154,14 @@ func choose(choice__0 Choice) Result__i32__string {
 func show(res__0 Result__i32__string) string {
     switch res__0._tag {
     case 0:
-        var x0 int32 = res__0._v0_0
+        var x0 int32 = res__0._p0
         var t0 string
         var inline0 string = __goml_builtin_int32_to_string(x0)
         t0 = inline0
         var t1 string = "ok " + t0
         return t1
     case 1:
-        var x1 string = res__0._v1_0
+        var x1 string = res__0._p1
         var t2 string = "err " + x1
         return t2
     default:
@@ -172,35 +171,35 @@ func show(res__0 Result__i32__string) string {
 
 func main0() struct{} {
     var t0 Choice = Choice{
+        _p0: true,
         _tag: 0,
-        _v0_0: true,
     }
     var t1 Result__i32__string = choose(t0)
     var t2 string = show(t1)
     var inline23 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t2)
     _goml_runtime_core_string_println(inline23)
     var t3 Choice = Choice{
+        _p0: true,
         _tag: 1,
-        _v1_0: true,
     }
     var t4 Result__i32__string = choose(t3)
     var t5 string = show(t4)
     var inline21 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t5)
     _goml_runtime_core_string_println(inline21)
     var t6 Choice = Choice{
+        _p1: 5,
         _tag: 2,
-        _v2_0: 5,
     }
     var t7 Result__i32__string = choose(t6)
     var t8 string
     switch t7._tag {
     case 0:
-        var inline16 int32 = t7._v0_0
+        var inline16 int32 = t7._p0
         var inline17 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline16)
         var inline18 string = "ok " + inline17
         t8 = inline18
     case 1:
-        var inline19 string = t7._v1_0
+        var inline19 string = t7._p1
         var inline20 string = "err " + inline19
         t8 = inline20
     default:
@@ -209,19 +208,19 @@ func main0() struct{} {
     var inline14 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t8)
     _goml_runtime_core_string_println(inline14)
     var t9 Choice = Choice{
+        _p0: false,
         _tag: 0,
-        _v0_0: false,
     }
     var t10 Result__i32__string = choose(t9)
     var t11 string
     switch t10._tag {
     case 0:
-        var inline9 int32 = t10._v0_0
+        var inline9 int32 = t10._p0
         var inline10 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline9)
         var inline11 string = "ok " + inline10
         t11 = inline11
     case 1:
-        var inline12 string = t10._v1_0
+        var inline12 string = t10._p1
         var inline13 string = "err " + inline12
         t11 = inline13
     default:
@@ -230,19 +229,19 @@ func main0() struct{} {
     var inline7 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t11)
     _goml_runtime_core_string_println(inline7)
     var t12 Choice = Choice{
+        _p0: false,
         _tag: 1,
-        _v1_0: false,
     }
     var t13 Result__i32__string = choose(t12)
     var t14 string
     switch t13._tag {
     case 0:
-        var inline2 int32 = t13._v0_0
+        var inline2 int32 = t13._p0
         var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
         var inline4 string = "ok " + inline3
         t14 = inline4
     case 1:
-        var inline5 string = t13._v1_0
+        var inline5 string = t13._p1
         var inline6 string = "err " + inline5
         t14 = inline6
     default:

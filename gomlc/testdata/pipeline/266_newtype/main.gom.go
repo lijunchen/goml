@@ -71,7 +71,7 @@ type Box__string struct {
     _0 string
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var raw__0 int32 = 40

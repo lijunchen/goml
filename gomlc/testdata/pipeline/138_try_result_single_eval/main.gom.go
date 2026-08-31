@@ -82,12 +82,12 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Result__i32__string struct {
-    _tag int32
-    _v0_0 int32
-    _v1_0 string
+    _p1 string
+    _p0 int32
+    _tag uint8
 }
 
 func use_try(counter__0 *ref_int32_x, ok__0 bool) Result__i32__string {
@@ -98,36 +98,36 @@ func use_try(counter__0 *ref_int32_x, ok__0 bool) Result__i32__string {
     if ok__0 {
         var inline4 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(counter__0)
         var inline5 Result__i32__string = Result__i32__string{
+            _p0: inline4,
             _tag: 0,
-            _v0_0: inline4,
         }
         mtmp0 = inline5
     } else {
         var inline6 Result__i32__string = Result__i32__string{
+            _p1: "bump failed",
             _tag: 1,
-            _v1_0: "bump failed",
         }
         mtmp0 = inline6
     }
     var jp0 int32
     switch mtmp0._tag {
     case 0:
-        var x0 int32 = mtmp0._v0_0
+        var x0 int32 = mtmp0._p0
         jp0 = x0
         var t0 int32
         var inline0 int32 = ref_get__Ref_5int32(counter__0)
         t0 = inline0
         var t1 int32 = jp0 + t0
         var t2 Result__i32__string = Result__i32__string{
+            _p0: t1,
             _tag: 0,
-            _v0_0: t1,
         }
         return t2
     case 1:
-        var x1 string = mtmp0._v1_0
+        var x1 string = mtmp0._p1
         var t3 Result__i32__string = Result__i32__string{
+            _p1: x1,
             _tag: 1,
-            _v1_0: x1,
         }
         return t3
     default:
@@ -138,14 +138,14 @@ func use_try(counter__0 *ref_int32_x, ok__0 bool) Result__i32__string {
 func show(res__0 Result__i32__string) string {
     switch res__0._tag {
     case 0:
-        var x0 int32 = res__0._v0_0
+        var x0 int32 = res__0._p0
         var t0 string
         var inline0 string = __goml_builtin_int32_to_string(x0)
         t0 = inline0
         var t1 string = "ok " + t0
         return t1
     case 1:
-        var x1 string = res__0._v1_0
+        var x1 string = res__0._p1
         var t2 string = "err " + x1
         return t2
     default:

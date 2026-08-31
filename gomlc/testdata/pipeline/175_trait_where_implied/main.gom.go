@@ -36,7 +36,7 @@ type Station struct {
     worker Worker
 }
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Ready_i_Worker_i_state(self__0 Worker) string {
     var t0 string = self__0.name

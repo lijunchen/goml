@@ -63,7 +63,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 const (
     WRAPPED_I8 int8 = -128

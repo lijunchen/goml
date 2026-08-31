@@ -78,7 +78,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type dyn__Display_vtable struct {
     show func(any) string

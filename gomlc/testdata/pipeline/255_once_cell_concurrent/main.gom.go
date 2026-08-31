@@ -118,11 +118,11 @@ type OnceCell__isize struct {
     name string
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 var VALUE *OnceCell__isize = func() *OnceCell__isize {
@@ -166,8 +166,8 @@ func main0() struct{} {
     var inline13 bool = inline11._1
     if inline13 {
         var inline14 Option__isize = Option__isize{
+            _p0: inline12,
             _tag: 1,
-            _v1_0: inline12,
         }
         t4 = inline14
     } else {
@@ -181,7 +181,7 @@ func main0() struct{} {
     case 0:
         first__0 = inline9
     case 1:
-        var inline10 int = t4._v1_0
+        var inline10 int = t4._p0
         first__0 = inline10
     default:
         panic("non-exhaustive match")
@@ -200,8 +200,8 @@ func main0() struct{} {
     var inline7 bool = inline5._1
     if inline7 {
         var inline8 Option__isize = Option__isize{
+            _p0: inline6,
             _tag: 1,
-            _v1_0: inline6,
         }
         t5 = inline8
     } else {
@@ -215,7 +215,7 @@ func main0() struct{} {
     case 0:
         second__0 = inline3
     case 1:
-        var inline4 int = t5._v1_0
+        var inline4 int = t5._p0
         second__0 = inline4
     default:
         panic("non-exhaustive match")

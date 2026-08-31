@@ -32,24 +32,22 @@ type Handle struct {
     name string
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Result__Handle__string struct {
-    _tag int32
-    _v0_0 Handle
-    _v1_0 string
+    _p0 Handle
+    _p1 string
+    _tag uint8
 }
 
 type _goml_m_Result_____o__q_____string struct {
-    _tag int32
-    _v0_0 struct{}
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 type Result__string__string struct {
-    _tag int32
-    _v0_0 string
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func use_handle(open_ok__0 bool, close_ok__0 bool) Result__string__string {
@@ -59,36 +57,35 @@ func use_handle(open_ok__0 bool, close_ok__0 bool) Result__string__string {
             name: "config",
         }
         var inline5 Result__Handle__string = Result__Handle__string{
+            _p0: inline4,
             _tag: 0,
-            _v0_0: inline4,
         }
         mtmp0 = inline5
     } else {
         var inline6 Result__Handle__string = Result__Handle__string{
+            _p1: "open failed",
             _tag: 1,
-            _v1_0: "open failed",
         }
         mtmp0 = inline6
     }
     var jp0 Handle
     switch mtmp0._tag {
     case 0:
-        var x1 Handle = mtmp0._v0_0
+        var x1 Handle = mtmp0._p0
         jp0 = x1
         var name__0 string = jp0.name
         var mtmp1 _goml_m_Result_____o__q_____string
         if close_ok__0 {
             var inline0 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 0,
-                _v0_0: struct{}{},
             }
             mtmp1 = inline0
         } else {
             var inline1 string = jp0.name
             var inline2 string = "close failed for " + inline1
             var inline3 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                _p0: inline2,
                 _tag: 1,
-                _v1_0: inline2,
             }
             mtmp1 = inline3
         }
@@ -96,25 +93,25 @@ func use_handle(open_ok__0 bool, close_ok__0 bool) Result__string__string {
         case 0:
             var t0 string = "closed " + name__0
             var t1 Result__string__string = Result__string__string{
+                _p0: t0,
                 _tag: 0,
-                _v0_0: t0,
             }
             return t1
         case 1:
-            var x0 string = mtmp1._v1_0
+            var x0 string = mtmp1._p0
             var t2 Result__string__string = Result__string__string{
+                _p0: x0,
                 _tag: 1,
-                _v1_0: x0,
             }
             return t2
         default:
             panic("non-exhaustive match")
         }
     case 1:
-        var x2 string = mtmp0._v1_0
+        var x2 string = mtmp0._p1
         var t3 Result__string__string = Result__string__string{
+            _p0: x2,
             _tag: 1,
-            _v1_0: x2,
         }
         return t3
     default:
@@ -127,11 +124,11 @@ func main0() struct{} {
     var t1 string
     switch t0._tag {
     case 0:
-        var inline14 string = t0._v0_0
+        var inline14 string = t0._p0
         var inline15 string = "ok " + inline14
         t1 = inline15
     case 1:
-        var inline16 string = t0._v1_0
+        var inline16 string = t0._p0
         var inline17 string = "err " + inline16
         t1 = inline17
     default:
@@ -143,11 +140,11 @@ func main0() struct{} {
     var t3 string
     switch t2._tag {
     case 0:
-        var inline8 string = t2._v0_0
+        var inline8 string = t2._p0
         var inline9 string = "ok " + inline8
         t3 = inline9
     case 1:
-        var inline10 string = t2._v1_0
+        var inline10 string = t2._p0
         var inline11 string = "err " + inline10
         t3 = inline11
     default:
@@ -159,11 +156,11 @@ func main0() struct{} {
     var t5 string
     switch t4._tag {
     case 0:
-        var inline2 string = t4._v0_0
+        var inline2 string = t4._p0
         var inline3 string = "ok " + inline2
         t5 = inline3
     case 1:
-        var inline4 string = t4._v1_0
+        var inline4 string = t4._p0
         var inline5 string = "err " + inline4
         t5 = inline5
     default:

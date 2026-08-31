@@ -30,7 +30,7 @@ type ParsedFloat struct {
 
 type S struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_A_i_S_i_foo(self__0 S) string {
     return "A"

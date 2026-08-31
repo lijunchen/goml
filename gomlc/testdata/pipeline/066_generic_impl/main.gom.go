@@ -78,7 +78,7 @@ type Point__string__i32 struct {
     y int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var p1__0 Point__i32__string

@@ -136,23 +136,19 @@ type Pair struct {
     right int32
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Maybe struct {
-    _tag int32
-    _v1_0 int32
-}
+type Maybe uint64
 
 type Either struct {
-    _tag int32
-    _v0_0 int32
-    _v1_0 int32
+    _p0 int32
+    _tag uint8
 }
 
 func unwrap_either(value__0 Either) int32 {
     switch value__0._tag {
     case 0:
-        var shared__0 int32 = value__0._v0_0
+        var shared__0 int32 = value__0._p0
         var jp0 int32
         switch value__0._tag {
         case 0:
@@ -167,7 +163,7 @@ func unwrap_either(value__0 Either) int32 {
     default:
         switch value__0._tag {
         case 1:
-            var shared__0 int32 = value__0._v1_0
+            var shared__0 int32 = value__0._p0
             var jp1 int32
             switch value__0._tag {
             case 0:
@@ -188,9 +184,9 @@ func unwrap_either(value__0 Either) int32 {
 
 func describe(value__0 Maybe, numbers__0 *_goml_vec_int32, view__0 []int32) string {
     var jp0 string
-    switch value__0._tag {
-    case 1:
-        var x0 int32 = value__0._v1_0
+    switch value__0 != Maybe(0) {
+    case true:
+        var x0 int32 = int32(int64(uint64(value__0) - 1) - 2147483648)
         var t24 bool = x0 == 0
         if t24 {
             jp0 = "small"
@@ -312,24 +308,16 @@ func main0() struct{} {
     var inline20 int = vec_len__Vec_5int32(numbers__0)
     t5 = inline20
     var view__0 []int32 = numbers__0.items[0:t5]
-    var t6 Maybe = Maybe{
-        _tag: 1,
-        _v1_0: 3,
-    }
+    var t6 Maybe = Maybe(uint64(int64(3) + 2147483648) + 1)
     var t7 string = describe(t6, numbers__0, view__0)
     var inline18 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t7)
     _goml_runtime_core_string_println(inline18)
     var empty__0 *_goml_vec_int32 = vec_new__Vec_5int32()
     var empty_view__0 []int32 = empty__0.items[0:0]
-    var t8 string = describe(Maybe{
-        _tag: 0,
-    }, empty__0, empty_view__0)
+    var t8 string = describe(Maybe(0), empty__0, empty_view__0)
     var inline16 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t8)
     _goml_runtime_core_string_println(inline16)
-    var t9 Maybe = Maybe{
-        _tag: 1,
-        _v1_0: 7,
-    }
+    var t9 Maybe = Maybe(uint64(int64(7) + 2147483648) + 1)
     var state__0 *ref_Maybe_x
     var inline15 *ref_Maybe_x = ref__Ref_5Maybe(t9)
     state__0 = inline15
@@ -338,14 +326,12 @@ func main0() struct{} {
         var mtmp0 Maybe
         var inline14 Maybe = ref_get__Ref_5Maybe(state__0)
         mtmp0 = inline14
-        switch mtmp0._tag {
-        case 1:
-            var x3 int32 = mtmp0._v1_0
+        switch mtmp0 != Maybe(0) {
+        case true:
+            var x3 int32 = int32(int64(uint64(mtmp0) - 1) - 2147483648)
             var inline12 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x3)
             _goml_runtime_core_string_println(inline12)
-            ref_set__Ref_5Maybe(state__0, Maybe{
-                _tag: 0,
-            })
+            ref_set__Ref_5Maybe(state__0, Maybe(0))
             continue
         default:
             break Loop_loop0
@@ -364,8 +350,8 @@ func main0() struct{} {
     var inline7 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(jp0)
     _goml_runtime_core_string_println(inline7)
     var t10 Either = Either{
+        _p0: 11,
         _tag: 1,
-        _v1_0: 11,
     }
     var t11 int32 = unwrap_either(t10)
     var inline5 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t11)

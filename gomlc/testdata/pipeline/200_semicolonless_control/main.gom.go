@@ -105,7 +105,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var inline20 string = "if"

@@ -75,9 +75,9 @@ type Line struct {
     color Color
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Color int32
+type Color uint8
 
 const (
     Red Color = 0
@@ -85,20 +85,22 @@ const (
     Blue Color = 2
 )
 
-type LineList interface {
-    isLineList()
+type LineList struct {
+    _node *LineList_node
 }
 
-type Nil struct {}
-
-func (_ Nil) isLineList() {}
-
-type Cons struct {
-    _0 Line
-    _1 LineList
+type LineList_node struct {
+    _p1 LineList
+    _p0 Line
+    _tag uint8
 }
 
-func (_ Cons) isLineList() {}
+func _goml_enum_tag_LineList(value LineList) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
+}
 
 func _goml_m_trait__impl_i_ToString_i_Point_i_to__string(self__0 Point) string {
     var x0 int32 = self__0.x
@@ -163,12 +165,12 @@ func _goml_m_trait__impl_i_ToString_i_Line_i_to__string(self__0 Line) string {
 }
 
 func _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(self__0 LineList) string {
-    switch self__0.(type) {
-    case Nil:
+    switch _goml_enum_tag_LineList(self__0) {
+    case 0:
         return "LineList::Nil"
-    case Cons:
-        var x0 Line = self__0.(Cons)._0
-        var x1 LineList = self__0.(Cons)._1
+    case 1:
+        var x0 Line = self__0._node._p0
+        var x1 LineList = self__0._node._p1
         var t0 string = _goml_m_trait__impl_i_ToString_i_Line_i_to__string(x0)
         var t1 string = "LineList::Cons(" + t0
         var t2 string = t1 + ", "
@@ -207,9 +209,12 @@ func main0() struct{} {
         color: Blue,
     }
     line__0 = inline2
-    var lines__0 LineList = Cons{
-        _0: line__0,
-        _1: Nil{},
+    var lines__0 LineList = LineList{
+        _node: &LineList_node{
+            _p0: line__0,
+            _p1: LineList{},
+            _tag: 1,
+        },
     }
     var t0 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(lines__0)
     var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t0)

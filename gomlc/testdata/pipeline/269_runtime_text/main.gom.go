@@ -83,7 +83,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var minimum__0_lhs int64 = -9223372036854775807

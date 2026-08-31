@@ -72,7 +72,7 @@ type Wrapper__i32 struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 func make_point() Point {
     var t0 Point = Point{

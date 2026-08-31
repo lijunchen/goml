@@ -93,17 +93,14 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type _goml_m_Option_____o_char_c_isize_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_4char_3int
+    _p0 Tuple2_4char_3int
+    _tag uint8
 }
 
-type Option__char struct {
-    _tag int32
-    _v1_0 rune
-}
+type Option__char uint64
 
 func check_utf8(bytes__0 *_goml_vec_uint8, expected__0 bool) struct{} {
     var expected_length__0 int
@@ -578,12 +575,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
         if t2 {
             var inline0 int = 1
             var inline1 Option__char = __goml_builtin_char_from_uint32(first__0)
-            switch inline1._tag {
-            case 0:
+            switch inline1 != Option__char(0) {
+            case false:
                 var inline2 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline2
-            case 1:
-                var inline3 rune = inline1._v1_0
+            case true:
+                var inline3 rune = rune(uint64(inline1) - 1)
                 var inline4 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline3,
@@ -642,12 +639,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             var t13 uint32 = t11 | t12
                             var inline7 int = 2
                             var inline8 Option__char = __goml_builtin_char_from_uint32(t13)
-                            switch inline8._tag {
-                            case 0:
+                            switch inline8 != Option__char(0) {
+                            case false:
                                 var inline9 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline9
-                            case 1:
-                                var inline10 rune = inline8._v1_0
+                            case true:
+                                var inline10 rune = rune(uint64(inline8) - 1)
                                 var inline11 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline10,
@@ -732,12 +729,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 var t28 uint32 = t26 | t27
                                 var inline17 int = 3
                                 var inline18 Option__char = __goml_builtin_char_from_uint32(t28)
-                                switch inline18._tag {
-                                case 0:
+                                switch inline18 != Option__char(0) {
+                                case false:
                                     var inline19 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline19
-                                case 1:
-                                    var inline20 rune = inline18._v1_0
+                                case true:
+                                    var inline20 rune = rune(uint64(inline18) - 1)
                                     var inline21 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline20,
@@ -907,15 +904,10 @@ func __goml_builtin_char_from_uint32(value__0 uint32) Option__char {
     if t0 {
         var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
         var x0 rune = mtmp0._1
-        var t1 Option__char = Option__char{
-            _tag: 1,
-            _v1_0: x0,
-        }
+        var t1 Option__char = Option__char(uint64(uint32(x0)) + 1)
         return t1
     } else {
-        return Option__char{
-            _tag: 0,
-        }
+        return Option__char(0)
     }
 }
 

@@ -68,12 +68,11 @@ type Point struct {
     label string
 }
 
-type Ordering int32
+type Ordering uint8
 
 type State__i32 struct {
-    _tag int32
-    _v1_0 int32
-    _v2_0 int32
+    _p0 int32
+    _tag uint8
 }
 
 type State__Point interface {
@@ -97,9 +96,8 @@ type State__Point_Named struct {
 func (_ State__Point_Named) isState__Point() {}
 
 type State__isize struct {
-    _tag int32
-    _v1_0 int
-    _v2_0 int
+    _p0 int
+    _tag uint8
 }
 
 type dyn__Debug_vtable struct {
@@ -186,7 +184,7 @@ func _goml_m_trait__impl_i_Debug_i_State____i32_i_debug(self__0 State__i32) stri
     case 0:
         return "State::Idle"
     case 1:
-        var x0 int32 = self__0._v1_0
+        var x0 int32 = self__0._p0
         var t0 string
         var inline0 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x0)
         t0 = inline0
@@ -194,7 +192,7 @@ func _goml_m_trait__impl_i_Debug_i_State____i32_i_debug(self__0 State__i32) stri
         var t2 string = t1 + ")"
         return t2
     case 2:
-        var x1 int32 = self__0._v2_0
+        var x1 int32 = self__0._p0
         var t3 string = "State::Named { " + "value: "
         var t4 string
         var inline1 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x1)

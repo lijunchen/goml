@@ -55,11 +55,11 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func find(wanted__0 int) Option__isize {
@@ -80,8 +80,8 @@ func find(wanted__0 int) Option__isize {
             var t1 bool = value__0 == wanted__0
             if t1 {
                 var t2 Option__isize = Option__isize{
+                    _p0: value__0,
                     _tag: 1,
-                    _v1_0: value__0,
                 }
                 return t2
             } else {

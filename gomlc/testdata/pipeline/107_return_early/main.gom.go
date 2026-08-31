@@ -70,7 +70,7 @@ type ParsedFloat struct {
 
 type closure_env_f_0 struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func early(x__0 int32) int32 {
     var t0 bool = x__0 < 0

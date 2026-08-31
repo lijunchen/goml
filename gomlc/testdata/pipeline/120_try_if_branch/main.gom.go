@@ -63,25 +63,25 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Result__i32__string struct {
-    _tag int32
-    _v0_0 int32
-    _v1_0 string
+    _p1 string
+    _p0 int32
+    _tag uint8
 }
 
 func parse(flag__0 bool) Result__i32__string {
     if flag__0 {
         var t0 Result__i32__string = Result__i32__string{
+            _p0: 5,
             _tag: 0,
-            _v0_0: 5,
         }
         return t0
     } else {
         var t1 Result__i32__string = Result__i32__string{
+            _p1: "bad-branch",
             _tag: 1,
-            _v1_0: "bad-branch",
         }
         return t1
     }
@@ -97,15 +97,15 @@ func bump(flag__0 bool, fallback__0 bool) Result__i32__string {
             jp0 = commute_field0
             var t0 int32 = jp0 + 1
             var t1 Result__i32__string = Result__i32__string{
+                _p0: t0,
                 _tag: 0,
-                _v0_0: t0,
             }
             return t1
         } else {
             commute_field1 = "bad-branch"
             var t2 Result__i32__string = Result__i32__string{
+                _p1: commute_field1,
                 _tag: 1,
-                _v1_0: commute_field1,
             }
             return t2
         }
@@ -113,8 +113,8 @@ func bump(flag__0 bool, fallback__0 bool) Result__i32__string {
         jp0 = 10
         var t0 int32 = jp0 + 1
         var t1 Result__i32__string = Result__i32__string{
+            _p0: t0,
             _tag: 0,
-            _v0_0: t0,
         }
         return t1
     }
@@ -123,14 +123,14 @@ func bump(flag__0 bool, fallback__0 bool) Result__i32__string {
 func show(res__0 Result__i32__string) string {
     switch res__0._tag {
     case 0:
-        var x0 int32 = res__0._v0_0
+        var x0 int32 = res__0._p0
         var t0 string
         var inline0 string = __goml_builtin_int32_to_string(x0)
         t0 = inline0
         var t1 string = "ok=" + t0
         return t1
     case 1:
-        var x1 string = res__0._v1_0
+        var x1 string = res__0._p1
         var t2 string = "err=" + x1
         return t2
     default:
@@ -147,12 +147,12 @@ func main0() struct{} {
     var t3 string
     switch t2._tag {
     case 0:
-        var inline18 int32 = t2._v0_0
+        var inline18 int32 = t2._p0
         var inline19 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline18)
         var inline20 string = "ok=" + inline19
         t3 = inline20
     case 1:
-        var inline21 string = t2._v1_0
+        var inline21 string = t2._p1
         var inline22 string = "err=" + inline21
         t3 = inline22
     default:
@@ -168,23 +168,23 @@ func main0() struct{} {
         var inline12 Result__i32__string = parse(inline8)
         switch inline12._tag {
         case 0:
-            var inline13 int32 = inline12._v0_0
+            var inline13 int32 = inline12._p0
             inline9 = inline13
             var inline10 int32 = inline9 + 1
             var inline11 Result__i32__string = Result__i32__string{
+                _p0: inline10,
                 _tag: 0,
-                _v0_0: inline10,
             }
             t4 = inline11
             var t5 string
             switch t4._tag {
             case 0:
-                var inline2 int32 = t4._v0_0
+                var inline2 int32 = t4._p0
                 var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
                 var inline4 string = "ok=" + inline3
                 t5 = inline4
             case 1:
-                var inline5 string = t4._v1_0
+                var inline5 string = t4._p1
                 var inline6 string = "err=" + inline5
                 t5 = inline6
             default:
@@ -194,21 +194,21 @@ func main0() struct{} {
             _goml_runtime_core_string_println(inline0)
             return struct{}{}
         case 1:
-            var inline14 string = inline12._v1_0
+            var inline14 string = inline12._p1
             var inline15 Result__i32__string = Result__i32__string{
+                _p1: inline14,
                 _tag: 1,
-                _v1_0: inline14,
             }
             t4 = inline15
             var t5 string
             switch t4._tag {
             case 0:
-                var inline2 int32 = t4._v0_0
+                var inline2 int32 = t4._p0
                 var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
                 var inline4 string = "ok=" + inline3
                 t5 = inline4
             case 1:
-                var inline5 string = t4._v1_0
+                var inline5 string = t4._p1
                 var inline6 string = "err=" + inline5
                 t5 = inline6
             default:
@@ -224,19 +224,19 @@ func main0() struct{} {
         inline9 = 10
         var inline10 int32 = inline9 + 1
         var inline11 Result__i32__string = Result__i32__string{
+            _p0: inline10,
             _tag: 0,
-            _v0_0: inline10,
         }
         t4 = inline11
         var t5 string
         switch t4._tag {
         case 0:
-            var inline2 int32 = t4._v0_0
+            var inline2 int32 = t4._p0
             var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
             var inline4 string = "ok=" + inline3
             t5 = inline4
         case 1:
-            var inline5 string = t4._v1_0
+            var inline5 string = t4._p1
             var inline6 string = "err=" + inline5
             t5 = inline6
         default:

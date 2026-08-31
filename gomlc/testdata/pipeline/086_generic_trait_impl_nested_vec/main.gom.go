@@ -71,7 +71,7 @@ type Wrap__string struct {
     value string
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var t0 int32

@@ -103,11 +103,11 @@ type ParsedFloat struct {
 
 type closure_env_run_0 struct {}
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func early_return() int {
@@ -133,11 +133,11 @@ func maybe(value__0 Option__isize) Option__isize {
         _goml_runtime_core_string_println(inline4)
         return defer_return0
     case 1:
-        var x0 int = value__0._v1_0
+        var x0 int = value__0._p0
         jp0 = x0
         var defer_result0 Option__isize = Option__isize{
+            _p0: jp0,
             _tag: 1,
-            _v1_0: jp0,
         }
         var inline0 string = "try:cleanup"
         var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline0)
@@ -204,7 +204,7 @@ func loop_cleanup() struct{} {
 func pattern_cleanup(value__0 Option__isize) int {
     switch value__0._tag {
     case 1:
-        var x0 int = value__0._v1_0
+        var x0 int = value__0._p0
         var x1 int = 2
         var defer_tast_result0 int = x0 + x1
         var inline0 string = "pattern:cleanup"
@@ -239,8 +239,8 @@ func main0() struct{} {
     var inline22 string = "observed:" + inline21
     println__T_string(inline22)
     var t2 Option__isize = Option__isize{
+        _p0: 3,
         _tag: 1,
-        _v1_0: 3,
     }
     var t3 int = pattern_cleanup(t2)
     var t4 string

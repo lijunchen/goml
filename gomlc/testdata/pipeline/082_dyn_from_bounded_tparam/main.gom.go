@@ -30,7 +30,7 @@ type ParsedFloat struct {
 
 type S struct {}
 
-type Ordering int32
+type Ordering uint8
 
 type dyn__Display_vtable struct {
     show func(any) string

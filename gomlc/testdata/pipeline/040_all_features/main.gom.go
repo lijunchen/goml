@@ -152,13 +152,12 @@ type closure_env_flip_2 struct {
     toggled_0 *ref_bool_x
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Record__i32 struct {
-    _tag int32
-    _v0_0 int32
-    _v1_0 int32
-    _v1_1 int32
+    _p0 int32
+    _p1 int32
+    _tag uint8
 }
 
 type Record__string interface {
@@ -182,14 +181,11 @@ type Record__string_Empty struct {}
 
 func (_ Record__string_Empty) isRecord__string() {}
 
-type Maybe__i32 struct {
-    _tag int32
-    _v0_0 int32
-}
+type Maybe__i32 uint64
 
 type Maybe__string struct {
-    _tag int32
-    _v0_0 string
+    _p0 string
+    _tag uint8
 }
 
 func _goml_m_trait__impl_i_Describe_i_Tracker_i_describe(self__0 Tracker) string {
@@ -220,7 +216,7 @@ func _goml_m_trait__impl_i_Describe_i_Tracker_i_describe(self__0 Tracker) string
 func _goml_m_trait__impl_i_Describe_i_Record____i32_i_describe(self__0 Record__i32) string {
     switch self__0._tag {
     case 0:
-        var x0 int32 = self__0._v0_0
+        var x0 int32 = self__0._p0
         var t0 string
         var inline0 string = __goml_builtin_int32_to_string(x0)
         t0 = inline0
@@ -228,8 +224,8 @@ func _goml_m_trait__impl_i_Describe_i_Record____i32_i_describe(self__0 Record__i
         var t2 string = t1 + ")"
         return t2
     case 1:
-        var x1 int32 = self__0._v1_0
-        var x2 int32 = self__0._v1_1
+        var x1 int32 = self__0._p0
+        var x2 int32 = self__0._p1
         var t3 string
         var inline2 string = __goml_builtin_int32_to_string(x1)
         t3 = inline2
@@ -291,23 +287,15 @@ func triple(value__0 int32) int32 {
 func gather(record__0 Record__i32) Maybe__i32 {
     switch record__0._tag {
     case 0:
-        var x0 int32 = record__0._v0_0
-        var t0 Maybe__i32 = Maybe__i32{
-            _tag: 0,
-            _v0_0: x0,
-        }
+        var x0 int32 = record__0._p0
+        var t0 Maybe__i32 = Maybe__i32(uint64(int64(x0) + 2147483648) + 1)
         return t0
     case 1:
-        var x1 int32 = record__0._v1_1
-        var t1 Maybe__i32 = Maybe__i32{
-            _tag: 0,
-            _v0_0: x1,
-        }
+        var x1 int32 = record__0._p1
+        var t1 Maybe__i32 = Maybe__i32(uint64(int64(x1) + 2147483648) + 1)
         return t1
     case 2:
-        return Maybe__i32{
-            _tag: 1,
-        }
+        return Maybe__i32(0)
     default:
         panic("non-exhaustive match")
     }
@@ -396,7 +384,7 @@ func main0() struct{} {
     var jp1 string
     switch stringified__0._tag {
     case 0:
-        var x4 string = stringified__0._v0_0
+        var x4 string = stringified__0._p0
         var t3 string = "Snapshot: " + x4
         jp1 = t3
     case 1:
@@ -443,16 +431,16 @@ func _goml_m_choose____T__Maybe_l_i32_r_(flag__0 bool, when_true__0 Maybe__i32, 
 }
 
 func map_maybe__T_i32__U_string(value__0 Maybe__i32, f__0 func(int32) string) Maybe__string {
-    switch value__0._tag {
-    case 0:
-        var x0 int32 = value__0._v0_0
+    switch value__0 != Maybe__i32(0) {
+    case true:
+        var x0 int32 = int32(int64(uint64(value__0) - 1) - 2147483648)
         var t0 string = f__0(x0)
         var t1 Maybe__string = Maybe__string{
+            _p0: t0,
             _tag: 0,
-            _v0_0: t0,
         }
         return t1
-    case 1:
+    case false:
         return Maybe__string{
             _tag: 1,
         }
@@ -545,8 +533,8 @@ func _goml_m_inherent_i_closure__env__snapshot__0_i_closure__env__snapshot__0_i_
     var inline0 int32 = ref_get__Ref_5int32(count__0)
     t0 = inline0
     var t1 Record__i32 = Record__i32{
+        _p0: t0,
         _tag: 0,
-        _v0_0: t0,
     }
     return t1
 }
@@ -562,9 +550,9 @@ func _goml_m_inherent_i_closure__env__bump__1_i_closure__env__bump__1_i_apply(en
     var inline0 int32 = ref_get__Ref_5int32(count__0)
     t1 = inline0
     var t2 Record__i32 = Record__i32{
+        _p0: before__0,
+        _p1: t1,
         _tag: 1,
-        _v1_0: before__0,
-        _v1_1: t1,
     }
     return t2
 }

@@ -67,7 +67,7 @@ type NumberIterator struct {}
 
 type Numbers struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var t0 int32

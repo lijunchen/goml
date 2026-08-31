@@ -33,18 +33,27 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type _goml_m_Result_____o_string_c_string_q_____string struct {
-    _tag int32
-    _v0_0 Tuple2_6string_6string
-    _v1_0 string
+type _goml_m_Result_____o_string_c_string_q_____string interface {
+    is_goml_m_Result_____o_string_c_string_q_____string()
 }
 
+type _goml_m_Result_____o_string_c_string_q_____string_Ok struct {
+    _0 Tuple2_6string_6string
+}
+
+func (_ _goml_m_Result_____o_string_c_string_q_____string_Ok) is_goml_m_Result_____o_string_c_string_q_____string() {}
+
+type _goml_m_Result_____o_string_c_string_q_____string_Err struct {
+    _0 string
+}
+
+func (_ _goml_m_Result_____o_string_c_string_q_____string_Err) is_goml_m_Result_____o_string_c_string_q_____string() {}
+
 type Result__string__string struct {
-    _tag int32
-    _v0_0 string
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func split_host_port(ok__0 bool) _goml_m_Result_____o_string_c_string_q_____string {
@@ -53,15 +62,13 @@ func split_host_port(ok__0 bool) _goml_m_Result_____o_string_c_string_q_____stri
             _0: "localhost",
             _1: "8080",
         }
-        var t1 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string{
-            _tag: 0,
-            _v0_0: t0,
+        var t1 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Ok{
+            _0: t0,
         }
         return t1
     } else {
-        var t2 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string{
-            _tag: 1,
-            _v1_0: "missing port",
+        var t2 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Err{
+            _0: "missing port",
         }
         return t2
     }
@@ -72,24 +79,24 @@ func render(ok__0 bool) Result__string__string {
     var inline0 _goml_m_Result_____o_string_c_string_q_____string = split_host_port(ok__0)
     mtmp0 = inline0
     var jp0 Tuple2_6string_6string
-    switch mtmp0._tag {
-    case 0:
-        var x2 Tuple2_6string_6string = mtmp0._v0_0
+    switch mtmp0.(type) {
+    case _goml_m_Result_____o_string_c_string_q_____string_Ok:
+        var x2 Tuple2_6string_6string = mtmp0.(_goml_m_Result_____o_string_c_string_q_____string_Ok)._0
         jp0 = x2
         var x0 string = jp0._0
         var x1 string = jp0._1
         var t0 string = x0 + "="
         var t1 string = t0 + x1
         var t2 Result__string__string = Result__string__string{
+            _p0: t1,
             _tag: 0,
-            _v0_0: t1,
         }
         return t2
-    case 1:
-        var x3 string = mtmp0._v1_0
+    case _goml_m_Result_____o_string_c_string_q_____string_Err:
+        var x3 string = mtmp0.(_goml_m_Result_____o_string_c_string_q_____string_Err)._0
         var t3 Result__string__string = Result__string__string{
+            _p0: x3,
             _tag: 1,
-            _v1_0: x3,
         }
         return t3
     default:
@@ -102,11 +109,11 @@ func main0() struct{} {
     var t1 string
     switch t0._tag {
     case 0:
-        var inline8 string = t0._v0_0
+        var inline8 string = t0._p0
         var inline9 string = "ok " + inline8
         t1 = inline9
     case 1:
-        var inline10 string = t0._v1_0
+        var inline10 string = t0._p0
         var inline11 string = "err " + inline10
         t1 = inline11
     default:
@@ -118,11 +125,11 @@ func main0() struct{} {
     var t3 string
     switch t2._tag {
     case 0:
-        var inline2 string = t2._v0_0
+        var inline2 string = t2._p0
         var inline3 string = "ok " + inline2
         t3 = inline3
     case 1:
-        var inline4 string = t2._v1_0
+        var inline4 string = t2._p0
         var inline5 string = "err " + inline4
         t3 = inline5
     default:

@@ -82,12 +82,9 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func accumulate(limit__0 int32) Option__i32 {
     var sum__0 *ref_int32_x
@@ -117,25 +114,18 @@ func accumulate(limit__0 int32) Option__i32 {
                 var mtmp0 Option__i32
                 var inline3 bool = cur__0 == 2
                 if inline3 {
-                    mtmp0 = Option__i32{
-                        _tag: 0,
-                    }
+                    mtmp0 = Option__i32(0)
                 } else {
                     var inline4 int32 = cur__0 + 10
-                    var inline5 Option__i32 = Option__i32{
-                        _tag: 1,
-                        _v1_0: inline4,
-                    }
+                    var inline5 Option__i32 = Option__i32(uint64(int64(inline4) + 2147483648) + 1)
                     mtmp0 = inline5
                 }
                 var jp0 int32
-                switch mtmp0._tag {
-                case 0:
-                    return Option__i32{
-                        _tag: 0,
-                    }
-                case 1:
-                    var x0 int32 = mtmp0._v1_0
+                switch mtmp0 != Option__i32(0) {
+                case false:
+                    return Option__i32(0)
+                case true:
+                    var x0 int32 = int32(int64(uint64(mtmp0) - 1) - 2147483648)
                     jp0 = x0
                     var t6 int32
                     var inline2 int32 = ref_get__Ref_5int32(sum__0)
@@ -154,21 +144,18 @@ func accumulate(limit__0 int32) Option__i32 {
     var t0 int32
     var inline0 int32 = ref_get__Ref_5int32(sum__0)
     t0 = inline0
-    var t1 Option__i32 = Option__i32{
-        _tag: 1,
-        _v1_0: t0,
-    }
+    var t1 Option__i32 = Option__i32(uint64(int64(t0) + 2147483648) + 1)
     return t1
 }
 
 func main0() struct{} {
     var t0 Option__i32 = accumulate(2)
     var t1 string
-    switch t0._tag {
-    case 0:
+    switch t0 != Option__i32(0) {
+    case false:
         t1 = "none"
-    case 1:
-        var inline7 int32 = t0._v1_0
+    case true:
+        var inline7 int32 = int32(int64(uint64(t0) - 1) - 2147483648)
         var inline8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline7)
         var inline9 string = "some=" + inline8
         t1 = inline9
@@ -179,11 +166,11 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline5)
     var t2 Option__i32 = accumulate(4)
     var t3 string
-    switch t2._tag {
-    case 0:
+    switch t2 != Option__i32(0) {
+    case false:
         t3 = "none"
-    case 1:
-        var inline2 int32 = t2._v1_0
+    case true:
+        var inline2 int32 = int32(int64(uint64(t2) - 1) - 2147483648)
         var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
         var inline4 string = "some=" + inline3
         t3 = inline4

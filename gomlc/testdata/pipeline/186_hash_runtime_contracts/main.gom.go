@@ -152,14 +152,9 @@ func hashmap_get__HashMap_12CollisionKey_5int32(m *hashmap_CollisionKey_int32_x,
     var ok bool
     value, ok, _, _ = hashmap_lookup__HashMap_12CollisionKey_5int32(m, key)
     if ok {
-        return Option__i32{
-            _tag: 1,
-            _v1_0: value,
-        }
+        return Option__i32(uint64(int64(value) + 2147483648) + 1)
     }
-    return Option__i32{
-        _tag: 0,
-    }
+    return Option__i32(0)
 }
 
 func hashmap_set__HashMap_12CollisionKey_5int32(m *hashmap_CollisionKey_int32_x, key CollisionKey, value int32) struct{} {
@@ -282,7 +277,7 @@ func hashmap_get__HashMap_18Ref_12CollisionKey_6string(m *hashmap_Ref_12Collisio
     if ok {
         return Option__string{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__string{
@@ -362,7 +357,7 @@ type CollisionKey struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 const (
     Less Ordering = 0
@@ -371,19 +366,16 @@ const (
 )
 
 type Option__Ordering struct {
-    _tag int32
-    _v1_0 Ordering
+    _p0 Ordering
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func _goml_m_trait__impl_i_PartialEq_i_CollisionKey_i_eq(self__0 CollisionKey, other__0 CollisionKey) bool {
     var t0 int32 = self__0.value
@@ -397,14 +389,14 @@ func _goml_m_trait__impl_i_Hash_i_CollisionKey_i_hash(self__0 CollisionKey) uint
 }
 
 func print_opt_int(value__0 Option__i32) struct{} {
-    switch value__0._tag {
-    case 0:
+    switch value__0 != Option__i32(0) {
+    case false:
         var inline0 string = "none"
         var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline0)
         _goml_runtime_core_string_println(inline1)
         return struct{}{}
-    case 1:
-        var x0 int32 = value__0._v1_0
+    case true:
+        var x0 int32 = int32(int64(uint64(value__0) - 1) - 2147483648)
         var inline3 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x0)
         _goml_runtime_core_string_println(inline3)
         return struct{}{}
@@ -449,24 +441,24 @@ func float_comparison_contracts() struct{} {
     var inline5 bool = nan__0 < nan__0
     if inline5 {
         var inline6 Option__Ordering = Option__Ordering{
+            _p0: Less,
             _tag: 1,
-            _v1_0: Less,
         }
         t8 = inline6
     } else {
         var inline7 bool = nan__0 > nan__0
         if inline7 {
             var inline8 Option__Ordering = Option__Ordering{
+                _p0: Greater,
                 _tag: 1,
-                _v1_0: Greater,
             }
             t8 = inline8
         } else {
             var inline9 bool = nan__0 == nan__0
             if inline9 {
                 var inline10 Option__Ordering = Option__Ordering{
+                    _p0: Equal,
                     _tag: 1,
-                    _v1_0: Equal,
                 }
                 t8 = inline10
             } else {
@@ -550,11 +542,11 @@ func collision_contracts() struct{} {
     var t17 Option__i32
     var inline20 Option__i32 = hashmap_get__HashMap_12CollisionKey_5int32(values__0, t16)
     t17 = inline20
-    switch t17._tag {
-    case 0:
+    switch t17 != Option__i32(0) {
+    case false:
         println__T_string("none")
-    case 1:
-        var inline18 int32 = t17._v1_0
+    case true:
+        var inline18 int32 = int32(int64(uint64(t17) - 1) - 2147483648)
         println__T_i32(inline18)
     default:
         panic("non-exhaustive match")
@@ -651,7 +643,7 @@ func reference_contracts() struct{} {
     case 0:
         println__T_string("none")
     case 1:
-        var inline10 string = t7._v1_0
+        var inline10 string = t7._p0
         println__T_string(inline10)
     default:
         panic("non-exhaustive match")
@@ -663,7 +655,7 @@ func reference_contracts() struct{} {
     case 0:
         println__T_string("none")
     case 1:
-        var inline6 string = t8._v1_0
+        var inline6 string = t8._p0
         println__T_string(inline6)
     default:
         panic("non-exhaustive match")
@@ -680,7 +672,7 @@ func reference_contracts() struct{} {
         println__T_string("none")
         return struct{}{}
     case 1:
-        var inline1 string = t10._v1_0
+        var inline1 string = t10._p0
         println__T_string(inline1)
         return struct{}{}
     default:

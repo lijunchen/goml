@@ -63,7 +63,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func optimized(base__0 int, count__0 int) int {
     var index__0 int = 0

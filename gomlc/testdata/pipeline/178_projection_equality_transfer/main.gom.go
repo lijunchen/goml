@@ -71,7 +71,7 @@ type RightSource struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Mark_i_i32_i_marked(self__0 int32) string {
     var t0 string

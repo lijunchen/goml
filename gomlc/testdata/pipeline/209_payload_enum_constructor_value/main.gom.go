@@ -65,30 +65,32 @@ type ParsedFloat struct {
 
 type closure_env_cons_0 struct {}
 
-type Ordering int32
+type Ordering uint8
 
-type List__i32 interface {
-    isList__i32()
+type List__i32 struct {
+    _node *List__i32_node
 }
 
-type Nil struct {}
-
-func (_ Nil) isList__i32() {}
-
-type Cons struct {
-    _0 int32
-    _1 List__i32
+type List__i32_node struct {
+    _p1 List__i32
+    _p0 int32
+    _tag uint8
 }
 
-func (_ Cons) isList__i32() {}
+func _goml_enum_tag_List__i32(value List__i32) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
+}
 
 func sum(values__0 List__i32) int32 {
-    switch values__0.(type) {
-    case Nil:
+    switch _goml_enum_tag_List__i32(values__0) {
+    case 0:
         return 0
-    case Cons:
-        var x0 int32 = values__0.(Cons)._0
-        var x1 List__i32 = values__0.(Cons)._1
+    case 1:
+        var x0 int32 = values__0._node._p0
+        var x1 List__i32 = values__0._node._p1
         var t0 int32 = sum(x1)
         var t1 int32 = x0 + t0
         return t1
@@ -104,7 +106,7 @@ func main0() struct{} {
     }
     var t1 List__i32
     var inline5 int32 = 2
-    var inline6 List__i32 = cons__0(inline5, Nil{})
+    var inline6 List__i32 = cons__0(inline5, List__i32{})
     t1 = inline6
     var values__0 List__i32
     var inline3 int32 = 1
@@ -198,9 +200,12 @@ func decimal_string(value__0 uint64) string {
 }
 
 func _goml_m_inherent_i_closure__env__cons__0_i_closure__env__cons__0_i_apply(env0 closure_env_cons_0, ctor_arg_0 int32, ctor_arg_1 List__i32) List__i32 {
-    var t0 List__i32 = Cons{
-        _0: ctor_arg_0,
-        _1: ctor_arg_1,
+    var t0 List__i32 = List__i32{
+        _node: &List__i32_node{
+            _p0: ctor_arg_0,
+            _p1: ctor_arg_1,
+            _tag: 1,
+        },
     }
     return t0
 }

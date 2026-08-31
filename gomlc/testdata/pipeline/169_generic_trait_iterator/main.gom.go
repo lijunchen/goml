@@ -186,21 +186,18 @@ type closure_env_goml_builtin_range_10 struct {
     end_1 int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func _goml_m_trait__impl_i_Convert_i__l_i32_r__x40_Token_i_convert(self__0 Token) int32 {
@@ -295,11 +292,11 @@ func main0() struct{} {
         var inline15 func() Option__i32 = for_iter0.next_fn
         var inline16 Option__i32 = inline15()
         for_next0 = inline16
-        switch for_next0._tag {
-        case 0:
+        switch for_next0 != Option__i32(0) {
+        case false:
             break Loop_loop0
-        case 1:
-            var x0 int32 = for_next0._v1_0
+        case true:
+            var x0 int32 = int32(int64(uint64(for_next0) - 1) - 2147483648)
             var inline13 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x0)
             _goml_runtime_core_string_println(inline13)
             continue
@@ -402,7 +399,7 @@ func _goml_m_std_p_iter_p_fold____A__isize____I__FnIterator_l_isize_r_____T__isi
         mtmp0 = inline1
         switch mtmp0._tag {
         case 1:
-            var x0 int = mtmp0._v1_0
+            var x0 int = mtmp0._p0
             var t0 int = combine__0(accumulator__0, x0)
             accumulator__0 = t0
             continue
@@ -425,7 +422,7 @@ func _goml_m_std_p_iter_p_collect____I__FnIterator_l_string_r_____T__string(iter
         mtmp0 = inline2
         switch mtmp0._tag {
         case 1:
-            var x0 string = mtmp0._v1_0
+            var x0 string = mtmp0._p0
             vec_push__Vec_6string(values__0, x0)
             continue
         default:
@@ -631,15 +628,10 @@ func _goml_m_inherent_i_closure__en_h39f5b01177a579a305108bc4e47ab576_nter__5_i_
         var inline7 *ref_int32_x = iterator__0.current
         var inline8 int32 = inline4 + 1
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline7, inline8)
-        var inline10 Option__i32 = Option__i32{
-            _tag: 1,
-            _v1_0: inline4,
-        }
+        var inline10 Option__i32 = Option__i32(uint64(int64(inline4) + 2147483648) + 1)
         t0 = inline10
     } else {
-        t0 = Option__i32{
-            _tag: 0,
-        }
+        t0 = Option__i32(0)
     }
     var t1 closure_env_std_iter_map_A_i32_B_i32_I_Counter_4 = closure_env_std_iter_map_A_i32_B_i32_I_Counter_4{
         map_fn_0: map_fn__0,
@@ -647,18 +639,13 @@ func _goml_m_inherent_i_closure__en_h39f5b01177a579a305108bc4e47ab576_nter__5_i_
     var t2 func(int32) int32 = func(p0 int32) int32 {
         return _goml_m_inherent_i_closure__en_h645d7a9bc4d79b01cd03faf046af5461_nter__4_i_apply(t1, p0)
     }
-    switch t0._tag {
-    case 0:
-        return Option__i32{
-            _tag: 0,
-        }
-    case 1:
-        var inline0 int32 = t0._v1_0
+    switch t0 != Option__i32(0) {
+    case false:
+        return Option__i32(0)
+    case true:
+        var inline0 int32 = int32(int64(uint64(t0) - 1) - 2147483648)
         var inline1 int32 = t2(inline0)
-        var inline2 Option__i32 = Option__i32{
-            _tag: 1,
-            _v1_0: inline1,
-        }
+        var inline2 Option__i32 = Option__i32(uint64(int64(inline1) + 2147483648) + 1)
         return inline2
     default:
         panic("non-exhaustive match")
@@ -674,15 +661,12 @@ func _goml_m_inherent_i_closure__en_h920672151d9ffb42cb9c90456440c3f4__i32__6_i_
         var inline0 func() Option__i32 = iterator__0.next_fn
         var inline1 Option__i32 = inline0()
         mtmp0 = inline1
-        switch mtmp0._tag {
-        case 1:
-            var x0 int32 = mtmp0._v1_0
+        switch mtmp0 != Option__i32(0) {
+        case true:
+            var x0 int32 = int32(int64(uint64(mtmp0) - 1) - 2147483648)
             var t0 bool = predicate__0(x0)
             if t0 {
-                var t1 Option__i32 = Option__i32{
-                    _tag: 1,
-                    _v1_0: x0,
-                }
+                var t1 Option__i32 = Option__i32(uint64(int64(x0) + 2147483648) + 1)
                 return t1
             } else {
                 continue
@@ -691,9 +675,7 @@ func _goml_m_inherent_i_closure__en_h920672151d9ffb42cb9c90456440c3f4__i32__6_i_
             break Loop_loop0
         }
     }
-    return Option__i32{
-        _tag: 0,
-    }
+    return Option__i32(0)
 }
 
 func _goml_m_inherent_i_closure__en_h62d5c49070b32f607a729bd540373bb1__i32__7_i_apply(env0 closure_env_std_iter_take_I_FnIterator_i32_7) Option__i32 {
@@ -704,9 +686,7 @@ func _goml_m_inherent_i_closure__en_h62d5c49070b32f607a729bd540373bb1__i32__7_i_
     t0 = inline4
     var t1 bool = t0 == 0
     if t1 {
-        return Option__i32{
-            _tag: 0,
-        }
+        return Option__i32(0)
     } else {
         var t2 int
         var inline3 int = ref_get__Ref_3int(remaining__0)
@@ -744,11 +724,11 @@ func _goml_m_inherent_i_closure__en_h38480fcf7085e17f84e4b3380fa38e2f_size__9_i_
             _tag: 0,
         }
     case 1:
-        var inline0 int = t0._v1_0
+        var inline0 int = t0._p0
         var inline1 string = t2(inline0)
         var inline2 Option__string = Option__string{
+            _p0: inline1,
             _tag: 1,
-            _v1_0: inline1,
         }
         return inline2
     default:
@@ -765,8 +745,8 @@ func _goml_m_inherent_i_closure__en_hfe17758c34b24eefa68773778f3d9cb8_nge__10_i_
         var t1 int = value__0 + 1
         ref_set__Ref_3int(current__0, t1)
         var t2 Option__isize = Option__isize{
+            _p0: value__0,
             _tag: 1,
-            _v1_0: value__0,
         }
         return t2
     } else {

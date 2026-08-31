@@ -69,7 +69,7 @@ type closure_env_global_invoker_1 struct {}
 
 type closure_env_composer_closure_2 struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func double(x__0 int32) int32 {
     var t0 int32 = x__0 * 2

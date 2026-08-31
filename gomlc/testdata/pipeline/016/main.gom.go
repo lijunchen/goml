@@ -63,74 +63,81 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type List__i32 interface {
-    isList__i32()
+type List__i32 struct {
+    _node *List__i32_node
 }
 
-type List__i32_Nil struct {}
-
-func (_ List__i32_Nil) isList__i32() {}
-
-type List__i32_Cons struct {
-    _0 int32
-    _1 List__i32
+type List__i32_node struct {
+    _p1 List__i32
+    _p0 int32
+    _tag uint8
 }
 
-func (_ List__i32_Cons) isList__i32() {}
-
-type List__isize interface {
-    isList__isize()
+func _goml_enum_tag_List__i32(value List__i32) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
 }
 
-type List__isize_Nil struct {}
-
-func (_ List__isize_Nil) isList__isize() {}
-
-type List__isize_Cons struct {
-    _0 int
-    _1 List__isize
+type List__isize struct {
+    _node *List__isize_node
 }
 
-func (_ List__isize_Cons) isList__isize() {}
-
-type _goml_m_List_____o__q_ interface {
-    is_goml_m_List_____o__q_()
+type List__isize_node struct {
+    _p0 int
+    _p1 List__isize
+    _tag uint8
 }
 
-type _goml_m_List_____o__q__Nil struct {}
-
-func (_ _goml_m_List_____o__q__Nil) is_goml_m_List_____o__q_() {}
-
-type _goml_m_List_____o__q__Cons struct {
-    _0 struct{}
-    _1 _goml_m_List_____o__q_
+func _goml_enum_tag_List__isize(value List__isize) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
 }
 
-func (_ _goml_m_List_____o__q__Cons) is_goml_m_List_____o__q_() {}
-
-type List__bool interface {
-    isList__bool()
+type _goml_m_List_____o__q_ struct {
+    _node *_goml_m_List_____o__q__node
 }
 
-type List__bool_Nil struct {}
-
-func (_ List__bool_Nil) isList__bool() {}
-
-type List__bool_Cons struct {
-    _0 bool
-    _1 List__bool
+type _goml_m_List_____o__q__node struct {
+    _p0 _goml_m_List_____o__q_
+    _tag uint8
 }
 
-func (_ List__bool_Cons) isList__bool() {}
+func _goml_enum_tag__goml_m_List_____o__q_(value _goml_m_List_____o__q_) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
+}
+
+type List__bool struct {
+    _node *List__bool_node
+}
+
+type List__bool_node struct {
+    _p1 List__bool
+    _p0 bool
+    _tag uint8
+}
+
+func _goml_enum_tag_List__bool(value List__bool) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
+}
 
 func int_list_length(xs__0 List__i32) int32 {
-    switch xs__0.(type) {
-    case List__i32_Nil:
+    switch _goml_enum_tag_List__i32(xs__0) {
+    case 0:
         return 0
-    case List__i32_Cons:
-        var x0 List__i32 = xs__0.(List__i32_Cons)._1
+    case 1:
+        var x0 List__i32 = xs__0._node._p1
         var t0 int32 = int_list_length(x0)
         var t1 int32 = 1 + t0
         return t1
@@ -140,64 +147,94 @@ func int_list_length(xs__0 List__i32) int32 {
 }
 
 func main0() struct{} {
-    var x__0 List__isize = List__isize_Cons{
-        _0: 1,
-        _1: List__isize_Nil{},
+    var x__0 List__isize = List__isize{
+        _node: &List__isize_node{
+            _p0: 1,
+            _p1: List__isize{},
+            _tag: 1,
+        },
     }
     var length__0 int32 = list_length__T_isize(x__0)
     var inline10 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__0)
     _goml_runtime_core_string_println(inline10)
-    var t0 List__isize = List__isize_Cons{
-        _0: 2,
-        _1: List__isize_Nil{},
+    var t0 List__isize = List__isize{
+        _node: &List__isize_node{
+            _p0: 2,
+            _p1: List__isize{},
+            _tag: 1,
+        },
     }
-    var x__1 List__isize = List__isize_Cons{
-        _0: 1,
-        _1: t0,
+    var x__1 List__isize = List__isize{
+        _node: &List__isize_node{
+            _p0: 1,
+            _p1: t0,
+            _tag: 1,
+        },
     }
     var length__1 int32 = list_length__T_isize(x__1)
     var inline8 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__1)
     _goml_runtime_core_string_println(inline8)
-    var t1 List__i32 = List__i32_Cons{
-        _0: 2,
-        _1: List__i32_Nil{},
+    var t1 List__i32 = List__i32{
+        _node: &List__i32_node{
+            _p0: 2,
+            _p1: List__i32{},
+            _tag: 1,
+        },
     }
-    var t2 List__i32 = List__i32_Cons{
-        _0: 1,
-        _1: t1,
+    var t2 List__i32 = List__i32{
+        _node: &List__i32_node{
+            _p0: 1,
+            _p1: t1,
+            _tag: 1,
+        },
     }
-    var x__2 List__i32 = List__i32_Cons{
-        _0: 0,
-        _1: t2,
+    var x__2 List__i32 = List__i32{
+        _node: &List__i32_node{
+            _p0: 0,
+            _p1: t2,
+            _tag: 1,
+        },
     }
     var length__2 int32 = int_list_length(x__2)
     var inline6 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__2)
     _goml_runtime_core_string_println(inline6)
-    var x__3 _goml_m_List_____o__q_ = _goml_m_List_____o__q__Cons{
-        _0: struct{}{},
-        _1: _goml_m_List_____o__q__Nil{},
+    var x__3 _goml_m_List_____o__q_ = _goml_m_List_____o__q_{
+        _node: &_goml_m_List_____o__q__node{
+            _p0: _goml_m_List_____o__q_{},
+            _tag: 1,
+        },
     }
     var length__3 int32 = _goml_m_list__length____T___o__q_(x__3)
     var inline4 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__3)
     _goml_runtime_core_string_println(inline4)
-    var t3 _goml_m_List_____o__q_ = _goml_m_List_____o__q__Cons{
-        _0: struct{}{},
-        _1: _goml_m_List_____o__q__Nil{},
+    var t3 _goml_m_List_____o__q_ = _goml_m_List_____o__q_{
+        _node: &_goml_m_List_____o__q__node{
+            _p0: _goml_m_List_____o__q_{},
+            _tag: 1,
+        },
     }
-    var x__4 _goml_m_List_____o__q_ = _goml_m_List_____o__q__Cons{
-        _0: struct{}{},
-        _1: t3,
+    var x__4 _goml_m_List_____o__q_ = _goml_m_List_____o__q_{
+        _node: &_goml_m_List_____o__q__node{
+            _p0: t3,
+            _tag: 1,
+        },
     }
     var length__4 int32 = _goml_m_list__length____T___o__q_(x__4)
     var inline2 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__4)
     _goml_runtime_core_string_println(inline2)
-    var t4 List__bool = List__bool_Cons{
-        _0: false,
-        _1: List__bool_Nil{},
+    var t4 List__bool = List__bool{
+        _node: &List__bool_node{
+            _p0: false,
+            _p1: List__bool{},
+            _tag: 1,
+        },
     }
-    var x__5 List__bool = List__bool_Cons{
-        _0: true,
-        _1: t4,
+    var x__5 List__bool = List__bool{
+        _node: &List__bool_node{
+            _p0: true,
+            _p1: t4,
+            _tag: 1,
+        },
     }
     var length__5 int32 = list_length__T_bool(x__5)
     var inline0 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__5)
@@ -206,11 +243,11 @@ func main0() struct{} {
 }
 
 func list_length__T_isize(xs__0 List__isize) int32 {
-    switch xs__0.(type) {
-    case List__isize_Nil:
+    switch _goml_enum_tag_List__isize(xs__0) {
+    case 0:
         return 0
-    case List__isize_Cons:
-        var x0 List__isize = xs__0.(List__isize_Cons)._1
+    case 1:
+        var x0 List__isize = xs__0._node._p1
         var t0 int32 = list_length__T_isize(x0)
         var t1 int32 = 1 + t0
         return t1
@@ -220,11 +257,11 @@ func list_length__T_isize(xs__0 List__isize) int32 {
 }
 
 func _goml_m_list__length____T___o__q_(xs__0 _goml_m_List_____o__q_) int32 {
-    switch xs__0.(type) {
-    case _goml_m_List_____o__q__Nil:
+    switch _goml_enum_tag__goml_m_List_____o__q_(xs__0) {
+    case 0:
         return 0
-    case _goml_m_List_____o__q__Cons:
-        var x0 _goml_m_List_____o__q_ = xs__0.(_goml_m_List_____o__q__Cons)._1
+    case 1:
+        var x0 _goml_m_List_____o__q_ = xs__0._node._p0
         var t0 int32 = _goml_m_list__length____T___o__q_(x0)
         var t1 int32 = 1 + t0
         return t1
@@ -234,11 +271,11 @@ func _goml_m_list__length____T___o__q_(xs__0 _goml_m_List_____o__q_) int32 {
 }
 
 func list_length__T_bool(xs__0 List__bool) int32 {
-    switch xs__0.(type) {
-    case List__bool_Nil:
+    switch _goml_enum_tag_List__bool(xs__0) {
+    case 0:
         return 0
-    case List__bool_Cons:
-        var x0 List__bool = xs__0.(List__bool_Cons)._1
+    case 1:
+        var x0 List__bool = xs__0._node._p1
         var t0 int32 = list_length__T_bool(x0)
         var t1 int32 = 1 + t0
         return t1

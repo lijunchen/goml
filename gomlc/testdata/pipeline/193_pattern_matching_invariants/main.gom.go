@@ -71,41 +71,24 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Never int32
+type Never struct{}
 
-const (
-
-)
-
-type Loop interface {
-    isLoop()
+type Loop struct {
+    _node *Loop_node
 }
 
-type Next struct {
-    _0 Loop
+type Loop_node struct {
+    _p0 Loop
+    _tag uint8
 }
 
-func (_ Next) isLoop() {}
-
-type MaybeNever interface {
-    isMaybeNever()
-}
-
-type Empty struct {}
-
-func (_ Empty) isMaybeNever() {}
-
-type Filled struct {
-    _0 Never
-}
-
-func (_ Filled) isMaybeNever() {}
+type MaybeNever uint8
 
 type Single struct {
-    _tag int32
-    _v0_0 int32
+    _p0 int32
+    _tag uint8
 }
 
 func main0() struct{} {

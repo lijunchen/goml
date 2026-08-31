@@ -30,12 +30,9 @@ type ParsedFloat struct {
 
 type Values struct {}
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func main0() struct{} {
     return struct{}{}

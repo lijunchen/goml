@@ -71,7 +71,7 @@ type Box__i32 struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var t0 Box__isize = Box__isize{

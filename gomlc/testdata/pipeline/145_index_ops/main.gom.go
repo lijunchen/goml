@@ -240,14 +240,9 @@ func hashmap_get__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) 
     var ok bool
     value, ok, _, _ = hashmap_lookup__HashMap_6string_5int32(m, key)
     if ok {
-        return Option__i32{
-            _tag: 1,
-            _v1_0: value,
-        }
+        return Option__i32(uint64(int64(value) + 2147483648) + 1)
     }
-    return Option__i32{
-        _tag: 0,
-    }
+    return Option__i32(0)
 }
 
 func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
@@ -312,12 +307,9 @@ type Holder struct {
     vecs *_goml_vec_Array_2_5int32
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func main0() struct{} {
     var t0 [2]int = [2]int{31, 32}
@@ -370,21 +362,21 @@ func main0() struct{} {
     var value2 int32 = 13
     hashmap_set__HashMap_6string_5int32(map__0, index2, value2)
     var t17 Option__i32 = hashmap_get__HashMap_6string_5int32(map__0, "a")
-    switch t17._tag {
-    case 0:
+    switch t17 != Option__i32(0) {
+    case false:
         println__T_string("none")
-    case 1:
-        var inline17 int32 = t17._v1_0
+    case true:
+        var inline17 int32 = int32(int64(uint64(t17) - 1) - 2147483648)
         println__T_i32(inline17)
     default:
         panic("non-exhaustive match")
     }
     var t18 Option__i32 = hashmap_get__HashMap_6string_5int32(map__0, "missing")
-    switch t18._tag {
-    case 0:
+    switch t18 != Option__i32(0) {
+    case false:
         println__T_string("none")
-    case 1:
-        var inline14 int32 = t18._v1_0
+    case true:
+        var inline14 int32 = int32(int64(uint64(t18) - 1) - 2147483648)
         println__T_i32(inline14)
     default:
         panic("non-exhaustive match")

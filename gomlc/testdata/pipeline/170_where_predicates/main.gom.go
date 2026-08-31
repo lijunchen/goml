@@ -86,7 +86,7 @@ type Wrap__i32 struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Render_i_Vec_l_i32_r__i_render(self__0 *_goml_vec_int32) string {
     var t0 int

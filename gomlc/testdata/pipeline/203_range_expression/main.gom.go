@@ -111,11 +111,11 @@ type closure_env_goml_builtin_range_inclusive_0 struct {
     end_2 int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -240,7 +240,7 @@ func main0() struct{} {
         var inline9 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline8)
         _goml_runtime_core_string_println(inline9)
     case 1:
-        var x0 int = mtmp0._v1_0
+        var x0 int = mtmp0._p0
         var inline11 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x0)
         _goml_runtime_core_string_println(inline11)
     default:
@@ -394,8 +394,8 @@ func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_
             ref_set__Ref_3int(current__0, t3)
         }
         var t2 Option__isize = Option__isize{
+            _p0: value__0,
             _tag: 1,
-            _v1_0: value__0,
         }
         return t2
     }

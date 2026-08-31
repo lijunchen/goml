@@ -67,7 +67,7 @@ type Prefix struct {
     value string
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var direct__0 string

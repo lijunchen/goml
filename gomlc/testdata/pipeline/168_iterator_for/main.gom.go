@@ -169,16 +169,13 @@ type closure_env_goml_builtin_range_1 struct {
     end_1 int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func counted_range(calls__0 *ref_int32_x) FnIterator__isize {
@@ -206,7 +203,7 @@ func first_even(values__0 FnIterator__isize) int {
         case 0:
             break Loop_loop0
         case 1:
-            var x0 int = for_next0._v1_0
+            var x0 int = for_next0._p0
             var t0 int = x0 / 2
             var t1 int = t0 * 2
             var t2 bool = t1 == x0
@@ -301,7 +298,7 @@ func main0() struct{} {
         case 0:
             break Loop_loop2
         case 1:
-            var x1 int = for_next2._v1_0
+            var x1 int = for_next2._p0
             var t15 int
             var inline26 int = ref_get__Ref_3int(range_sum__0)
             t15 = inline26
@@ -360,11 +357,11 @@ func main0() struct{} {
         var inline15 func() Option__i32 = for_iter1.next_fn
         var inline16 Option__i32 = inline15()
         for_next1 = inline16
-        switch for_next1._tag {
-        case 0:
+        switch for_next1 != Option__i32(0) {
+        case false:
             break Loop_loop4
-        case 1:
-            var x0 int32 = for_next1._v1_0
+        case true:
+            var x0 int32 = int32(int64(uint64(for_next1) - 1) - 2147483648)
             var t10 bool = x0 == 2
             if t10 {
                 break Loop_loop4
@@ -630,15 +627,10 @@ func _goml_m_inherent_i_closure__en_hc257e8a36c560f54cbc91ed82b2d188c_down__0_i_
     if t0 {
         var t1 int32 = value__0 - 1
         ref_set__Ref_5int32(current__0, t1)
-        var t2 Option__i32 = Option__i32{
-            _tag: 1,
-            _v1_0: value__0,
-        }
+        var t2 Option__i32 = Option__i32(uint64(int64(value__0) + 2147483648) + 1)
         return t2
     } else {
-        return Option__i32{
-            _tag: 0,
-        }
+        return Option__i32(0)
     }
 }
 
@@ -651,8 +643,8 @@ func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_
         var t1 int = value__0 + 1
         ref_set__Ref_3int(current__0, t1)
         var t2 Option__isize = Option__isize{
+            _p0: value__0,
             _tag: 1,
-            _v1_0: value__0,
         }
         return t2
     } else {

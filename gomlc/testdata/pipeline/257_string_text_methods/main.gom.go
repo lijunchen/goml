@@ -223,36 +223,33 @@ type closure_env_inherent_string_string_char_indices_2 struct {
     self_1 string
 }
 
-type Ordering int32
+type Ordering uint8
 
 type _goml_m_Option_____o_string_c_string_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_6string_6string
+    _p0 Tuple2_6string_6string
+    _tag uint8
 }
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
-type Option__char struct {
-    _tag int32
-    _v1_0 rune
-}
+type Option__char uint64
 
 type _goml_m_Option_____o_isize_c_char_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_3int_4char
+    _p0 Tuple2_3int_4char
+    _tag uint8
 }
 
 type _goml_m_Option_____o_char_c_isize_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_4char_3int
+    _p0 Tuple2_4char_3int
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -321,7 +318,7 @@ func main0() struct{} {
     case 0:
         t32 = inline16
     case 1:
-        var inline17 string = t31._v1_0
+        var inline17 string = t31._p0
         t32 = inline17
     default:
         panic("non-exhaustive match")
@@ -463,7 +460,7 @@ func _goml_m_inherent_i_string_i_string_i_split(self__0 string, separator__0 str
                 vec_push__Vec_6string(result__0, t1)
                 break Loop_loop_expr0
             case 1:
-                var x0 int = mtmp0._v1_0
+                var x0 int = mtmp0._p0
                 var t2 string
                 var inline3 string = string_byte_slice(self__0, start__0, x0)
                 t2 = inline3
@@ -513,7 +510,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__0 *_goml_vec_
         case 0:
             break Loop_loop0
         case 1:
-            var x1 int = for_next1._v1_0
+            var x1 int = for_next1._p0
             var t10 string = vec_get__Vec_6string(self__0, x1)
             var t11 string
             t11 = t10
@@ -557,7 +554,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__0 *_goml_vec_
         case 0:
             break Loop_loop1
         case 1:
-            var x0 int = for_next0._v1_0
+            var x0 int = for_next0._p0
             var t8 bool = x0 > 0
             if t8 {
                 vec_push__Vec_6string(result__0, separator__0)
@@ -595,7 +592,7 @@ func _goml_m_inherent_i_string_i_string_i_split__once(self__0 string, separator_
                 _tag: 0,
             }
         case 1:
-            var x0 int = mtmp0._v1_0
+            var x0 int = mtmp0._p0
             var t1 string
             var inline1 int = 0
             var inline2 string = string_byte_slice(self__0, inline1, x0)
@@ -609,8 +606,8 @@ func _goml_m_inherent_i_string_i_string_i_split__once(self__0 string, separator_
                 _1: t3,
             }
             var t5 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
+                _p0: t4,
                 _tag: 1,
-                _v1_0: t4,
             }
             return t5
         default:
@@ -624,7 +621,7 @@ func _goml_m_inherent_i_Option_i_Op_h43ad6114bf7944dd0f967bbedf6419b6_ing_c_stri
     case 0:
         return fallback__0
     case 1:
-        var x0 Tuple2_6string_6string = self__0._v1_0
+        var x0 Tuple2_6string_6string = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")
@@ -687,7 +684,7 @@ func _goml_m_inherent_i_string_i_string_i_lines(self__0 string) *_goml_vec_strin
         case 0:
             break Loop_loop0
         case 1:
-            var x0 int = for_next0._v1_0
+            var x0 int = for_next0._p0
             var line__0 string = vec_get__Vec_6string(result__0, x0)
             var t4 int
             var inline5 int = _goml_runtime_core_string_len(line__0)
@@ -750,7 +747,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__0 
     case 0:
         return fallback__0
     case 1:
-        var x0 int = self__0._v1_0
+        var x0 int = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")
@@ -778,8 +775,8 @@ func _goml_m_inherent_i_string_i_string_i_rfind(self__0 string, expected__0 stri
                 var t2 bool = _goml_m_inherent_i_string_i_string_i_starts__with__at(self__0, start__0, expected__0)
                 if t2 {
                     var t3 Option__isize = Option__isize{
+                        _p0: start__0,
                         _tag: 1,
-                        _v1_0: start__0,
                     }
                     return t3
                 } else {
@@ -869,10 +866,10 @@ func _goml_m_inherent_i_string_i_string_i_char__count(self__0 string) int {
         var inline0 func() Option__char = for_iter0.next_fn
         var inline1 Option__char = inline0()
         for_next0 = inline1
-        switch for_next0._tag {
-        case 0:
+        switch for_next0 != Option__char(0) {
+        case false:
             break Loop_loop0
-        case 1:
+        case true:
             var compound_old0 int = count__0
             var compound_value0 int = 1
             var t1 int = compound_old0 + compound_value0
@@ -904,8 +901,8 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__0 string, start__0 
         var jp1 Option__isize
         if t1 {
             var t19 Option__isize = Option__isize{
+                _p0: 0,
                 _tag: 1,
-                _v1_0: 0,
             }
             jp1 = t19
         } else {
@@ -918,8 +915,8 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__0 string, start__0 
         var jp2 Option__isize
         if t2 {
             var t18 Option__isize = Option__isize{
+                _p0: 0,
                 _tag: 1,
-                _v1_0: 0,
             }
             jp2 = t18
         } else {
@@ -951,21 +948,21 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__0 string, start__0 
             case 0:
                 break Loop_loop0
             case 1:
-                var x4 Tuple2_3int_4char = for_next0._v1_0
+                var x4 Tuple2_3int_4char = for_next0._p0
                 var x5 int = x4._0
                 var t12 bool = char_index__0 == start__0
                 if t12 {
                     var t17 Option__isize = Option__isize{
+                        _p0: x5,
                         _tag: 1,
-                        _v1_0: x5,
                     }
                     start_byte__0 = t17
                 } else {}
                 var t13 bool = char_index__0 == end__0
                 if t13 {
                     var t16 Option__isize = Option__isize{
+                        _p0: x5,
                         _tag: 1,
-                        _v1_0: x5,
                     }
                     end_byte__0 = t16
                 } else {}
@@ -984,8 +981,8 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__0 string, start__0 
             var inline2 int = _goml_runtime_core_string_len(self__0)
             t10 = inline2
             var t11 Option__isize = Option__isize{
+                _p0: t10,
                 _tag: 1,
-                _v1_0: t10,
             }
             start_byte__0 = t11
         } else {}
@@ -995,8 +992,8 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__0 string, start__0 
             var inline1 int = _goml_runtime_core_string_len(self__0)
             t8 = inline1
             var t9 Option__isize = Option__isize{
+                _p0: t8,
                 _tag: 1,
-                _v1_0: t8,
             }
             end_byte__0 = t9
         } else {}
@@ -1008,16 +1005,16 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__0 string, start__0 
         var x1 Option__isize = mtmp0._1
         switch x1._tag {
         case 1:
-            var x2 int = x1._v1_0
+            var x2 int = x1._p0
             switch x0._tag {
             case 1:
-                var x3 int = x0._v1_0
+                var x3 int = x0._p0
                 var t6 string
                 var inline0 string = string_byte_slice(self__0, x3, x2)
                 t6 = inline0
                 var t7 Option__string = Option__string{
+                    _p0: t6,
                     _tag: 1,
-                    _v1_0: t6,
                 }
                 return t7
             default:
@@ -1059,7 +1056,7 @@ func _goml_m_inherent_i_string_i_string_i_replace(self__0 string, expected__0 st
                 vec_push__Vec_6string(parts__0, t4)
                 break Loop_loop_expr0
             case 1:
-                var x0 int = mtmp0._v1_0
+                var x0 int = mtmp0._p0
                 var t5 string
                 var inline6 string = string_byte_slice(self__0, start__0, x0)
                 t5 = inline6
@@ -1161,7 +1158,7 @@ func _goml_m_inherent_i_string_i_string_i_is__ascii(self__0 string) bool {
         case 0:
             break Loop_loop0
         case 1:
-            var x0 int = for_next0._v1_0
+            var x0 int = for_next0._p0
             var t2 uint8
             var inline0 uint8 = _goml_runtime_core_string_byte_get(self__0, x0)
             t2 = inline0
@@ -1216,7 +1213,7 @@ func _goml_m_inherent_i_string_i_string_i_eq__ignore__ascii__case(self__0 string
             case 0:
                 break Loop_loop0
             case 1:
-                var x0 int = for_next0._v1_0
+                var x0 int = for_next0._p0
                 var t5 uint8
                 var inline4 uint8 = _goml_runtime_core_string_byte_get(self__0, x0)
                 t5 = inline4
@@ -1276,7 +1273,7 @@ func _goml_m_inherent_i_string_i_string_i_to__ascii__lowercase(self__0 string) s
         case 0:
             break Loop_loop0
         case 1:
-            var x1 int = for_next0._v1_0
+            var x1 int = for_next0._p0
             vec_get__Vec_5uint8(values__0, x1)
             var t2 uint8 = vec_get__Vec_5uint8(values__0, x1)
             var value0 uint8
@@ -1332,7 +1329,7 @@ func _goml_m_inherent_i_string_i_string_i_to__ascii__uppercase(self__0 string) s
         case 0:
             break Loop_loop0
         case 1:
-            var x1 int = for_next0._v1_0
+            var x1 int = for_next0._p0
             vec_get__Vec_5uint8(values__0, x1)
             var t2 uint8 = vec_get__Vec_5uint8(values__0, x1)
             var value0 uint8
@@ -1429,8 +1426,8 @@ func string_find_from(value__0 string, expected__0 string, start__0 int) Option_
         var t1 bool = expected_len__0 == 0
         if t1 {
             var t2 Option__isize = Option__isize{
+                _p0: start__0,
                 _tag: 1,
-                _v1_0: start__0,
             }
             return t2
         } else {
@@ -1450,8 +1447,8 @@ func string_find_from(value__0 string, expected__0 string, start__0 int) Option_
                         var t6 bool = _goml_m_inherent_i_string_i_string_i_starts__with__at(value__0, index__0, expected__0)
                         if t6 {
                             var t7 Option__isize = Option__isize{
+                                _p0: index__0,
                                 _tag: 1,
-                                _v1_0: index__0,
                             }
                             return t7
                         } else {
@@ -1742,12 +1739,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
         if t2 {
             var inline0 int = 1
             var inline1 Option__char = __goml_builtin_char_from_uint32(first__0)
-            switch inline1._tag {
-            case 0:
+            switch inline1 != Option__char(0) {
+            case false:
                 var inline2 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline2
-            case 1:
-                var inline3 rune = inline1._v1_0
+            case true:
+                var inline3 rune = rune(uint64(inline1) - 1)
                 var inline4 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline3,
@@ -1806,12 +1803,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             var t13 uint32 = t11 | t12
                             var inline7 int = 2
                             var inline8 Option__char = __goml_builtin_char_from_uint32(t13)
-                            switch inline8._tag {
-                            case 0:
+                            switch inline8 != Option__char(0) {
+                            case false:
                                 var inline9 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline9
-                            case 1:
-                                var inline10 rune = inline8._v1_0
+                            case true:
+                                var inline10 rune = rune(uint64(inline8) - 1)
                                 var inline11 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline10,
@@ -1896,12 +1893,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 var t28 uint32 = t26 | t27
                                 var inline17 int = 3
                                 var inline18 Option__char = __goml_builtin_char_from_uint32(t28)
-                                switch inline18._tag {
-                                case 0:
+                                switch inline18 != Option__char(0) {
+                                case false:
                                     var inline19 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline19
-                                case 1:
-                                    var inline20 rune = inline18._v1_0
+                                case true:
+                                    var inline20 rune = rune(uint64(inline18) - 1)
                                     var inline21 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline20,
@@ -2129,15 +2126,10 @@ func __goml_builtin_char_from_uint32(value__0 uint32) Option__char {
     if t0 {
         var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
         var x0 rune = mtmp0._1
-        var t1 Option__char = Option__char{
-            _tag: 1,
-            _v1_0: x0,
-        }
+        var t1 Option__char = Option__char(uint64(uint32(x0)) + 1)
         return t1
     } else {
-        return Option__char{
-            _tag: 0,
-        }
+        return Option__char(0)
     }
 }
 
@@ -2168,8 +2160,8 @@ func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_
         var t1 int = value__0 + 1
         ref_set__Ref_3int(current__0, t1)
         var t2 Option__isize = Option__isize{
+            _p0: value__0,
             _tag: 1,
-            _v1_0: value__0,
         }
         return t2
     } else {
@@ -2199,15 +2191,10 @@ func _goml_m_inherent_i_closure__en_h6cc414bec6b61ab808929b69f0900e8f_hars__1_i_
         var compound_old0 int = ref_get__Ref_3int(index__0)
         var t1 int = compound_old0 + x1
         ref_set__Ref_3int(index__0, t1)
-        var t3 Option__char = Option__char{
-            _tag: 1,
-            _v1_0: x0,
-        }
+        var t3 Option__char = Option__char(uint64(uint32(x0)) + 1)
         return t3
     } else {
-        return Option__char{
-            _tag: 0,
-        }
+        return Option__char(0)
     }
 }
 
@@ -2235,8 +2222,8 @@ func _goml_m_inherent_i_closure__en_hce113b295882d0c03e72873edb11c646_ices__2_i_
             _1: x0,
         }
         var t2 _goml_m_Option_____o_isize_c_char_q_ = _goml_m_Option_____o_isize_c_char_q_{
+            _p0: t1,
             _tag: 1,
-            _v1_0: t1,
         }
         return t2
     } else {

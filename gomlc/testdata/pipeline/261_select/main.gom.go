@@ -91,16 +91,16 @@ type closure_env_read_0 struct {
     value_0 Option__isize
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -116,8 +116,8 @@ func main0() struct{} {
     case _goml_m_value____1_i_select__value, _goml_m_value____1_i_select__open = <-received__0:
         if _goml_m_value____1_i_select__open {
             value__1 = Option__isize{
+                _p0: _goml_m_value____1_i_select__value,
                 _tag: 1,
-                _v1_0: _goml_m_value____1_i_select__value,
             }
         }
         var t7 closure_env_read_0 = closure_env_read_0{
@@ -149,7 +149,7 @@ func main0() struct{} {
     case 0:
         t1 = inline36
     case 1:
-        var inline37 string = t0._v1_0
+        var inline37 string = t0._p0
         t1 = inline37
     default:
         panic("non-exhaustive match")
@@ -239,8 +239,8 @@ func main0() struct{} {
     case _goml_m_value____0_i_select__value, _goml_m_value____0_i_select__open = <-received__0:
         if _goml_m_value____0_i_select__open {
             value__0 = Option__isize{
+                _p0: _goml_m_value____0_i_select__value,
                 _tag: 1,
-                _v1_0: _goml_m_value____0_i_select__value,
             }
         }
         switch value__0._tag {
@@ -311,8 +311,8 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__0 cha
     var x1 bool = mtmp0._1
     if x1 {
         var t0 Option__string = Option__string{
+            _p0: x0,
             _tag: 1,
-            _v1_0: x0,
         }
         return t0
     } else {
@@ -428,7 +428,7 @@ func _goml_m_inherent_i_closure__env__read__0_i_closure__env__read__0_i_apply(en
     case 0:
         return inline0
     case 1:
-        var inline1 int = value__0._v1_0
+        var inline1 int = value__0._p0
         return inline1
     default:
         panic("non-exhaustive match")

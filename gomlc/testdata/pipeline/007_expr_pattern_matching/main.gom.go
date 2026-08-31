@@ -63,40 +63,29 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Expr interface {
-    isExpr()
+type Expr struct {
+    _node *Expr_node
 }
 
-type Zero struct {}
-
-func (_ Zero) isExpr() {}
-
-type Succ struct {
-    _0 Expr
+type Expr_node struct {
+    _p0 Expr
+    _p1 Expr
+    _tag uint8
 }
 
-func (_ Succ) isExpr() {}
-
-type Add struct {
-    _0 Expr
-    _1 Expr
+func _goml_enum_tag_Expr(value Expr) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
 }
-
-func (_ Add) isExpr() {}
-
-type Mul struct {
-    _0 Expr
-    _1 Expr
-}
-
-func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var x0 Expr = Zero{}
-    switch x0.(type) {
-    case Zero:
+    var x0 Expr = Expr{}
+    switch _goml_enum_tag_Expr(x0) {
+    case 0:
         var inline0 int = 3
         var inline1 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline0)
         _goml_runtime_core_string_print(inline1)

@@ -98,7 +98,7 @@ type S struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 type dyn__ToString_vtable struct {
     to_string func(any) string

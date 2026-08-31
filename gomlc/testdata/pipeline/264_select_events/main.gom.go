@@ -546,56 +546,49 @@ type closure_env_inherent_Slice_Slice_T_iter_T_u8_6 struct {
     self_2 []uint8
 }
 
-type Ordering int32
+type Ordering uint8
 
-type _goml_m_std_p_io_p_ErrorKind int32
+type _goml_m_std_p_io_p_ErrorKind uint8
 
-type _goml_m_std_p_task_p_WaitResult_____o__q_ struct {
-    _tag int32
-    _v0_0 struct{}
-}
+type _goml_m_std_p_task_p_WaitResult_____o__q_ uint8
 
-type Option__u8 struct {
-    _tag int32
-    _v1_0 uint8
-}
+type Option__u8 uint16
 
 type _goml_m_Option____Slice_l_u8_r_ struct {
-    _tag int32
-    _v1_0 []uint8
+    _p0 []uint8
+    _tag uint8
 }
 
 type _goml_m_Option____MutSlice_l_u8_r_ struct {
-    _tag int32
-    _v1_0 []uint8
+    _p0 []uint8
+    _tag uint8
 }
 
 type _goml_m_Result____string____std_p_utf8_p_Utf8Error struct {
-    _tag int32
-    _v0_0 string
-    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
+    _p1 _goml_m_std_p_utf8_p_Utf8Error
+    _p0 string
+    _tag uint8
 }
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error struct {
-    _tag int32
-    _v0_0 struct{}
-    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
+    _p0 _goml_m_std_p_utf8_p_Utf8Error
+    _tag uint8
 }
 
 type _goml_m_Result____isize____std_p_bytes_p_BoundsError struct {
-    _tag int32
-    _v0_0 int
-    _v1_0 _goml_m_std_p_bytes_p_BoundsError
+    _p1 _goml_m_std_p_bytes_p_BoundsError
+    _p0 int
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error interface {
@@ -647,8 +640,8 @@ type _goml_m_Result_____o__q_____std_p_io_p_Error_Err struct {
 func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Err) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
 type _goml_m_Option____std_p_time_p_Duration struct {
-    _tag int32
-    _v1_0 _goml_m_std_p_time_p_Duration
+    _p0 _goml_m_std_p_time_p_Duration
+    _tag uint8
 }
 
 type _goml_m_Result____std_p_time_p_SystemTime____std_p_time_p_Error interface {
@@ -683,15 +676,14 @@ type _goml_m_Result____std_p_time_p_Duration____std_p_time_p_Error_Err struct {
 
 func (_ _goml_m_Result____std_p_time_p_Duration____std_p_time_p_Error_Err) is_goml_m_Result____std_p_time_p_Duration____std_p_time_p_Error() {}
 
-type _goml_m_Option_____o__q_ struct {
-    _tag int32
-    _v1_0 struct{}
-}
+type _goml_m_Option_____o__q_ uint8
 
-type Option__char struct {
-    _tag int32
-    _v1_0 rune
-}
+const (
+    _goml_m_Option_____o__q__None _goml_m_Option_____o__q_ = 0
+    _goml_m_Option_____o__q__Some _goml_m_Option_____o__q_ = 1
+)
+
+type Option__char uint64
 
 func _goml_m_std_p_internal_p_task_p_root__scope() _goml_m_std_p_internal_p_task_p_ScopeHandle {
     var t0 int64
@@ -842,9 +834,7 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t5, p0)
     }
     var inline6 _goml_m_std_p_internal_p_task_p_ScopeHandle = _goml_m_std_p_internal_p_task_p_root__scope()
-    var inline7 *ref__goml_m_Option_____o__q__x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(_goml_m_Option_____o__q_{
-        _tag: 0,
-    })
+    var inline7 *ref__goml_m_Option_____o__q__x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(_goml_m_Option_____o__q__None)
     var inline8 closure_env_std_task_scope_T_4 = closure_env_std_task_scope_T_4{
         result_0: inline7,
         body_1: t6,
@@ -860,9 +850,7 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t7, p0)
     }
     var inline0 _goml_m_std_p_internal_p_task_p_ScopeHandle = _goml_m_std_p_internal_p_task_p_root__scope()
-    var inline1 *ref__goml_m_Option_____o__q__x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(_goml_m_Option_____o__q_{
-        _tag: 0,
-    })
+    var inline1 *ref__goml_m_Option_____o__q__x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(_goml_m_Option_____o__q__None)
     var inline2 closure_env_std_task_scope_T_4 = closure_env_std_task_scope_T_4{
         result_0: inline1,
         body_1: t8,
@@ -905,7 +893,7 @@ func _goml_m_inherent_i_std_p_task__h53c24a9f0a217bb05f370161a3b86100_oin____T__
         mtmp1 = inline0
         switch mtmp1._tag {
         case 1:
-            var x0 int = mtmp1._v1_0
+            var x0 int = mtmp1._p0
             jp0 = x0
             break Loop_loop_expr0
         default:
@@ -937,8 +925,8 @@ func _goml_m_std_p_task_p_completed__scope__value____T___o__q_(result__0 *ref__g
         var mtmp0 _goml_m_Option_____o__q_
         var inline0 _goml_m_Option_____o__q_ = ref_get___goml_m_Ref__10Option_____o__q_(result__0)
         mtmp0 = inline0
-        switch mtmp0._tag {
-        case 1:
+        switch mtmp0 {
+        case _goml_m_Option_____o__q__Some:
             break Loop_loop_expr0
         default:
             continue
@@ -1114,11 +1102,8 @@ func _goml_m_inherent_i_closure__en_h6c80997b879087eace67255463410634_e__T__4_i_
     var t0 _goml_m_std_p_task_p_Scope = _goml_m_std_p_task_p_Scope{
         handle: handle__0,
     }
-    var t1 struct{} = body__0(t0)
-    var t2 _goml_m_Option_____o__q_ = _goml_m_Option_____o__q_{
-        _tag: 1,
-        _v1_0: t1,
-    }
+    body__0(t0)
+    var t2 _goml_m_Option_____o__q_ = _goml_m_Option_____o__q__Some
     ref_set___goml_m_Ref__10Option_____o__q_(result__0, t2)
     return struct{}{}
 }
@@ -1130,8 +1115,8 @@ func _goml_m_inherent_i_closure__en_h928008e92c5c30e99d0f6f5d21779a91_size__5_i_
     var ready__0 chan struct{} = env0.ready_3
     var t0 int = body__0(token__0)
     var t1 Option__isize = Option__isize{
+        _p0: t0,
         _tag: 1,
-        _v1_0: t0,
     }
     ref_set__Ref_13Option__isize(result__0, t1)
     func(p0 chan struct{}) struct{} {

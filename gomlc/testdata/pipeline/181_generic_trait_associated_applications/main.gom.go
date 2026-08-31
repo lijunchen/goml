@@ -65,7 +65,7 @@ type ParsedFloat struct {
 
 type Value struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var text__0 string

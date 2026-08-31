@@ -63,19 +63,16 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Mode int32
+type Mode uint8
 
 const (
     Take Mode = 0
     Skip Mode = 1
 )
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func nested(top__0 bool, mode__0 Mode, inner_flag__0 bool) Option__i32 {
     var jp0 int32
@@ -84,41 +81,28 @@ func nested(top__0 bool, mode__0 Mode, inner_flag__0 bool) Option__i32 {
         case Take:
             var mtmp0 Option__i32
             if inner_flag__0 {
-                var inline0 Option__i32 = Option__i32{
-                    _tag: 1,
-                    _v1_0: 8,
-                }
+                var inline0 Option__i32 = Option__i32(uint64(int64(8) + 2147483648) + 1)
                 mtmp0 = inline0
             } else {
-                mtmp0 = Option__i32{
-                    _tag: 0,
-                }
+                mtmp0 = Option__i32(0)
             }
             var jp1 int32
-            switch mtmp0._tag {
-            case 0:
-                return Option__i32{
-                    _tag: 0,
-                }
-            case 1:
-                var x0 int32 = mtmp0._v1_0
+            switch mtmp0 != Option__i32(0) {
+            case false:
+                return Option__i32(0)
+            case true:
+                var x0 int32 = int32(int64(uint64(mtmp0) - 1) - 2147483648)
                 jp1 = x0
                 var t1 int32 = jp1 + 1
                 jp0 = t1
-                var t0 Option__i32 = Option__i32{
-                    _tag: 1,
-                    _v1_0: jp0,
-                }
+                var t0 Option__i32 = Option__i32(uint64(int64(jp0) + 2147483648) + 1)
                 return t0
             default:
                 panic("non-exhaustive match")
             }
         case Skip:
             jp0 = 20
-            var t0 Option__i32 = Option__i32{
-                _tag: 1,
-                _v1_0: jp0,
-            }
+            var t0 Option__i32 = Option__i32(uint64(int64(jp0) + 2147483648) + 1)
             return t0
         default:
             panic("non-exhaustive match")
@@ -126,31 +110,21 @@ func nested(top__0 bool, mode__0 Mode, inner_flag__0 bool) Option__i32 {
     } else {
         var mtmp1 Option__i32
         if inner_flag__0 {
-            var inline1 Option__i32 = Option__i32{
-                _tag: 1,
-                _v1_0: 8,
-            }
+            var inline1 Option__i32 = Option__i32(uint64(int64(8) + 2147483648) + 1)
             mtmp1 = inline1
         } else {
-            mtmp1 = Option__i32{
-                _tag: 0,
-            }
+            mtmp1 = Option__i32(0)
         }
         var jp2 int32
-        switch mtmp1._tag {
-        case 0:
-            return Option__i32{
-                _tag: 0,
-            }
-        case 1:
-            var x1 int32 = mtmp1._v1_0
+        switch mtmp1 != Option__i32(0) {
+        case false:
+            return Option__i32(0)
+        case true:
+            var x1 int32 = int32(int64(uint64(mtmp1) - 1) - 2147483648)
             jp2 = x1
             var t2 int32 = jp2 + 2
             jp0 = t2
-            var t0 Option__i32 = Option__i32{
-                _tag: 1,
-                _v1_0: jp0,
-            }
+            var t0 Option__i32 = Option__i32(uint64(int64(jp0) + 2147483648) + 1)
             return t0
         default:
             panic("non-exhaustive match")
@@ -161,11 +135,11 @@ func nested(top__0 bool, mode__0 Mode, inner_flag__0 bool) Option__i32 {
 func main0() struct{} {
     var t0 Option__i32 = nested(true, Take, true)
     var t1 string
-    switch t0._tag {
-    case 0:
+    switch t0 != Option__i32(0) {
+    case false:
         t1 = "none"
-    case 1:
-        var inline12 int32 = t0._v1_0
+    case true:
+        var inline12 int32 = int32(int64(uint64(t0) - 1) - 2147483648)
         var inline13 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline12)
         var inline14 string = "some=" + inline13
         t1 = inline14
@@ -176,11 +150,11 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline10)
     var t2 Option__i32 = nested(true, Skip, false)
     var t3 string
-    switch t2._tag {
-    case 0:
+    switch t2 != Option__i32(0) {
+    case false:
         t3 = "none"
-    case 1:
-        var inline7 int32 = t2._v1_0
+    case true:
+        var inline7 int32 = int32(int64(uint64(t2) - 1) - 2147483648)
         var inline8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline7)
         var inline9 string = "some=" + inline8
         t3 = inline9
@@ -191,11 +165,11 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline5)
     var t4 Option__i32 = nested(false, Take, false)
     var t5 string
-    switch t4._tag {
-    case 0:
+    switch t4 != Option__i32(0) {
+    case false:
         t5 = "none"
-    case 1:
-        var inline2 int32 = t4._v1_0
+    case true:
+        var inline2 int32 = int32(int64(uint64(t4) - 1) - 2147483648)
         var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
         var inline4 string = "some=" + inline3
         t5 = inline4

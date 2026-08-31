@@ -98,7 +98,7 @@ func hashmap_get__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint) Opti
     if ok {
         return Option__string{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__string{
@@ -158,11 +158,11 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -214,7 +214,7 @@ func main0() struct{} {
         _goml_runtime_core_string_println(inline1)
         return struct{}{}
     case 1:
-        var x0 string = mtmp0._v1_0
+        var x0 string = mtmp0._p0
         var inline3 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x0)
         _goml_runtime_core_string_println(inline3)
         return struct{}{}

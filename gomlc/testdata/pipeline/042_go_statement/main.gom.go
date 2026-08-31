@@ -51,7 +51,7 @@ type closure_env_main_0 struct {
     signal_0 *ref_int32_x
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var signal__0 *ref_int32_x

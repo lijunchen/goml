@@ -139,7 +139,7 @@ func hashmap_get__HashMap_6string_3int(m *hashmap_string_int_x, key string) Opti
     if ok {
         return Option__isize{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__isize{
@@ -214,11 +214,11 @@ type Point struct {
     y int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func record(log__0 *ref_string_x, label__0 string, value__0 int) int {
@@ -423,7 +423,7 @@ func main0() struct{} {
     case 0:
         jp0 = "missing"
     case 1:
-        var x0 int = mtmp0._v1_0
+        var x0 int = mtmp0._p0
         var inline9 string = __goml_builtin_int_to_string(x0)
         jp0 = inline9
     default:

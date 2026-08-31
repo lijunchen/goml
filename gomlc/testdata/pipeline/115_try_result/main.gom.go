@@ -67,12 +67,12 @@ type closure_env_run_0 struct {
     flag_0 bool
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Result__i32__string struct {
-    _tag int32
-    _v0_0 int32
-    _v1_0 string
+    _p1 string
+    _p0 int32
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -89,12 +89,12 @@ func main0() struct{} {
     var t1 string
     switch t0._tag {
     case 0:
-        var inline13 int32 = t0._v0_0
+        var inline13 int32 = t0._p0
         var inline14 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline13)
         var inline15 string = "ok=" + inline14
         t1 = inline15
     case 1:
-        var inline16 string = t0._v1_0
+        var inline16 string = t0._p1
         var inline17 string = "err=" + inline16
         t1 = inline17
     default:
@@ -115,12 +115,12 @@ func main0() struct{} {
     var t3 string
     switch t2._tag {
     case 0:
-        var inline2 int32 = t2._v0_0
+        var inline2 int32 = t2._p0
         var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
         var inline4 string = "ok=" + inline3
         t3 = inline4
     case 1:
-        var inline5 string = t2._v1_0
+        var inline5 string = t2._p1
         var inline6 string = "err=" + inline5
         t3 = inline6
     default:
@@ -219,36 +219,36 @@ func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env0
     var mtmp0 Result__i32__string
     if flag__0 {
         var inline2 Result__i32__string = Result__i32__string{
+            _p0: 7,
             _tag: 0,
-            _v0_0: 7,
         }
         mtmp0 = inline2
     } else {
         var inline3 Result__i32__string = Result__i32__string{
+            _p1: "nope",
             _tag: 1,
-            _v1_0: "nope",
         }
         mtmp0 = inline3
     }
     var jp0 int32
     switch mtmp0._tag {
     case 0:
-        var x0 int32 = mtmp0._v0_0
+        var x0 int32 = mtmp0._p0
         jp0 = x0
         var t0 int32
         var inline0 int32 = 1
         var inline1 int32 = jp0 + inline0
         t0 = inline1
         var t1 Result__i32__string = Result__i32__string{
+            _p0: t0,
             _tag: 0,
-            _v0_0: t0,
         }
         return t1
     case 1:
-        var x1 string = mtmp0._v1_0
+        var x1 string = mtmp0._p1
         var t2 Result__i32__string = Result__i32__string{
+            _p1: x1,
             _tag: 1,
-            _v1_0: x1,
         }
         return t2
     default:

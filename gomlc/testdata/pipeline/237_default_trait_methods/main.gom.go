@@ -34,7 +34,7 @@ type DefaultValue struct {
 
 type OverrideValue struct {}
 
-type Ordering int32
+type Ordering uint8
 
 type dyn__Describe_vtable struct {
     name func(any) string

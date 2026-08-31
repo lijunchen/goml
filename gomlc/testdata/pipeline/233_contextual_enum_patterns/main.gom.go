@@ -121,11 +121,11 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Second struct {
-    _tag int32
-    _v0_0 int
+    _p0 int
+    _tag uint8
 }
 
 type First__isize interface {
@@ -150,24 +150,24 @@ type Data struct {
 func (_ Data) isFirst__isize() {}
 
 type Result__isize__string struct {
-    _tag int32
-    _v0_0 int
-    _v1_0 string
+    _p1 string
+    _p0 int
+    _tag uint8
 }
 
 type Option__Result__isize__string struct {
-    _tag int32
-    _v1_0 Result__isize__string
+    _p0 Result__isize__string
+    _tag uint8
 }
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type Boxed__isize struct {
-    _tag int32
-    _v0_0 int
+    _p0 int
+    _tag uint8
 }
 
 func classify(value__0 First__isize) string {
@@ -200,17 +200,17 @@ func nested(value__0 Option__Result__isize__string) string {
     case 0:
         return "none"
     case 1:
-        var x0 Result__isize__string = value__0._v1_0
+        var x0 Result__isize__string = value__0._p0
         switch x0._tag {
         case 0:
-            var x1 int = x0._v0_0
+            var x1 int = x0._p0
             var t0 string
             var inline0 string = __goml_builtin_int_to_string(x1)
             t0 = inline0
             var t1 string = "ok:" + t0
             return t1
         case 1:
-            var x2 string = x0._v1_0
+            var x2 string = x0._p1
             var t2 string = "err:" + x2
             return t2
         default:
@@ -236,7 +236,7 @@ func take_once(value__0 Option__isize) int {
         mtmp0 = inline3
         switch mtmp0._tag {
         case 1:
-            var x0 int = mtmp0._v1_0
+            var x0 int = mtmp0._p0
             ref_set__Ref_3int(result__0, x0)
             ref_set__Ref_13Option__isize(current__0, Option__isize{
                 _tag: 0,
@@ -266,7 +266,7 @@ func sum_boxed(values__0 *_goml_vec_Boxed__isize) int {
             for_index0 = t1
             switch for_item0._tag {
             case 0:
-                var x0 int = for_item0._v0_0
+                var x0 int = for_item0._p0
                 var t2 int
                 var inline2 int = ref_get__Ref_3int(result__0)
                 t2 = inline2
@@ -286,12 +286,12 @@ func sum_boxed(values__0 *_goml_vec_Boxed__isize) int {
 
 func main0() struct{} {
     var t0 Boxed__isize = Boxed__isize{
+        _p0: 19,
         _tag: 0,
-        _v0_0: 19,
     }
     var t1 Boxed__isize = Boxed__isize{
+        _p0: 23,
         _tag: 0,
-        _v0_0: 23,
     }
     var t2 [2]Boxed__isize = [2]Boxed__isize{t0, t1}
     var boxed__0 *_goml_vec_Boxed__isize = func(values [2]Boxed__isize) *_goml_vec_Boxed__isize {
@@ -317,22 +317,22 @@ func main0() struct{} {
     var t7 string = classify(t6)
     println__T_string(t7)
     var t8 Result__isize__string = Result__isize__string{
+        _p0: 11,
         _tag: 0,
-        _v0_0: 11,
     }
     var t9 Option__Result__isize__string = Option__Result__isize__string{
+        _p0: t8,
         _tag: 1,
-        _v1_0: t8,
     }
     var t10 string = nested(t9)
     println__T_string(t10)
     var t11 Result__isize__string = Result__isize__string{
+        _p1: "bad",
         _tag: 1,
-        _v1_0: "bad",
     }
     var t12 Option__Result__isize__string = Option__Result__isize__string{
+        _p0: t11,
         _tag: 1,
-        _v1_0: t11,
     }
     var t13 string = nested(t12)
     println__T_string(t13)
@@ -359,8 +359,8 @@ func main0() struct{} {
     var inline7 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t18)
     _goml_runtime_core_string_println(inline7)
     var t19 Option__isize = Option__isize{
+        _p0: 15,
         _tag: 1,
-        _v1_0: 15,
     }
     var t20 int = take_once(t19)
     var inline5 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t20)

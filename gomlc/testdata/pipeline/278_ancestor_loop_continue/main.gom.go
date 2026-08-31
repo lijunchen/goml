@@ -82,7 +82,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func grandparent_continue() int {
     var rounds__0 *ref_int_x

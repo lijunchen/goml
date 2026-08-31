@@ -305,53 +305,49 @@ type closure_env_inherent_Slice_Slice_T_iter_T_u8_4 struct {
     self_2 []uint8
 }
 
-type Ordering int32
+type Ordering uint8
 
-type _goml_m_std_p_io_p_ErrorKind int32
+type _goml_m_std_p_io_p_ErrorKind uint8
 
-type _goml_m_std_p_text_p_PositionEncoding int32
+type _goml_m_std_p_text_p_PositionEncoding uint8
 
-type Option__u8 struct {
-    _tag int32
-    _v1_0 uint8
-}
+type Option__u8 uint16
 
 type _goml_m_Option____Slice_l_u8_r_ struct {
-    _tag int32
-    _v1_0 []uint8
+    _p0 []uint8
+    _tag uint8
 }
 
 type _goml_m_Option____MutSlice_l_u8_r_ struct {
-    _tag int32
-    _v1_0 []uint8
+    _p0 []uint8
+    _tag uint8
 }
 
 type _goml_m_Result____string____std_p_utf8_p_Utf8Error struct {
-    _tag int32
-    _v0_0 string
-    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
+    _p1 _goml_m_std_p_utf8_p_Utf8Error
+    _p0 string
+    _tag uint8
 }
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error struct {
-    _tag int32
-    _v0_0 struct{}
-    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
+    _p0 _goml_m_std_p_utf8_p_Utf8Error
+    _tag uint8
 }
 
 type _goml_m_Result____isize____std_p_bytes_p_BoundsError struct {
-    _tag int32
-    _v0_0 int
-    _v1_0 _goml_m_std_p_bytes_p_BoundsError
+    _p1 _goml_m_std_p_bytes_p_BoundsError
+    _p0 int
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error interface {
@@ -403,13 +399,13 @@ type _goml_m_Result_____o__q_____std_p_io_p_Error_Err struct {
 func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Err) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
 type _goml_m_Option_____o_isize_c_char_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_3int_4char
+    _p0 Tuple2_3int_4char
+    _tag uint8
 }
 
 type _goml_m_Option_____o_string_c_string_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_6string_6string
+    _p0 Tuple2_6string_6string
+    _tag uint8
 }
 
 type _goml_m_Result____string____std_p_env_p_VarError interface {
@@ -429,14 +425,11 @@ type _goml_m_Result____string____std_p_env_p_VarError_Err struct {
 func (_ _goml_m_Result____string____std_p_env_p_VarError_Err) is_goml_m_Result____string____std_p_env_p_VarError() {}
 
 type _goml_m_Option_____o_char_c_isize_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_4char_3int
+    _p0 Tuple2_4char_3int
+    _tag uint8
 }
 
-type Option__char struct {
-    _tag int32
-    _v1_0 rune
-}
+type Option__char uint64
 
 func _goml_m_std_p_internal_p_host_p_args() *_goml_vec_string {
     var t0 *_goml_vec_string = _goml_runtime_std_env_args()

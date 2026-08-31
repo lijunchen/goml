@@ -83,21 +83,21 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type _goml_m_Option____MutSlice_l_isize_r_ struct {
-    _tag int32
-    _v1_0 []int
+    _p0 []int
+    _tag uint8
 }
 
 type _goml_m_Option____Slice_l_isize_r_ struct {
-    _tag int32
-    _v1_0 []int
+    _p0 []int
+    _tag uint8
 }
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -162,7 +162,7 @@ func main0() struct{} {
     switch mtmp0._tag {
     case 0:
     case 1:
-        var x0 []int = mtmp0._v1_0
+        var x0 []int = mtmp0._p0
         _goml_m_inherent_i_MutSlice_i_MutSlice_l_T_r__i_fill____T__isize(x0, 6)
     default:
         panic("non-exhaustive match")
@@ -218,8 +218,8 @@ func main0() struct{} {
     } else {
         var inline7 int = t11[inline4]
         var inline8 Option__isize = Option__isize{
+            _p0: inline7,
             _tag: 1,
-            _v1_0: inline7,
         }
         t12 = inline8
         var t13 bool
@@ -323,8 +323,8 @@ func _goml_m_inherent_i_MutSlice_i_MutSlice_l_T_r__i_sub__checked____T__isize(se
         var inline0 []int = self__0[start__0:end__0]
         t1 = inline0
         var t2 _goml_m_Option____MutSlice_l_isize_r_ = _goml_m_Option____MutSlice_l_isize_r_{
+            _p0: t1,
             _tag: 1,
-            _v1_0: t1,
         }
         return t2
     }
@@ -383,8 +383,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice__checked____T__isize(self__0 *_
     } else {
         var t1 []int = self__0.items[start__0:end__0]
         var t2 _goml_m_Option____Slice_l_isize_r_ = _goml_m_Option____Slice_l_isize_r_{
+            _p0: t1,
             _tag: 1,
-            _v1_0: t1,
         }
         return t2
     }

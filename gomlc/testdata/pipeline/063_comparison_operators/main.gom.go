@@ -36,7 +36,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func test_int_comparisons() struct{} {
     var a__0 int32 = 10

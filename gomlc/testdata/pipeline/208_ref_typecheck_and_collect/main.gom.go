@@ -38,7 +38,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() int32 {
     var value__0 *ref_int32_x

@@ -63,7 +63,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func match_int(n__0 int32) int32 {
     switch n__0 {

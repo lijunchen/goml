@@ -63,24 +63,16 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func maybe_value(flag__0 bool) Option__i32 {
     if flag__0 {
-        var t0 Option__i32 = Option__i32{
-            _tag: 1,
-            _v1_0: 4,
-        }
+        var t0 Option__i32 = Option__i32(uint64(int64(4) + 2147483648) + 1)
         return t0
     } else {
-        return Option__i32{
-            _tag: 0,
-        }
+        return Option__i32(0)
     }
 }
 
@@ -94,17 +86,15 @@ func main0() struct{} {
     var inline16 bool = true
     var inline17 Option__i32 = maybe_value(inline16)
     var inline18 int32
-    switch inline17._tag {
-    case 0:
-        t0 = Option__i32{
-            _tag: 0,
-        }
+    switch inline17 != Option__i32(0) {
+    case false:
+        t0 = Option__i32(0)
         var t1 string
-        switch t0._tag {
-        case 0:
+        switch t0 != Option__i32(0) {
+        case false:
             t1 = "none"
-        case 1:
-            var inline13 int32 = t0._v1_0
+        case true:
+            var inline13 int32 = int32(int64(uint64(t0) - 1) - 2147483648)
             var inline14 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline13)
             var inline15 string = "some=" + inline14
             t1 = inline15
@@ -117,17 +107,15 @@ func main0() struct{} {
         var inline5 bool = false
         var inline6 Option__i32 = maybe_value(inline5)
         var inline7 int32
-        switch inline6._tag {
-        case 0:
-            t2 = Option__i32{
-                _tag: 0,
-            }
+        switch inline6 != Option__i32(0) {
+        case false:
+            t2 = Option__i32(0)
             var t3 string
-            switch t2._tag {
-            case 0:
+            switch t2 != Option__i32(0) {
+            case false:
                 t3 = "none"
-            case 1:
-                var inline2 int32 = t2._v1_0
+            case true:
+                var inline2 int32 = int32(int64(uint64(t2) - 1) - 2147483648)
                 var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
                 var inline4 string = "some=" + inline3
                 t3 = inline4
@@ -137,21 +125,18 @@ func main0() struct{} {
             var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
             _goml_runtime_core_string_println(inline0)
             return struct{}{}
-        case 1:
-            var inline10 int32 = inline6._v1_0
+        case true:
+            var inline10 int32 = int32(int64(uint64(inline6) - 1) - 2147483648)
             inline7 = inline10
             var inline8 int32 = add(inline7, 2)
-            var inline9 Option__i32 = Option__i32{
-                _tag: 1,
-                _v1_0: inline8,
-            }
+            var inline9 Option__i32 = Option__i32(uint64(int64(inline8) + 2147483648) + 1)
             t2 = inline9
             var t3 string
-            switch t2._tag {
-            case 0:
+            switch t2 != Option__i32(0) {
+            case false:
                 t3 = "none"
-            case 1:
-                var inline2 int32 = t2._v1_0
+            case true:
+                var inline2 int32 = int32(int64(uint64(t2) - 1) - 2147483648)
                 var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
                 var inline4 string = "some=" + inline3
                 t3 = inline4
@@ -164,21 +149,18 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-    case 1:
-        var inline21 int32 = inline17._v1_0
+    case true:
+        var inline21 int32 = int32(int64(uint64(inline17) - 1) - 2147483648)
         inline18 = inline21
         var inline19 int32 = add(inline18, 2)
-        var inline20 Option__i32 = Option__i32{
-            _tag: 1,
-            _v1_0: inline19,
-        }
+        var inline20 Option__i32 = Option__i32(uint64(int64(inline19) + 2147483648) + 1)
         t0 = inline20
         var t1 string
-        switch t0._tag {
-        case 0:
+        switch t0 != Option__i32(0) {
+        case false:
             t1 = "none"
-        case 1:
-            var inline13 int32 = t0._v1_0
+        case true:
+            var inline13 int32 = int32(int64(uint64(t0) - 1) - 2147483648)
             var inline14 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline13)
             var inline15 string = "some=" + inline14
             t1 = inline15
@@ -191,17 +173,15 @@ func main0() struct{} {
         var inline5 bool = false
         var inline6 Option__i32 = maybe_value(inline5)
         var inline7 int32
-        switch inline6._tag {
-        case 0:
-            t2 = Option__i32{
-                _tag: 0,
-            }
+        switch inline6 != Option__i32(0) {
+        case false:
+            t2 = Option__i32(0)
             var t3 string
-            switch t2._tag {
-            case 0:
+            switch t2 != Option__i32(0) {
+            case false:
                 t3 = "none"
-            case 1:
-                var inline2 int32 = t2._v1_0
+            case true:
+                var inline2 int32 = int32(int64(uint64(t2) - 1) - 2147483648)
                 var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
                 var inline4 string = "some=" + inline3
                 t3 = inline4
@@ -211,21 +191,18 @@ func main0() struct{} {
             var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
             _goml_runtime_core_string_println(inline0)
             return struct{}{}
-        case 1:
-            var inline10 int32 = inline6._v1_0
+        case true:
+            var inline10 int32 = int32(int64(uint64(inline6) - 1) - 2147483648)
             inline7 = inline10
             var inline8 int32 = add(inline7, 2)
-            var inline9 Option__i32 = Option__i32{
-                _tag: 1,
-                _v1_0: inline8,
-            }
+            var inline9 Option__i32 = Option__i32(uint64(int64(inline8) + 2147483648) + 1)
             t2 = inline9
             var t3 string
-            switch t2._tag {
-            case 0:
+            switch t2 != Option__i32(0) {
+            case false:
                 t3 = "none"
-            case 1:
-                var inline2 int32 = t2._v1_0
+            case true:
+                var inline2 int32 = int32(int64(uint64(t2) - 1) - 2147483648)
                 var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
                 var inline4 string = "some=" + inline3
                 t3 = inline4

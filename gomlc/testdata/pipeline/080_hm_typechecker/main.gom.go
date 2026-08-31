@@ -248,62 +248,44 @@ type SubstEntry struct {
     ty Typ
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Exp interface {
-    isExp()
+type Exp struct {
+    _node *Exp_node
 }
 
-type Var struct {
-    _0 string
+type Exp_node struct {
+    _p0 string
+    _p1 Exp
+    _p2 Exp
+    _tag uint8
 }
 
-func (_ Var) isExp() {}
-
-type App struct {
-    _0 Exp
-    _1 Exp
+func _goml_enum_tag_Exp(value Exp) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
 }
 
-func (_ App) isExp() {}
-
-type Lam struct {
-    _0 string
-    _1 Exp
+type Typ struct {
+    _node *Typ_node
 }
 
-func (_ Lam) isExp() {}
-
-type Let struct {
-    _0 string
-    _1 Exp
-    _2 Exp
+type Typ_node struct {
+    _p1 string
+    _p0 *ref_Tv_x
+    _p2 Typ
+    _p3 Typ
+    _tag uint8
 }
 
-func (_ Let) isExp() {}
-
-type Typ interface {
-    isTyp()
+func _goml_enum_tag_Typ(value Typ) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
 }
-
-type TVar struct {
-    _0 *ref_Tv_x
-}
-
-func (_ TVar) isTyp() {}
-
-type QVar struct {
-    _0 string
-}
-
-func (_ QVar) isTyp() {}
-
-type TArrow struct {
-    _0 Typ
-    _1 Typ
-}
-
-func (_ TArrow) isTyp() {}
 
 type Tv interface {
     isTv()
@@ -323,20 +305,19 @@ type Link struct {
 func (_ Link) isTv() {}
 
 type Option__Typ struct {
-    _tag int32
-    _v1_0 Typ
+    _p0 Typ
+    _tag uint8
 }
 
 type _goml_m_Result_____o__q_____string struct {
-    _tag int32
-    _v0_0 struct{}
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 type Result__Typ__string struct {
-    _tag int32
-    _v0_0 Typ
-    _v1_0 string
+    _p1 string
+    _p0 Typ
+    _tag uint8
 }
 
 func state_new() CheckerState {
@@ -445,9 +426,9 @@ func gensym(st__0 CheckerState) string {
 }
 
 func typ_is_arrow(ty__0 Typ) bool {
-    switch ty__0.(type) {
-    case TVar:
-        var x0 *ref_Tv_x = ty__0.(TVar)._0
+    switch _goml_enum_tag_Typ(ty__0) {
+    case 0:
+        var x0 *ref_Tv_x = ty__0._node._p0
         var mtmp0 Tv
         var inline0 Tv = ref_get__Ref_2Tv(x0)
         mtmp0 = inline0
@@ -459,7 +440,7 @@ func typ_is_arrow(ty__0 Typ) bool {
         default:
             return false
         }
-    case TArrow:
+    case 2:
         return true
     default:
         return false
@@ -467,9 +448,9 @@ func typ_is_arrow(ty__0 Typ) bool {
 }
 
 func typ_to_string(ty__0 Typ) string {
-    switch ty__0.(type) {
-    case TVar:
-        var x0 *ref_Tv_x = ty__0.(TVar)._0
+    switch _goml_enum_tag_Typ(ty__0) {
+    case 0:
+        var x0 *ref_Tv_x = ty__0._node._p0
         var mtmp0 Tv
         var inline0 Tv = ref_get__Ref_2Tv(x0)
         mtmp0 = inline0
@@ -485,13 +466,13 @@ func typ_to_string(ty__0 Typ) string {
         default:
             panic("non-exhaustive match")
         }
-    case QVar:
-        var x3 string = ty__0.(QVar)._0
+    case 1:
+        var x3 string = ty__0._node._p1
         var t2 string = "'" + x3
         return t2
-    case TArrow:
-        var x4 Typ = ty__0.(TArrow)._0
-        var x5 Typ = ty__0.(TArrow)._1
+    case 2:
+        var x4 Typ = ty__0._node._p2
+        var x5 Typ = ty__0._node._p3
         var t3 bool = typ_is_arrow(x4)
         var jp0 string
         if t3 {
@@ -560,8 +541,8 @@ func env_lookup(env__0 *_goml_vec_EnvEntry, name__0 string) Option__Typ {
             if t6 {
                 var t7 Typ = entry__0.ty
                 var t8 Option__Typ = Option__Typ{
+                    _p0: t7,
                     _tag: 1,
-                    _v1_0: t7,
                 }
                 ref_set__Ref_11Option__Typ(found__0, t8)
                 var inline1 bool = true
@@ -626,8 +607,8 @@ func subst_lookup(subst__0 *_goml_vec_SubstEntry, name__0 string) Option__Typ {
             if t6 {
                 var t7 Typ = entry__0.ty
                 var t8 Option__Typ = Option__Typ{
+                    _p0: t7,
                     _tag: 1,
-                    _v1_0: t7,
                 }
                 ref_set__Ref_11Option__Typ(found__0, t8)
                 var inline1 bool = true
@@ -650,14 +631,14 @@ func subst_lookup(subst__0 *_goml_vec_SubstEntry, name__0 string) Option__Typ {
 }
 
 func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) _goml_m_Result_____o__q_____string {
-    switch ty__0.(type) {
-    case TVar:
-        var x0 *ref_Tv_x = ty__0.(TVar)._0
+    switch _goml_enum_tag_Typ(ty__0) {
+    case 0:
+        var x0 *ref_Tv_x = ty__0._node._p0
         var t0 bool = ptr_eq__Ref_2Tv(tvr__0, x0)
         if t0 {
             var t1 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                _p0: "occurs check",
                 _tag: 1,
-                _v1_0: "occurs check",
             }
             return t1
         } else {
@@ -691,7 +672,6 @@ func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) _goml_m_Result_____
                 ref_set__Ref_2Tv(x0, t2)
                 var t3 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                     _tag: 0,
-                    _v0_0: struct{}{},
                 }
                 return t3
             case Link:
@@ -702,19 +682,19 @@ func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) _goml_m_Result_____
                 panic("non-exhaustive match")
             }
         }
-    case TArrow:
-        var x5 Typ = ty__0.(TArrow)._0
-        var x6 Typ = ty__0.(TArrow)._1
+    case 2:
+        var x5 Typ = ty__0._node._p2
+        var x6 Typ = ty__0._node._p3
         var mtmp3 _goml_m_Result_____o__q_____string = occurs(st__0, tvr__0, x5)
         switch mtmp3._tag {
         case 0:
             var t5 _goml_m_Result_____o__q_____string = occurs(st__0, tvr__0, x6)
             return t5
         case 1:
-            var x7 string = mtmp3._v1_0
+            var x7 string = mtmp3._p0
             var t6 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                _p0: x7,
                 _tag: 1,
-                _v1_0: x7,
             }
             return t6
         default:
@@ -723,24 +703,22 @@ func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) _goml_m_Result_____
     default:
         var t7 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 0,
-            _v0_0: struct{}{},
         }
         return t7
     }
 }
 
 func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q_____string {
-    switch t2__0.(type) {
-    case TVar:
-        var x0 *ref_Tv_x = t2__0.(TVar)._0
-        switch t1__0.(type) {
-        case TVar:
-            var x1 *ref_Tv_x = t1__0.(TVar)._0
+    switch _goml_enum_tag_Typ(t2__0) {
+    case 0:
+        var x0 *ref_Tv_x = t2__0._node._p0
+        switch _goml_enum_tag_Typ(t1__0) {
+        case 0:
+            var x1 *ref_Tv_x = t1__0._node._p0
             var t0 bool = ptr_eq__Ref_2Tv(x1, x0)
             if t0 {
                 var t1 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                     _tag: 0,
-                    _v0_0: struct{}{},
                 }
                 return t1
             } else {
@@ -754,14 +732,20 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
                     mtmp1 = inline1
                     switch mtmp1.(type) {
                     case Unbound:
-                        var t2 Typ = TVar{
-                            _0: x0,
+                        var t2 Typ = Typ{
+                            _node: &Typ_node{
+                                _p0: x0,
+                                _tag: 0,
+                            },
                         }
                         var mtmp2 _goml_m_Result_____o__q_____string = occurs(st__0, x1, t2)
                         switch mtmp2._tag {
                         case 0:
-                            var t3 Typ = TVar{
-                                _0: x0,
+                            var t3 Typ = Typ{
+                                _node: &Typ_node{
+                                    _p0: x0,
+                                    _tag: 0,
+                                },
                             }
                             var t4 Tv = Link{
                                 _0: t3,
@@ -769,14 +753,13 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
                             ref_set__Ref_2Tv(x1, t4)
                             var t5 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                                 _tag: 0,
-                                _v0_0: struct{}{},
                             }
                             return t5
                         case 1:
-                            var x2 string = mtmp2._v1_0
+                            var x2 string = mtmp2._p0
                             var t6 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                                _p0: x2,
                                 _tag: 1,
-                                _v1_0: x2,
                             }
                             return t6
                         default:
@@ -784,8 +767,11 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
                         }
                     case Link:
                         var x3 Typ = mtmp1.(Link)._0
-                        var t7 Typ = TVar{
-                            _0: x1,
+                        var t7 Typ = Typ{
+                            _node: &Typ_node{
+                                _p0: x1,
+                                _tag: 0,
+                            },
                         }
                         var t8 _goml_m_Result_____o__q_____string = unify(st__0, t7, x3)
                         return t8
@@ -794,8 +780,11 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
                     }
                 case Link:
                     var x4 Typ = mtmp0.(Link)._0
-                    var t9 Typ = TVar{
-                        _0: x0,
+                    var t9 Typ = Typ{
+                        _node: &Typ_node{
+                            _p0: x0,
+                            _tag: 0,
+                        },
                     }
                     var t10 _goml_m_Result_____o__q_____string = unify(st__0, x4, t9)
                     return t10
@@ -818,14 +807,13 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
                     ref_set__Ref_2Tv(x0, t11)
                     var t12 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 0,
-                        _v0_0: struct{}{},
                     }
                     return t12
                 case 1:
-                    var x5 string = mtmp5._v1_0
+                    var x5 string = mtmp5._p0
                     var t13 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                        _p0: x5,
                         _tag: 1,
-                        _v1_0: x5,
                     }
                     return t13
                 default:
@@ -839,12 +827,12 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
                 panic("non-exhaustive match")
             }
         }
-    case TArrow:
-        var x7 Typ = t2__0.(TArrow)._0
-        var x8 Typ = t2__0.(TArrow)._1
-        switch t1__0.(type) {
-        case TVar:
-            var x9 *ref_Tv_x = t1__0.(TVar)._0
+    case 2:
+        var x7 Typ = t2__0._node._p2
+        var x8 Typ = t2__0._node._p3
+        switch _goml_enum_tag_Typ(t1__0) {
+        case 0:
+            var x9 *ref_Tv_x = t1__0._node._p0
             var mtmp7 Tv
             var inline6 Tv = ref_get__Ref_2Tv(x9)
             mtmp7 = inline6
@@ -859,14 +847,13 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
                     ref_set__Ref_2Tv(x9, t15)
                     var t16 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 0,
-                        _v0_0: struct{}{},
                     }
                     return t16
                 case 1:
-                    var x10 string = mtmp8._v1_0
+                    var x10 string = mtmp8._p0
                     var t17 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                        _p0: x10,
                         _tag: 1,
-                        _v1_0: x10,
                     }
                     return t17
                 default:
@@ -879,19 +866,19 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
             default:
                 panic("non-exhaustive match")
             }
-        case TArrow:
-            var x12 Typ = t1__0.(TArrow)._0
-            var x13 Typ = t1__0.(TArrow)._1
+        case 2:
+            var x12 Typ = t1__0._node._p2
+            var x13 Typ = t1__0._node._p3
             var mtmp10 _goml_m_Result_____o__q_____string = unify(st__0, x12, x7)
             switch mtmp10._tag {
             case 0:
                 var t19 _goml_m_Result_____o__q_____string = unify(st__0, x13, x8)
                 return t19
             case 1:
-                var x14 string = mtmp10._v1_0
+                var x14 string = mtmp10._p0
                 var t20 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                    _p0: x14,
                     _tag: 1,
-                    _v1_0: x14,
                 }
                 return t20
             default:
@@ -899,15 +886,15 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
             }
         default:
             var t21 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                _p0: "unify error",
                 _tag: 1,
-                _v1_0: "unify error",
             }
             return t21
         }
     default:
-        switch t1__0.(type) {
-        case TVar:
-            var x15 *ref_Tv_x = t1__0.(TVar)._0
+        switch _goml_enum_tag_Typ(t1__0) {
+        case 0:
+            var x15 *ref_Tv_x = t1__0._node._p0
             var mtmp11 Tv
             var inline8 Tv = ref_get__Ref_2Tv(x15)
             mtmp11 = inline8
@@ -922,14 +909,13 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
                     ref_set__Ref_2Tv(x15, t22)
                     var t23 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 0,
-                        _v0_0: struct{}{},
                     }
                     return t23
                 case 1:
-                    var x16 string = mtmp12._v1_0
+                    var x16 string = mtmp12._p0
                     var t24 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                        _p0: x16,
                         _tag: 1,
-                        _v1_0: x16,
                     }
                     return t24
                 default:
@@ -944,8 +930,8 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
             }
         default:
             var t26 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
+                _p0: "unify error",
                 _tag: 1,
-                _v1_0: "unify error",
             }
             return t26
         }
@@ -953,9 +939,9 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q____
 }
 
 func gen(st__0 CheckerState, ty__0 Typ) Typ {
-    switch ty__0.(type) {
-    case TVar:
-        var x0 *ref_Tv_x = ty__0.(TVar)._0
+    switch _goml_enum_tag_Typ(ty__0) {
+    case 0:
+        var x0 *ref_Tv_x = ty__0._node._p0
         var mtmp0 Tv
         var inline1 Tv = ref_get__Ref_2Tv(x0)
         mtmp0 = inline1
@@ -969,13 +955,19 @@ func gen(st__0 CheckerState, ty__0 Typ) Typ {
             cur__0 = inline0
             var t1 bool = x2 > cur__0
             if t1 {
-                var t2 Typ = QVar{
-                    _0: x1,
+                var t2 Typ = Typ{
+                    _node: &Typ_node{
+                        _p1: x1,
+                        _tag: 1,
+                    },
                 }
                 return t2
             } else {
-                var t3 Typ = TVar{
-                    _0: x0,
+                var t3 Typ = Typ{
+                    _node: &Typ_node{
+                        _p0: x0,
+                        _tag: 0,
+                    },
                 }
                 return t3
             }
@@ -986,14 +978,17 @@ func gen(st__0 CheckerState, ty__0 Typ) Typ {
         default:
             panic("non-exhaustive match")
         }
-    case TArrow:
-        var x4 Typ = ty__0.(TArrow)._0
-        var x5 Typ = ty__0.(TArrow)._1
+    case 2:
+        var x4 Typ = ty__0._node._p2
+        var x5 Typ = ty__0._node._p3
         var t5 Typ = gen(st__0, x4)
         var t6 Typ = gen(st__0, x5)
-        var t7 Typ = TArrow{
-            _0: t5,
-            _1: t6,
+        var t7 Typ = Typ{
+            _node: &Typ_node{
+                _p2: t5,
+                _p3: t6,
+                _tag: 2,
+            },
         }
         return t7
     default:
@@ -1002,9 +997,9 @@ func gen(st__0 CheckerState, ty__0 Typ) Typ {
 }
 
 func inst_loop(st__0 CheckerState, subst__0 *_goml_vec_SubstEntry, ty__0 Typ) Tuple2_3Typ_16Vec_10SubstEntry {
-    switch ty__0.(type) {
-    case TVar:
-        var x0 *ref_Tv_x = ty__0.(TVar)._0
+    switch _goml_enum_tag_Typ(ty__0) {
+    case 0:
+        var x0 *ref_Tv_x = ty__0._node._p0
         var mtmp0 Tv
         var inline0 Tv = ref_get__Ref_2Tv(x0)
         mtmp0 = inline0
@@ -1014,8 +1009,11 @@ func inst_loop(st__0 CheckerState, subst__0 *_goml_vec_SubstEntry, ty__0 Typ) Tu
             var t0 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__0, subst__0, x1)
             return t0
         default:
-            var t1 Typ = TVar{
-                _0: x0,
+            var t1 Typ = Typ{
+                _node: &Typ_node{
+                    _p0: x0,
+                    _tag: 0,
+                },
             }
             var t2 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: t1,
@@ -1023,8 +1021,8 @@ func inst_loop(st__0 CheckerState, subst__0 *_goml_vec_SubstEntry, ty__0 Typ) Tu
             }
             return t2
         }
-    case QVar:
-        var x2 string = ty__0.(QVar)._0
+    case 1:
+        var x2 string = ty__0._node._p1
         var mtmp1 Option__Typ = subst_lookup(subst__0, x2)
         switch mtmp1._tag {
         case 0:
@@ -1037,8 +1035,11 @@ func inst_loop(st__0 CheckerState, subst__0 *_goml_vec_SubstEntry, ty__0 Typ) Tu
                 _1: inline3,
             }
             var inline5 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline4)
-            var inline6 Typ = TVar{
-                _0: inline5,
+            var inline6 Typ = Typ{
+                _node: &Typ_node{
+                    _p0: inline5,
+                    _tag: 0,
+                },
             }
             tv__0 = inline6
             var t3 SubstEntry = SubstEntry{
@@ -1052,7 +1053,7 @@ func inst_loop(st__0 CheckerState, subst__0 *_goml_vec_SubstEntry, ty__0 Typ) Tu
             }
             return t4
         case 1:
-            var x3 Typ = mtmp1._v1_0
+            var x3 Typ = mtmp1._p0
             var t5 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: x3,
                 _1: subst__0,
@@ -1061,18 +1062,21 @@ func inst_loop(st__0 CheckerState, subst__0 *_goml_vec_SubstEntry, ty__0 Typ) Tu
         default:
             panic("non-exhaustive match")
         }
-    case TArrow:
-        var x4 Typ = ty__0.(TArrow)._0
-        var x5 Typ = ty__0.(TArrow)._1
+    case 2:
+        var x4 Typ = ty__0._node._p2
+        var x5 Typ = ty__0._node._p3
         var mtmp2 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__0, subst__0, x4)
         var x6 Typ = mtmp2._0
         var x7 *_goml_vec_SubstEntry = mtmp2._1
         var mtmp3 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__0, x7, x5)
         var x8 Typ = mtmp3._0
         var x9 *_goml_vec_SubstEntry = mtmp3._1
-        var t6 Typ = TArrow{
-            _0: x6,
-            _1: x8,
+        var t6 Typ = Typ{
+            _node: &Typ_node{
+                _p2: x6,
+                _p3: x8,
+                _tag: 2,
+            },
         }
         var t7 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
             _0: t6,
@@ -1085,43 +1089,43 @@ func inst_loop(st__0 CheckerState, subst__0 *_goml_vec_SubstEntry, ty__0 Typ) Tu
 }
 
 func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Typ__string {
-    switch e__0.(type) {
-    case Var:
-        var x0 string = e__0.(Var)._0
+    switch _goml_enum_tag_Exp(e__0) {
+    case 0:
+        var x0 string = e__0._node._p0
         var mtmp0 Option__Typ = env_lookup(env__0, x0)
         switch mtmp0._tag {
         case 0:
             var t0 Result__Typ__string = Result__Typ__string{
+                _p1: "unbound var",
                 _tag: 1,
-                _v1_0: "unbound var",
             }
             return t0
         case 1:
-            var x1 Typ = mtmp0._v1_0
+            var x1 Typ = mtmp0._p0
             var t1 Typ
             var inline0 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry()
             var inline1 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__0, inline0, x1)
             var inline2 Typ = inline1._0
             t1 = inline2
             var t2 Result__Typ__string = Result__Typ__string{
+                _p0: t1,
                 _tag: 0,
-                _v0_0: t1,
             }
             return t2
         default:
             panic("non-exhaustive match")
         }
-    case App:
-        var x2 Exp = e__0.(App)._0
-        var x3 Exp = e__0.(App)._1
+    case 1:
+        var x2 Exp = e__0._node._p1
+        var x3 Exp = e__0._node._p2
         var mtmp1 Result__Typ__string = typeof(st__0, env__0, x2)
         switch mtmp1._tag {
         case 0:
-            var x4 Typ = mtmp1._v0_0
+            var x4 Typ = mtmp1._p0
             var mtmp2 Result__Typ__string = typeof(st__0, env__0, x3)
             switch mtmp2._tag {
             case 0:
-                var x5 Typ = mtmp2._v0_0
+                var x5 Typ = mtmp2._p0
                 var ty_res__0 Typ
                 var inline3 string = gensym(st__0)
                 var inline4 *ref_int32_x = st__0.current_level
@@ -1131,55 +1135,61 @@ func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Ty
                     _1: inline5,
                 }
                 var inline7 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline6)
-                var inline8 Typ = TVar{
-                    _0: inline7,
+                var inline8 Typ = Typ{
+                    _node: &Typ_node{
+                        _p0: inline7,
+                        _tag: 0,
+                    },
                 }
                 ty_res__0 = inline8
-                var arrow__0 Typ = TArrow{
-                    _0: x5,
-                    _1: ty_res__0,
+                var arrow__0 Typ = Typ{
+                    _node: &Typ_node{
+                        _p2: x5,
+                        _p3: ty_res__0,
+                        _tag: 2,
+                    },
                 }
                 var mtmp3 _goml_m_Result_____o__q_____string = unify(st__0, x4, arrow__0)
                 switch mtmp3._tag {
                 case 0:
                     var t3 Result__Typ__string = Result__Typ__string{
+                        _p0: ty_res__0,
                         _tag: 0,
-                        _v0_0: ty_res__0,
                     }
                     return t3
                 case 1:
-                    var x6 string = mtmp3._v1_0
+                    var x6 string = mtmp3._p0
                     var t4 Result__Typ__string = Result__Typ__string{
+                        _p1: x6,
                         _tag: 1,
-                        _v1_0: x6,
                     }
                     return t4
                 default:
                     panic("non-exhaustive match")
                 }
             case 1:
-                var x7 string = mtmp2._v1_0
+                var x7 string = mtmp2._p1
                 var t5 Result__Typ__string = Result__Typ__string{
+                    _p1: x7,
                     _tag: 1,
-                    _v1_0: x7,
                 }
                 return t5
             default:
                 panic("non-exhaustive match")
             }
         case 1:
-            var x8 string = mtmp1._v1_0
+            var x8 string = mtmp1._p1
             var t6 Result__Typ__string = Result__Typ__string{
+                _p1: x8,
                 _tag: 1,
-                _v1_0: x8,
             }
             return t6
         default:
             panic("non-exhaustive match")
         }
-    case Lam:
-        var x9 string = e__0.(Lam)._0
-        var x10 Exp = e__0.(Lam)._1
+    case 2:
+        var x9 string = e__0._node._p0
+        var x10 Exp = e__0._node._p1
         var ty_x__0 Typ
         var inline9 string = gensym(st__0)
         var inline10 *ref_int32_x = st__0.current_level
@@ -1189,8 +1199,11 @@ func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Ty
             _1: inline11,
         }
         var inline13 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline12)
-        var inline14 Typ = TVar{
-            _0: inline13,
+        var inline14 Typ = Typ{
+            _node: &Typ_node{
+                _p0: inline13,
+                _tag: 0,
+            },
         }
         ty_x__0 = inline14
         var t7 EnvEntry = EnvEntry{
@@ -1201,30 +1214,33 @@ func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Ty
         var mtmp4 Result__Typ__string = typeof(st__0, env2__0, x10)
         switch mtmp4._tag {
         case 0:
-            var x11 Typ = mtmp4._v0_0
-            var t8 Typ = TArrow{
-                _0: ty_x__0,
-                _1: x11,
+            var x11 Typ = mtmp4._p0
+            var t8 Typ = Typ{
+                _node: &Typ_node{
+                    _p2: ty_x__0,
+                    _p3: x11,
+                    _tag: 2,
+                },
             }
             var t9 Result__Typ__string = Result__Typ__string{
+                _p0: t8,
                 _tag: 0,
-                _v0_0: t8,
             }
             return t9
         case 1:
-            var x12 string = mtmp4._v1_0
+            var x12 string = mtmp4._p1
             var t10 Result__Typ__string = Result__Typ__string{
+                _p1: x12,
                 _tag: 1,
-                _v1_0: x12,
             }
             return t10
         default:
             panic("non-exhaustive match")
         }
-    case Let:
-        var x13 string = e__0.(Let)._0
-        var x14 Exp = e__0.(Let)._1
-        var x15 Exp = e__0.(Let)._2
+    case 3:
+        var x13 string = e__0._node._p0
+        var x14 Exp = e__0._node._p1
+        var x15 Exp = e__0._node._p2
         var inline20 *ref_int32_x = st__0.current_level
         var inline21 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline20)
         var inline22 *ref_int32_x = st__0.current_level
@@ -1238,7 +1254,7 @@ func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Ty
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline17, inline18)
         switch ty_e__0._tag {
         case 0:
-            var x16 Typ = ty_e__0._v0_0
+            var x16 Typ = ty_e__0._p0
             var t11 Typ = gen(st__0, x16)
             var t12 EnvEntry = EnvEntry{
                 name: x13,
@@ -1248,10 +1264,10 @@ func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Ty
             var t13 Result__Typ__string = typeof(st__0, env2__1, x15)
             return t13
         case 1:
-            var x17 string = ty_e__0._v1_0
+            var x17 string = ty_e__0._p1
             var t14 Result__Typ__string = Result__Typ__string{
+                _p1: x17,
                 _tag: 1,
-                _v1_0: x17,
             }
             return t14
         default:
@@ -1263,33 +1279,45 @@ func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Ty
 }
 
 func exp_var(name__0 string) Exp {
-    var t0 Exp = Var{
-        _0: name__0,
+    var t0 Exp = Exp{
+        _node: &Exp_node{
+            _p0: name__0,
+            _tag: 0,
+        },
     }
     return t0
 }
 
 func exp_lam(name__0 string, body__0 Exp) Exp {
-    var t0 Exp = Lam{
-        _0: name__0,
-        _1: body__0,
+    var t0 Exp = Exp{
+        _node: &Exp_node{
+            _p0: name__0,
+            _p1: body__0,
+            _tag: 2,
+        },
     }
     return t0
 }
 
 func exp_app(a__0 Exp, b__0 Exp) Exp {
-    var t0 Exp = App{
-        _0: a__0,
-        _1: b__0,
+    var t0 Exp = Exp{
+        _node: &Exp_node{
+            _p1: a__0,
+            _p2: b__0,
+            _tag: 1,
+        },
     }
     return t0
 }
 
 func exp_let(name__0 string, a__0 Exp, b__0 Exp) Exp {
-    var t0 Exp = Let{
-        _0: name__0,
-        _1: a__0,
-        _2: b__0,
+    var t0 Exp = Exp{
+        _node: &Exp_node{
+            _p0: name__0,
+            _p1: a__0,
+            _p2: b__0,
+            _tag: 3,
+        },
     }
     return t0
 }
@@ -1297,7 +1325,7 @@ func exp_let(name__0 string, a__0 Exp, b__0 Exp) Exp {
 func show_result(label__0 string, res__0 Result__Typ__string) struct{} {
     switch res__0._tag {
     case 0:
-        var x0 Typ = res__0._v0_0
+        var x0 Typ = res__0._p0
         var t0 string = label__0 + ": "
         var t1 string = typ_to_string(x0)
         var t2 string = t0 + t1
@@ -1305,7 +1333,7 @@ func show_result(label__0 string, res__0 Result__Typ__string) struct{} {
         _goml_runtime_core_string_println(inline0)
         return struct{}{}
     case 1:
-        var x1 string = res__0._v1_0
+        var x1 string = res__0._p1
         var t3 string = label__0 + ": "
         var t4 string = t3 + x1
         var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t4)
@@ -1493,24 +1521,33 @@ func main0() struct{} {
     var t135 Exp = exp_var("y")
     var t136 Exp = exp_var("y")
     var t137 Exp
-    var inline39 Exp = App{
-        _0: t135,
-        _1: t136,
+    var inline39 Exp = Exp{
+        _node: &Exp_node{
+            _p1: t135,
+            _p2: t136,
+            _tag: 1,
+        },
     }
     t137 = inline39
     var t138 Exp
     var inline37 string = "y"
-    var inline38 Exp = Let{
-        _0: inline37,
-        _1: t134,
-        _2: t137,
+    var inline38 Exp = Exp{
+        _node: &Exp_node{
+            _p0: inline37,
+            _p1: t134,
+            _p2: t137,
+            _tag: 3,
+        },
     }
     t138 = inline38
     var t139 Exp
     var inline35 string = "x"
-    var inline36 Exp = Lam{
-        _0: inline35,
-        _1: t138,
+    var inline36 Exp = Exp{
+        _node: &Exp_node{
+            _p0: inline35,
+            _p1: t138,
+            _tag: 2,
+        },
     }
     t139 = inline36
     var t140 Result__Typ__string = typeof(st__0, t133, t139)
@@ -1522,62 +1559,83 @@ func main0() struct{} {
     t141 = inline32
     var t142 Exp
     var inline30 string = "x"
-    var inline31 Exp = Var{
-        _0: inline30,
+    var inline31 Exp = Exp{
+        _node: &Exp_node{
+            _p0: inline30,
+            _tag: 0,
+        },
     }
     t142 = inline31
     var t143 Exp
-    var inline29 Exp = App{
-        _0: t142,
-        _1: id__0,
+    var inline29 Exp = Exp{
+        _node: &Exp_node{
+            _p1: t142,
+            _p2: id__0,
+            _tag: 1,
+        },
     }
     t143 = inline29
     var t144 Exp
     var inline27 string = "z"
-    var inline28 Exp = Var{
-        _0: inline27,
+    var inline28 Exp = Exp{
+        _node: &Exp_node{
+            _p0: inline27,
+            _tag: 0,
+        },
     }
     t144 = inline28
     var t145 Exp
     var inline25 string = "z"
-    var inline26 Exp = Let{
-        _0: inline25,
-        _1: t143,
-        _2: t144,
+    var inline26 Exp = Exp{
+        _node: &Exp_node{
+            _p0: inline25,
+            _p1: t143,
+            _p2: t144,
+            _tag: 3,
+        },
     }
     t145 = inline26
     var t146 Exp
     var inline23 string = "y"
-    var inline24 Exp = Var{
-        _0: inline23,
+    var inline24 Exp = Exp{
+        _node: &Exp_node{
+            _p0: inline23,
+            _tag: 0,
+        },
     }
     t146 = inline24
     var t147 Exp
     var inline21 string = "y"
-    var inline22 Exp = Let{
-        _0: inline21,
-        _1: t145,
-        _2: t146,
+    var inline22 Exp = Exp{
+        _node: &Exp_node{
+            _p0: inline21,
+            _p1: t145,
+            _p2: t146,
+            _tag: 3,
+        },
     }
     t147 = inline22
     var t148 Exp
     var inline19 string = "x"
-    var inline20 Exp = Lam{
-        _0: inline19,
-        _1: t147,
+    var inline20 Exp = Exp{
+        _node: &Exp_node{
+            _p0: inline19,
+            _p1: t147,
+            _tag: 2,
+        },
     }
     t148 = inline20
     var t149 Result__Typ__string = typeof(st__0, t141, t148)
     var inline9 string = "fun_x_let_y_let_z_x_id_z_y"
     switch t149._tag {
     case 0:
-        var inline10 Typ = t149._v0_0
+        var inline10 Typ = t149._p0
         var inline11 string = inline9 + ": "
         var inline12 string = typ_to_string(inline10)
         var inline13 string = inline11 + inline12
         println__T_string(inline13)
     case 1:
-        var inline15 string = t149._v1_0
+        var inline15 string = t149._p1
         var inline16 string = inline9 + ": "
         var inline17 string = inline16 + inline15
         println__T_string(inline17)

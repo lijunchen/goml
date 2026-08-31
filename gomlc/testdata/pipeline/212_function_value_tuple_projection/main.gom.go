@@ -68,7 +68,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var value__0 Tuple2_5int32_6string

@@ -80,11 +80,11 @@ type Pair struct {
     right int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Choice struct {
-    _tag int32
-    _v0_0 int
+    _p0 int
+    _tag uint8
 }
 
 const (

@@ -88,14 +88,9 @@ func hashmap_get__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) 
     var ok bool
     value, ok, _, _ = hashmap_lookup__HashMap_6string_5int32(m, key)
     if ok {
-        return Option__i32{
-            _tag: 1,
-            _v1_0: value,
-        }
+        return Option__i32(uint64(int64(value) + 2147483648) + 1)
     }
-    return Option__i32{
-        _tag: 0,
-    }
+    return Option__i32(0)
 }
 
 func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
@@ -150,12 +145,9 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func fetch(flag__0 bool) Option__i32 {
     var m__0 *hashmap_string_int32_x
@@ -171,19 +163,14 @@ func fetch(flag__0 bool) Option__i32 {
     var inline1 Option__i32 = hashmap_get__HashMap_6string_5int32(m__0, inline0)
     mtmp0 = inline1
     var jp0 int32
-    switch mtmp0._tag {
-    case 0:
-        return Option__i32{
-            _tag: 0,
-        }
-    case 1:
-        var x0 int32 = mtmp0._v1_0
+    switch mtmp0 != Option__i32(0) {
+    case false:
+        return Option__i32(0)
+    case true:
+        var x0 int32 = int32(int64(uint64(mtmp0) - 1) - 2147483648)
         jp0 = x0
         var t0 int32 = jp0 + 1
-        var t1 Option__i32 = Option__i32{
-            _tag: 1,
-            _v1_0: t0,
-        }
+        var t1 Option__i32 = Option__i32(uint64(int64(t0) + 2147483648) + 1)
         return t1
     default:
         panic("non-exhaustive match")
@@ -193,11 +180,11 @@ func fetch(flag__0 bool) Option__i32 {
 func main0() struct{} {
     var t0 Option__i32 = fetch(true)
     var t1 string
-    switch t0._tag {
-    case 0:
+    switch t0 != Option__i32(0) {
+    case false:
         t1 = "none"
-    case 1:
-        var inline7 int32 = t0._v1_0
+    case true:
+        var inline7 int32 = int32(int64(uint64(t0) - 1) - 2147483648)
         var inline8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline7)
         var inline9 string = "some=" + inline8
         t1 = inline9
@@ -208,11 +195,11 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline5)
     var t2 Option__i32 = fetch(false)
     var t3 string
-    switch t2._tag {
-    case 0:
+    switch t2 != Option__i32(0) {
+    case false:
         t3 = "none"
-    case 1:
-        var inline2 int32 = t2._v1_0
+    case true:
+        var inline2 int32 = int32(int64(uint64(t2) - 1) - 2147483648)
         var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
         var inline4 string = "some=" + inline3
         t3 = inline4

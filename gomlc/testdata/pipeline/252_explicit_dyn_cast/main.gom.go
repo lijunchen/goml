@@ -67,7 +67,7 @@ type Number struct {
     value int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type dyn__Display_vtable struct {
     display func(any) string

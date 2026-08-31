@@ -82,17 +82,19 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__bool struct {
-    _tag int32
-    _v1_0 bool
+type Option__bool uint8
+
+func _goml_enum_pack_Option__bool(value bool) Option__bool {
+    if value {
+        return Option__bool(2)
+    } else {
+        return Option__bool(1)
+    }
 }
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func run_some() Option__i32 {
     var i__0 *ref_int32_x
@@ -111,26 +113,18 @@ func run_some() Option__i32 {
         var mtmp0 Option__bool
         var inline6 bool = t2 < 3
         if inline6 {
-            var inline7 Option__bool = Option__bool{
-                _tag: 1,
-                _v1_0: true,
-            }
+            var inline7 Option__bool = _goml_enum_pack_Option__bool(true)
             mtmp0 = inline7
         } else {
-            var inline8 Option__bool = Option__bool{
-                _tag: 1,
-                _v1_0: false,
-            }
+            var inline8 Option__bool = _goml_enum_pack_Option__bool(false)
             mtmp0 = inline8
         }
         var jp0 bool
-        switch mtmp0._tag {
-        case 0:
-            return Option__i32{
-                _tag: 0,
-            }
-        case 1:
-            var x0 bool = mtmp0._v1_0
+        switch mtmp0 != Option__bool(0) {
+        case false:
+            return Option__i32(0)
+        case true:
+            var x0 bool = mtmp0 == Option__bool(2)
             jp0 = x0
             if jp0 {
                 var t3 int32
@@ -157,10 +151,7 @@ func run_some() Option__i32 {
     var t0 int32
     var inline0 int32 = ref_get__Ref_5int32(total__0)
     t0 = inline0
-    var t1 Option__i32 = Option__i32{
-        _tag: 1,
-        _v1_0: t0,
-    }
+    var t1 Option__i32 = Option__i32(uint64(int64(t0) + 2147483648) + 1)
     return t1
 }
 
@@ -181,24 +172,17 @@ func run_none() Option__i32 {
         var mtmp0 Option__bool
         var inline6 bool = t2 < 2
         if inline6 {
-            var inline7 Option__bool = Option__bool{
-                _tag: 1,
-                _v1_0: true,
-            }
+            var inline7 Option__bool = _goml_enum_pack_Option__bool(true)
             mtmp0 = inline7
         } else {
-            mtmp0 = Option__bool{
-                _tag: 0,
-            }
+            mtmp0 = Option__bool(0)
         }
         var jp0 bool
-        switch mtmp0._tag {
-        case 0:
-            return Option__i32{
-                _tag: 0,
-            }
-        case 1:
-            var x0 bool = mtmp0._v1_0
+        switch mtmp0 != Option__bool(0) {
+        case false:
+            return Option__i32(0)
+        case true:
+            var x0 bool = mtmp0 == Option__bool(2)
             jp0 = x0
             if jp0 {
                 var t3 int32
@@ -225,21 +209,18 @@ func run_none() Option__i32 {
     var t0 int32
     var inline0 int32 = ref_get__Ref_5int32(total__0)
     t0 = inline0
-    var t1 Option__i32 = Option__i32{
-        _tag: 1,
-        _v1_0: t0,
-    }
+    var t1 Option__i32 = Option__i32(uint64(int64(t0) + 2147483648) + 1)
     return t1
 }
 
 func main0() struct{} {
     var t0 Option__i32 = run_some()
     var t1 string
-    switch t0._tag {
-    case 0:
+    switch t0 != Option__i32(0) {
+    case false:
         t1 = "none"
-    case 1:
-        var inline7 int32 = t0._v1_0
+    case true:
+        var inline7 int32 = int32(int64(uint64(t0) - 1) - 2147483648)
         var inline8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline7)
         var inline9 string = "some=" + inline8
         t1 = inline9
@@ -250,11 +231,11 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline5)
     var t2 Option__i32 = run_none()
     var t3 string
-    switch t2._tag {
-    case 0:
+    switch t2 != Option__i32(0) {
+    case false:
         t3 = "none"
-    case 1:
-        var inline2 int32 = t2._v1_0
+    case true:
+        var inline2 int32 = int32(int64(uint64(t2) - 1) - 2147483648)
         var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
         var inline4 string = "some=" + inline3
         t3 = inline4

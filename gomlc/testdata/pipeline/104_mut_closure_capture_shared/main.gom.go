@@ -86,7 +86,7 @@ type closure_env_inc_0 struct {
     x_0 *ref_int_x
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var x__0 *ref_int_x = ref__Ref_3int(0)

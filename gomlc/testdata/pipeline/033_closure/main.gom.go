@@ -86,22 +86,24 @@ type closure_env_play_list_and_point_4 struct {
     point_1 Point
 }
 
-type Ordering int32
+type Ordering uint8
 
-type IntList interface {
-    isIntList()
+type IntList struct {
+    _node *IntList_node
 }
 
-type Nil struct {}
-
-func (_ Nil) isIntList() {}
-
-type Cons struct {
-    _0 int32
-    _1 IntList
+type IntList_node struct {
+    _p1 IntList
+    _p0 int32
+    _tag uint8
 }
 
-func (_ Cons) isIntList() {}
+func _goml_enum_tag_IntList(value IntList) uint8 {
+    if value._node == nil {
+        return 0
+    }
+    return value._node._tag
+}
 
 func main0() struct{} {
     var base__0 int32 = 5
@@ -142,17 +144,26 @@ func main0() struct{} {
     var inline7 int32 = inline3(3)
     var inline8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline7)
     println__T_string(inline8)
-    var t4 IntList = Cons{
-        _0: 3,
-        _1: Nil{},
+    var t4 IntList = IntList{
+        _node: &IntList_node{
+            _p0: 3,
+            _p1: IntList{},
+            _tag: 1,
+        },
     }
-    var t5 IntList = Cons{
-        _0: 2,
-        _1: t4,
+    var t5 IntList = IntList{
+        _node: &IntList_node{
+            _p0: 2,
+            _p1: t4,
+            _tag: 1,
+        },
     }
-    var list123__0 IntList = Cons{
-        _0: 1,
-        _1: t5,
+    var list123__0 IntList = IntList{
+        _node: &IntList_node{
+            _p0: 1,
+            _p1: t5,
+            _tag: 1,
+        },
     }
     var point__0 Point = Point{
         x: 10,
@@ -307,14 +318,14 @@ func _goml_m_inherent_i_closure__en_ha1a1d2e736bef56b17edec01979b6eae_ture__3_i_
 func _goml_m_inherent_i_closure__en_h905154c8b1f2c223fea35335436a9056_oint__4_i_apply(env0 closure_env_play_list_and_point_4) struct{} {
     var list123__0 IntList = env0.list123_0
     var point__0 Point = env0.point_1
-    switch list123__0.(type) {
-    case Nil:
+    switch _goml_enum_tag_IntList(list123__0) {
+    case 0:
         var inline0 string = "Empty list"
         var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline0)
         _goml_runtime_core_string_println(inline1)
         return struct{}{}
-    case Cons:
-        var x0 int32 = list123__0.(Cons)._0
+    case 1:
+        var x0 int32 = list123__0._node._p0
         var t0 string
         var inline9 string = __goml_builtin_int32_to_string(x0)
         t0 = inline9

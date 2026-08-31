@@ -123,7 +123,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func bump(cell__0 *ref_int32_x) int32 {
     var t0 int32

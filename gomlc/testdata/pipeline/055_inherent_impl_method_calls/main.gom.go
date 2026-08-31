@@ -30,7 +30,7 @@ type ParsedFloat struct {
 
 type Shape struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_inherent_i_Shape_i_Shape_i_name(self__0 Shape) string {
     return "Shape"

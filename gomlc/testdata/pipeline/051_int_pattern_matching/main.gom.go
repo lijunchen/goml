@@ -46,7 +46,7 @@ type PairData struct {
     tail int64
 }
 
-type Ordering int32
+type Ordering uint8
 
 func is_special8(value__0 int8) bool {
     switch value__0 {

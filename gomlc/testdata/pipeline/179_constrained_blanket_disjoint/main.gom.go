@@ -71,7 +71,7 @@ type Box__i32 struct {
     value int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Mark_i_i32_i_mark(self__0 int32) string {
     var inline0 string = __goml_builtin_int32_to_string(self__0)

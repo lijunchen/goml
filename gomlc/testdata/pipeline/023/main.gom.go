@@ -68,30 +68,13 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Mixed interface {
-    isMixed()
+type Mixed struct {
+    _p1 string
+    _p0 int32
+    _tag uint8
 }
-
-type OnlyInt struct {
-    _0 int32
-}
-
-func (_ OnlyInt) isMixed() {}
-
-type OnlyStr struct {
-    _0 string
-}
-
-func (_ OnlyStr) isMixed() {}
-
-type Both struct {
-    _0 int32
-    _1 string
-}
-
-func (_ Both) isMixed() {}
 
 func match_mixed_pair(pair__0 Tuple2_5int32_6string) int32 {
     var x0 int32 = pair__0._0
@@ -124,26 +107,26 @@ func match_mixed_pair(pair__0 Tuple2_5int32_6string) int32 {
 }
 
 func match_mixed_enum(value__0 Mixed) int32 {
-    switch value__0.(type) {
-    case OnlyInt:
-        var x0 int32 = value__0.(OnlyInt)._0
+    switch value__0._tag {
+    case 0:
+        var x0 int32 = value__0._p0
         switch x0 {
         case 0:
             return 6
         default:
             return 7
         }
-    case OnlyStr:
-        var x1 string = value__0.(OnlyStr)._0
+    case 1:
+        var x1 string = value__0._p1
         switch x1 {
         case "zero":
             return 8
         default:
             return 9
         }
-    case Both:
-        var x2 int32 = value__0.(Both)._0
-        var x3 string = value__0.(Both)._1
+    case 2:
+        var x2 int32 = value__0._p0
+        var x3 string = value__0._p1
         switch x3 {
         case "zero":
             switch x2 {
@@ -205,8 +188,9 @@ func main0() struct{} {
     t14 = inline26
     var inline24 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t14)
     _goml_runtime_core_string_println(inline24)
-    var t15 Mixed = OnlyInt{
-        _0: 0,
+    var t15 Mixed = Mixed{
+        _p0: 0,
+        _tag: 0,
     }
     var t16 int32 = match_mixed_enum(t15)
     var t17 string
@@ -214,8 +198,9 @@ func main0() struct{} {
     t17 = inline23
     var inline21 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t17)
     _goml_runtime_core_string_println(inline21)
-    var t18 Mixed = OnlyInt{
-        _0: 5,
+    var t18 Mixed = Mixed{
+        _p0: 5,
+        _tag: 0,
     }
     var t19 int32 = match_mixed_enum(t18)
     var t20 string
@@ -223,8 +208,9 @@ func main0() struct{} {
     t20 = inline20
     var inline18 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t20)
     _goml_runtime_core_string_println(inline18)
-    var t21 Mixed = OnlyStr{
-        _0: "zero",
+    var t21 Mixed = Mixed{
+        _p1: "zero",
+        _tag: 1,
     }
     var t22 int32 = match_mixed_enum(t21)
     var t23 string
@@ -232,8 +218,9 @@ func main0() struct{} {
     t23 = inline17
     var inline15 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t23)
     _goml_runtime_core_string_println(inline15)
-    var t24 Mixed = OnlyStr{
-        _0: "hello",
+    var t24 Mixed = Mixed{
+        _p1: "hello",
+        _tag: 1,
     }
     var t25 int32 = match_mixed_enum(t24)
     var t26 string
@@ -241,9 +228,10 @@ func main0() struct{} {
     t26 = inline14
     var inline12 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t26)
     _goml_runtime_core_string_println(inline12)
-    var t27 Mixed = Both{
-        _0: 0,
-        _1: "zero",
+    var t27 Mixed = Mixed{
+        _p0: 0,
+        _p1: "zero",
+        _tag: 2,
     }
     var t28 int32 = match_mixed_enum(t27)
     var t29 string
@@ -251,9 +239,10 @@ func main0() struct{} {
     t29 = inline11
     var inline9 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t29)
     _goml_runtime_core_string_println(inline9)
-    var t30 Mixed = Both{
-        _0: 0,
-        _1: "hello",
+    var t30 Mixed = Mixed{
+        _p0: 0,
+        _p1: "hello",
+        _tag: 2,
     }
     var t31 int32 = match_mixed_enum(t30)
     var t32 string
@@ -261,9 +250,10 @@ func main0() struct{} {
     t32 = inline8
     var inline6 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t32)
     _goml_runtime_core_string_println(inline6)
-    var t33 Mixed = Both{
-        _0: 2,
-        _1: "zero",
+    var t33 Mixed = Mixed{
+        _p0: 2,
+        _p1: "zero",
+        _tag: 2,
     }
     var t34 int32 = match_mixed_enum(t33)
     var t35 string
@@ -271,9 +261,10 @@ func main0() struct{} {
     t35 = inline5
     var inline3 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t35)
     _goml_runtime_core_string_println(inline3)
-    var t36 Mixed = Both{
-        _0: 3,
-        _1: "three",
+    var t36 Mixed = Mixed{
+        _p0: 3,
+        _p1: "three",
+        _tag: 2,
     }
     var t37 int32 = match_mixed_enum(t36)
     var t38 string

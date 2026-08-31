@@ -180,7 +180,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var arr__0 [3]uint8 = [3]uint8{10, 20, 30}

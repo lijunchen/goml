@@ -49,11 +49,11 @@ type Generic__NoTraits__NoTraits struct {
     second Wrapper__NoTraits
 }
 
-type Ordering int32
+type Ordering uint8
 
 type GenericChoice__NoTraits__NoTraits struct {
-    _tag int32
-    _v1_0 Wrapper__NoTraits
+    _p0 Wrapper__NoTraits
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -84,8 +84,8 @@ func main0() struct{} {
         _tag: 0,
     }
     var value__0 GenericChoice__NoTraits__NoTraits = GenericChoice__NoTraits__NoTraits{
+        _p0: wrapped__0,
         _tag: 1,
-        _v1_0: wrapped__0,
     }
     var t6 string = _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__string(empty__0)
     var inline22 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t6)

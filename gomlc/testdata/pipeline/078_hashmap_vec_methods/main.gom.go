@@ -136,14 +136,9 @@ func hashmap_get__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) Option__i
     var ok bool
     value, ok, _, _ = hashmap_lookup__HashMap_3Key_5int32(m, key)
     if ok {
-        return Option__i32{
-            _tag: 1,
-            _v1_0: value,
-        }
+        return Option__i32(uint64(int64(value) + 2147483648) + 1)
     }
-    return Option__i32{
-        _tag: 0,
-    }
+    return Option__i32(0)
 }
 
 func hashmap_set__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key, value int32) struct{} {
@@ -253,28 +248,22 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Key struct {
-    _tag int32
-    _v1_0 int32
-}
+type Key uint64
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__0 Key) uint64 {
-    switch self__0._tag {
-    case 0:
+    switch self__0 != Key(0) {
+    case false:
         var t0_source int = 0
         var t0 uint64 = uint64(int(t0_source))
         var t1 uint64 = t0 + 14695981039346656037
         var h__0 uint64 = t1 + 1
         return h__0
-    case 1:
-        var x0 int32 = self__0._v1_0
+    case true:
+        var x0 int32 = int32(int64(uint64(self__0) - 1) - 2147483648)
         var t2_source int = 0
         var t2 uint64 = uint64(int(t2_source))
         var t3 uint64 = t2 + 14695981039346656037
@@ -294,19 +283,19 @@ func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__0 Key) uint64 {
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__0 Key, other__0 Key) bool {
-    switch other__0._tag {
-    case 0:
-        switch self__0._tag {
-        case 0:
+    switch other__0 != Key(0) {
+    case false:
+        switch self__0 != Key(0) {
+        case false:
             return true
         default:
             return false
         }
-    case 1:
-        var x0 int32 = other__0._v1_0
-        switch self__0._tag {
-        case 1:
-            var x1 int32 = self__0._v1_0
+    case true:
+        var x0 int32 = int32(int64(uint64(other__0) - 1) - 2147483648)
+        switch self__0 != Key(0) {
+        case true:
+            var x1 int32 = int32(int64(uint64(self__0) - 1) - 2147483648)
             var inline0 bool = x1 == x0
             return inline0
         default:
@@ -341,13 +330,8 @@ func main0() struct{} {
     var inline21 *hashmap_Key_int32_x = hashmap_new__HashMap_3Key_5int32()
     m__0 = inline21
     var inline19 int32 = 10
-    hashmap_set__HashMap_3Key_5int32(m__0, Key{
-        _tag: 0,
-    }, inline19)
-    var t4 Key = Key{
-        _tag: 1,
-        _v1_0: 1,
-    }
+    hashmap_set__HashMap_3Key_5int32(m__0, Key(0), inline19)
+    var t4 Key = Key(uint64(int64(1) + 2147483648) + 1)
     var inline17 int32 = 20
     hashmap_set__HashMap_3Key_5int32(m__0, t4, inline17)
     var t5 int
@@ -356,37 +340,26 @@ func main0() struct{} {
     var inline14 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t5)
     _goml_runtime_core_string_println(inline14)
     var t6 Option__i32
-    var inline13 Option__i32 = hashmap_get__HashMap_3Key_5int32(m__0, Key{
-        _tag: 0,
-    })
+    var inline13 Option__i32 = hashmap_get__HashMap_3Key_5int32(m__0, Key(0))
     t6 = inline13
-    switch t6._tag {
-    case 0:
+    switch t6 != Option__i32(0) {
+    case false:
         println__T_string("none")
-    case 1:
-        var inline11 int32 = t6._v1_0
+    case true:
+        var inline11 int32 = int32(int64(uint64(t6) - 1) - 2147483648)
         println__T_i32(inline11)
     default:
         panic("non-exhaustive match")
     }
-    var t7 Key = Key{
-        _tag: 1,
-        _v1_0: 1,
-    }
+    var t7 Key = Key(uint64(int64(1) + 2147483648) + 1)
     var t8 bool
     var inline9 bool = hashmap_contains__HashMap_3Key_5int32(m__0, t7)
     t8 = inline9
     var inline7 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t8)
     _goml_runtime_core_string_println(inline7)
-    var t9 Key = Key{
-        _tag: 1,
-        _v1_0: 1,
-    }
+    var t9 Key = Key(uint64(int64(1) + 2147483648) + 1)
     hashmap_remove__HashMap_3Key_5int32(m__0, t9)
-    var t10 Key = Key{
-        _tag: 1,
-        _v1_0: 1,
-    }
+    var t10 Key = Key(uint64(int64(1) + 2147483648) + 1)
     var t11 bool
     var inline5 bool = hashmap_contains__HashMap_3Key_5int32(m__0, t10)
     t11 = inline5

@@ -1,0 +1,67 @@
+fn shared_value(value/0: Shared) -> isize {
+    match (value/0 : Shared) {
+        Shared::First(value/1: u8) => (u8::to_isize : (u8) -> isize)((value/1 : u8)),
+        Shared::Second(value/2: u8) => (u8::to_isize : (u8) -> isize)((value/2 : u8)) + 10,
+        Shared::Wide(value/3: u16) => (u16::to_isize : (u16) -> isize)((value/3 : u16)) + 20,
+        Shared::Empty => 0,
+    }
+}
+
+fn maybe_byte(value/4: MaybeByte) -> isize {
+    match (value/4 : MaybeByte) {
+        MaybeByte::None => 0,
+        MaybeByte::Some(value/5: u8) => (u8::to_isize : (u8) -> isize)((value/5 : u8)),
+    }
+}
+
+fn maybe_signed(value/6: MaybeSigned) -> i32 {
+    match (value/6 : MaybeSigned) {
+        MaybeSigned::None => 0,
+        MaybeSigned::Some(value/7: i32) => (value/7 : i32),
+    }
+}
+
+fn maybe_vec(value/8: MaybeVec) -> isize {
+    match (value/8 : MaybeVec) {
+        MaybeVec::None => 0,
+        MaybeVec::Some(value/9: Vec[i32]) =>
+          (Vec[i32]::len : (Vec[i32]) -> isize)((value/9 : Vec[i32])),
+    }
+}
+
+fn outer_value(value/10: Outer) -> isize {
+    match (value/10 : Outer) {
+        Outer::None => 0,
+        Outer::Some(Inner::Left(value/11: u8)) => (u8::to_isize : (u8) -> isize)((value/11 : u8)),
+        Outer::Some(Inner::Right(value/12: u8)) =>
+          (u8::to_isize : (u8) -> isize)((value/12 : u8)) + 1,
+    }
+}
+
+fn list_sum(value/13: List) -> i32 {
+    match (value/13 : List) {
+        List::Nil => 0,
+        List::Cons(head/14: i32, tail/15: List) =>
+          (head/14 : i32) + (list_sum : (List) -> i32)((tail/15 : List)),
+    }
+}
+
+fn main() -> () {
+    (println : (isize) -> ())((shared_value : (Shared) -> isize)(Shared::First(3)));
+    (println : (isize) -> ())((shared_value : (Shared) -> isize)(Shared::Second(4)));
+    (println : (isize) -> ())((shared_value : (Shared) -> isize)(Shared::Wide(5)));
+    (println : (isize) -> ())((maybe_byte : (MaybeByte) -> isize)(MaybeByte::Some(255)));
+    (println : (i32) -> ())((maybe_signed : (MaybeSigned) -> i32)(MaybeSigned::Some(-7)));
+    (println : (i32) -> ())((maybe_signed : (MaybeSigned) -> i32)(MaybeSigned::Some(-2147483648)));
+    let values/16: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/16 : Vec[i32]), 7);
+    (println : (isize) -> ())(
+      (maybe_vec : (MaybeVec) -> isize)(MaybeVec::Some((values/16 : Vec[i32])))
+    );
+    (println : (isize) -> ())((outer_value : (Outer) -> isize)(Outer::Some(Inner::Right(8))));
+    (println : (i32) -> ())((list_sum : (List) -> i32)(List::Cons(1, List::Cons(2, List::Nil))));
+    match ZeroSized::MarkerValue(Marker {}) {
+        ZeroSized::MarkerValue(_ : Marker) => (println : (isize) -> ())(1),
+        ZeroSized::UnitValue(_ : ()) => (println : (isize) -> ())(2),
+    }
+}

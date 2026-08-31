@@ -183,7 +183,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func increment(value__0 uint8) uint8 {
     var t0 uint8 = value__0 + 1

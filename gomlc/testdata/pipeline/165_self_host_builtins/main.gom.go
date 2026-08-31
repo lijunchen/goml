@@ -443,9 +443,9 @@ type closure_env_inherent_Slice_Slice_T_iter_T_u8_2 struct {
     self_2 []uint8
 }
 
-type Ordering int32
+type Ordering uint8
 
-type _goml_m_std_p_io_p_ErrorKind int32
+type _goml_m_std_p_io_p_ErrorKind uint8
 
 const (
     NotFound _goml_m_std_p_io_p_ErrorKind = 0
@@ -463,49 +463,45 @@ const (
     _goml_m_std_p_io_p_ErrorKind_Other _goml_m_std_p_io_p_ErrorKind = 12
 )
 
-type _goml_m_std_p_fs_p_FileType int32
+type _goml_m_std_p_fs_p_FileType uint8
 
-type Option__u8 struct {
-    _tag int32
-    _v1_0 uint8
-}
+type Option__u8 uint16
 
 type _goml_m_Option____Slice_l_u8_r_ struct {
-    _tag int32
-    _v1_0 []uint8
+    _p0 []uint8
+    _tag uint8
 }
 
 type _goml_m_Option____MutSlice_l_u8_r_ struct {
-    _tag int32
-    _v1_0 []uint8
+    _p0 []uint8
+    _tag uint8
 }
 
 type _goml_m_Result____string____std_p_utf8_p_Utf8Error struct {
-    _tag int32
-    _v0_0 string
-    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
+    _p1 _goml_m_std_p_utf8_p_Utf8Error
+    _p0 string
+    _tag uint8
 }
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error struct {
-    _tag int32
-    _v0_0 struct{}
-    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
+    _p0 _goml_m_std_p_utf8_p_Utf8Error
+    _tag uint8
 }
 
 type _goml_m_Result____isize____std_p_bytes_p_BoundsError struct {
-    _tag int32
-    _v0_0 int
-    _v1_0 _goml_m_std_p_bytes_p_BoundsError
+    _p1 _goml_m_std_p_bytes_p_BoundsError
+    _p0 int
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error interface {
@@ -668,10 +664,7 @@ type _goml_m_Result____Vec_l_string_r_____std_p_fs_p_Error_Err struct {
 
 func (_ _goml_m_Result____Vec_l_string_r_____std_p_fs_p_Error_Err) is_goml_m_Result____Vec_l_string_r_____std_p_fs_p_Error() {}
 
-type Option__char struct {
-    _tag int32
-    _v1_0 rune
-}
+type Option__char uint64
 
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(value__0 string) _goml_m_std_p_bytes_p_Bytes {
     var t0 *_goml_vec_uint8
@@ -717,8 +710,8 @@ func _goml_m_std_p_utf8_p_continuation(value__0 uint8) bool {
 
 func _goml_m_std_p_utf8_p_invalid(index__0 int) _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error {
     var t0 Option__isize = Option__isize{
+        _p0: 1,
         _tag: 1,
-        _v1_0: 1,
     }
     var t1 _goml_m_std_p_utf8_p_Utf8Error
     var inline0 _goml_m_std_p_utf8_p_Utf8Error = _goml_m_std_p_utf8_p_Utf8Error{
@@ -727,8 +720,8 @@ func _goml_m_std_p_utf8_p_invalid(index__0 int) _goml_m_Result_____o__q_____std_
     }
     t1 = inline0
     var t2 _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error = _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error{
+        _p0: t1,
         _tag: 1,
-        _v1_0: t1,
     }
     return t2
 }
@@ -768,8 +761,8 @@ func _goml_m_std_p_utf8_p_validate(bytes__0 []uint8) _goml_m_Result_____o__q____
                             _tag: 0,
                         })
                         var inline1 _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error = _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error{
+                            _p0: inline0,
                             _tag: 1,
-                            _v1_0: inline0,
                         }
                         return inline1
                     } else {
@@ -788,13 +781,13 @@ func _goml_m_std_p_utf8_p_validate(bytes__0 []uint8) _goml_m_Result_____o__q____
                         var t13 bool = !t12
                         if t13 {
                             var inline2 Option__isize = Option__isize{
+                                _p0: 1,
                                 _tag: 1,
-                                _v1_0: 1,
                             }
                             var inline3 _goml_m_std_p_utf8_p_Utf8Error = _goml_m_inherent_i_std_p_utf8_p_Utf8Error_i_std_p_utf8_p_Utf8Error_i_new(index__0, inline2)
                             var inline4 _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error = _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error{
+                                _p0: inline3,
                                 _tag: 1,
-                                _v1_0: inline3,
                             }
                             return inline4
                         } else {
@@ -825,8 +818,8 @@ func _goml_m_std_p_utf8_p_validate(bytes__0 []uint8) _goml_m_Result_____o__q____
                                 _tag: 0,
                             })
                             var inline10 _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error = _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error{
+                                _p0: inline9,
                                 _tag: 1,
-                                _v1_0: inline9,
                             }
                             return inline10
                         } else {
@@ -886,13 +879,13 @@ func _goml_m_std_p_utf8_p_validate(bytes__0 []uint8) _goml_m_Result_____o__q____
                             }
                             if jp3 {
                                 var inline11 Option__isize = Option__isize{
+                                    _p0: 1,
                                     _tag: 1,
-                                    _v1_0: 1,
                                 }
                                 var inline12 _goml_m_std_p_utf8_p_Utf8Error = _goml_m_inherent_i_std_p_utf8_p_Utf8Error_i_std_p_utf8_p_Utf8Error_i_new(index__0, inline11)
                                 var inline13 _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error = _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error{
+                                    _p0: inline12,
                                     _tag: 1,
-                                    _v1_0: inline12,
                                 }
                                 return inline13
                             } else {
@@ -921,8 +914,8 @@ func _goml_m_std_p_utf8_p_validate(bytes__0 []uint8) _goml_m_Result_____o__q____
                                     _tag: 0,
                                 })
                                 var inline22 _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error = _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error{
+                                    _p0: inline21,
                                     _tag: 1,
-                                    _v1_0: inline21,
                                 }
                                 return inline22
                             } else {
@@ -1003,7 +996,6 @@ func _goml_m_std_p_utf8_p_validate(bytes__0 []uint8) _goml_m_Result_____o__q____
     }
     var t0 _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error = _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error{
         _tag: 0,
-        _v0_0: struct{}{},
     }
     return t0
 }
@@ -1018,8 +1010,8 @@ func _goml_m_std_p_utf8_p_decode__slice(bytes__0 []uint8) _goml_m_Result____stri
         var x1 string = mtmp1._1
         if x0 {
             var t0 _goml_m_Result____string____std_p_utf8_p_Utf8Error = _goml_m_Result____string____std_p_utf8_p_Utf8Error{
+                _p0: x1,
                 _tag: 0,
-                _v0_0: x1,
             }
             return t0
         } else {
@@ -1033,16 +1025,16 @@ func _goml_m_std_p_utf8_p_decode__slice(bytes__0 []uint8) _goml_m_Result____stri
             }
             t1 = inline1
             var t2 _goml_m_Result____string____std_p_utf8_p_Utf8Error = _goml_m_Result____string____std_p_utf8_p_Utf8Error{
+                _p1: t1,
                 _tag: 1,
-                _v1_0: t1,
             }
             return t2
         }
     case 1:
-        var x2 _goml_m_std_p_utf8_p_Utf8Error = mtmp0._v1_0
+        var x2 _goml_m_std_p_utf8_p_Utf8Error = mtmp0._p0
         var t3 _goml_m_Result____string____std_p_utf8_p_Utf8Error = _goml_m_Result____string____std_p_utf8_p_Utf8Error{
+            _p1: x2,
             _tag: 1,
-            _v1_0: x2,
         }
         return t3
     default:
@@ -1119,7 +1111,7 @@ func _goml_m_trait__impl_i_ToString_i_std_p_fs_p_Error_i_to__string(self__0 _gom
         var inline4 string = inline2 + inline3
         return inline4
     case 1:
-        var inline5 string = inline0._v1_0
+        var inline5 string = inline0._p0
         var inline6 string = t0.operation_value
         var inline7 string = inline6 + " "
         var inline8 string = inline7 + inline5
@@ -1157,14 +1149,14 @@ func _goml_m_std_p_fs_p_read__bytes__structured(path__0 string) _goml_m_Result__
         var inline1 string = "read file"
         var inline2 _goml_m_std_p_io_p_ErrorKind = _goml_m_std_p_io_p_kind__from__code(x2)
         var inline3 Option__string = Option__string{
+            _p0: path__0,
             _tag: 1,
-            _v1_0: path__0,
         }
         var inline4 Option__isize
         if x3 {
             var inline6 Option__isize = Option__isize{
+                _p0: x4,
                 _tag: 1,
-                _v1_0: x4,
             }
             inline4 = inline6
         } else {
@@ -1203,14 +1195,14 @@ func _goml_m_std_p_fs_p_write__bytes__structured(path__0 string, data__0 _goml_m
         var inline0 string = "write file"
         var inline1 _goml_m_std_p_io_p_ErrorKind = _goml_m_std_p_io_p_kind__from__code(x1)
         var inline2 Option__string = Option__string{
+            _p0: path__0,
             _tag: 1,
-            _v1_0: path__0,
         }
         var inline3 Option__isize
         if x2 {
             var inline5 Option__isize = Option__isize{
+                _p0: x3,
                 _tag: 1,
-                _v1_0: x3,
             }
             inline3 = inline5
         } else {
@@ -1246,14 +1238,14 @@ func _goml_m_std_p_fs_p_create__dir__all(path__0 string) _goml_m_Result_____o__q
         var inline3 int = 0
         var inline4 _goml_m_std_p_io_p_ErrorKind = _goml_m_std_p_io_p_kind__from__code(inline1)
         var inline5 Option__string = Option__string{
+            _p0: path__0,
             _tag: 1,
-            _v1_0: path__0,
         }
         var inline6 Option__isize
         if inline2 {
             var inline8 Option__isize = Option__isize{
+                _p0: inline3,
                 _tag: 1,
-                _v1_0: inline3,
             }
             inline6 = inline8
         } else {
@@ -1392,11 +1384,11 @@ func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_to__vec____T__u8(self__0 []uint8)
         var inline1 func() Option__u8 = for_iter0.next_fn
         var inline2 Option__u8 = inline1()
         for_next0 = inline2
-        switch for_next0._tag {
-        case 0:
+        switch for_next0 != Option__u8(0) {
+        case false:
             break Loop_loop0
-        case 1:
-            var x0 uint8 = for_next0._v1_0
+        case true:
+            var x0 uint8 = uint8(uint16(for_next0) - 1)
             vec_push__Vec_5uint8(result__0, x0)
             continue
         default:
@@ -1451,13 +1443,13 @@ func _goml_m_inherent_i_string_i_string_i_byte__len(self__0 string) int {
 func _goml_m_inherent_i_Result_i_Re_h48a6a59879d8846dfcb5cfdba927af0b_or____T__string(self__0 _goml_m_Result____string____std_p_utf8_p_Utf8Error, map_fn__0 func(_goml_m_std_p_utf8_p_Utf8Error) _goml_m_std_p_fs_p_Error) _goml_m_Result____string____std_p_fs_p_Error {
     switch self__0._tag {
     case 0:
-        var x0 string = self__0._v0_0
+        var x0 string = self__0._p0
         var t0 _goml_m_Result____string____std_p_fs_p_Error = _goml_m_Result____string____std_p_fs_p_Error_Ok{
             _0: x0,
         }
         return t0
     case 1:
-        var x1 _goml_m_std_p_utf8_p_Utf8Error = self__0._v1_0
+        var x1 _goml_m_std_p_utf8_p_Utf8Error = self__0._p1
         var t1 _goml_m_std_p_fs_p_Error = map_fn__0(x1)
         var t2 _goml_m_Result____string____std_p_fs_p_Error = _goml_m_Result____string____std_p_fs_p_Error_Err{
             _0: t1,
@@ -1532,12 +1524,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
         if t2 {
             var inline0 int = 1
             var inline1 Option__char = __goml_builtin_char_from_uint32(first__0)
-            switch inline1._tag {
-            case 0:
+            switch inline1 != Option__char(0) {
+            case false:
                 var inline2 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline2
-            case 1:
-                var inline3 rune = inline1._v1_0
+            case true:
+                var inline3 rune = rune(uint64(inline1) - 1)
                 var inline4 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline3,
@@ -1596,12 +1588,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             var t13 uint32 = t11 | t12
                             var inline7 int = 2
                             var inline8 Option__char = __goml_builtin_char_from_uint32(t13)
-                            switch inline8._tag {
-                            case 0:
+                            switch inline8 != Option__char(0) {
+                            case false:
                                 var inline9 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline9
-                            case 1:
-                                var inline10 rune = inline8._v1_0
+                            case true:
+                                var inline10 rune = rune(uint64(inline8) - 1)
                                 var inline11 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline10,
@@ -1686,12 +1678,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 var t28 uint32 = t26 | t27
                                 var inline17 int = 3
                                 var inline18 Option__char = __goml_builtin_char_from_uint32(t28)
-                                switch inline18._tag {
-                                case 0:
+                                switch inline18 != Option__char(0) {
+                                case false:
                                     var inline19 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline19
-                                case 1:
-                                    var inline20 rune = inline18._v1_0
+                                case true:
+                                    var inline20 rune = rune(uint64(inline18) - 1)
                                     var inline21 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline20,
@@ -2002,23 +1994,18 @@ func __goml_builtin_char_from_uint32(value__0 uint32) Option__char {
     if t0 {
         var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
         var x0 rune = mtmp0._1
-        var t1 Option__char = Option__char{
-            _tag: 1,
-            _v1_0: x0,
-        }
+        var t1 Option__char = Option__char(uint64(uint32(x0)) + 1)
         return t1
     } else {
-        return Option__char{
-            _tag: 0,
-        }
+        return Option__char(0)
     }
 }
 
 func _goml_m_inherent_i_closure__en_h3dd0cb03305303b9cfff8ae48a351c84_ured__1_i_apply(env0 closure_env_std_fs_read_file_structured_1, error__0 _goml_m_std_p_utf8_p_Utf8Error) _goml_m_std_p_fs_p_Error {
     var path__0 string = env0.path_0
     var t0 Option__string = Option__string{
+        _p0: path__0,
         _tag: 1,
-        _v1_0: path__0,
     }
     var t1 string
     var inline3 string = "" + "invalid UTF-8 at byte "
@@ -2048,15 +2035,10 @@ func _goml_m_inherent_i_closure__en_h481af7ced3d7a03f70b6419e8b58e2d0___u8__2_i_
         value__0 = inline0
         var t1 int = current__0 + 1
         ref_set__Ref_3int(index__0, t1)
-        var t2 Option__u8 = Option__u8{
-            _tag: 1,
-            _v1_0: value__0,
-        }
+        var t2 Option__u8 = Option__u8(uint16(uint8(value__0)) + 1)
         return t2
     } else {
-        return Option__u8{
-            _tag: 0,
-        }
+        return Option__u8(0)
     }
 }
 

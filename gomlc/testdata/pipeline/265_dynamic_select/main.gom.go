@@ -168,13 +168,9 @@ type _goml_m_std_p_channel_p_PreparedOperations____isize struct {
     values *_goml_vec_int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type _goml_m_std_p_channel_p_SelectError int32
-
-const (
-    Empty _goml_m_std_p_channel_p_SelectError = 0
-)
+type _goml_m_std_p_channel_p_SelectError struct{}
 
 type _goml_m_std_p_channel_p_Selection____isize interface {
     is_goml_m_std_p_channel_p_Selection____isize()
@@ -194,32 +190,40 @@ type Sent struct {
 func (_ Sent) is_goml_m_std_p_channel_p_Selection____isize() {}
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
-type _goml_m_std_p_channel_p_Operation____isize struct {
-    _tag int32
-    _v0_0 <-chan int
-    _v1_0 chan<- int
-    _v1_1 int
+type _goml_m_std_p_channel_p_Operation____isize interface {
+    is_goml_m_std_p_channel_p_Operation____isize()
 }
+
+type Receive struct {
+    _0 <-chan int
+}
+
+func (_ Receive) is_goml_m_std_p_channel_p_Operation____isize() {}
+
+type Send struct {
+    _0 chan<- int
+    _1 int
+}
+
+func (_ Send) is_goml_m_std_p_channel_p_Operation____isize() {}
 
 type _goml_m_Option____std_p_channel_p_Selection____isize struct {
-    _tag int32
-    _v1_0 _goml_m_std_p_channel_p_Selection____isize
+    _p0 _goml_m_std_p_channel_p_Selection____isize
+    _tag uint8
 }
 
 type _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError struct {
-    _tag int32
-    _v0_0 _goml_m_Option____std_p_channel_p_Selection____isize
-    _v1_0 _goml_m_std_p_channel_p_SelectError
+    _p0 _goml_m_Option____std_p_channel_p_Selection____isize
+    _tag uint8
 }
 
 type _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError struct {
-    _tag int32
-    _v0_0 _goml_m_std_p_channel_p_Selection____isize
-    _v1_0 _goml_m_std_p_channel_p_SelectError
+    _p0 _goml_m_std_p_channel_p_Selection____isize
+    _tag uint8
 }
 
 func print_selection(value__0 _goml_m_std_p_channel_p_Selection____isize) struct{} {
@@ -235,7 +239,7 @@ func print_selection(value__0 _goml_m_std_p_channel_p_Selection____isize) struct
         case 0:
             t0 = inline2
         case 1:
-            var inline3 int = x1._v1_0
+            var inline3 int = x1._p0
             t0 = inline3
         default:
             panic("non-exhaustive match")
@@ -259,14 +263,12 @@ func main0() struct{} {
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(first__0, 10)
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(second__0, 20)
     var t0 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(first__0)
-    var t1 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
-        _tag: 0,
-        _v0_0: t0,
+    var t1 _goml_m_std_p_channel_p_Operation____isize = Receive{
+        _0: t0,
     }
     var t2 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(second__0)
-    var t3 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
-        _tag: 0,
-        _v0_0: t2,
+    var t3 _goml_m_std_p_channel_p_Operation____isize = Receive{
+        _0: t2,
     }
     var t4 [2]_goml_m_std_p_channel_p_Operation____isize = [2]_goml_m_std_p_channel_p_Operation____isize{t1, t3}
     var operations__0 *_goml_vec__goml_m_std_p_channel_p_Operation____isize = func(values [2]_goml_m_std_p_channel_p_Operation____isize) *_goml_vec__goml_m_std_p_channel_p_Operation____isize {
@@ -283,10 +285,10 @@ func main0() struct{} {
     var mtmp0 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_std_p_channel_p_try__select__priority____T__isize(t6)
     switch mtmp0._tag {
     case 0:
-        var x5 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp0._v0_0
+        var x5 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp0._p0
         switch x5._tag {
         case 1:
-            var x6 _goml_m_std_p_channel_p_Selection____isize = x5._v1_0
+            var x6 _goml_m_std_p_channel_p_Selection____isize = x5._p0
             switch x6.(type) {
             case Received:
                 var inline20 int = x6.(Received)._0
@@ -315,10 +317,10 @@ func main0() struct{} {
     var mtmp1 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_std_p_channel_p_try__select____T__isize(t8)
     switch mtmp1._tag {
     case 0:
-        var x3 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp1._v0_0
+        var x3 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp1._p0
         switch x3._tag {
         case 1:
-            var x4 _goml_m_std_p_channel_p_Selection____isize = x3._v1_0
+            var x4 _goml_m_std_p_channel_p_Selection____isize = x3._p0
             switch x4.(type) {
             case Received:
                 var inline7 int = x4.(Received)._0
@@ -345,15 +347,13 @@ func main0() struct{} {
     var empty__0 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(0)
     var target__0 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(1)
     var t9 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(empty__0)
-    var t10 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
-        _tag: 0,
-        _v0_0: t9,
+    var t10 _goml_m_std_p_channel_p_Operation____isize = Receive{
+        _0: t9,
     }
     var t11 chan<- int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_sender____T__isize(target__0)
-    var t12 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
-        _tag: 1,
-        _v1_0: t11,
-        _v1_1: 30,
+    var t12 _goml_m_std_p_channel_p_Operation____isize = Send{
+        _0: t11,
+        _1: 30,
     }
     var t13 [2]_goml_m_std_p_channel_p_Operation____isize = [2]_goml_m_std_p_channel_p_Operation____isize{t10, t12}
     var mixed__0 *_goml_vec__goml_m_std_p_channel_p_Operation____isize = func(values [2]_goml_m_std_p_channel_p_Operation____isize) *_goml_vec__goml_m_std_p_channel_p_Operation____isize {
@@ -370,7 +370,7 @@ func main0() struct{} {
     var mtmp2 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_std_p_channel_p_select____T__isize(t15)
     switch mtmp2._tag {
     case 0:
-        var x2 _goml_m_std_p_channel_p_Selection____isize = mtmp2._v0_0
+        var x2 _goml_m_std_p_channel_p_Selection____isize = mtmp2._p0
         print_selection(x2)
     case 1:
         var inline4 int = -3
@@ -383,9 +383,8 @@ func main0() struct{} {
     var t17 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(t16, -4)
     println__T_isize(t17)
     var t18 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(empty__0)
-    var t19 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
-        _tag: 0,
-        _v0_0: t18,
+    var t19 _goml_m_std_p_channel_p_Operation____isize = Receive{
+        _0: t18,
     }
     var t20 [1]_goml_m_std_p_channel_p_Operation____isize = [1]_goml_m_std_p_channel_p_Operation____isize{t19}
     var none__0 *_goml_vec__goml_m_std_p_channel_p_Operation____isize = func(values [1]_goml_m_std_p_channel_p_Operation____isize) *_goml_vec__goml_m_std_p_channel_p_Operation____isize {
@@ -403,7 +402,7 @@ func main0() struct{} {
     var jp0 int
     switch mtmp3._tag {
     case 0:
-        var x1 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp3._v0_0
+        var x1 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp3._p0
         switch x1._tag {
         case 0:
             jp0 = 40
@@ -425,9 +424,9 @@ func main0() struct{} {
     var jp1 int
     switch mtmp4._tag {
     case 1:
-        var x0 _goml_m_std_p_channel_p_SelectError = mtmp4._v1_0
+        var x0 _goml_m_std_p_channel_p_SelectError = _goml_m_std_p_channel_p_SelectError{}
         switch x0 {
-        case Empty:
+        case _goml_m_std_p_channel_p_SelectError{}:
             jp1 = 50
         default:
             panic("non-exhaustive match")
@@ -453,7 +452,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__0 
     case 0:
         return fallback__0
     case 1:
-        var x0 int = self__0._v1_0
+        var x0 int = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")
@@ -490,7 +489,6 @@ func _goml_m_std_p_channel_p_try__select__priority____T__isize(operations__0 []_
     if t1 {
         var t2 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
             _tag: 1,
-            _v1_0: Empty,
         }
         return t2
     } else {
@@ -572,8 +570,8 @@ func _goml_m_std_p_channel_p_try__select__priority____T__isize(operations__0 []_
                 var inline1 Option__isize
                 if x7 {
                     var inline3 Option__isize = Option__isize{
+                        _p0: x6,
                         _tag: 1,
-                        _v1_0: x6,
                     }
                     inline1 = inline3
                 } else {
@@ -593,8 +591,8 @@ func _goml_m_std_p_channel_p_try__select__priority____T__isize(operations__0 []_
                 t4 = inline4
             }
             var t5 _goml_m_Option____std_p_channel_p_Selection____isize = _goml_m_Option____std_p_channel_p_Selection____isize{
+                _p0: t4,
                 _tag: 1,
-                _v1_0: t4,
             }
             jp0 = t5
         } else {
@@ -603,8 +601,8 @@ func _goml_m_std_p_channel_p_try__select__priority____T__isize(operations__0 []_
             }
         }
         var t3 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
+            _p0: jp0,
             _tag: 0,
-            _v0_0: jp0,
         }
         return t3
     }
@@ -623,7 +621,6 @@ func _goml_m_std_p_channel_p_try__select____T__isize(operations__0 []_goml_m_std
     if t1 {
         var t2 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
             _tag: 1,
-            _v1_0: Empty,
         }
         return t2
     } else {
@@ -699,8 +696,8 @@ func _goml_m_std_p_channel_p_try__select____T__isize(operations__0 []_goml_m_std
                 var inline1 Option__isize
                 if x7 {
                     var inline3 Option__isize = Option__isize{
+                        _p0: x6,
                         _tag: 1,
-                        _v1_0: x6,
                     }
                     inline1 = inline3
                 } else {
@@ -720,8 +717,8 @@ func _goml_m_std_p_channel_p_try__select____T__isize(operations__0 []_goml_m_std
                 t4 = inline4
             }
             var t5 _goml_m_Option____std_p_channel_p_Selection____isize = _goml_m_Option____std_p_channel_p_Selection____isize{
+                _p0: t4,
                 _tag: 1,
-                _v1_0: t4,
             }
             jp0 = t5
         } else {
@@ -730,8 +727,8 @@ func _goml_m_std_p_channel_p_try__select____T__isize(operations__0 []_goml_m_std
             }
         }
         var t3 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
+            _p0: jp0,
             _tag: 0,
-            _v0_0: jp0,
         }
         return t3
     }
@@ -752,7 +749,6 @@ func _goml_m_std_p_channel_p_select____T__isize(operations__0 []_goml_m_std_p_ch
     if t1 {
         var t2 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError{
             _tag: 1,
-            _v1_0: Empty,
         }
         return t2
     } else {
@@ -813,8 +809,8 @@ func _goml_m_std_p_channel_p_select____T__isize(operations__0 []_goml_m_std_p_ch
             var inline1 Option__isize
             if x7 {
                 var inline3 Option__isize = Option__isize{
+                    _p0: x6,
                     _tag: 1,
-                    _v1_0: x6,
                 }
                 inline1 = inline3
             } else {
@@ -834,8 +830,8 @@ func _goml_m_std_p_channel_p_select____T__isize(operations__0 []_goml_m_std_p_ch
             t3 = inline4
         }
         var t4 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError{
+            _p0: t3,
             _tag: 0,
-            _v0_0: t3,
         }
         return t4
     }
@@ -855,8 +851,8 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__isize(self__0 chan
     var x1 bool = mtmp0._1
     if x1 {
         var t0 Option__isize = Option__isize{
+            _p0: x0,
             _tag: 1,
-            _v1_0: x0,
         }
         return t0
     } else {
@@ -897,16 +893,16 @@ func _goml_m_std_p_channel_p_prepare____T__isize(operations__0 []_goml_m_std_p_c
             var for_item0 _goml_m_std_p_channel_p_Operation____isize = operations__0[for_index0]
             var t3 int = for_index0 + 1
             for_index0 = t3
-            switch for_item0._tag {
-            case 0:
-                var x0 <-chan int = for_item0._v0_0
+            switch for_item0.(type) {
+            case Receive:
+                var x0 <-chan int = for_item0.(Receive)._0
                 var inline1 int = 0
                 vec_push__Vec_3int(kinds__0, inline1)
                 vec_push__Vec_13Receiver_3int(receivers__0, x0)
                 continue
-            case 1:
-                var x1 chan<- int = for_item0._v1_0
-                var x2 int = for_item0._v1_1
+            case Send:
+                var x1 chan<- int = for_item0.(Send)._0
+                var x2 int = for_item0.(Send)._1
                 var inline5 int = 1
                 vec_push__Vec_3int(kinds__0, inline5)
                 vec_push__Vec_11Sender_3int(senders__0, x1)

@@ -63,9 +63,9 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Light int32
+type Light uint8
 
 const (
     Light_Red Light = 0
@@ -73,7 +73,7 @@ const (
     Green Light = 2
 )
 
-type Paint int32
+type Paint uint8
 
 const (
     Paint_Red Paint = 0

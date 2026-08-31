@@ -95,7 +95,7 @@ type closure_env_reset_1 struct {
     cell_0 *ref_int32_x
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var counter__0 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit

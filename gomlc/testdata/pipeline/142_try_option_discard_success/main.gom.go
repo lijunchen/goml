@@ -33,16 +33,16 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type _goml_m_Option_____o_string_c_string_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_6string_6string
+    _p0 Tuple2_6string_6string
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
@@ -52,8 +52,8 @@ func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
             _1: "right",
         }
         var t1 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
+            _p0: t0,
             _tag: 1,
-            _v1_0: t0,
         }
         return t1
     } else {
@@ -77,7 +77,7 @@ func main0() struct{} {
         case 0:
             t1 = "none"
         case 1:
-            var inline11 string = t0._v1_0
+            var inline11 string = t0._p0
             var inline12 string = "some " + inline11
             t1 = inline12
         default:
@@ -98,7 +98,7 @@ func main0() struct{} {
             case 0:
                 t3 = "none"
             case 1:
-                var inline2 string = t2._v1_0
+                var inline2 string = t2._p0
                 var inline3 string = "some " + inline2
                 t3 = inline3
             default:
@@ -109,8 +109,8 @@ func main0() struct{} {
             return struct{}{}
         case 1:
             var inline7 Option__string = Option__string{
+                _p0: "ok",
                 _tag: 1,
-                _v1_0: "ok",
             }
             t2 = inline7
             var t3 string
@@ -118,7 +118,7 @@ func main0() struct{} {
             case 0:
                 t3 = "none"
             case 1:
-                var inline2 string = t2._v1_0
+                var inline2 string = t2._p0
                 var inline3 string = "some " + inline2
                 t3 = inline3
             default:
@@ -132,8 +132,8 @@ func main0() struct{} {
         }
     case 1:
         var inline16 Option__string = Option__string{
+            _p0: "ok",
             _tag: 1,
-            _v1_0: "ok",
         }
         t0 = inline16
         var t1 string
@@ -141,7 +141,7 @@ func main0() struct{} {
         case 0:
             t1 = "none"
         case 1:
-            var inline11 string = t0._v1_0
+            var inline11 string = t0._p0
             var inline12 string = "some " + inline11
             t1 = inline12
         default:
@@ -162,7 +162,7 @@ func main0() struct{} {
             case 0:
                 t3 = "none"
             case 1:
-                var inline2 string = t2._v1_0
+                var inline2 string = t2._p0
                 var inline3 string = "some " + inline2
                 t3 = inline3
             default:
@@ -173,8 +173,8 @@ func main0() struct{} {
             return struct{}{}
         case 1:
             var inline7 Option__string = Option__string{
+                _p0: "ok",
                 _tag: 1,
-                _v1_0: "ok",
             }
             t2 = inline7
             var t3 string
@@ -182,7 +182,7 @@ func main0() struct{} {
             case 0:
                 t3 = "none"
             case 1:
-                var inline2 string = t2._v1_0
+                var inline2 string = t2._p0
                 var inline3 string = "some " + inline2
                 t3 = inline3
             default:

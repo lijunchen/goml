@@ -63,12 +63,12 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type T struct {
-    _tag int32
-    _v1_0 bool
-    _v1_1 bool
+    _p0 bool
+    _p1 bool
+    _tag uint8
 }
 
 func test(t__0 T) struct{} {
@@ -82,8 +82,8 @@ func test(t__0 T) struct{} {
         _goml_runtime_core_string_println(inline0)
         return struct{}{}
     case 1:
-        var x0 bool = t__0._v1_0
-        var x1 bool = t__0._v1_1
+        var x0 bool = t__0._p0
+        var x1 bool = t__0._p1
         switch x1 {
         case true:
             switch x0 {
@@ -137,21 +137,21 @@ func test(t__0 T) struct{} {
 
 func main0() struct{} {
     var t0 T = T{
+        _p0: true,
+        _p1: true,
         _tag: 1,
-        _v1_0: true,
-        _v1_1: true,
     }
     test(t0)
     var t1 T = T{
+        _p0: false,
+        _p1: true,
         _tag: 1,
-        _v1_0: false,
-        _v1_1: true,
     }
     test(t1)
     var t2 T = T{
+        _p0: false,
+        _p1: false,
         _tag: 1,
-        _v1_0: false,
-        _v1_1: false,
     }
     test(t2)
     test(T{

@@ -173,12 +173,9 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__char struct {
-    _tag int32
-    _v1_0 rune
-}
+type Option__char uint64
 
 func main0() struct{} {
     var small__0 float32 = 1.5
@@ -237,11 +234,11 @@ func main0() struct{} {
     t7 = inline5
     var t8 rune
     var inline2 rune = 63
-    switch t7._tag {
-    case 0:
+    switch t7 != Option__char(0) {
+    case false:
         t8 = inline2
-    case 1:
-        var inline3 rune = t7._v1_0
+    case true:
+        var inline3 rune = rune(uint64(t7) - 1)
         t8 = inline3
     default:
         panic("non-exhaustive match")
@@ -318,15 +315,10 @@ func __goml_builtin_char_from_uint32(value__0 uint32) Option__char {
     if t0 {
         var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
         var x0 rune = mtmp0._1
-        var t1 Option__char = Option__char{
-            _tag: 1,
-            _v1_0: x0,
-        }
+        var t1 Option__char = Option__char(uint64(uint32(x0)) + 1)
         return t1
     } else {
-        return Option__char{
-            _tag: 0,
-        }
+        return Option__char(0)
     }
 }
 

@@ -67,7 +67,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func answer() int {
     var base__0 int = 40

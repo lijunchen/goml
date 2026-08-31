@@ -28,16 +28,16 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Light__i32 int32
+type Light__i32 uint8
 
 const (
     Light__i32_Red Light__i32 = 0
     Light__i32_Green Light__i32 = 1
 )
 
-type Light__string int32
+type Light__string uint8
 
 const (
     Light__string_Red Light__string = 0

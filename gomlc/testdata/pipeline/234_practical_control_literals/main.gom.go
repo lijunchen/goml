@@ -90,17 +90,17 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func unwrap_or_negative(value__0 Option__isize) int {
     switch value__0._tag {
     case 1:
-        var x0 int = value__0._v1_0
+        var x0 int = value__0._p0
         return x0
     default:
         return -1
@@ -135,7 +135,7 @@ func loop_option(value__0 Option__isize) int {
     var jp0 int
     switch value__0._tag {
     case 1:
-        var x0 int = value__0._v1_0
+        var x0 int = value__0._p0
         jp0 = x0
         return jp0
     default:
@@ -156,8 +156,8 @@ func main0() struct{} {
     var inline22 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t0)
     _goml_runtime_core_string_println(inline22)
     var t1 Option__isize = Option__isize{
+        _p0: 11,
         _tag: 1,
-        _v1_0: 11,
     }
     var t2 int = unwrap_or_negative(t1)
     var t3 string
@@ -179,8 +179,8 @@ func main0() struct{} {
     var inline13 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t7)
     _goml_runtime_core_string_println(inline13)
     var t8 Option__isize = Option__isize{
+        _p0: 9,
         _tag: 1,
-        _v1_0: 9,
     }
     var t9 int = loop_option(t8)
     var t10 string

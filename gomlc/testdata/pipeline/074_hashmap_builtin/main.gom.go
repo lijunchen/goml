@@ -155,14 +155,9 @@ func hashmap_get__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) Option__i
     var ok bool
     value, ok, _, _ = hashmap_lookup__HashMap_3Key_5int32(m, key)
     if ok {
-        return Option__i32{
-            _tag: 1,
-            _v1_0: value,
-        }
+        return Option__i32(uint64(int64(value) + 2147483648) + 1)
     }
-    return Option__i32{
-        _tag: 0,
-    }
+    return Option__i32(0)
 }
 
 func hashmap_set__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key, value int32) struct{} {
@@ -303,14 +298,9 @@ func hashmap_get__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32_x, key
     var ok bool
     value, ok, _, _ = hashmap_lookup__HashMap_10Ref_5Point_5int32(m, key)
     if ok {
-        return Option__i32{
-            _tag: 1,
-            _v1_0: value,
-        }
+        return Option__i32(uint64(int64(value) + 2147483648) + 1)
     }
-    return Option__i32{
-        _tag: 0,
-    }
+    return Option__i32(0)
 }
 
 func hashmap_set__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32_x, key *ref_Point_x, value int32) struct{} {
@@ -408,14 +398,9 @@ func hashmap_get__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref
     var ok bool
     value, ok, _, _ = hashmap_lookup__HashMap_8Ref_3Key_5int32(m, key)
     if ok {
-        return Option__i32{
-            _tag: 1,
-            _v1_0: value,
-        }
+        return Option__i32(uint64(int64(value) + 2147483648) + 1)
     }
-    return Option__i32{
-        _tag: 0,
-    }
+    return Option__i32(0)
 }
 
 func hashmap_set__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref_Key_x, value int32) struct{} {
@@ -487,18 +472,15 @@ type Point struct {
     y int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Key struct {
-    _tag int32
-    _v1_0 int32
-    _v2_0 Point
+    _p1 Point
+    _p0 int32
+    _tag uint8
 }
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__0 Key) uint64 {
     switch self__0._tag {
@@ -509,7 +491,7 @@ func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__0 Key) uint64 {
         var h__0 uint64 = t1 + 1
         return h__0
     case 1:
-        var x0 int32 = self__0._v1_0
+        var x0 int32 = self__0._p0
         var t2_source int = 0
         var t2 uint64 = uint64(int(t2_source))
         var t3 uint64 = t2 + 14695981039346656037
@@ -524,7 +506,7 @@ func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__0 Key) uint64 {
         var h__2 uint64 = t6 + t7
         return h__2
     case 2:
-        var x1 Point = self__0._v2_0
+        var x1 Point = self__0._p1
         var t8_source int = 0
         var t8 uint64 = uint64(int(t8_source))
         var t9 uint64 = t8 + 14695981039346656037
@@ -569,20 +551,20 @@ func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__0 Key, other__0 Key) bool 
             return false
         }
     case 1:
-        var x0 int32 = other__0._v1_0
+        var x0 int32 = other__0._p0
         switch self__0._tag {
         case 1:
-            var x1 int32 = self__0._v1_0
+            var x1 int32 = self__0._p0
             var inline0 bool = x1 == x0
             return inline0
         default:
             return false
         }
     case 2:
-        var x2 Point = other__0._v2_0
+        var x2 Point = other__0._p1
         switch self__0._tag {
         case 2:
-            var x3 Point = self__0._v2_0
+            var x3 Point = self__0._p1
             var inline1 bool
             var inline5 int32 = x3.x
             var inline6 int32 = x2.x
@@ -605,14 +587,14 @@ func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__0 Key, other__0 Key) bool 
 }
 
 func print_opt_int(x__0 Option__i32) struct{} {
-    switch x__0._tag {
-    case 0:
+    switch x__0 != Option__i32(0) {
+    case false:
         var inline0 string = "none"
         var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline0)
         _goml_runtime_core_string_println(inline1)
         return struct{}{}
-    case 1:
-        var x0 int32 = x__0._v1_0
+    case true:
+        var x0 int32 = int32(int64(uint64(x__0) - 1) - 2147483648)
         var inline3 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x0)
         _goml_runtime_core_string_println(inline3)
         return struct{}{}
@@ -627,8 +609,8 @@ func main0() struct{} {
         _tag: 0,
     }, 10)
     var t0 Key = Key{
+        _p0: 1,
         _tag: 1,
-        _v1_0: 1,
     }
     _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__i32(m1__0, t0, 20)
     var t1 int = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__i32(m1__0)
@@ -638,19 +620,19 @@ func main0() struct{} {
     })
     print_opt_int(t2)
     var t3 Key = Key{
+        _p0: 1,
         _tag: 1,
-        _v1_0: 1,
     }
     var t4 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__i32(m1__0, t3)
     println__T_bool(t4)
     var t5 Key = Key{
+        _p0: 1,
         _tag: 1,
-        _v1_0: 1,
     }
     _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__i32(m1__0, t5)
     var t6 Key = Key{
+        _p0: 1,
         _tag: 1,
-        _v1_0: 1,
     }
     var t7 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__i32(m1__0, t6)
     println__T_bool(t7)
@@ -669,11 +651,11 @@ func main0() struct{} {
     var p2__0 *ref_Point_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(t10)
     _goml_m_inherent_i_HashMap_i_H_h92e4b8ba44d2c4c111acc209f0277885_nt_r_____V__i32(m2__0, p1__0, 99)
     var t11 Option__i32 = _goml_m_inherent_i_HashMap_i_H_hf74f21a0b6b06890f12f275bddb17d70_nt_r_____V__i32(m2__0, p1__0)
-    switch t11._tag {
-    case 0:
+    switch t11 != Option__i32(0) {
+    case false:
         println__T_string("none")
-    case 1:
-        var inline21 int32 = t11._v1_0
+    case true:
+        var inline21 int32 = int32(int64(uint64(t11) - 1) - 2147483648)
         println__T_i32(inline21)
     default:
         panic("non-exhaustive match")
@@ -681,11 +663,11 @@ func main0() struct{} {
     var t12 Option__i32
     var inline19 Option__i32 = hashmap_get__HashMap_10Ref_5Point_5int32(m2__0, p2__0)
     t12 = inline19
-    switch t12._tag {
-    case 0:
+    switch t12 != Option__i32(0) {
+    case false:
         println__T_string("none")
-    case 1:
-        var inline17 int32 = t12._v1_0
+    case true:
+        var inline17 int32 = int32(int64(uint64(t12) - 1) - 2147483648)
         println__T_i32(inline17)
     default:
         panic("non-exhaustive match")
@@ -698,11 +680,11 @@ func main0() struct{} {
     var t14 Option__i32
     var inline14 Option__i32 = hashmap_get__HashMap_10Ref_5Point_5int32(m2__0, p1__0)
     t14 = inline14
-    switch t14._tag {
-    case 0:
+    switch t14 != Option__i32(0) {
+    case false:
         println__T_string("none")
-    case 1:
-        var inline12 int32 = t14._v1_0
+    case true:
+        var inline12 int32 = int32(int64(uint64(t14) - 1) - 2147483648)
         println__T_i32(inline12)
     default:
         panic("non-exhaustive match")
@@ -716,8 +698,8 @@ func main0() struct{} {
     var inline7 *hashmap_Ref_3Key_int32_x = hashmap_new__HashMap_8Ref_3Key_5int32()
     m3__0 = inline7
     var t16 Key = Key{
+        _p0: 7,
         _tag: 1,
-        _v1_0: 7,
     }
     var k1__0 *ref_Key_x
     var inline6 *ref_Key_x = ref__Ref_3Key(t16)
@@ -727,12 +709,12 @@ func main0() struct{} {
     var t17 Option__i32
     var inline3 Option__i32 = hashmap_get__HashMap_8Ref_3Key_5int32(m3__0, k1__0)
     t17 = inline3
-    switch t17._tag {
-    case 0:
+    switch t17 != Option__i32(0) {
+    case false:
         println__T_string("none")
         return struct{}{}
-    case 1:
-        var inline1 int32 = t17._v1_0
+    case true:
+        var inline1 int32 = int32(int64(uint64(t17) - 1) - 2147483648)
         println__T_i32(inline1)
         return struct{}{}
     default:

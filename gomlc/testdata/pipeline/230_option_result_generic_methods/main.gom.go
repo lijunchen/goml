@@ -83,40 +83,38 @@ type closure_env_main_6 struct {}
 
 type closure_env_main_7 struct {}
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 type Result__isize__string struct {
-    _tag int32
-    _v0_0 int
-    _v1_0 string
+    _p1 string
+    _p0 int
+    _tag uint8
 }
 
 type Result__isize__isize struct {
-    _tag int32
-    _v0_0 int
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type Result__string__string struct {
-    _tag int32
-    _v0_0 string
-    _v1_0 string
+    _p0 string
+    _tag uint8
 }
 
 func main0() struct{} {
     var some__0 Option__isize = Option__isize{
+        _p0: 3,
         _tag: 1,
-        _v1_0: 3,
     }
     var t0 closure_env_main_0 = closure_env_main_0{}
     var t1 func(int) string = func(p0 int) string {
@@ -150,8 +148,8 @@ func main0() struct{} {
     var t11 int = _goml_m_inherent_i_Result_i_Re_had11e393bde0ae88c9d8324ffd70f925_ing____T__isize(converted__0, t10)
     println__T_isize(t11)
     var ok__0 Result__isize__string = Result__isize__string{
+        _p0: 5,
         _tag: 0,
-        _v0_0: 5,
     }
     var t12 closure_env_main_4 = closure_env_main_4{}
     var t13 func(int) int = func(p0 int) int {
@@ -162,7 +160,7 @@ func main0() struct{} {
     var inline16 int = 0
     switch t14._tag {
     case 0:
-        var inline17 int = t14._v0_0
+        var inline17 int = t14._p0
         t15 = inline17
     case 1:
         t15 = inline16
@@ -179,8 +177,8 @@ func main0() struct{} {
     var inline11 string = "bad"
     var inline12 int = t17(inline11)
     var inline13 Result__isize__isize = Result__isize__isize{
+        _p0: inline12,
         _tag: 1,
-        _v1_0: inline12,
     }
     mapped_error__0 = inline13
     var t18 closure_env_main_6 = closure_env_main_6{}
@@ -190,10 +188,10 @@ func main0() struct{} {
     var t20 int
     switch mapped_error__0._tag {
     case 0:
-        var inline8 int = mapped_error__0._v0_0
+        var inline8 int = mapped_error__0._p0
         t20 = inline8
     case 1:
-        var inline9 int = mapped_error__0._v1_0
+        var inline9 int = mapped_error__0._p0
         var inline10 int = t19(inline9)
         t20 = inline10
     default:
@@ -213,7 +211,7 @@ func main0() struct{} {
     var inline2 string = "missing"
     switch next__0._tag {
     case 0:
-        var inline3 string = next__0._v0_0
+        var inline3 string = next__0._p0
         t23 = inline3
     case 1:
         t23 = inline2
@@ -232,11 +230,11 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__isize____U__string(se
             _tag: 0,
         }
     case 1:
-        var x0 int = self__0._v1_0
+        var x0 int = self__0._p0
         var t0 string = map_fn__0(x0)
         var t1 Option__string = Option__string{
+            _p0: t0,
             _tag: 1,
-            _v1_0: t0,
         }
         return t1
     default:
@@ -256,7 +254,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__0
     case 0:
         return fallback__0
     case 1:
-        var x0 string = self__0._v1_0
+        var x0 string = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")
@@ -270,7 +268,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__isize____U__str
             _tag: 0,
         }
     case 1:
-        var x0 int = self__0._v1_0
+        var x0 int = self__0._p0
         var t0 Option__string = next__0(x0)
         return t0
     default:
@@ -282,15 +280,15 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_ok__or____E__string____T__isize
     switch self__0._tag {
     case 0:
         var t0 Result__isize__string = Result__isize__string{
+            _p1: error__0,
             _tag: 1,
-            _v1_0: error__0,
         }
         return t0
     case 1:
-        var x0 int = self__0._v1_0
+        var x0 int = self__0._p0
         var t1 Result__isize__string = Result__isize__string{
+            _p0: x0,
             _tag: 0,
-            _v0_0: x0,
         }
         return t1
     default:
@@ -309,10 +307,10 @@ func println__T_isize(value__0 int) struct{} {
 func _goml_m_inherent_i_Result_i_Re_had11e393bde0ae88c9d8324ffd70f925_ing____T__isize(self__0 Result__isize__string, fallback__0 func(string) int) int {
     switch self__0._tag {
     case 0:
-        var x0 int = self__0._v0_0
+        var x0 int = self__0._p0
         return x0
     case 1:
-        var x1 string = self__0._v1_0
+        var x1 string = self__0._p1
         var t0 int = fallback__0(x1)
         return t0
     default:
@@ -323,18 +321,18 @@ func _goml_m_inherent_i_Result_i_Re_had11e393bde0ae88c9d8324ffd70f925_ing____T__
 func _goml_m_inherent_i_Result_i_Re_hf15fd215f39b8121388b37682eabc3c0_ize____U__isize(self__0 Result__isize__string, map_fn__0 func(int) int) Result__isize__string {
     switch self__0._tag {
     case 0:
-        var x0 int = self__0._v0_0
+        var x0 int = self__0._p0
         var t0 int = map_fn__0(x0)
         var t1 Result__isize__string = Result__isize__string{
+            _p0: t0,
             _tag: 0,
-            _v0_0: t0,
         }
         return t1
     case 1:
-        var x1 string = self__0._v1_0
+        var x1 string = self__0._p1
         var t2 Result__isize__string = Result__isize__string{
+            _p1: x1,
             _tag: 1,
-            _v1_0: x1,
         }
         return t2
     default:
@@ -460,8 +458,8 @@ func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(en
     t0 = inline0
     var t1 string = "value:" + t0
     var t2 Option__string = Option__string{
+        _p0: t1,
         _tag: 1,
-        _v1_0: t1,
     }
     return t2
 }
@@ -491,8 +489,8 @@ func _goml_m_inherent_i_closure__env__main__7_i_closure__env__main__7_i_apply(en
     t0 = inline0
     var t1 string = "next:" + t0
     var t2 Result__string__string = Result__string__string{
+        _p0: t1,
         _tag: 0,
-        _v0_0: t1,
     }
     return t2
 }

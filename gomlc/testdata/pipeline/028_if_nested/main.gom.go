@@ -28,7 +28,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func classify(x__0 int32) string {
     var t0 bool = x__0 < 0

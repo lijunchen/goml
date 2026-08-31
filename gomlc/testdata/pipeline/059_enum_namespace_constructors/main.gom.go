@@ -19,16 +19,16 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Color int32
+type Color uint8
 
 const (
     Color_Red Color = 0
     Green Color = 1
 )
 
-type Signal int32
+type Signal uint8
 
 const (
     Yellow Signal = 1

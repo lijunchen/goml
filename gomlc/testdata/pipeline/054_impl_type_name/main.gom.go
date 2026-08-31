@@ -68,11 +68,11 @@ type Point struct {
     y int32
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Shape struct {
-    _tag int32
-    _v1_0 Point
+    _p0 Point
+    _tag uint8
 }
 
 func _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(self__0 Point) string {
@@ -96,7 +96,7 @@ func _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(self__0 Shape) string {
     case 0:
         return "Unit"
     case 1:
-        var x0 Point = self__0._v1_0
+        var x0 Point = self__0._p0
         var t0 string
         var inline0 int32 = x0.x
         var inline1 int32 = x0.y
@@ -137,8 +137,8 @@ func main0() struct{} {
         y: 2,
     }
     var location_shape__0 Shape = Shape{
+        _p0: t2,
         _tag: 1,
-        _v1_0: t2,
     }
     var t3 string
     var inline2 string = _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(location_shape__0)

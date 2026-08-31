@@ -1,0 +1,108 @@
+package main;
+struct Marker {}
+
+enum Shared {
+    First(u8),
+    Second(u8),
+    Wide(u16),
+    Empty
+}
+
+enum ZeroSized {
+    MarkerValue(Marker),
+    UnitValue(())
+}
+
+enum MaybeByte {
+    None,
+    Some(u8)
+}
+
+enum MaybeSigned {
+    None,
+    Some(i32)
+}
+
+enum MaybeVec {
+    None,
+    Some(Vec[i32])
+}
+
+enum Outer {
+    None,
+    Some(Inner)
+}
+
+enum Inner {
+    Left(u8),
+    Right(u8)
+}
+
+enum List {
+    Nil,
+    Cons(i32, List)
+}
+
+fn shared_value(value: Shared) -> isize {
+    match value {
+        Shared::First(value) => value.to_isize(),
+        Shared::Second(value) => value.to_isize() + 10,
+        Shared::Wide(value) => value.to_isize() + 20,
+        Shared::Empty => 0,
+    }
+}
+
+fn maybe_byte(value: MaybeByte) -> isize {
+    match value {
+        MaybeByte::None => 0,
+        MaybeByte::Some(value) => value.to_isize(),
+    }
+}
+
+fn maybe_signed(value: MaybeSigned) -> i32 {
+    match value {
+        MaybeSigned::None => 0,
+        MaybeSigned::Some(value) => value,
+    }
+}
+
+fn maybe_vec(value: MaybeVec) -> isize {
+    match value {
+        MaybeVec::None => 0,
+        MaybeVec::Some(value) => value.len(),
+    }
+}
+
+fn outer_value(value: Outer) -> isize {
+    match value {
+        Outer::None => 0,
+        Outer::Some(Inner::Left(value)) => value.to_isize(),
+        Outer::Some(Inner::Right(value)) => value.to_isize() + 1,
+    }
+}
+
+fn list_sum(value: List) -> i32 {
+    match value {
+        List::Nil => 0,
+        List::Cons(head, tail) => head + list_sum(tail),
+    }
+}
+
+fn main() -> () {
+    println(shared_value(Shared::First(3)));
+    println(shared_value(Shared::Second(4)));
+    println(shared_value(Shared::Wide(5)));
+    println(maybe_byte(MaybeByte::Some(255)));
+    println(maybe_signed(MaybeSigned::Some(-7)));
+    println(maybe_signed(MaybeSigned::Some(-2147483648)));
+    let values: Vec[i32] = Vec::new();
+    values.push(7);
+    println(maybe_vec(MaybeVec::Some(values)));
+    println(outer_value(Outer::Some(Inner::Right(8))));
+    println(list_sum(List::Cons(1, List::Cons(2, List::Nil))));
+    match ZeroSized::MarkerValue(Marker {}) {
+        ZeroSized::MarkerValue(_) => println(1),
+        ZeroSized::UnitValue(_) => println(2),
+    }
+}
+

@@ -162,7 +162,7 @@ type OnceCell__FrozenVec__isize struct {
     name string
 }
 
-type Ordering int32
+type Ordering uint8
 
 var VALUES *OnceCell__FrozenVec__isize = func() *OnceCell__FrozenVec__isize {
     var cell *OnceCell__FrozenVec__isize = once_cell_new__OnceCell__FrozenVec__isize()

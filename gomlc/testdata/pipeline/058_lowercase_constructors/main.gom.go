@@ -24,12 +24,9 @@ type Point struct {
     y int32
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Maybe__i32 struct {
-    _tag int32
-    _v0_0 int32
-}
+type Maybe__i32 uint64
 
 func main0() int32 {
     var commute_field0 int32

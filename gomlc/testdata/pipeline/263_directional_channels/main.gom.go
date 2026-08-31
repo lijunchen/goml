@@ -73,11 +73,11 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 func main0() struct{} {
@@ -111,8 +111,8 @@ func main0() struct{} {
     case _goml_m_value____0_i_select__value, _goml_m_value____0_i_select__open = <-x1:
         if _goml_m_value____0_i_select__open {
             value__0 = Option__isize{
+                _p0: _goml_m_value____0_i_select__value,
                 _tag: 1,
-                _v1_0: _goml_m_value____0_i_select__value,
             }
         }
         var t2 int
@@ -121,7 +121,7 @@ func main0() struct{} {
         case 0:
             t2 = inline17
         case 1:
-            var inline18 int = value__0._v1_0
+            var inline18 int = value__0._p0
             t2 = inline18
         default:
             panic("non-exhaustive match")
@@ -165,8 +165,8 @@ func main0() struct{} {
         var inline6 bool = inline4._1
         if inline6 {
             var inline7 Option__isize = Option__isize{
+                _p0: inline5,
                 _tag: 1,
-                _v1_0: inline5,
             }
             t0 = inline7
         } else {
@@ -180,7 +180,7 @@ func main0() struct{} {
         case 0:
             t1 = inline2
         case 1:
-            var inline3 int = t0._v1_0
+            var inline3 int = t0._p0
             t1 = inline3
         default:
             panic("non-exhaustive match")

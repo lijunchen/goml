@@ -83,38 +83,40 @@ type closure_env_add_0 struct {
 
 type closure_env_id_1 struct {}
 
-type Ordering int32
+type Ordering uint8
 
-type List interface {
-    isList()
+type List struct {
+    _node *List_node
 }
 
-type Cons struct {
-    _0 Node
+type List_node struct {
+    _p0 Node
+    _tag uint8
 }
 
-func (_ Cons) isList() {}
-
-type Nil struct {}
-
-func (_ Nil) isList() {}
+func _goml_enum_tag_List(value List) uint8 {
+    if value._node == nil {
+        return 1
+    }
+    return value._node._tag
+}
 
 type Shape__i32 struct {
-    _tag int32
-    _v0_0 Point
-    _v1_0 Wrapper__i32
+    _p0 Point
+    _p1 Wrapper__i32
+    _tag uint8
 }
 
 func list_value(value__0 List) int32 {
-    switch value__0.(type) {
-    case Cons:
-        var x0 Node = value__0.(Cons)._0
+    switch _goml_enum_tag_List(value__0) {
+    case 0:
+        var x0 Node = value__0._node._p0
         var t0 int32 = x0.value
         var t1 List = x0.next
         var t2 int32 = list_value(t1)
         var t3 int32 = t0 + t2
         return t3
-    case Nil:
+    case 1:
         return 0
     default:
         panic("non-exhaustive match")
@@ -165,10 +167,13 @@ func main0() struct{} {
     t3 = inline6
     var t4 Node = Node{
         value: 5,
-        next: Nil{},
+        next: List{},
     }
-    var list__0 List = Cons{
-        _0: t4,
+    var list__0 List = List{
+        _node: &List_node{
+            _p0: t4,
+            _tag: 0,
+        },
     }
     var t5 int32 = combined__0.x
     var t6 int32 = combined__0.y

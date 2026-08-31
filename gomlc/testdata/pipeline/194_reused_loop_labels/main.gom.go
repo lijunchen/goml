@@ -47,9 +47,9 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Event int32
+type Event uint8
 
 const (
     Open Event = 0

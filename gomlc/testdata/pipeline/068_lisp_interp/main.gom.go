@@ -467,37 +467,14 @@ type Lambda struct {
     global *ref_Vec_7Binding_x
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Token interface {
-    isToken()
+type Token struct {
+    _p0 string
+    _p1 int32
+    _p2 bool
+    _tag uint8
 }
-
-type LParen struct {}
-
-func (_ LParen) isToken() {}
-
-type RParen struct {}
-
-func (_ RParen) isToken() {}
-
-type Token_Sym struct {
-    _0 string
-}
-
-func (_ Token_Sym) isToken() {}
-
-type Token_Int struct {
-    _0 int32
-}
-
-func (_ Token_Int) isToken() {}
-
-type Token_Bool struct {
-    _0 bool
-}
-
-func (_ Token_Bool) isToken() {}
 
 type Value interface {
     isValue()
@@ -553,10 +530,7 @@ type List struct {
 
 func (_ List) isSExpr() {}
 
-type Option__char struct {
-    _tag int32
-    _v1_0 rune
-}
+type Option__char uint64
 
 func is_int_text(text__0 string) bool {
     var len__0 int
@@ -876,26 +850,30 @@ func lex_atom(source__0 string, start__0 int) Tuple2_5Token_3int {
     var jp0 Token
     switch atom__0 {
     case "true":
-        var t2 Token = Token_Bool{
-            _0: true,
+        var t2 Token = Token{
+            _p2: true,
+            _tag: 4,
         }
         jp0 = t2
     case "false":
-        var t3 Token = Token_Bool{
-            _0: false,
+        var t3 Token = Token{
+            _p2: false,
+            _tag: 4,
         }
         jp0 = t3
     default:
         var t4 bool = is_int_text(atom__0)
         if t4 {
             var t5 int32 = parse_int32(atom__0)
-            var t6 Token = Token_Int{
-                _0: t5,
+            var t6 Token = Token{
+                _p1: t5,
+                _tag: 3,
             }
             jp0 = t6
         } else {
-            var t7 Token = Token_Sym{
-                _0: atom__0,
+            var t7 Token = Token{
+                _p0: atom__0,
+                _tag: 2,
             }
             jp0 = t7
         }
@@ -942,7 +920,9 @@ func lex(source__0 string) *_goml_vec_Token {
                 var t4 *_goml_vec_Token
                 var inline4 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__0)
                 t4 = inline4
-                var t5 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t4, LParen{})
+                var t5 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t4, Token{
+                    _tag: 0,
+                })
                 ref_set__Ref_10Vec_5Token(toks__0, t5)
                 var t6 int
                 var inline2 int = ref_get__Ref_3int(i__0)
@@ -956,7 +936,9 @@ func lex(source__0 string) *_goml_vec_Token {
                     var t9 *_goml_vec_Token
                     var inline8 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__0)
                     t9 = inline8
-                    var t10 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t9, RParen{})
+                    var t10 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t9, Token{
+                        _tag: 1,
+                    })
                     ref_set__Ref_10Vec_5Token(toks__0, t10)
                     var t11 int
                     var inline6 int = ref_get__Ref_3int(i__0)
@@ -1096,8 +1078,8 @@ func parse_list(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_10Vec_5SExpr_3i
             var inline10 int = ref_get__Ref_3int(i__0)
             t5 = inline10
             var mtmp0 Token = vec_get__Vec_5Token(tokens__0, t5)
-            switch mtmp0.(type) {
-            case RParen:
+            switch mtmp0._tag {
+            case 1:
                 var inline4 bool = true
                 ref_set__Ref_4bool(done__0, inline4)
                 var t6 int
@@ -1140,8 +1122,8 @@ func parse_list(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_10Vec_5SExpr_3i
 
 func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
     var mtmp0 Token = vec_get__Vec_5Token(tokens__0, start__0)
-    switch mtmp0.(type) {
-    case LParen:
+    switch mtmp0._tag {
+    case 0:
         var t0 int = start__0 + 1
         var mtmp1 Tuple2_10Vec_5SExpr_3int = parse_list(tokens__0, t0)
         var x0 *_goml_vec_SExpr = mtmp1._0
@@ -1154,7 +1136,7 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
             _1: x1,
         }
         return t2
-    case RParen:
+    case 1:
         var t3 SExpr = SExpr_Sym{
             _0: ")",
         }
@@ -1164,8 +1146,8 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
             _1: t4,
         }
         return t5
-    case Token_Sym:
-        var x2 string = mtmp0.(Token_Sym)._0
+    case 2:
+        var x2 string = mtmp0._p0
         var t6 SExpr = SExpr_Sym{
             _0: x2,
         }
@@ -1175,8 +1157,8 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
             _1: t7,
         }
         return t8
-    case Token_Int:
-        var x3 int32 = mtmp0.(Token_Int)._0
+    case 3:
+        var x3 int32 = mtmp0._p1
         var t9 SExpr = SExpr_Int{
             _0: x3,
         }
@@ -1186,8 +1168,8 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
             _1: t10,
         }
         return t11
-    case Token_Bool:
-        var x4 bool = mtmp0.(Token_Bool)._0
+    case 4:
+        var x4 bool = mtmp0._p2
         var t12 SExpr = SExpr_Bool{
             _0: x4,
         }
@@ -2202,12 +2184,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
         if t2 {
             var inline0 int = 1
             var inline1 Option__char = __goml_builtin_char_from_uint32(first__0)
-            switch inline1._tag {
-            case 0:
+            switch inline1 != Option__char(0) {
+            case false:
                 var inline2 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline2
-            case 1:
-                var inline3 rune = inline1._v1_0
+            case true:
+                var inline3 rune = rune(uint64(inline1) - 1)
                 var inline4 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline3,
@@ -2266,12 +2248,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             var t13 uint32 = t11 | t12
                             var inline7 int = 2
                             var inline8 Option__char = __goml_builtin_char_from_uint32(t13)
-                            switch inline8._tag {
-                            case 0:
+                            switch inline8 != Option__char(0) {
+                            case false:
                                 var inline9 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline9
-                            case 1:
-                                var inline10 rune = inline8._v1_0
+                            case true:
+                                var inline10 rune = rune(uint64(inline8) - 1)
                                 var inline11 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline10,
@@ -2356,12 +2338,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 var t28 uint32 = t26 | t27
                                 var inline17 int = 3
                                 var inline18 Option__char = __goml_builtin_char_from_uint32(t28)
-                                switch inline18._tag {
-                                case 0:
+                                switch inline18 != Option__char(0) {
+                                case false:
                                     var inline19 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline19
-                                case 1:
-                                    var inline20 rune = inline18._v1_0
+                                case true:
+                                    var inline20 rune = rune(uint64(inline18) - 1)
                                     var inline21 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline20,
@@ -2622,15 +2604,10 @@ func __goml_builtin_char_from_uint32(value__0 uint32) Option__char {
     if t0 {
         var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
         var x0 rune = mtmp0._1
-        var t1 Option__char = Option__char{
-            _tag: 1,
-            _v1_0: x0,
-        }
+        var t1 Option__char = Option__char(uint64(uint32(x0)) + 1)
         return t1
     } else {
-        return Option__char{
-            _tag: 0,
-        }
+        return Option__char(0)
     }
 }
 

@@ -129,6 +129,7 @@ func hashmap_get_or_insert_with__HashMap_3Key_3int(m *hashmap_Key_int_x, key Key
     var index int
     var hash uint64
     previous, found, index, hash = hashmap_lookup__HashMap_3Key_3int(m, key)
+    _ = previous
     _ = index
     _ = hash
     if found {
@@ -166,6 +167,7 @@ func hashmap_update__HashMap_3Key_3int(m *hashmap_Key_int_x, key Key, update fun
     var index int
     var hash uint64
     previous, found, index, hash = hashmap_lookup__HashMap_3Key_3int(m, key)
+    _ = previous
     _ = index
     _ = hash
     if !found {
@@ -177,7 +179,7 @@ func hashmap_update__HashMap_3Key_3int(m *hashmap_Key_int_x, key Key, update fun
     m.buckets[hash][index].value = value
     return Option__isize{
         _tag: 1,
-        _v1_0: value,
+        _p0: value,
     }
 }
 
@@ -187,6 +189,7 @@ func hashmap_remove_value__HashMap_3Key_3int(m *hashmap_Key_int_x, key Key) Opti
     var index int
     var hash uint64
     previous, found, index, hash = hashmap_lookup__HashMap_3Key_3int(m, key)
+    _ = previous
     _ = index
     _ = hash
     if !found {
@@ -199,7 +202,7 @@ func hashmap_remove_value__HashMap_3Key_3int(m *hashmap_Key_int_x, key Key) Opti
     m.len = m.len - 1
     return Option__isize{
         _tag: 1,
-        _v1_0: previous,
+        _p0: previous,
     }
 }
 
@@ -250,7 +253,7 @@ func hashmap_get__HashMap_6string_3int(m *hashmap_string_int_x, key string) Opti
     if ok {
         return Option__isize{
             _tag: 1,
-            _v1_0: value,
+            _p0: value,
         }
     }
     return Option__isize{
@@ -264,13 +267,14 @@ func hashmap_insert__HashMap_6string_3int(m *hashmap_string_int_x, key string, v
     var index int
     var hash uint64
     previous, found, index, hash = hashmap_lookup__HashMap_6string_3int(m, key)
+    _ = previous
     _ = index
     _ = hash
     if found {
         m.entries[index].value = value
         return Option__isize{
             _tag: 1,
-            _v1_0: previous,
+            _p0: previous,
         }
     }
     if m == nil {
@@ -305,6 +309,7 @@ func hashmap_update__HashMap_6string_3int(m *hashmap_string_int_x, key string, u
     var index int
     var hash uint64
     previous, found, index, hash = hashmap_lookup__HashMap_6string_3int(m, key)
+    _ = previous
     _ = index
     _ = hash
     if !found {
@@ -316,7 +321,7 @@ func hashmap_update__HashMap_6string_3int(m *hashmap_string_int_x, key string, u
     m.entries[index].value = value
     return Option__isize{
         _tag: 1,
-        _v1_0: value,
+        _p0: value,
     }
 }
 
@@ -326,6 +331,7 @@ func hashmap_remove_value__HashMap_6string_3int(m *hashmap_string_int_x, key str
     var index int
     var hash uint64
     previous, found, index, hash = hashmap_lookup__HashMap_6string_3int(m, key)
+    _ = previous
     _ = index
     _ = hash
     if !found {
@@ -338,7 +344,7 @@ func hashmap_remove_value__HashMap_6string_3int(m *hashmap_string_int_x, key str
     m.len = m.len - 1
     return Option__isize{
         _tag: 1,
-        _v1_0: previous,
+        _p0: previous,
     }
 }
 
@@ -398,16 +404,16 @@ type closure_env_inherent_HashMapEntry_HashMapEntry_K_V_remove_entry_K_Key_V_isi
     self_0 HashMapEntry__Key__isize
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Option__isize struct {
-    _tag int32
-    _v1_0 int
+    _p0 int
+    _tag uint8
 }
 
 type _goml_m_Option_____o_Key_c_isize_q_ struct {
-    _tag int32
-    _v1_0 Tuple2_3Key_3int
+    _p0 Tuple2_3Key_3int
+    _tag uint8
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__0 Key, other__0 Key) bool {
@@ -542,7 +548,7 @@ func main0() struct{} {
     case 0:
         t36 = inline8
     case 1:
-        var inline9 int = t35._v1_0
+        var inline9 int = t35._p0
         t36 = inline9
     default:
         panic("non-exhaustive match")
@@ -559,7 +565,7 @@ func main0() struct{} {
     case 0:
         t38 = inline2
     case 1:
-        var inline3 int = t37._v1_0
+        var inline3 int = t37._p0
         t38 = inline3
     default:
         panic("non-exhaustive match")
@@ -624,7 +630,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__0 
     case 0:
         return fallback__0
     case 1:
-        var x0 int = self__0._v1_0
+        var x0 int = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")
@@ -649,11 +655,11 @@ func _goml_m_inherent_i_HashMapEntr_he7df3efa35857dbe82e86ebc4eb03056_Key____V__
             _tag: 0,
         }
     case 1:
-        var inline0 int = t0._v1_0
+        var inline0 int = t0._p0
         var inline1 Tuple2_3Key_3int = t2(inline0)
         var inline2 _goml_m_Option_____o_Key_c_isize_q_ = _goml_m_Option_____o_Key_c_isize_q_{
+            _p0: inline1,
             _tag: 1,
-            _v1_0: inline1,
         }
         return inline2
     default:
@@ -666,7 +672,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T___o_Key_c_isize
     case 0:
         return fallback__0
     case 1:
-        var x0 Tuple2_3Key_3int = self__0._v1_0
+        var x0 Tuple2_3Key_3int = self__0._p0
         return x0
     default:
         panic("non-exhaustive match")

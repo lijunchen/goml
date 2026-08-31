@@ -32,7 +32,7 @@ type TextSource struct {
     value string
 }
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Label_i_string_i_label(self__0 string) string {
     var t0 string = "label:" + self__0

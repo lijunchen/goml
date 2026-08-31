@@ -71,12 +71,12 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Key struct {
-    _tag int32
-    _v1_0 int32
-    _v1_1 int32
+    _p0 int32
+    _p1 int32
+    _tag uint8
 }
 
 type Message__string interface {
@@ -111,12 +111,12 @@ func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__0 Key, other__0 Key) bool 
             return false
         }
     case 1:
-        var x0 int32 = other__0._v1_0
-        var x1 int32 = other__0._v1_1
+        var x0 int32 = other__0._p0
+        var x1 int32 = other__0._p1
         switch self__0._tag {
         case 1:
-            var x2 int32 = self__0._v1_0
-            var x3 int32 = self__0._v1_1
+            var x2 int32 = self__0._p0
+            var x3 int32 = self__0._p1
             var jp0 bool
             var inline1 bool = x2 == x0
             jp0 = inline1
@@ -162,14 +162,14 @@ func main0() struct{} {
     var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t2)
     _goml_runtime_core_string_println(inline2)
     var t3 Key = Key{
+        _p0: 1,
+        _p1: 2,
         _tag: 1,
-        _v1_0: 1,
-        _v1_1: 2,
     }
     var t4 Key = Key{
+        _p0: 1,
+        _p1: 2,
         _tag: 1,
-        _v1_0: 1,
-        _v1_1: 2,
     }
     var t5 bool = _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(t3, t4)
     var inline0 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t5)

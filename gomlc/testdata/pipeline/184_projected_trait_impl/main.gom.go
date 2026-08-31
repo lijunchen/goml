@@ -69,7 +69,7 @@ type Value struct {
 
 type closure_env_identity_0 struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func _goml_m_trait__impl_i_Source_i_Value_i_get(self__0 Value) int32 {
     var t0 int32 = self__0.value

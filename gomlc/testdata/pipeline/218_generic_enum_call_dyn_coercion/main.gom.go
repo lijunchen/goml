@@ -63,11 +63,11 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 type Boxed__i32 struct {
-    _tag int32
-    _v0_0 int32
+    _p0 int32
+    _tag uint8
 }
 
 type dyn__Show_vtable struct {
@@ -97,7 +97,7 @@ func dyn__Show__vtable__Boxed__i32() *dyn__Show_vtable {
 func _goml_m_trait__impl_i_Show_i_Boxed____i32_i_show(self__0 Boxed__i32) string {
     switch self__0._tag {
     case 0:
-        var x0 int32 = self__0._v0_0
+        var x0 int32 = self__0._p0
         var inline0 string = __goml_builtin_int32_to_string(x0)
         return inline0
     default:
@@ -109,8 +109,8 @@ func main0() struct{} {
     var value__0 int32 = 42
     var t0 Boxed__i32
     var inline3 Boxed__i32 = Boxed__i32{
+        _p0: value__0,
         _tag: 0,
-        _v0_0: value__0,
     }
     t0 = inline3
     var t1 dyn__Show = dyn__Show{

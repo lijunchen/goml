@@ -32,7 +32,7 @@ type Person struct {
     name string
 }
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var name__0 string = "Alice"

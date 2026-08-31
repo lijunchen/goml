@@ -138,12 +138,9 @@ type closure_env_inherent_Vec_Vec_T_iter_T_i32_0 struct {
     self_2 *_goml_vec_int32
 }
 
-type Ordering int32
+type Ordering uint8
 
-type Option__i32 struct {
-    _tag int32
-    _v1_0 int32
-}
+type Option__i32 uint64
 
 func main0() struct{} {
     var values__0 *_goml_vec_int32
@@ -181,10 +178,10 @@ func count__B_Numbers(batch__0 Numbers) int32 {
         var inline3 func() Option__i32 = for_iter0.next_fn
         var inline4 Option__i32 = inline3()
         for_next0 = inline4
-        switch for_next0._tag {
-        case 0:
+        switch for_next0 != Option__i32(0) {
+        case false:
             break Loop_loop0
-        case 1:
+        case true:
             var t1 int32
             var inline2 int32 = ref_get__Ref_5int32(total__0)
             t1 = inline2
@@ -307,15 +304,10 @@ func _goml_m_inherent_i_closure__en_h1275f72f5de770912182f2a5cc7ddfae__i32__0_i_
         var value__0 int32 = vec_get__Vec_5int32(self__0, current__0)
         var t1 int = current__0 + 1
         ref_set__Ref_3int(index__0, t1)
-        var t2 Option__i32 = Option__i32{
-            _tag: 1,
-            _v1_0: value__0,
-        }
+        var t2 Option__i32 = Option__i32(uint64(int64(value__0) + 2147483648) + 1)
         return t2
     } else {
-        return Option__i32{
-            _tag: 0,
-        }
+        return Option__i32(0)
     }
 }
 

@@ -106,7 +106,7 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type Ordering int32
+type Ordering uint8
 
 func sum_to(limit__0 int32) int32 {
     var acc__0 *ref_int32_x

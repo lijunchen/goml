@@ -77,7 +77,7 @@ type closure_env_main_1 struct {}
 
 type closure_env_main_2 struct {}
 
-type Ordering int32
+type Ordering uint8
 
 func main0() struct{} {
     var t0 closure_env_main_0 = closure_env_main_0{}
