@@ -328,6 +328,15 @@ fn enum_packed_unsigned_type(value: repr::Type) -> Type {
     }
 }
 
+fn enum_packed_signed_type(value: repr::Type) -> Option[(Type, string)] {
+    match repr::resolve_type(value) {
+        Int8 => Option::Some((Type::Int16, "128")),
+        Int16 => Option::Some((Type::Int32, "32768")),
+        Int32 => Option::Some((Type::Int64, "2147483648")),
+        _ => Option::None,
+    }
+}
+
 pub fn enum_packed_value_expr(
     owner: EnumInfo,
     owner_ty: repr::Type,
@@ -339,16 +348,55 @@ pub fn enum_packed_value_expr(
             func: Expr::Var { name: enum_pack_helper_name(owner.owner_name) },
             args: Vec::from_array([value]),
         },
-        _ => Expr::Convert {
-            ty: lower_type(owner_ty),
-            expr: Expr::Binary {
-                op: BinaryOp::Add,
-                lhs: Expr::Convert {
-                    ty: owner.tag_ty,
-                    expr: Expr::Convert { ty: enum_packed_unsigned_type(payload_ty), expr: value },
+        _ => {
+            let encoded = match enum_packed_signed_type(payload_ty) {
+                Some(value_info) => Expr::Binary {
+                    op: BinaryOp::Add,
+                    lhs: Expr::Convert { ty: value_info.0, expr: value },
+                    rhs: Expr::Int { value: value_info.1 },
                 },
-                rhs: Expr::Int { value: "1" },
+                None => Expr::Convert { ty: enum_packed_unsigned_type(payload_ty), expr: value },
+            };
+            Expr::Convert {
+                ty: lower_type(owner_ty),
+                expr: Expr::Binary {
+                    op: BinaryOp::Add,
+                    lhs: Expr::Convert { ty: owner.tag_ty, expr: encoded },
+                    rhs: Expr::Int { value: "1" },
+                },
+            }
+        },
+    }
+}
+
+pub fn enum_packed_payload_expr(owner: EnumInfo, value: Expr) -> Expr {
+    let payload_ty = owner.payload_ty.unwrap_or(repr::Type::Unit);
+    match repr::resolve_type(payload_ty) {
+        Bool => Expr::Binary {
+            op: BinaryOp::Eq,
+            lhs: value,
+            rhs: Expr::Convert {
+                ty: Type::Named { name: go_user_type_name(owner.owner_name) },
+                expr: Expr::Int { value: "2" },
             },
+        },
+        _ => {
+            let decoded = Expr::Binary {
+                op: BinaryOp::Sub,
+                lhs: Expr::Convert { ty: owner.tag_ty, expr: value },
+                rhs: Expr::Int { value: "1" },
+            };
+            match enum_packed_signed_type(payload_ty) {
+                Some(value_info) => Expr::Convert {
+                    ty: lower_type(payload_ty),
+                    expr: Expr::Binary {
+                        op: BinaryOp::Sub,
+                        lhs: Expr::Convert { ty: value_info.0, expr: decoded },
+                        rhs: Expr::Int { value: value_info.1 },
+                    },
+                },
+                None => Expr::Convert { ty: lower_type(payload_ty), expr: decoded },
+            }
         },
     }
 }

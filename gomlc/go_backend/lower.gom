@@ -880,22 +880,7 @@ fn compile_packed_constructor(env: LowerEnv, owner: EnumInfo, owner_ty: repr::Ty
 }
 
 fn compile_packed_projection(env: LowerEnv, owner: EnumInfo, value: anf::Imm) -> Expr {
-    let payload_ty = owner.payload_ty.unwrap_or(anf::imm_type(value));
-    match repr::resolve_type(payload_ty) {
-        Bool => Expr::Binary {
-            op: BinaryOp::Eq,
-            lhs: compile_imm(env, value),
-            rhs: enum_named_expr(anf::imm_type(value), Expr::Int { value: "2" }),
-        },
-        _ => Expr::Convert {
-            ty: lower_type(payload_ty),
-            expr: Expr::Binary {
-                op: BinaryOp::Sub,
-                lhs: Expr::Convert { ty: owner.tag_ty, expr: compile_imm(env, value) },
-                rhs: Expr::Int { value: "1" },
-            },
-        },
-    }
+    enum_packed_payload_expr(owner, compile_imm(env, value))
 }
 
 fn imm_is_go_constant(env: LowerEnv, value: anf::Imm) -> bool {
