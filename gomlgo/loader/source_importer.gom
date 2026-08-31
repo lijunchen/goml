@@ -242,12 +242,9 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
     for name in names {
         if filename_selected(name, config) {
             let file = path::join(directory, name);
-            let source = fs::read_bytes_structured(file);
-            match source {
-                Ok(source) => if source_constraint_selected(source, config) {
-                    selected.push(checker::SourceFile { name: file, source })
-                },
-                Err(message) => return Result::Err(message.to_string()),
+            let source = fs::read_bytes_structured(file).map_err(|message| message.to_string())?;
+            if source_constraint_selected(source, config) {
+                selected.push(checker::SourceFile { name: file, source })
             }
         }
     }
@@ -562,10 +559,7 @@ pub fn check_import_path_acceptance_in_session(session: LoadSession, import_path
         } else {
             Result::Err(package_value.failure)
         },
-        None => match load_package(session.state, import_path, false) {
-            Ok(_) => Result::Ok(()),
-            Err(message) => Result::Err(message),
-        },
+        None => load_package(session.state, import_path, false).map(|_| ()),
     }
 }
 

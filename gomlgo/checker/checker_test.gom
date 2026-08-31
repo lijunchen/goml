@@ -377,13 +377,13 @@ fn checks_elided_nested_composite_literal_types() -> () {
 #[test]
 fn reports_constant_overflow_and_unrepresentable_initializers() -> () {
     let shifted = check_source("package p\nconst X = 1 << 512\n");
-    testing::assert(shifted.diagnostics.len() > 0);
+    testing::assert(!shifted.diagnostics.is_empty());
     testing::assert(shifted.diagnostics[0].message.contains("overflow"));
     let narrowed = check_source("package p\nvar X int8 = 128\n");
-    testing::assert(narrowed.diagnostics.len() > 0);
+    testing::assert(!narrowed.diagnostics.is_empty());
     testing::assert(narrowed.diagnostics[0].message.contains("overflows"));
     let divided = check_source("package p\nconst X = 1 / 0\n");
-    testing::assert(divided.diagnostics.len() > 0)
+    testing::assert(!divided.diagnostics.is_empty())
 }
 
 #[test]
@@ -417,7 +417,7 @@ fn resolves_forward_declaration_dependencies_across_files() -> () {
 #[test]
 fn reports_initialization_cycles_recoverably() -> () {
     let result = check_source("package p\nconst A = B\nconst B = A\n");
-    testing::assert(result.diagnostics.len() > 0);
+    testing::assert(!result.diagnostics.is_empty());
     testing::assert(result.diagnostics[0].message.contains("initialization cycle"));
     testing::assert(result.world.packages[result.package_id.value].complete)
 }
@@ -518,10 +518,10 @@ fn checks_named_alias_and_recursive_slice_types() -> () {
 #[test]
 fn rejects_direct_named_and_array_type_cycles() -> () {
     let direct = check_source("package p\ntype A B\ntype B A\n");
-    testing::assert(direct.diagnostics.len() > 0);
+    testing::assert(!direct.diagnostics.is_empty());
     testing::assert(direct.diagnostics[0].message.contains("recursive type"));
     let array = check_source("package p\ntype A [1]A\n");
-    testing::assert(array.diagnostics.len() > 0);
+    testing::assert(!array.diagnostics.is_empty());
     testing::assert(array.diagnostics[0].message.contains("recursive type"))
 }
 
@@ -592,7 +592,7 @@ fn checks_struct_interface_and_function_declarations_when_bodies_are_ignored() -
 #[test]
 fn rejects_direct_recursive_struct_fields() -> () {
     let result = check_source("package p\ntype Bad struct { value Bad }\n");
-    testing::assert(result.diagnostics.len() > 0);
+    testing::assert(!result.diagnostics.is_empty());
     testing::assert(result.diagnostics[0].message.contains("recursive type"))
 }
 
@@ -2205,7 +2205,7 @@ fn permits_repeated_blank_struct_fields() -> () {
 #[test]
 fn preserves_parser_diagnostics_and_partial_semantic_facts() -> () {
     let result = check_source("package p\nvar X int\nvar Y\n");
-    testing::assert(result.diagnostics.len() > 0);
+    testing::assert(!result.diagnostics.is_empty());
     let pkg = result.world.packages[result.package_id.value];
     testing::assert(result.world.scopes[pkg.scope.value].entries.len() >= 1);
     testing::assert(pkg.complete)

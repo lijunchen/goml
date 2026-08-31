@@ -651,20 +651,16 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     let internal_packages: Vec[string] = Vec::new();
     for graph in internal {
         let package_name = graph.entry_package;
-        match append_test_package(
+        append_test_package(
             context,
             graph,
             dependency_root,
             internal_root,
             compiled_dependencies,
             commands,
-        ) {
-            Ok(()) => {
-                internal_graphs.push(graph);
-                internal_packages.push(package_name)
-            },
-            Err(message) => return Result::Err(message),
-        }
+        )?;
+        internal_graphs.push(graph);
+        internal_packages.push(package_name)
     }
     if !internal_graphs.is_empty() {
         append_test_group(
@@ -687,21 +683,17 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     let external_packages: Vec[string] = Vec::new();
     for test in external {
         let package_name = test.graph.entry_package;
-        match append_test_package(
+        append_test_package(
             context,
             test.graph,
             dependency_root,
             external_root,
             compiled_dependencies,
             commands,
-        ) {
-            Ok(()) => {
-                external_graphs.push(test.graph);
-                external_packages.push(package_name);
-                external_packages.push(test.target_package)
-            },
-            Err(message) => return Result::Err(message),
-        }
+        )?;
+        external_graphs.push(test.graph);
+        external_packages.push(package_name);
+        external_packages.push(test.target_package)
     }
     if !external_graphs.is_empty() {
         append_test_group(
@@ -1174,15 +1166,13 @@ fn execute_plan_worker(
                         },
                     },
                 );
-                match result {
-                    Ok(()) => match task::recv_with(cancel, completion) {
-                        task::WaitResult::Completed(Some(true)) => (),
-                        task::WaitResult::Completed(Some(false)) | task::WaitResult::Completed(None) | task::WaitResult::Cancelled => abandon_prepared_command(
-                            context,
-                            value.cache,
-                        ),
-                    },
-                    Err(message) => return Result::Err(message),
+                result?;
+                match task::recv_with(cancel, completion) {
+                    task::WaitResult::Completed(Some(true)) => (),
+                    task::WaitResult::Completed(Some(false)) | task::WaitResult::Completed(None) | task::WaitResult::Cancelled => abandon_prepared_command(
+                        context,
+                        value.cache,
+                    ),
                 }
             },
             task::WaitResult::Completed(None) | task::WaitResult::Cancelled => break,

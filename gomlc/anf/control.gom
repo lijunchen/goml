@@ -178,10 +178,9 @@ fn lower_match(
         scrutinee,
         |scrutinee| {
             let lowered_arms = lower_arms(state, arms, join_id, ret_ty, takes_arg);
-            let lowered_default = match default {
-                Some(value) => Option::Some(lower_branch(state, value, join_id, ret_ty, takes_arg)),
-                None => Option::None,
-            };
+            let lowered_default = default.map(
+                |value| lower_branch(state, value, join_id, ret_ty, takes_arg),
+            );
             Block {
                 binds: one_bind(Bind::Join(join)),
                 term: Term::Match {
@@ -207,12 +206,9 @@ fn lower_select_arms_from(
     join_takes_arg: bool,
 ) -> Block {
     if index >= values.len() {
-        let lowered_default = match default {
-            Some(value) => Option::Some(
-                lower_branch(state, value, join.name, join_ret_ty, join_takes_arg),
-            ),
-            None => Option::None,
-        };
+        let lowered_default = default.map(
+            |value| lower_branch(state, value, join.name, join_ret_ty, join_takes_arg),
+        );
         Block {
             binds: one_bind(Bind::Join(join)),
             term: Term::Select { mode, arms: result, default: lowered_default, ret_ty: join_ret_ty },

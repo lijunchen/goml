@@ -1562,10 +1562,9 @@ fn type_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         }
     } else if name == "meta_type_array_length" {
         match type_value(state, args, 0)? {
-            ast::TypeExpr::Array { len, elem: _ } => match num::parse_int_structured(len) {
-                Ok(value) => Result::Ok(int_value(state, value)),
-                Err(_) => Result::Err("meta array length is not a concrete integer"),
-            },
+            ast::TypeExpr::Array { len, elem: _ } => num::parse_int_structured(len).map(
+                |value| int_value(state, value),
+            ).map_err(|_| "meta array length is not a concrete integer"),
             _ => Result::Err("meta_type_array_length expects an array type"),
         }
     } else if name == "meta_type_array_element" {

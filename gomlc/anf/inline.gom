@@ -290,12 +290,9 @@ fn clone_inline_term(
             Term::Match {
                 scrutinee: clone_inline_imm(scrutinee, names),
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(
-                        clone_inline_block(body, names, joins, continuation, ret_ty),
-                    ),
-                    None => Option::None,
-                },
+                default: default.map(
+                    |body| clone_inline_block(body, names, joins, continuation, ret_ty),
+                ),
                 ret_ty,
             }
         },
@@ -306,10 +303,7 @@ fn clone_inline_term(
                     match arm {
                         Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel: clone_inline_imm(channel, names),
-                            guard: match guard {
-                                Some(value) => Option::Some(clone_inline_imm(value, names)),
-                                None => Option::None,
-                            },
+                            guard: guard.map(|value| clone_inline_imm(value, names)),
                             binding: renamed_inline_name(names, binding),
                             binding_ty,
                             body: clone_inline_block(body, names, joins, continuation, ret_ty),
@@ -317,10 +311,7 @@ fn clone_inline_term(
                         Send { channel, value, guard, body } => SelectArm::Send {
                             channel: clone_inline_imm(channel, names),
                             value: clone_inline_imm(value, names),
-                            guard: match guard {
-                                Some(value) => Option::Some(clone_inline_imm(value, names)),
-                                None => Option::None,
-                            },
+                            guard: guard.map(|value| clone_inline_imm(value, names)),
                             body: clone_inline_block(body, names, joins, continuation, ret_ty),
                         },
                     },
@@ -329,12 +320,9 @@ fn clone_inline_term(
             Term::Select {
                 mode,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(
-                        clone_inline_block(body, names, joins, continuation, ret_ty),
-                    ),
-                    None => Option::None,
-                },
+                default: default.map(
+                    |body| clone_inline_block(body, names, joins, continuation, ret_ty),
+                ),
                 ret_ty,
             }
         },
@@ -805,12 +793,7 @@ fn inline_term(
             Term::Match {
                 scrutinee,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(
-                        inline_block(body, functions, caller, budget, counter),
-                    ),
-                    None => Option::None,
-                },
+                default: default.map(|body| inline_block(body, functions, caller, budget, counter)),
                 ret_ty,
             }
         },
@@ -838,12 +821,7 @@ fn inline_term(
             Term::Select {
                 mode,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(
-                        inline_block(body, functions, caller, budget, counter),
-                    ),
-                    None => Option::None,
-                },
+                default: default.map(|body| inline_block(body, functions, caller, budget, counter)),
                 ret_ty,
             }
         },

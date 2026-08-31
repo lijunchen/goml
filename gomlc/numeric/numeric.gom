@@ -63,23 +63,20 @@ pub fn normalize_integer(value: string) -> Option[string] {
                 return Option::None
             }
         } else {
-            match integer_digit(source) {
-                Some(part) => if part < base {
-                    found = true;
-                    let mut carry = part;
-                    for position in 0..digits.len() {
-                        let current = digits[position] * base + carry;
-                        digits[position] = current % 10;
-                        carry = current / 10;
-                    }
-                    while carry > 0 {
-                        digits.push(carry % 10);
-                        carry /= 10;
-                    }
-                } else {
-                    return Option::None
-                },
-                None => return Option::None,
+            let part = integer_digit(source)?;
+            if part >= base {
+                return Option::None
+            }
+            found = true;
+            let mut carry = part;
+            for position in 0..digits.len() {
+                let current = digits[position] * base + carry;
+                digits[position] = current % 10;
+                carry = current / 10;
+            }
+            while carry > 0 {
+                digits.push(carry % 10);
+                carry /= 10;
             }
         }
     }

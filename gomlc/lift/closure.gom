@@ -526,10 +526,7 @@ fn transform_block(
             other => transform_expr(state, scope, other, context),
         };
         let ty = lower_expr_type(transformed);
-        let closure_struct = match closure_for_type(state, ty) {
-            Some(info) => Option::Some(info.struct_name),
-            None => Option::None,
-        };
+        let closure_struct = closure_for_type(state, ty).map(|info| info.struct_name);
         stmts.push(LowerLetStmt { name: stmt.name, value: transformed, ty });
         scope.push(ScopeEntry { name: stmt.name, ty, closure_struct })
     }
@@ -958,10 +955,9 @@ fn transform_closure(
                     ScopeEntry {
                         name: param.name,
                         ty: param_ty,
-                        closure_struct: match closure_for_type(state, param_ty) {
-                            Some(info) => Option::Some(info.struct_name),
-                            None => Option::None,
-                        },
+                        closure_struct: closure_for_type(state, param_ty).map(
+                            |info| info.struct_name,
+                        ),
                     },
                 );
                 lowered_params.push((param.name, param_ty));
@@ -1054,16 +1050,13 @@ fn transform_function_origin(value: mono::FunctionOrigin) -> LowerFunctionOrigin
 }
 
 fn transform_trait_impl(value: Option[mono::TraitImpl]) -> Option[LowerTraitImpl] {
-    match value {
-        Some(value) => Option::Some(
-            LowerTraitImpl {
-                trait_ref: value.trait_ref,
-                for_ty: value.for_ty,
-                associated_types: value.associated_types,
-            },
-        ),
-        None => Option::None,
-    }
+    value.map(
+        |value| LowerTraitImpl {
+            trait_ref: value.trait_ref,
+            for_ty: value.for_ty,
+            associated_types: value.associated_types,
+        },
+    )
 }
 
 fn transform_function(state: State, value: mono::Function) -> LowerFunction {
@@ -1073,10 +1066,7 @@ fn transform_function(state: State, value: mono::Function) -> LowerFunction {
             ScopeEntry {
                 name: param.0,
                 ty: param.1,
-                closure_struct: match closure_for_type(state, param.1) {
-                    Some(info) => Option::Some(info.struct_name),
-                    None => Option::None,
-                },
+                closure_struct: closure_for_type(state, param.1).map(|info| info.struct_name),
             },
         )
     }

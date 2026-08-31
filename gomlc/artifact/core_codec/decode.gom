@@ -90,18 +90,16 @@ fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primiti
         }
     } else if kind == "Bool" {
         match artifact_decode_primitive_payload(payload) {
-            Ok(value) => match wire::artifact_json_bool_value(value, "boolean primitive") {
-                Ok(value) => Result::Ok(tast::Primitive::Bool { value }),
-                Err(error) => Result::Err(error),
-            },
+            Ok(value) => wire::artifact_json_bool_value(value, "boolean primitive").map(
+                |value| tast::Primitive::Bool { value },
+            ),
             Err(error) => Result::Err(error),
         }
     } else if kind == "String" {
         match artifact_decode_primitive_payload(payload) {
-            Ok(value) => match wire::artifact_json_string_value(value, "string primitive") {
-                Ok(value) => Result::Ok(tast::Primitive::String { value }),
-                Err(error) => Result::Err(error),
-            },
+            Ok(value) => wire::artifact_json_string_value(value, "string primitive").map(
+                |value| tast::Primitive::String { value },
+            ),
             Err(error) => Result::Err(error),
         }
     } else if kind == "Char" {
@@ -141,17 +139,14 @@ fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wire::
         Result::Err(wire::artifact_decode_error("constructor variant"))
     } else if object[0].0 == "Struct" {
         let payload = wire::artifact_json_object(object[0].1, "struct constructor")?;
-        match wire::artifact_json_field_string(payload, "type_name") {
-            Ok(name) => Result::Ok(
-                tast::Constructor {
-                    name,
-                    fields: artifact_decode_struct_fields(context, name),
-                    is_struct: true,
-                    tag: Option::None,
-                },
-            ),
-            Err(error) => Result::Err(error),
-        }
+        wire::artifact_json_field_string(payload, "type_name").map(
+            |name| tast::Constructor {
+                name,
+                fields: artifact_decode_struct_fields(context, name),
+                is_struct: true,
+                tag: Option::None,
+            },
+        )
     } else if object[0].0 == "Enum" {
         let payload = wire::artifact_json_object(object[0].1, "enum constructor")?;
         let type_name = wire::artifact_json_field_string(payload, "type_name")?;

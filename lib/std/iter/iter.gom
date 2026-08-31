@@ -22,10 +22,7 @@ pub fn from_fn[T](next_fn: () -> Option[T]) -> FnIterator[T] {
 pub fn map[A, B, I: Iterator](iterator: I, map_fn: (A) -> B) -> FnIterator[B] where I::Item = A {
     FnIterator::from_fn(
         || {
-            match iterator.next() {
-                Some(value) => Option::Some(map_fn(value)),
-                None => Option::None,
-            }
+            iterator.next().map(|value| map_fn(value))
         },
     )
 }
@@ -171,10 +168,7 @@ pub fn zip[A: Iterator, B: Iterator](left: A, right: B) -> FnIterator[(A::Item, 
     FnIterator::from_fn(
         || {
             match left.next() {
-                Some(left_value) => match right.next() {
-                    Some(right_value) => Option::Some((left_value, right_value)),
-                    None => Option::None,
-                },
+                Some(left_value) => right.next().map(|right_value| (left_value, right_value)),
                 None => Option::None,
             }
         },

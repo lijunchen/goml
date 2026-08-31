@@ -415,14 +415,12 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
 }
 
 fn read_package_world(path: string) -> Result[PackageWorld, string] {
-    let data = match fs::read_bytes_structured(path) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(f"failed to read compiler world {path}: {error}"),
-    };
-    match decode_package_world(data) {
-        Ok(value) => Result::Ok(value),
-        Err(error) => Result::Err("failed to parse compiler world " + path + ": " + error),
-    }
+    let data = fs::read_bytes_structured(path).map_err(
+        |error| f"failed to read compiler world {path}: {error}",
+    )?;
+    decode_package_world(data).map_err(
+        |error| "failed to parse compiler world " + path + ": " + error,
+    )
 }
 
 fn write_package_world(path: string, value: PackageWorld) -> Result[(), string] {

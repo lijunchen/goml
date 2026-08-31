@@ -12,16 +12,13 @@ fn lower_function_origin(value: lift::FunctionOrigin) -> FunctionOrigin {
 }
 
 fn lower_trait_impl(value: Option[lift::TraitImpl]) -> Option[TraitImpl] {
-    match value {
-        Some(value) => Option::Some(
-            TraitImpl {
-                trait_ref: value.trait_ref,
-                for_ty: value.for_ty,
-                associated_types: value.associated_types,
-            },
-        ),
-        None => Option::None,
-    }
+    value.map(
+        |value| TraitImpl {
+            trait_ref: value.trait_ref,
+            for_ty: value.for_ty,
+            associated_types: value.associated_types,
+        },
+    )
 }
 
 fn lower_function(state: State, value: lift::Function) -> Function {

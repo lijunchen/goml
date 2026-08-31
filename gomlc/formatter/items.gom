@@ -104,10 +104,7 @@ fn omittable_unit_statement(value: LocatedNode) -> bool {
     if !node_is(value, cst::NodeKind::STMT_EXPR) || node_has_comment(value) {
         false
     } else {
-        match direct_node_of_kind(value, cst::NodeKind::EXPR_UNIT) {
-            Some(_) => true,
-            None => false,
-        }
+        direct_node_of_kind(value, cst::NodeKind::EXPR_UNIT).is_some()
     }
 }
 
@@ -149,10 +146,7 @@ fn omittable_empty_else_range(value: LocatedNode) -> Option[(isize, isize)] {
             },
             Some(Node(child)) => if node_is(child, cst::NodeKind::EXPR_IF_ELSE)
                 && omittable_empty_else(child) {
-                return match else_start.get() {
-                    Some(start) => Option::Some((start, child.end)),
-                    None => Option::None,
-                }
+                return else_start.get().map(|start| (start, child.end))
             },
             None => (),
         }
@@ -427,10 +421,7 @@ fn format_inline_variant_field_list(value: Builder, node: LocatedNode) -> BuiltD
             ],
         ),
     );
-    let first = match first_significant_token(node) {
-        Some(token) => Option::Some(token.token.kind),
-        None => Option::None,
-    };
+    let first = first_significant_token(node).map(|token| token.token.kind);
     built(value.docs.group_with_id(group_id, content).doc, first, Option::Some(close.token.kind))
 }
 

@@ -11,10 +11,7 @@ fn snapshot_exprs(names: snapshot_names::Names, values: Vec[Expr]) -> Vec[Expr] 
 }
 
 fn snapshot_optional_expr(names: snapshot_names::Names, value: Option[Expr]) -> Option[Expr] {
-    match value {
-        Some(value) => Option::Some(snapshot_expr(names, value)),
-        None => Option::None,
-    }
+    value.map(|value| snapshot_expr(names, value))
 }
 
 fn snapshot_block(names: snapshot_names::Names, value: Block) -> Block {

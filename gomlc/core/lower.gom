@@ -342,7 +342,7 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
         Callable {
             callable: TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver },
             ty: _,
-        } => if !has_receiver || args.len() > 0 {
+        } => if !has_receiver || !args.is_empty() {
             LowerExpr::TraitCall {
                 trait_ref: reference,
                 method_name: name,
@@ -447,20 +447,14 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[LowerExpr] {
         Constr { constructor, args, ty } => {
             let result: Vec[LowerExpr] = Vec::new();
             for arg in args {
-                match lower_pattern_expr(arg) {
-                    Some(expr) => result.push(expr),
-                    None => return Option::None,
-                }
+                result.push(lower_pattern_expr(arg)?)
             }
             Option::Some(LowerExpr::Constr { constructor, args: result, ty })
         },
         Tuple { items, ty } => {
             let result: Vec[LowerExpr] = Vec::new();
             for item in items {
-                match lower_pattern_expr(item) {
-                    Some(expr) => result.push(expr),
-                    None => return Option::None,
-                }
+                result.push(lower_pattern_expr(item)?)
             }
             Option::Some(LowerExpr::Tuple { items: result, ty })
         },
@@ -1311,10 +1305,7 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
                     Receive { channel, guard, binding, binding_ty, body } => lowered_arms.push(
                         LowerSelectArm::Receive {
                             channel: lower_expr(ctx, channel),
-                            guard: match guard {
-                                Some(value) => Option::Some(lower_expr(ctx, value)),
-                                None => Option::None,
-                            },
+                            guard: guard.map(|value| lower_expr(ctx, value)),
                             binding,
                             binding_ty,
                             body: lower_expr(ctx, body),
@@ -1324,10 +1315,7 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
                         LowerSelectArm::Send {
                             channel: lower_expr(ctx, channel),
                             value: lower_expr(ctx, value),
-                            guard: match guard {
-                                Some(value) => Option::Some(lower_expr(ctx, value)),
-                                None => Option::None,
-                            },
+                            guard: guard.map(|value| lower_expr(ctx, value)),
                             body: lower_expr(ctx, body),
                         },
                     ),
@@ -1468,14 +1456,7 @@ fn lower_break(ctx: Lowerer, target: isize, value: Option[tast::Expr], ty: tast:
         ctx.loop_cleanup_depths[ctx.loop_cleanup_depths.len() - 1 - target]
     };
     if ctx.cleanup_lowering_depth.get() > 0 || ctx.cleanups.len() == start {
-        LowerExpr::Break {
-            target,
-            value: match value {
-                Some(expr) => Option::Some(lower_expr(ctx, expr)),
-                None => Option::None,
-            },
-            ty,
-        }
+        LowerExpr::Break { target, value: value.map(|expr| lower_expr(ctx, expr)), ty }
     } else {
         match value {
             Some(source) => {
@@ -1532,13 +1513,7 @@ fn lower_continue(ctx: Lowerer, target: isize, ty: tast::Type) -> LowerExpr {
 
 fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> LowerExpr {
     if ctx.cleanup_lowering_depth.get() > 0 || ctx.cleanups.is_empty() {
-        LowerExpr::Return {
-            expr: match value {
-                Some(expr) => Option::Some(lower_expr(ctx, expr)),
-                None => Option::None,
-            },
-            ty,
-        }
+        LowerExpr::Return { expr: value.map(|expr| lower_expr(ctx, expr)), ty }
     } else {
         match value {
             Some(source) => {
@@ -1687,13 +1662,7 @@ fn lower_block_from(
 ) -> LowerBlock {
     if index >= stmts.len() {
         if ctx.cleanups.len() == cleanup_start {
-            LowerBlock {
-                stmts: Vec::new(),
-                tail: match tail {
-                    Some(value) => Option::Some(lower_expr(ctx, value)),
-                    None => Option::None,
-                },
-            }
+            LowerBlock { stmts: Vec::new(), tail: tail.map(|value| lower_expr(ctx, value)) }
         } else {
             match tail {
                 Some(value) => if tast_expr_exits(value) {
@@ -1934,18 +1903,15 @@ fn lower_file_with_types(
                     if numeric_conversion {
                         continue
                     }
-                    let trait_impl = match block.trait_ref {
-                        Some(reference) => Option::Some(
-                            LowerTraitImpl {
-                                trait_ref: reference,
-                                for_ty: block.for_type,
-                                associated_types: block.associated_types,
-                                generic_count: block.generics.len(),
-                                predicate_count: block.predicates.len(),
-                            },
-                        ),
-                        None => Option::None,
-                    };
+                    let trait_impl = block.trait_ref.map(
+                        |reference| LowerTraitImpl {
+                            trait_ref: reference,
+                            for_ty: block.for_type,
+                            associated_types: block.associated_types,
+                            generic_count: block.generics.len(),
+                            predicate_count: block.predicates.len(),
+                        },
+                    );
                     let name = match block.trait_ref {
                         Some(reference) => trait_impl_method_name(
                             reference,

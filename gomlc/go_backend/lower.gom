@@ -1047,10 +1047,9 @@ fn intrinsic_helper_call_name(key: string, function_ty: repr::Type, args: Vec[an
         || key == "hashmap.entries"
         || key == "compiler.missing";
     if supported {
-        match intrinsic_owner_type(key, function_ty, args) {
-            Some(owner) => Option::Some(runtime_helper_name(intrinsic_source_name(key), owner)),
-            None => Option::None,
-        }
+        intrinsic_owner_type(key, function_ty, args).map(
+            |owner| runtime_helper_name(intrinsic_source_name(key), owner),
+        )
     } else {
         Option::None
     }
@@ -2773,26 +2772,17 @@ fn same_target(lhs: Option[string], rhs: Option[string]) -> Option[string] {
 
 fn match_block_target(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Option[string] {
     if arms.is_empty() {
-        return match default {
-            Some(body) => block_target(body),
-            None => Option::None,
-        }
+        return default.and_then(|body| block_target(body))
     }
     let expected = block_target(arms[0].body)?;
     for index in 1..arms.len() {
-        match block_target(arms[index].body) {
-            Some(value) => if value == expected {} else {
-                return Option::None
-            },
-            None => return Option::None,
+        if block_target(arms[index].body)? != expected {
+            return Option::None
         }
     }
     if let Some(body) = default {
-        match block_target(body) {
-            Some(value) => if value == expected {} else {
-                return Option::None
-            },
-            None => return Option::None,
+        if block_target(body)? != expected {
+            return Option::None
         }
     }
     Option::Some(expected)
@@ -2800,10 +2790,7 @@ fn match_block_target(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Optio
 
 fn select_block_target(arms: Vec[anf::SelectArm], default: Option[anf::Block]) -> Option[string] {
     if arms.is_empty() {
-        return match default {
-            Some(body) => block_target(body),
-            None => Option::None,
-        }
+        return default.and_then(|body| block_target(body))
     }
     let first = match arms[0] {
         Receive { body, .. } | Send { body, .. } => body,
@@ -2813,19 +2800,13 @@ fn select_block_target(arms: Vec[anf::SelectArm], default: Option[anf::Block]) -
         let body = match arms[index] {
             Receive { body, .. } | Send { body, .. } => body,
         };
-        match block_target(body) {
-            Some(value) => if value == expected {} else {
-                return Option::None
-            },
-            None => return Option::None,
+        if block_target(body)? != expected {
+            return Option::None
         }
     }
     if let Some(body) = default {
-        match block_target(body) {
-            Some(value) => if value == expected {} else {
-                return Option::None
-            },
-            None => return Option::None,
+        if block_target(body)? != expected {
+            return Option::None
         }
     }
     Option::Some(expected)
@@ -3262,10 +3243,7 @@ fn compile_select(
         }
         arm_index += 1;
     }
-    let lowered_default = match default {
-        Some(body) => Option::Some(compile_body(body)),
-        None => Option::None,
-    };
+    let lowered_default = default.map(|body| compile_body(body));
     match mode {
         ast::SelectMode::Normal => result.push(Stmt::Select { cases, default: lowered_default }),
         ast::SelectMode::Priority => {
@@ -3566,26 +3544,17 @@ fn match_tail_target_through_joins(
     visited: collections::IndexSet[string],
 ) -> Option[string] {
     if arms.is_empty() {
-        return match default {
-            Some(body) => block_tail_target_through_joins(body, joins, visited),
-            None => Option::None,
-        }
+        return default.and_then(|body| block_tail_target_through_joins(body, joins, visited))
     }
     let expected = block_tail_target_through_joins(arms[0].body, joins, visited)?;
     for index in 1..arms.len() {
-        match block_tail_target_through_joins(arms[index].body, joins, visited) {
-            Some(value) => if value == expected {} else {
-                return Option::None
-            },
-            None => return Option::None,
+        if block_tail_target_through_joins(arms[index].body, joins, visited)? != expected {
+            return Option::None
         }
     }
     if let Some(body) = default {
-        match block_tail_target_through_joins(body, joins, visited) {
-            Some(value) => if value == expected {} else {
-                return Option::None
-            },
-            None => return Option::None,
+        if block_tail_target_through_joins(body, joins, visited)? != expected {
+            return Option::None
         }
     }
     Option::Some(expected)
@@ -3598,10 +3567,7 @@ fn select_tail_target_through_joins(
     visited: collections::IndexSet[string],
 ) -> Option[string] {
     if arms.is_empty() {
-        return match default {
-            Some(body) => block_tail_target_through_joins(body, joins, visited),
-            None => Option::None,
-        }
+        return default.and_then(|body| block_tail_target_through_joins(body, joins, visited))
     }
     let first = match arms[0] {
         Receive { body, .. } | Send { body, .. } => body,
@@ -3611,19 +3577,13 @@ fn select_tail_target_through_joins(
         let body = match arms[index] {
             Receive { body, .. } | Send { body, .. } => body,
         };
-        match block_tail_target_through_joins(body, joins, visited) {
-            Some(value) => if value == expected {} else {
-                return Option::None
-            },
-            None => return Option::None,
+        if block_tail_target_through_joins(body, joins, visited)? != expected {
+            return Option::None
         }
     }
     if let Some(body) = default {
-        match block_tail_target_through_joins(body, joins, visited) {
-            Some(value) => if value == expected {} else {
-                return Option::None
-            },
-            None => return Option::None,
+        if block_tail_target_through_joins(body, joins, visited)? != expected {
+            return Option::None
         }
     }
     Option::Some(expected)

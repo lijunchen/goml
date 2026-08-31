@@ -587,7 +587,7 @@ fn serde_items_to_json(items: Vec[serde::Value]) -> Vec[Value] {
 }
 
 fn serde_optional_to_json(items: Vec[serde::Value]) -> Value {
-    if items.len() == 0 {
+    if items.is_empty() {
         Value::Null
     } else {
         from_serde_value(items[0])
@@ -681,10 +681,7 @@ pub fn try_to_string[T: Serialize](value: T) -> Result[string, string] {
 pub fn from_string[T: Deserialize](input: string) -> Result[T, string] {
     let deserializer = json_deserializer(input);
     let decoded: Result[T, string] = Deserialize::deserialize(deserializer);
-    let value: T = match decoded {
-        Ok(value) => value,
-        Err(error) => return Result::Err(contextualize_json_error(deserializer, error)),
-    };
+    let value: T = decoded.map_err(|error| contextualize_json_error(deserializer, error))?;
     match finish_json_deserializer(deserializer) {
         Ok(()) => Result::Ok(value),
         Err(error) => Result::Err(contextualize_json_error(deserializer, error)),

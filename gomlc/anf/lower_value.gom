@@ -10,10 +10,7 @@ fn try_imm(value: lift::Expr) -> Option[Imm] {
         },
         Prim { value, ty } => Option::Some(Imm::Prim { value, ty }),
         Constr { constructor, args, ty } => if args.is_empty() {
-            match constructor.tag {
-                Some(tag) => Option::Some(Imm::Tag { index: tag, ty }),
-                None => Option::None,
-            }
+            constructor.tag.map(|tag| Imm::Tag { index: tag, ty })
         } else {
             Option::None
         },

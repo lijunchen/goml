@@ -691,13 +691,7 @@ fn lower_hidden_block(value: LowerBlock, cells: Vec[(string, tast::Type)]) -> Lo
             None => stmts.push(LowerLetStmt { name: stmt.name, value: lowered, ty: stmt.ty }),
         }
     }
-    LowerBlock {
-        stmts,
-        tail: match value.tail {
-            Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
-            None => Option::None,
-        },
-    }
+    LowerBlock { stmts, tail: value.tail.map(|expr| lower_hidden_expr(expr, cells)) }
 }
 
 fn lower_hidden_arms(values: Vec[LowerArm], cells: Vec[(string, tast::Type)]) -> Vec[LowerArm] {
@@ -722,10 +716,7 @@ fn lower_hidden_select_arms(values: Vec[LowerSelectArm], cells: Vec[(string, tas
             match value {
                 Receive { channel, guard, binding, binding_ty, body } => LowerSelectArm::Receive {
                     channel: lower_hidden_expr(channel, cells),
-                    guard: match guard {
-                        Some(value) => Option::Some(lower_hidden_expr(value, cells)),
-                        None => Option::None,
-                    },
+                    guard: guard.map(|value| lower_hidden_expr(value, cells)),
                     binding,
                     binding_ty,
                     body: lower_hidden_expr(body, cells),
@@ -733,10 +724,7 @@ fn lower_hidden_select_arms(values: Vec[LowerSelectArm], cells: Vec[(string, tas
                 Send { channel, value, guard, body } => LowerSelectArm::Send {
                     channel: lower_hidden_expr(channel, cells),
                     value: lower_hidden_expr(value, cells),
-                    guard: match guard {
-                        Some(value) => Option::Some(lower_hidden_expr(value, cells)),
-                        None => Option::None,
-                    },
+                    guard: guard.map(|value| lower_hidden_expr(value, cells)),
                     body: lower_hidden_expr(body, cells),
                 },
             },
@@ -765,19 +753,13 @@ fn lower_hidden_expr(value: LowerExpr, cells: Vec[(string, tast::Type)]) -> Lowe
         Match { expr: source, arms, default, ty } => LowerExpr::Match {
             expr: lower_hidden_expr(source, cells),
             arms: lower_hidden_arms(arms, cells),
-            default: match default {
-                Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
-                None => Option::None,
-            },
+            default: default.map(|expr| lower_hidden_expr(expr, cells)),
             ty,
         },
         Select { mode, arms, default, ty } => LowerExpr::Select {
             mode,
             arms: lower_hidden_select_arms(arms, cells),
-            default: match default {
-                Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
-                None => Option::None,
-            },
+            default: default.map(|expr| lower_hidden_expr(expr, cells)),
             ty,
         },
         If { cond, then_branch, else_branch, ty } => LowerExpr::If {
@@ -796,18 +778,12 @@ fn lower_hidden_expr(value: LowerExpr, cells: Vec[(string, tast::Type)]) -> Lowe
         Loop { body, ty } => LowerExpr::Loop { body: lower_hidden_expr(body, cells), ty },
         Break { target, value, ty } => LowerExpr::Break {
             target,
-            value: match value {
-                Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
-                None => Option::None,
-            },
+            value: value.map(|expr| lower_hidden_expr(expr, cells)),
             ty,
         },
         Continue { target, ty } => LowerExpr::Continue { target, ty },
         Return { expr, ty } => LowerExpr::Return {
-            expr: match expr {
-                Some(value) => Option::Some(lower_hidden_expr(value, cells)),
-                None => Option::None,
-            },
+            expr: expr.map(|value| lower_hidden_expr(value, cells)),
             ty,
         },
         Go { expr, ty } => LowerExpr::Go { expr: lower_hidden_expr(expr, cells), ty },
@@ -860,10 +836,7 @@ fn lower_hidden_expr(value: LowerExpr, cells: Vec[(string, tast::Type)]) -> Lowe
             method_name: name,
             instance_name,
             for_ty,
-            receiver: match receiver {
-                Some(value) => Option::Some(lower_hidden_expr(value, cells)),
-                None => Option::None,
-            },
+            receiver: receiver.map(|value| lower_hidden_expr(value, cells)),
             args: lower_hidden_exprs(args, cells),
             ty,
         },

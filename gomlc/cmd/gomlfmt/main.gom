@@ -108,14 +108,10 @@ fn diagnostic_error(path: string, error: formatter::FormatError) -> string {
 fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
     let result: Vec[FormattedFile] = Vec::new();
     for path in paths {
-        let source = match read_source(path) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(f"{path}: {error}"),
-        };
-        let formatted = match formatter::format_source(source) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(diagnostic_error(path, error)),
-        };
+        let source = read_source(path).map_err(|error| f"{path}: {error}")?;
+        let formatted = formatter::format_source(source).map_err(
+            |error| diagnostic_error(path, error),
+        )?;
         result.push(FormattedFile { path, source, formatted })
     }
     Result::Ok(result)

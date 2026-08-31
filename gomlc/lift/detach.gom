@@ -153,10 +153,7 @@ fn detach_exprs(values: Vec[LowerExpr], environments: Vec[string]) -> Vec[Expr] 
 }
 
 fn detach_optional_expr(value: Option[LowerExpr], environments: Vec[string]) -> Option[Expr] {
-    match value {
-        Some(value) => Option::Some(detach_expr(value, environments)),
-        None => Option::None,
-    }
+    value.map(|value| detach_expr(value, environments))
 }
 
 fn detach_block(value: LowerBlock, environments: Vec[string]) -> Block {
@@ -193,10 +190,7 @@ fn detach_select_arms(values: Vec[LowerSelectArm], environments: Vec[string]) ->
             match value {
                 Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                     channel: detach_expr(channel, environments),
-                    guard: match guard {
-                        Some(value) => Option::Some(detach_expr(value, environments)),
-                        None => Option::None,
-                    },
+                    guard: guard.map(|value| detach_expr(value, environments)),
                     binding,
                     binding_ty: detach_type(binding_ty, environments),
                     body: detach_expr(body, environments),
@@ -204,10 +198,7 @@ fn detach_select_arms(values: Vec[LowerSelectArm], environments: Vec[string]) ->
                 Send { channel, value, guard, body } => SelectArm::Send {
                     channel: detach_expr(channel, environments),
                     value: detach_expr(value, environments),
-                    guard: match guard {
-                        Some(value) => Option::Some(detach_expr(value, environments)),
-                        None => Option::None,
-                    },
+                    guard: guard.map(|value| detach_expr(value, environments)),
                     body: detach_expr(body, environments),
                 },
             },
@@ -367,10 +358,7 @@ fn detach_function(value: LowerFunction, environments: Vec[string]) -> Function 
         name: value.name,
         origin: detach_origin(value.origin, environments),
         root: value.root,
-        trait_impl: match value.trait_impl {
-            Some(value) => Option::Some(detach_trait_impl(value, environments)),
-            None => Option::None,
-        },
+        trait_impl: value.trait_impl.map(|value| detach_trait_impl(value, environments)),
         params: detach_named_types(value.params, environments),
         ret_ty: detach_type(value.ret_ty, environments),
         body: detach_block(value.body, environments),

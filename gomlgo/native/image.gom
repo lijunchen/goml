@@ -97,9 +97,6 @@ pub fn build_execution_image(plan: BuildPlan) -> Result[string, string] {
         "native image cache directory has no parent",
     )?;
     fs::create_dir_all(final_parent).map_err(|error| error.to_string())?;
-    match fs::rename(plan.staging_root, plan.final_directory) {
-        Ok(()) => {},
-        Err(error) => return Result::Err(error.to_string()),
-    }
+    fs::rename(plan.staging_root, plan.final_directory).map_err(|error| error.to_string())?;
     Result::Ok(image_path(plan))
 }

@@ -303,14 +303,8 @@ fn format_node(value: Builder, node: LocatedNode) -> BuiltDoc {
         WHERE_CLAUSE => format_where_clause(value, node),
         TYPE_FUNC => format_generic(value, node),
         EXPR_INTERPOLATED_STRING | ATTRIBUTE => {
-            let first = match first_significant_token(node) {
-                Some(token) => Option::Some(token.token.kind),
-                None => Option::None,
-            };
-            let last = match last_significant_token(node) {
-                Some(token) => Option::Some(token.token.kind),
-                None => Option::None,
-            };
+            let first = first_significant_token(node).map(|token| token.token.kind);
+            let last = last_significant_token(node).map(|token| token.token.kind);
             built(verbatim(node_significant_source(node)), first, last)
         },
         _ => if node_kind_is_pattern(kind) {

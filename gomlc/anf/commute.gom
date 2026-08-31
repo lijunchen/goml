@@ -435,10 +435,7 @@ fn replace_commute_term(value: Term, fields: Vec[CommuteField], scrutinee: strin
             Term::Match {
                 scrutinee: value,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(replace_commute_block(body, fields, scrutinee)),
-                    None => Option::None,
-                },
+                default: default.map(|body| replace_commute_block(body, fields, scrutinee)),
                 ret_ty,
             }
         },
@@ -466,10 +463,7 @@ fn replace_commute_term(value: Term, fields: Vec[CommuteField], scrutinee: strin
             Term::Select {
                 mode,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(replace_commute_block(body, fields, scrutinee)),
-                    None => Option::None,
-                },
+                default: default.map(|body| replace_commute_block(body, fields, scrutinee)),
                 ret_ty,
             }
         },
@@ -557,10 +551,7 @@ fn remove_commute_alias_term(value: Term) -> Term {
             Term::Match {
                 scrutinee,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(remove_commute_aliases(body)),
-                    None => Option::None,
-                },
+                default: default.map(|body| remove_commute_aliases(body)),
                 ret_ty,
             }
         },
@@ -588,10 +579,7 @@ fn remove_commute_alias_term(value: Term) -> Term {
             Term::Select {
                 mode,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(remove_commute_aliases(body)),
-                    None => Option::None,
-                },
+                default: default.map(|body| remove_commute_aliases(body)),
                 ret_ty,
             }
         },
@@ -1091,18 +1079,15 @@ fn try_commute_join(value: JoinBind, rest: Block, known: Vec[CommuteBinding], co
                     ),
                 )
             }
-            let default = match fallback {
-                Some(body) => Option::Some(
-                    build_commute_default(
-                        body,
-                        value.params,
-                        scrutinee_param.0,
-                        scrutinee_param.1,
-                        counter,
-                    ),
+            let default = fallback.map(
+                |body| build_commute_default(
+                    body,
+                    value.params,
+                    scrutinee_param.0,
+                    scrutinee_param.1,
+                    counter,
                 ),
-                None => Option::None,
-            };
+            );
             let assigned: Vec[string] = Vec::new();
             collect_commute_assigned_block(assigned, rest);
             let stable_known = copy_commute_bindings(known);
@@ -1220,12 +1205,9 @@ fn commute_term(value: Term, known: Vec[CommuteBinding], counter: Ref[isize]) ->
                 term: Term::Match {
                     scrutinee,
                     arms: lowered,
-                    default: match default {
-                        Some(body) => Option::Some(
-                            commute_block_with(body, copy_commute_bindings(known), counter),
-                        ),
-                        None => Option::None,
-                    },
+                    default: default.map(
+                        |body| commute_block_with(body, copy_commute_bindings(known), counter),
+                    ),
                     ret_ty,
                 },
             }
@@ -1262,12 +1244,9 @@ fn commute_term(value: Term, known: Vec[CommuteBinding], counter: Ref[isize]) ->
                 term: Term::Select {
                     mode,
                     arms: lowered,
-                    default: match default {
-                        Some(body) => Option::Some(
-                            commute_block_with(body, copy_commute_bindings(known), counter),
-                        ),
-                        None => Option::None,
-                    },
+                    default: default.map(
+                        |body| commute_block_with(body, copy_commute_bindings(known), counter),
+                    ),
                     ret_ty,
                 },
             }

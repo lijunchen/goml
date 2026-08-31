@@ -6,10 +6,7 @@ use module::numeric;
 use std::text;
 
 fn literal_value(node: LocatedNode, kind: lexer::TokenKind) -> Option[string] {
-    match first_token(node, kind) {
-        Some(token) => Option::Some(token.token.text),
-        None => Option::None,
-    }
+    first_token(node, kind).map(|token| token.token.text)
 }
 
 fn strip_suffix(value: string, suffix: string) -> string {
@@ -114,21 +111,16 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     },
                 },
             },
-            PATTERN_INT => match integer_pattern_value(node) {
-                Some(value) => Option::Some(Pat::Int { value, span: value_span }),
-                None => Option::None,
-            },
-            PATTERN_FLOAT => match signed_pattern_value(node, lexer::TokenKind::Float, "") {
-                Some(value) => Option::Some(Pat::Float { value, span: value_span }),
-                None => Option::None,
-            },
+            PATTERN_INT => integer_pattern_value(node).map(
+                |value| Pat::Int { value, span: value_span },
+            ),
+            PATTERN_FLOAT => signed_pattern_value(node, lexer::TokenKind::Float, "").map(
+                |value| Pat::Float { value, span: value_span },
+            ),
             PATTERN_STRING => match literal_value(node, lexer::TokenKind::Str) {
-                Some(raw) => match strip_delimiters(raw) {
-                    Some(value) => Option::Some(
-                        Pat::String { value: unescape_string(value), span: value_span },
-                    ),
-                    None => Option::None,
-                },
+                Some(raw) => strip_delimiters(raw).map(
+                    |value| Pat::String { value: unescape_string(value), span: value_span },
+                ),
                 None => match raw_string_pattern_value(node) {
                     Some(value) => Option::Some(Pat::String { value, span: value_span }),
                     None => {
@@ -138,10 +130,9 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 },
             },
             PATTERN_CHAR => match literal_value(node, lexer::TokenKind::CharLit) {
-                Some(raw) => match strip_delimiters(raw) {
-                    Some(value) => Option::Some(Pat::Char { value, span: value_span }),
-                    None => Option::None,
-                },
+                Some(raw) => strip_delimiters(raw).map(
+                    |value| Pat::Char { value, span: value_span },
+                ),
                 None => {
                     push_error(ctx, value_span, "CharPat has no value");
                     Option::None
@@ -178,12 +169,9 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 let names = tokens_of_kind(node, lexer::TokenKind::Ident);
                 let pats = pattern_children(node);
                 if !names.is_empty() && !pats.is_empty() {
-                    match lower_pat_inner(ctx, pats[0]) {
-                        Some(pat) => Option::Some(
-                            Pat::Alias { name: names[0].token.text, pat, span: value_span },
-                        ),
-                        None => Option::None,
-                    }
+                    lower_pat_inner(ctx, pats[0]).map(
+                        |pat| Pat::Alias { name: names[0].token.text, pat, span: value_span },
+                    )
                 } else {
                     Option::None
                 }
@@ -209,17 +197,14 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 let children = pattern_children(node);
                 if children.len() >= 2 {
                     match lower_pat_inner(ctx, children[0]) {
-                        Some(start) => match lower_pat_inner(ctx, children[1]) {
-                            Some(end) => Option::Some(
-                                Pat::Range {
-                                    start,
-                                    end,
-                                    inclusive: has_token(node, lexer::TokenKind::DotDotEq),
-                                    span: value_span,
-                                },
-                            ),
-                            None => Option::None,
-                        },
+                        Some(start) => lower_pat_inner(ctx, children[1]).map(
+                            |end| Pat::Range {
+                                start,
+                                end,
+                                inclusive: has_token(node, lexer::TokenKind::DotDotEq),
+                                span: value_span,
+                            },
+                        ),
                         None => Option::None,
                     }
                 } else {
@@ -327,10 +312,7 @@ fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
     let mut valid = true;
     for child in pattern_children(node) {
         if cst::node_kind_equal(node_kind(child), cst::NodeKind::PATTERN_REST) {
-            let binding = match first_token(child, lexer::TokenKind::Ident) {
-                Some(token) => Option::Some(token.token.text),
-                None => Option::None,
-            };
+            let binding = first_token(child, lexer::TokenKind::Ident).map(|token| token.token.text);
             rest = Option::Some(ArrayPatRest { binding, span: node_span(child) });
         } else {
             match lower_pat_inner(ctx, child) {

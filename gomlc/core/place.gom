@@ -140,10 +140,7 @@ fn decompose_place_from(value: tast::Expr, steps: Vec[PlaceStep]) -> Option[Plac
 
 fn decompose_place(value: tast::Expr) -> Option[(PlaceRoot, Vec[PlaceStep])] {
     let steps: Vec[PlaceStep] = Vec::new();
-    match decompose_place_from(value, steps) {
-        Some(root) => Option::Some((root, steps)),
-        None => Option::None,
-    }
+    decompose_place_from(value, steps).map(|root| (root, steps))
 }
 
 fn place_intrinsic_call(

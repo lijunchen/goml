@@ -115,7 +115,7 @@ fn push_fields(output: Vec[byte], fields: Vec[(string, serde::Value)], config: C
 }
 
 fn push_optional(output: Vec[byte], values: Vec[serde::Value], config: Config) -> Result[(), string] {
-    if values.len() == 0 {
+    if values.is_empty() {
         output.push(0);
         Result::Ok(())
     } else if values.len() == 1 {

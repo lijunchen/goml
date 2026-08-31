@@ -11,10 +11,7 @@ fn detach_exprs(values: Vec[LowerExpr]) -> Vec[Expr] {
 }
 
 fn detach_optional_expr(value: Option[LowerExpr]) -> Option[Expr] {
-    match value {
-        Some(value) => Option::Some(detach_expr(value)),
-        None => Option::None,
-    }
+    value.map(|value| detach_expr(value))
 }
 
 fn detach_control_type(value: tast::Type) -> Type {
@@ -213,10 +210,7 @@ fn detach_function(value: LowerFunction) -> Function {
         root: value.root,
         generics: value.generics,
         predicates: lower_predicates(value.predicates),
-        trait_impl: match value.trait_impl {
-            Some(value) => Option::Some(detach_trait_impl(value)),
-            None => Option::None,
-        },
+        trait_impl: value.trait_impl.map(|value| detach_trait_impl(value)),
         params,
         ret_ty: lower_type(value.ret_ty),
         body: detach_block(value.body),

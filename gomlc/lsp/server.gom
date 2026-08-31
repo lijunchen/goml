@@ -468,10 +468,8 @@ fn fix_action(diagnostic: json::Value, fix: json::Value) -> Option[json::Value] 
 
 fn code_action_response(params: json::Value) -> Result[json::Value, string] {
     let context = required_field(params, "context")?;
-    let diagnostics = match required_field(context, "diagnostics") {
-        Ok(Array(values)) => values,
-        Ok(_) => return Result::Err("field diagnostics must be an array"),
-        Err(error) => return Result::Err(error),
+    let Array(diagnostics) = required_field(context, "diagnostics")? else {
+        return Result::Err("field diagnostics must be an array");
     };
     let actions: Vec[json::Value] = Vec::new();
     for diagnostic in diagnostics {
@@ -615,14 +613,8 @@ fn did_change(server: Server, params: json::Value) -> Result[(), string] {
     let uri = text_document_uri(params)?;
     let text_document = text_document(params)?;
     let version = optional_int_field(text_document, "version", 0);
-    let changes = match required_field(params, "contentChanges") {
-        Ok(changes) => match json::as_array(changes) {
-            Some(changes) => changes,
-            None => {
-                return Result::Err("contentChanges must be an array")
-            },
-        },
-        Err(error) => return Result::Err(error),
+    let Some(changes) = json::as_array(required_field(params, "contentChanges")?) else {
+        return Result::Err("contentChanges must be an array");
     };
     if changes.is_empty() {
         return Result::Err("contentChanges must not be empty")
@@ -749,11 +741,8 @@ pub fn run_server() -> Result[(), string] {
         if let Some(name) = operation {
             write_rpc_message(status_notification("busy", name))?
         }
-        match handle_payload(server, payload) {
-            Ok(messages) => for message in messages {
-                write_rpc_message(message)?
-            },
-            Err(error) => return Result::Err(error),
+        for message in handle_payload(server, payload)? {
+            write_rpc_message(message)?
         }
         if let Some(name) = operation {
             write_rpc_message(status_notification("ready", name))?

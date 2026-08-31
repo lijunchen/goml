@@ -338,15 +338,13 @@ fn artifact_decode_inherent_impl_key(
     if object.len() != 1 {
         Result::Err(wire::artifact_decode_error("inherent implementation key variant"))
     } else if object[0].0 == "Exact" {
-        match tast_codec::artifact_decode_type(context, object[0].1) {
-            Ok(value) => Result::Ok(artifact::ArtifactInherentImplKey::Exact(value)),
-            Err(error) => Result::Err(error),
-        }
+        tast_codec::artifact_decode_type(context, object[0].1).map(
+            |value| artifact::ArtifactInherentImplKey::Exact(value),
+        )
     } else if object[0].0 == "Constr" {
-        match wire::artifact_json_string_value(object[0].1, "inherent constructor") {
-            Ok(value) => Result::Ok(artifact::ArtifactInherentImplKey::Constr(value)),
-            Err(error) => Result::Err(error),
-        }
+        wire::artifact_json_string_value(object[0].1, "inherent constructor").map(
+            |value| artifact::ArtifactInherentImplKey::Constr(value),
+        )
     } else {
         Result::Err(wire::artifact_decode_error("inherent implementation key"))
     }

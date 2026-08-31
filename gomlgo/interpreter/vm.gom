@@ -9420,10 +9420,7 @@ fn finish_invocation(
     function: bytecode::BytecodeFunction,
     panic: Option[PanicPayload],
 ) -> Result[InvocationOutcome, string] {
-    let mut active = match panic {
-        Some(payload) => Option::Some(panic_state(payload)),
-        None => Option::None,
-    };
+    let mut active = panic.map(|payload| panic_state(payload));
     while !frame.deferred.is_empty() {
         let call = frame.deferred.pop().ok_or("deferred call stack is empty")?;
         let outcome = invoke_prepared(state, frame, call, active)?;
@@ -9948,10 +9945,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         fast_functions: fast_functions(program),
     };
     for global in state.program.globals {
-        match runtime_zero_value(state, global.type_id) {
-            Ok(value) => state.globals.push(allocate_cell(memory, value)),
-            Err(message) => return Result::Err(message),
-        }
+        state.globals.push(allocate_cell(memory, runtime_zero_value(state, global.type_id)?))
     }
     Result::Ok(state)
 }

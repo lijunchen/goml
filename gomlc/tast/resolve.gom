@@ -441,10 +441,7 @@ fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
 }
 
 fn resolve_struct(ctx: Checker, name: string) -> Option[ResolvedStruct] {
-    match find_struct_by_name(ctx, name) {
-        Some(value) => Option::Some(instantiate_struct(ctx, value)),
-        None => Option::None,
-    }
+    find_struct_by_name(ctx, name).map(|value| instantiate_struct(ctx, value))
 }
 
 fn resolve_positional_struct(ctx: Checker, name: string) -> Option[ResolvedConstructor] {
@@ -1882,17 +1879,14 @@ fn resolve_method(
         },
         _ => match resolve_predicate_method(ctx, receiver, name, method_explicit) {
             Some(value) => Option::Some(value),
-            None => match resolve_user_method_for_call(
+            None => resolve_user_method_for_call(
                 ctx,
                 receiver,
                 name,
                 args,
                 expected,
                 method_explicit,
-            ) {
-                Some(value) => Option::Some(value),
-                None => Option::None,
-            },
+            ),
         },
     }
 }
@@ -2299,15 +2293,12 @@ fn validate_nominal_application(ctx: Checker, name: string, args: Vec[Type]) -> 
         },
         None => match split_constructor_name(name) {
             Some(parts) => {
-                let span = match ctx.current_span.get() {
-                    Some(value) => Option::Some(
-                        ast::span(
-                            value.start + parts.0.byte_len() + 2,
-                            value.start + parts.0.byte_len() + 2 + short_name(name).byte_len(),
-                        ),
+                let span = ctx.current_span.get().map(
+                    |value| ast::span(
+                        value.start + parts.0.byte_len() + 2,
+                        value.start + parts.0.byte_len() + 2 + short_name(name).byte_len(),
                     ),
-                    None => Option::None,
-                };
+                );
                 push_diagnostic_at(ctx, f"Unknown type constructor {name}", span);
                 push_diagnostic_at(
                     ctx,
@@ -2649,7 +2640,7 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
                     push_diagnostic(ctx, f"Cyclic type alias {short_name(alias.name)}")
                 }
                 Type::Error
-            } else if alias.generics.len() != 0 {
+            } else if !alias.generics.is_empty() {
                 if report {
                     push_diagnostic(
                         ctx,
@@ -2727,15 +2718,12 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
         Projection { for_ty, name, trait_ref } => Type::Projection {
             for_ty: expand_type_alias_inner(ctx, for_ty, stack, report),
             name,
-            trait_ref: match trait_ref {
-                Some(reference) => Option::Some(
-                    TraitRef {
-                        name: reference.name,
-                        args: expand_type_alias_types(ctx, reference.args, stack, report),
-                    },
-                ),
-                None => Option::None,
-            },
+            trait_ref: trait_ref.map(
+                |reference| TraitRef {
+                    name: reference.name,
+                    args: expand_type_alias_types(ctx, reference.args, stack, report),
+                },
+            ),
         },
         Array { len, elem } => Type::Array {
             len,

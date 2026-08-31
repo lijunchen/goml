@@ -8,10 +8,7 @@ use std::path;
 use std::process;
 
 fn canonical(value: string) -> Result[string, string] {
-    match fs::canonicalize(value) {
-        Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(f"failed to resolve {value}: {message}"),
-    }
+    fs::canonicalize(value).map_err(|message| f"failed to resolve {value}: {message}")
 }
 
 fn resolve_program(value: string) -> Result[string, string] {

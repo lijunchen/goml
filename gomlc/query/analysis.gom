@@ -234,10 +234,9 @@ fn dependency_sources(
     match standard_library_sources(package_name)? {
         Some(files) => Result::Ok(files),
         None => if is_local_package(module_path, package_name) {
-            match dependency_project(module_root, module_path, package_name, overrides) {
-                Ok(project) => Result::Ok(project.files),
-                Err(error) => Result::Err(error),
-            }
+            dependency_project(module_root, module_path, package_name, overrides).map(
+                |project| project.files,
+            )
         } else {
             external_package_sources(module_root, package_name, overrides)
         },

@@ -126,10 +126,7 @@ pub fn close_document(value: Server, uri: string) -> () {
 }
 
 pub fn cached_document_analysis(value: Server, document: Document) -> Option[query::Analysis] {
-    match value.analyses.get(document.path) {
-        Some(cached) => Option::Some(cached.analysis),
-        None => Option::None,
-    }
+    value.analyses.get(document.path).map(|cached| cached.analysis)
 }
 
 fn source_overrides(value: Server) -> Vec[query::SourceOverride] {

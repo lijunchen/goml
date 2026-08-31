@@ -467,10 +467,9 @@ fn constant_ref(ctx: LowerCtx, path: ast::Path) -> Option[NameRef] {
     if original.len() != 1 {
         Option::None
     } else if expanded.len() == 1 {
-        match find_constant_definition(ctx, full_name(ctx.package_name, expanded[0])) {
-            Some(def_id) => Option::Some(NameRef::Def(def_id)),
-            None => Option::None,
-        }
+        find_constant_definition(ctx, full_name(ctx.package_name, expanded[0])).map(
+            |def_id| NameRef::Def(def_id),
+        )
     } else {
         Option::None
     }
@@ -877,17 +876,11 @@ fn lower_pattern_inner(
             for item in prefix {
                 lowered_prefix.push(lower_pattern_inner(ctx, item, env, state))
             }
-            let lowered_rest = match rest {
-                Some(value) => Option::Some(
-                    ArrayPatRest {
-                        binding: match value.binding {
-                            Some(name) => Option::Some(bind_pattern_name(ctx, env, state, name)),
-                            None => Option::None,
-                        },
-                    },
-                ),
-                None => Option::None,
-            };
+            let lowered_rest = rest.map(
+                |value| ArrayPatRest {
+                    binding: value.binding.map(|name| bind_pattern_name(ctx, env, state, name)),
+                },
+            );
             let lowered_suffix: Vec[Pat] = Vec::new();
             for item in suffix {
                 lowered_suffix.push(lower_pattern_inner(ctx, item, env, state))
@@ -975,10 +968,7 @@ fn lower_block(
                     Stmt::Let {
                         is_mut,
                         pat: lowered_pat,
-                        annotation: match annotation {
-                            Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
-                            None => Option::None,
-                        },
+                        annotation: annotation.map(|ty| lower_type(ctx, ty, type_params)),
                         value: lowered_expr,
                         else_branch: lowered_else,
                     },
@@ -996,13 +986,7 @@ fn lower_block(
             },
         }
     }
-    Block {
-        stmts,
-        tail: match value.tail {
-            Some(expr) => Option::Some(lower_expr(ctx, expr, env, type_params)),
-            None => Option::None,
-        },
-    }
+    Block { stmts, tail: value.tail.map(|expr| lower_expr(ctx, expr, env, type_params)) }
 }
 
 fn synthetic_expr(kind: ExprKind, span: ast::Span) -> Expr {
@@ -1155,10 +1139,7 @@ fn lower_expr_value(
             ExprKind::StructLiteral {
                 name: path_text(ctx, path),
                 fields: result,
-                base: match base {
-                    Some(value) => Option::Some(lower_expr(ctx, value, env, type_params)),
-                    None => Option::None,
-                },
+                base: base.map(|value| lower_expr(ctx, value, env, type_params)),
             }
         },
         Tuple { items: values, span: _ } => {
@@ -1184,10 +1165,7 @@ fn lower_expr_value(
                 lowered_params.push(
                     ClosureParam {
                         name: local,
-                        ty: match param.ty {
-                            Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
-                            None => Option::None,
-                        },
+                        ty: param.ty.map(|ty| lower_type(ctx, ty, type_params)),
                         span: param.span,
                     },
                 )
@@ -1232,12 +1210,7 @@ fn lower_expr_value(
                         lowered_arms.push(
                             SelectArm::Receive {
                                 channel: lower_expr(ctx, channel, env, type_params),
-                                guard: match guard {
-                                    Some(value) => Option::Some(
-                                        lower_expr(ctx, value, env, type_params),
-                                    ),
-                                    None => Option::None,
-                                },
+                                guard: guard.map(|value| lower_expr(ctx, value, env, type_params)),
                                 binding: local,
                                 body: lower_expr(ctx, body, arm_env, type_params),
                             },
@@ -1247,12 +1220,7 @@ fn lower_expr_value(
                         SelectArm::Send {
                             channel: lower_expr(ctx, channel, env, type_params),
                             value: lower_expr(ctx, value, env, type_params),
-                            guard: match guard {
-                                Some(value) => Option::Some(
-                                    lower_expr(ctx, value, env, type_params),
-                                ),
-                                None => Option::None,
-                            },
+                            guard: guard.map(|value| lower_expr(ctx, value, env, type_params)),
                             body: lower_expr(ctx, body, copy_bindings(env), type_params),
                         },
                     ),
@@ -1292,17 +1260,11 @@ fn lower_expr_value(
         },
         Break { label, value, span: _ } => ExprKind::Break {
             label,
-            value: match value {
-                Some(expr) => Option::Some(lower_expr(ctx, expr, env, type_params)),
-                None => Option::None,
-            },
+            value: value.map(|expr| lower_expr(ctx, expr, env, type_params)),
         },
         Continue { label, span: _ } => ExprKind::Continue { label },
         Return { expr, span: _ } => ExprKind::Return {
-            expr: match expr {
-                Some(value) => Option::Some(lower_expr(ctx, value, env, type_params)),
-                None => Option::None,
-            },
+            expr: expr.map(|value| lower_expr(ctx, value, env, type_params)),
         },
         Go { expr, span: _ } => ExprKind::Go { expr: lower_expr(ctx, expr, env, type_params) },
         Comptime { block, span: _ } => ExprKind::Comptime {
@@ -1502,10 +1464,7 @@ fn lower_function(
         predicates,
         params,
         param_type_spans: value.param_type_spans,
-        ret_ty: match value.ret_ty {
-            Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
-            None => Option::None,
-        },
+        ret_ty: value.ret_ty.map(|ty| lower_type(ctx, ty, type_params)),
         ret_ty_span: value.ret_ty_span,
         body: lower_block(ctx, value.body, env, type_params),
     }
@@ -1529,10 +1488,7 @@ fn lower_extern(ctx: LowerCtx, value: ast::ExternFunction, def_id: DefId) -> Ext
         generic_bounds: lower_bounds(ctx, value.generic_bounds, type_params, false),
         predicates,
         params,
-        ret_ty: match value.ret_ty {
-            Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
-            None => Option::None,
-        },
+        ret_ty: value.ret_ty.map(|ty| lower_type(ctx, ty, type_params)),
     }
 }
 
@@ -1650,15 +1606,12 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
                 params,
                 ret_ty_span: ast_type_head_span(method.ret_ty),
                 ret_ty: lower_type(ctx, method.ret_ty, method_type_params),
-                default_name: match method.body {
-                    Some(_) => Option::Some(
-                        full_name(
-                            ctx.package_name,
-                            "trait_default#" + value.name + "#" + method.name,
-                        ),
+                default_name: method.body.map(
+                    |_| full_name(
+                        ctx.package_name,
+                        "trait_default#" + value.name + "#" + method.name,
                     ),
-                    None => Option::None,
-                },
+                ),
             },
         )
     }

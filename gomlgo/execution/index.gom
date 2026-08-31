@@ -347,30 +347,21 @@ pub fn require_node_type(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     checker::TypeFact,
     string,
 ] {
-    match require_node_type_index(index, node) {
-        Ok(fact_index) => Result::Ok(index.types[fact_index]),
-        Err(message) => Result::Err(message),
-    }
+    require_node_type_index(index, node).map(|fact_index| index.types[fact_index])
 }
 
 pub fn require_definition(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     checker::ObjectFact,
     string,
 ] {
-    match require_definition_index(index, node) {
-        Ok(fact_index) => Result::Ok(index.definitions[fact_index]),
-        Err(message) => Result::Err(message),
-    }
+    require_definition_index(index, node).map(|fact_index| index.definitions[fact_index])
 }
 
 pub fn require_use(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     checker::ObjectFact,
     string,
 ] {
-    match require_use_index(index, node) {
-        Ok(fact_index) => Result::Ok(index.uses[fact_index]),
-        Err(message) => Result::Err(message),
-    }
+    require_use_index(index, node).map(|fact_index| index.uses[fact_index])
 }
 
 pub fn require_implicit(index: TypeInfoIndex, node: syntax::NodeId) -> Result[

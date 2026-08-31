@@ -341,26 +341,16 @@ fn compare_file(file: string, mode: CompareMode) -> Result[(bool, bool), string]
                 + first_oracle_diagnostic(expected),
         )
     } else if actual_ok {
-        match actual {
-            Ok(result) => {
-                compare_info(file, result, expected)?;
-                return Result::Ok((true, true))
-            },
-            Err(message) => return Result::Err(message),
-        }
+        compare_info(file, actual?, expected)?;
+        return Result::Ok((true, true))
     } else {
         match mode {
             CompareMode::Acceptance => {},
-            CompareMode::Diagnostics => match actual {
-                Ok(result) => compare_diagnostics(file, result, expected)?,
-                Err(message) => return Result::Err(message),
-            },
-            CompareMode::Info => match actual {
-                Ok(result) => {
-                    compare_diagnostics(file, result, expected)?;
-                    compare_info(file, result, expected)?
-                },
-                Err(message) => return Result::Err(message),
+            CompareMode::Diagnostics => compare_diagnostics(file, actual?, expected)?,
+            CompareMode::Info => {
+                let result = actual?;
+                compare_diagnostics(file, result, expected)?;
+                compare_info(file, result, expected)?
             },
         }
     }

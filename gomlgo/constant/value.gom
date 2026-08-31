@@ -179,10 +179,7 @@ fn parse_exact_rational(value: string) -> Option[BigRat] {
             },
             _ => Option::None,
         },
-        None => match parse_exact_integer(value) {
-            Some(value) => Option::Some(rational_from_integer(value)),
-            None => Option::None,
-        },
+        None => parse_exact_integer(value).map(|value| rational_from_integer(value)),
     }
 }
 
@@ -224,10 +221,7 @@ pub fn constant_from_exact(kind: string, value: string) -> Option[ConstValue] {
             Ok(result) => Option::Some(result),
             Err(_) => Option::None,
         },
-        INT_EXACT_KIND => match parse_exact_integer(value) {
-            Some(result) => Option::Some(ConstValue::Int(result)),
-            None => Option::None,
-        },
+        INT_EXACT_KIND => parse_exact_integer(value).map(|result| ConstValue::Int(result)),
         FLOAT_EXACT_KIND => match parse_exact_rational(value) {
             Some(result) => Option::Some(ConstValue::Rat(result)),
             None => match parse_float_literal(value) {

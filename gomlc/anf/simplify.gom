@@ -379,10 +379,9 @@ fn known_match_scrutinee(value: Imm, known: Vec[KnownBinding]) -> Option[Imm] {
     let resolved = resolve_known_imm(value, known);
     match resolved {
         Var { name, ty } => match find_known_binding(known, name) {
-            Some(Constr { constructor, args: _, ty: owner_ty }) => match constructor.tag {
-                Some(index) => Option::Some(Imm::Tag { index, ty: owner_ty }),
-                None => Option::None,
-            },
+            Some(Constr { constructor, args: _, ty: owner_ty }) => constructor.tag.map(
+                |index| Imm::Tag { index, ty: owner_ty },
+            ),
             Some(Alias(value)) => Option::Some(resolve_known_imm(value, known)),
             _ => Option::Some(Imm::Var { name, ty }),
         },
@@ -493,16 +492,13 @@ fn simplify_known_term(
                         term: Term::Match {
                             scrutinee: resolve_known_imm(scrutinee, known),
                             arms: lowered_arms,
-                            default: match default {
-                                Some(body) => Option::Some(
-                                    simplify_known_block_with(
-                                        body,
-                                        copy_known_bindings(known),
-                                        assigned,
-                                    ),
+                            default: default.map(
+                                |body| simplify_known_block_with(
+                                    body,
+                                    copy_known_bindings(known),
+                                    assigned,
                                 ),
-                                None => Option::None,
-                            },
+                            ),
                             ret_ty,
                         },
                     }
@@ -516,10 +512,7 @@ fn simplify_known_term(
                     match arm {
                         Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel: resolve_known_imm(channel, known),
-                            guard: match guard {
-                                Some(value) => Option::Some(resolve_known_imm(value, known)),
-                                None => Option::None,
-                            },
+                            guard: guard.map(|value| resolve_known_imm(value, known)),
                             binding,
                             binding_ty,
                             body: simplify_known_block_with(
@@ -531,10 +524,7 @@ fn simplify_known_term(
                         Send { channel, value, guard, body } => SelectArm::Send {
                             channel: resolve_known_imm(channel, known),
                             value: resolve_known_imm(value, known),
-                            guard: match guard {
-                                Some(value) => Option::Some(resolve_known_imm(value, known)),
-                                None => Option::None,
-                            },
+                            guard: guard.map(|value| resolve_known_imm(value, known)),
                             body: simplify_known_block_with(
                                 body,
                                 copy_known_bindings(known),
@@ -549,12 +539,9 @@ fn simplify_known_term(
                 term: Term::Select {
                     mode,
                     arms: lowered,
-                    default: match default {
-                        Some(body) => Option::Some(
-                            simplify_known_block_with(body, copy_known_bindings(known), assigned),
-                        ),
-                        None => Option::None,
-                    },
+                    default: default.map(
+                        |body| simplify_known_block_with(body, copy_known_bindings(known), assigned),
+                    ),
                     ret_ty,
                 },
             }
@@ -806,10 +793,7 @@ fn rewrite_simple_join_term(value: Term, join: JoinBind) -> Term {
             Term::Match {
                 scrutinee,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(rewrite_simple_join_block(body, join)),
-                    None => Option::None,
-                },
+                default: default.map(|body| rewrite_simple_join_block(body, join)),
                 ret_ty,
             }
         },
@@ -837,10 +821,7 @@ fn rewrite_simple_join_term(value: Term, join: JoinBind) -> Term {
             Term::Select {
                 mode,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(rewrite_simple_join_block(body, join)),
-                    None => Option::None,
-                },
+                default: default.map(|body| rewrite_simple_join_block(body, join)),
                 ret_ty,
             }
         },
@@ -967,10 +948,7 @@ fn simplify_join_term(value: Term) -> Term {
             Term::Match {
                 scrutinee,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(simplify_join_block(body)),
-                    None => Option::None,
-                },
+                default: default.map(|body| simplify_join_block(body)),
                 ret_ty,
             }
         },
@@ -998,10 +976,7 @@ fn simplify_join_term(value: Term) -> Term {
             Term::Select {
                 mode,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(simplify_join_block(body)),
-                    None => Option::None,
-                },
+                default: default.map(|body| simplify_join_block(body)),
                 ret_ty,
             }
         },

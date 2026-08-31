@@ -109,7 +109,7 @@ pub fn concat(values: Vec[Doc]) -> Doc {
 }
 
 pub fn join(separator: Doc, values: Vec[Doc]) -> Doc {
-    if values.len() == 0 {
+    if values.is_empty() {
         return nil()
     }
     let mut index = values.len() - 1;
@@ -122,7 +122,7 @@ pub fn join(separator: Doc, values: Vec[Doc]) -> Doc {
 }
 
 pub fn folddoc(combine: (Doc, Doc) -> Doc, values: Vec[Doc]) -> Doc {
-    if values.len() == 0 {
+    if values.is_empty() {
         return nil()
     }
     let mut index = values.len() - 1;
@@ -240,7 +240,7 @@ fn copy_docs(values: Vec[Doc]) -> Vec[Doc] {
 }
 
 pub fn fill(values: Vec[Doc]) -> Doc {
-    if values.len() == 0 {
+    if values.is_empty() {
         nil()
     } else if values.len() == 1 {
         values.get(0)

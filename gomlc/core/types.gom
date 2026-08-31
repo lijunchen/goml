@@ -386,10 +386,7 @@ fn substitute_trait_ref(value: TraitRef, bindings: Vec[(string, Type)]) -> Trait
 fn substitute_optional_trait_ref(value: Option[TraitRef], bindings: Vec[(string, Type)]) -> Option[
     TraitRef,
 ] {
-    match value {
-        Some(value) => Option::Some(substitute_trait_ref(value, bindings)),
-        None => Option::None,
-    }
+    value.map(|value| substitute_trait_ref(value, bindings))
 }
 
 fn substitute_dyn_bounds(values: Vec[DynTraitBound], bindings: Vec[(string, Type)]) -> Vec[

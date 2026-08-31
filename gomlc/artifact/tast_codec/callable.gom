@@ -100,17 +100,11 @@ pub fn artifact_json_callable_body(writer: wire::ArtifactJsonWriter, value: Arti
 }
 
 pub fn artifact_intrinsic_key_from_id(value: string) -> Option[string] {
-    match resources::intrinsic_abi_by_id(value) {
-        Some(spec) => Option::Some(spec.key),
-        None => Option::None,
-    }
+    resources::intrinsic_abi_by_id(value).map(|spec| spec.key)
 }
 
 pub fn artifact_runtime_key_from_id(value: string) -> Option[string] {
-    match resources::runtime_abi_by_id(value) {
-        Some(spec) => Option::Some(spec.key),
-        None => Option::None,
-    }
+    resources::runtime_abi_by_id(value).map(|spec| spec.key)
 }
 
 pub fn artifact_decode_callable_body(name: string, value: wire::ArtifactValue) -> Result[

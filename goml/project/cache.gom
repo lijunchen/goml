@@ -35,10 +35,9 @@ fn absolute_from_module(module_dir: string, value: string) -> string {
 }
 
 fn file_digest(module_dir: string, value: string) -> Result[string, string] {
-    match fs::sha256_file(absolute_from_module(module_dir, value)) {
-        Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(f"failed to read cache input {value}: {message}"),
-    }
+    fs::sha256_file(absolute_from_module(module_dir, value)).map_err(
+        |message| f"failed to read cache input {value}: {message}",
+    )
 }
 
 fn cached_file_digest(cache: DigestCache, module_dir: string, value: string) -> Result[
@@ -227,10 +226,7 @@ fn output_digests(cache: DigestCache, module_dir: string, outputs: Vec[string]) 
     let result: Vec[string] = Vec::new();
     for output in outputs {
         if fs::is_file(absolute_from_module(module_dir, output)) {
-            match cached_file_digest(cache, module_dir, output) {
-                Ok(value) => result.push(value),
-                Err(message) => return Result::Err(message),
-            }
+            result.push(cached_file_digest(cache, module_dir, output)?)
         } else {
             return Result::Ok(Option::None)
         }
@@ -251,10 +247,8 @@ fn cache_is_fresh(cache: DigestCache, context: Context, spec: CacheSpec, fingerp
     if lines.len() != spec.outputs.len() + 1 || lines[0] != fingerprint {
         return Result::Ok(false)
     }
-    let actual = match output_digests(cache, context.graph.module_dir, spec.outputs) {
-        Ok(Some(value)) => value,
-        Ok(None) => return Result::Ok(false),
-        Err(message) => return Result::Err(message),
+    let Some(actual) = output_digests(cache, context.graph.module_dir, spec.outputs)? else {
+        return Result::Ok(false);
     };
     for index in 0..actual.len() {
         if lines[index + 1] != actual[index] {

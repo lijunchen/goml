@@ -19,10 +19,7 @@ fn finish_lowering(value: LambdaLiftResult) -> Result[File, string] {
         Some(message) => Result::Err(message),
         None => {
             let file = detach_file(value.file);
-            match validate(file) {
-                Ok(_) => Result::Ok(file),
-                Err(message) => Result::Err("invalid Lift IR: " + message),
-            }
+            validate(file).map(|_| file).map_err(|message| "invalid Lift IR: " + message)
         },
     }
 }

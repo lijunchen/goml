@@ -79,9 +79,8 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
                 index += 1;
             }
         }
-        match bytes::Bytes::from_vec(decoded_bytes).to_string_utf8() {
-            Ok(decoded) => Result::Ok(path::clean(decoded)),
-            Err(_) => Result::Err("URI path is not valid UTF-8"),
-        }
+        bytes::Bytes::from_vec(decoded_bytes).to_string_utf8().map(|decoded| path::clean(decoded)).map_err(
+            |_| "URI path is not valid UTF-8",
+        )
     }
 }

@@ -119,16 +119,16 @@ fn parses_braced_imports_with_item_aliases() -> () {
 
 #[test]
 fn rejects_unsupported_braced_import_forms() -> () {
-    testing::assert(parse("use alice::api::{};").diagnostics.len() > 0);
-    testing::assert(parse("use alice::api::{*};").diagnostics.len() > 0);
-    testing::assert(parse("use alice::api::{thing::{nested}};").diagnostics.len() > 0)
+    testing::assert(!parse("use alice::api::{};").diagnostics.is_empty());
+    testing::assert(!parse("use alice::api::{*};").diagnostics.is_empty());
+    testing::assert(!parse("use alice::api::{thing::{nested}};").diagnostics.is_empty())
 }
 
 #[test]
 fn reports_recoverable_syntax_errors() -> () {
     let source = "fn main( { let value = ; } trailing";
     let result = parse(source);
-    testing::assert(result.diagnostics.len() > 0);
+    testing::assert(!result.diagnostics.is_empty());
     testing::assert(cst::node_kind_equal(cst::node_kind(result.root), cst::NodeKind::FILE));
     testing::assert_eq(cst::node_byte_len(result.root), source.byte_len())
 }

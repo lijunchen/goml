@@ -623,10 +623,7 @@ fn invalid_source_assignment_recoverable(state: CheckState, type_id: go_types::T
 }
 
 fn recorded_type_fact(state: CheckState, node: syntax::NodeId) -> Option[TypeFact] {
-    match type_fact_index(state, node) {
-        Some(index) => Option::Some(state.info.types[index]),
-        None => Option::None,
-    }
+    type_fact_index(state, node).map(|index| state.info.types[index])
 }
 
 fn snapshot_signature_type(state: CheckState, type_id: go_types::TypeId) -> go_types::TypeId {
@@ -784,10 +781,7 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
         None => {},
     }
     index_type_fact(state, node, state.info.types.len());
-    let value = match operand.value {
-        Some(value) => Option::Some(constant::constant_exact_string(value)),
-        None => Option::None,
-    };
+    let value = operand.value.map(|value| constant::constant_exact_string(value));
     let constant_kind = match operand.value {
         Some(value) => constant::constant_kind_name(value),
         None => "",
@@ -1181,10 +1175,7 @@ fn find_constant(state: CheckState, object: go_types::ObjectId) -> Option[consta
         )
     } else {
         match value.constant {
-            Some(exact) => match constant::constant_from_exact(value.constant_kind, exact) {
-                Some(result) => Option::Some(result),
-                None => Option::None,
-            },
+            Some(exact) => constant::constant_from_exact(value.constant_kind, exact),
             None => if value.name == "true" {
                 Option::Some(constant::ConstValue::Bool(true))
             } else if value.name == "false" {
@@ -1493,20 +1484,18 @@ fn conversion_target(state: CheckState, scope: go_types::ScopeId, node: syntax::
             span: _,
             path: _,
             kind: syntax::SyntaxKind::ParenExpr { lparen: _, expression, rparen: _ },
-        }) => match conversion_target(state, scope, expression) {
-            Some(_) => Option::Some(resolve_conversion_type(state, scope, node)),
-            None => Option::None,
-        },
+        }) => conversion_target(state, scope, expression).map(
+            |_| resolve_conversion_type(state, scope, node),
+        ),
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
             span: _,
             path: _,
             kind: syntax::SyntaxKind::StarExpr { star: _, expression },
-        }) => match conversion_target(state, scope, expression) {
-            Some(_) => Option::Some(resolve_conversion_type(state, scope, node)),
-            None => Option::None,
-        },
+        }) => conversion_target(state, scope, expression).map(
+            |_| resolve_conversion_type(state, scope, node),
+        ),
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
@@ -1542,10 +1531,7 @@ fn conversion_target(state: CheckState, scope: go_types::ScopeId, node: syntax::
             state.generic_type_origin_depth += 1;
             let origin = conversion_target(state, scope, expression);
             state.generic_type_origin_depth -= 1;
-            match origin {
-                Some(_) => Option::Some(resolve_conversion_type(state, scope, node)),
-                None => Option::None,
-            }
+            origin.map(|_| resolve_conversion_type(state, scope, node))
         },
         _ => Option::None,
     }
@@ -1724,10 +1710,7 @@ fn check_conversion(
         } else {
             Operand {
                 type_id: recovered_type,
-                value: match source.value {
-                    Some(value) => Option::Some(constant::constant_copy(value)),
-                    None => Option::None,
-                },
+                value: source.value.map(|value| constant::constant_copy(value)),
                 addressable: false,
                 assignable: false,
             }
@@ -1743,10 +1726,7 @@ fn check_conversion(
     if ellipsis >= 0 {
         return Operand {
             type_id: default_operand_type(state, source),
-            value: match source.value {
-                Some(value) => Option::Some(constant::constant_copy(value)),
-                None => Option::None,
-            },
+            value: source.value.map(|value| constant::constant_copy(value)),
             addressable: source.addressable,
             assignable: source.assignable,
         }
@@ -2318,10 +2298,7 @@ fn void_call_function_type(state: CheckState, node: syntax::NodeId) -> Option[go
                 ellipsis: _,
                 rparen: _,
             },
-        }) => match recorded_type_fact(state, function) {
-            Some(fact) => Option::Some(fact.type_id),
-            None => Option::None,
-        },
+        }) => recorded_type_fact(state, function).map(|fact| fact.type_id),
         _ => Option::None,
     }
 }
@@ -3454,10 +3431,7 @@ fn check_unary(
     }
     Operand {
         type_id: source.type_id,
-        value: match source.value {
-            Some(_) => Option::Some(result),
-            None => Option::None,
-        },
+        value: source.value.map(|_| result),
         addressable: false,
         assignable: false,
     }
@@ -5482,10 +5456,7 @@ fn check_expression(state: CheckState, scope: go_types::ScopeId, node: syntax::N
             }
             Operand {
                 type_id: inner.type_id,
-                value: match inner.value {
-                    Some(value) => Option::Some(constant::constant_copy(value)),
-                    None => Option::None,
-                },
+                value: inner.value.map(|value| constant::constant_copy(value)),
                 addressable: inner.addressable,
                 assignable: inner.assignable,
             }

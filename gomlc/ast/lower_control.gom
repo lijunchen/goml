@@ -4,18 +4,16 @@ use module::cst;
 use module::lexer;
 
 fn lower_loop_label(node: LocatedNode) -> Option[string] {
-    match first_token(node, lexer::TokenKind::Label) {
-        Some(token) => Option::Some(token.token.text.byte_slice(1, token.token.text.byte_len())),
-        None => Option::None,
-    }
+    first_token(node, lexer::TokenKind::Label).map(
+        |token| token.token.text.byte_slice(1, token.token.text.byte_len()),
+    )
 }
 
 fn lower_wrapped_branch(ctx: LowerCtx, node: LocatedNode, missing_message: string) -> Option[Expr] {
     match first_child(node, cst::NodeKind::BLOCK) {
-        Some(block_node) => match lower_block(ctx, block_node) {
-            Some(block) => Option::Some(Expr::Block { block, span: node_span(block_node) }),
-            None => Option::None,
-        },
+        Some(block_node) => lower_block(ctx, block_node).map(
+            |block| Expr::Block { block, span: node_span(block_node) },
+        ),
         None => {
             let values = expr_children(node);
             if !values.is_empty() {
@@ -51,22 +49,16 @@ fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
                     lower_expr(ctx, values[0])
                 } else {
                     match first_child(node, cst::NodeKind::BLOCK) {
-                        Some(block_node) => match lower_block(ctx, block_node) {
-                            Some(block) => Option::Some(
-                                Expr::Block { block, span: node_span(block_node) },
-                            ),
-                            None => Option::None,
-                        },
+                        Some(block_node) => lower_block(ctx, block_node).map(
+                            |block| Expr::Block { block, span: node_span(block_node) },
+                        ),
                         None => {
                             push_error(ctx, node_span(node), "Match arm has no body");
                             Option::None
                         },
                     }
                 };
-                match body {
-                    Some(value) => Option::Some(Arm { pat, guard, body: value }),
-                    None => Option::None,
-                }
+                body.map(|value| Arm { pat, guard, body: value })
             },
             None => Option::None,
         }
@@ -110,10 +102,9 @@ fn lower_select_arm_body(ctx: LowerCtx, node: LocatedNode, expression_index: isi
         lower_expr(ctx, values[expression_index])
     } else {
         match first_child(node, cst::NodeKind::BLOCK) {
-            Some(block_node) => match lower_block(ctx, block_node) {
-                Some(block) => Option::Some(Expr::Block { block, span: node_span(block_node) }),
-                None => Option::None,
-            },
+            Some(block_node) => lower_block(ctx, block_node).map(
+                |block| Expr::Block { block, span: node_span(block_node) },
+            ),
             None => {
                 push_error(ctx, node_span(node), "Select arm has no body");
                 Option::None
@@ -215,10 +206,9 @@ fn lower_select_send_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] 
 }
 
 fn lower_select_default_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] {
-    match lower_select_arm_body(ctx, node, 0) {
-        Some(body) => Option::Some(SelectArm::Default { body, span: node_span(node) }),
-        None => Option::None,
-    }
+    lower_select_arm_body(ctx, node, 0).map(
+        |body| SelectArm::Default { body, span: node_span(node) },
+    )
 }
 
 fn lower_select_mode(node: LocatedNode) -> SelectMode {
@@ -446,16 +436,13 @@ fn lower_loop_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
         Option::None
     } else {
         match first_child(node, cst::NodeKind::BLOCK) {
-            Some(body_node) => match lower_block(ctx, body_node) {
-                Some(body) => Option::Some(
-                    Expr::Loop {
-                        label: lower_loop_label(node),
-                        body: Expr::Block { block: body, span: node_span(body_node) },
-                        span: node_span(node),
-                    },
-                ),
-                None => Option::None,
-            },
+            Some(body_node) => lower_block(ctx, body_node).map(
+                |body| Expr::Loop {
+                    label: lower_loop_label(node),
+                    body: Expr::Block { block: body, span: node_span(body_node) },
+                    span: node_span(node),
+                },
+            ),
             None => {
                 push_error(ctx, node_span(node), "Loop expression missing body");
                 Option::None
@@ -480,18 +467,15 @@ fn lower_for_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
             match lower_pat(ctx, patterns[0]) {
                 Some(pat) => match lower_expr(ctx, values[0]) {
                     Some(iterator) => match first_child(node, cst::NodeKind::BLOCK) {
-                        Some(block_node) => match lower_block(ctx, block_node) {
-                            Some(block) => Option::Some(
-                                Expr::For {
-                                    label: lower_loop_label(node),
-                                    pat,
-                                    iterator,
-                                    body: Expr::Block { block, span: node_span(block_node) },
-                                    span: node_span(node),
-                                },
-                            ),
-                            None => Option::None,
-                        },
+                        Some(block_node) => lower_block(ctx, block_node).map(
+                            |block| Expr::For {
+                                label: lower_loop_label(node),
+                                pat,
+                                iterator,
+                                body: Expr::Block { block, span: node_span(block_node) },
+                                span: node_span(node),
+                            },
+                        ),
                         None => {
                             push_error(ctx, node_span(node), "For expression missing body");
                             Option::None
@@ -528,10 +512,7 @@ fn lower_go_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
             push_error(ctx, node_span(node), "go statement missing expression");
             Option::None
         } else {
-            match lower_expr(ctx, values[0]) {
-                Some(value) => Option::Some(Expr::Go { expr: value, span: node_span(node) }),
-                None => Option::None,
-            }
+            lower_expr(ctx, values[0]).map(|value| Expr::Go { expr: value, span: node_span(node) })
         }
     }
 }
@@ -541,15 +522,12 @@ fn lower_scope_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         Option::None
     } else {
         match first_child(node, cst::NodeKind::BLOCK) {
-            Some(block_node) => match lower_block(ctx, block_node) {
-                Some(block) => Option::Some(
-                    Expr::Scope {
-                        body: Expr::Block { block, span: node_span(block_node) },
-                        span: node_span(node),
-                    },
-                ),
-                None => Option::None,
-            },
+            Some(block_node) => lower_block(ctx, block_node).map(
+                |block| Expr::Scope {
+                    body: Expr::Block { block, span: node_span(block_node) },
+                    span: node_span(node),
+                },
+            ),
             None => {
                 push_error(ctx, node_span(node), "scope expression missing body");
                 Option::None
@@ -567,10 +545,7 @@ fn lower_spawn_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
             push_error(ctx, node_span(node), "spawn expression missing closure");
             Option::None
         } else {
-            match lower_expr(ctx, values[0]) {
-                Some(body) => Option::Some(Expr::Spawn { body, span: node_span(node) }),
-                None => Option::None,
-            }
+            lower_expr(ctx, values[0]).map(|body| Expr::Spawn { body, span: node_span(node) })
         }
     }
 }

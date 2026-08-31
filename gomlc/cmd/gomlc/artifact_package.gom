@@ -50,14 +50,12 @@ fn artifact_read_interface_unit(path_value: string) -> Result[
     output_snapshot(
         path::with_extension(path_value, ""),
         || {
-            let source = match fs::read_bytes_structured(path_value) {
-                Ok(value) => value,
-                Err(error) => return Result::Err(f"failed to read interface {path_value}: {error}"),
-            };
-            match decode_artifact_interface_bytes(source) {
-                Ok(value) => Result::Ok(value),
-                Err(error) => Result::Err("failed to parse interface " + path_value + ": " + error),
-            }
+            let source = fs::read_bytes_structured(path_value).map_err(
+                |error| f"failed to read interface {path_value}: {error}",
+            )?;
+            decode_artifact_interface_bytes(source).map_err(
+                |error| "failed to parse interface " + path_value + ": " + error,
+            )
         },
     )
 }
@@ -79,10 +77,7 @@ fn artifact_read_interface_units(paths: Vec[string]) -> Result[
             task::join_all_results(tasks)
         },
     );
-    let result = match decoded {
-        Ok(values) => values,
-        Err(errors) => return Result::Err(errors[0]),
-    };
+    let result = decoded.map_err(|errors| errors[0])?;
     let names: collections::HashSet[string] = collections::HashSet::new();
     for interface in result {
         if !names.insert(interface.package_name) {
@@ -332,10 +327,7 @@ fn artifact_dependency_environments(
         result.push(
             tast::dependency_environment_with_comptime(
                 artifact_dependency_environment_from_exports(package_value.environment_exports)?,
-                match package_value.interface_unit.comptime {
-                    Some(value) => Option::Some(value.module),
-                    None => Option::None,
-                },
+                package_value.interface_unit.comptime.map(|value| value.module),
             ),
         )
     }
@@ -343,10 +335,7 @@ fn artifact_dependency_environments(
         result.push(
             tast::dependency_environment_with_comptime(
                 artifact_dependency_environment_from_exports(interface.exports)?,
-                match interface.comptime {
-                    Some(value) => Option::Some(value.module),
-                    None => Option::None,
-                },
+                interface.comptime.map(|value| value.module),
             ),
         )
     }
@@ -688,10 +677,7 @@ fn compile_artifact_package(
             derive_reexports.push(value)
         }
     }
-    let builtin_derive_module = match world.builtin_interface.comptime {
-        Some(value) => Option::Some(value.module),
-        None => Option::None,
-    };
+    let builtin_derive_module = world.builtin_interface.comptime.map(|value| value.module);
     let verified_derive_modules = derive_modules;
     if let Some(value) = builtin_derive_module {
         verified_derive_modules.push(value)
@@ -863,14 +849,12 @@ fn artifact_read_core_unit(path_value: string) -> Result[artifact::ArtifactCoreU
     output_snapshot(
         path::with_extension(path_value, ""),
         || {
-            let source = match fs::read_bytes_structured(path_value) {
-                Ok(value) => value,
-                Err(error) => return Result::Err(f"failed to read core {path_value}: {error}"),
-            };
-            match decode_artifact_core_bytes(source) {
-                Ok(value) => Result::Ok(value),
-                Err(error) => Result::Err("failed to parse core " + path_value + ": " + error),
-            }
+            let source = fs::read_bytes_structured(path_value).map_err(
+                |error| f"failed to read core {path_value}: {error}",
+            )?;
+            decode_artifact_core_bytes(source).map_err(
+                |error| "failed to parse core " + path_value + ": " + error,
+            )
         },
     )
 }
@@ -887,10 +871,7 @@ fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::Artifact
             task::join_all_results(tasks)
         },
     );
-    let result = match decoded {
-        Ok(values) => values,
-        Err(errors) => return Result::Err(errors[0]),
-    };
+    let result = decoded.map_err(|errors| errors[0])?;
     let names: collections::HashSet[string] = collections::HashSet::new();
     for core_unit in result {
         if !names.insert(core_unit.package_name) {

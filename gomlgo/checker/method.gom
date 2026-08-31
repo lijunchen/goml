@@ -11,10 +11,7 @@ struct ReceiverResolution {
 }
 
 fn signature_scope(state: CheckState, node: syntax::NodeId) -> Option[go_types::ScopeId] {
-    match find_scope_fact(state, node) {
-        Some(fact) => Option::Some(fact.scope),
-        None => Option::None,
-    }
+    find_scope_fact(state, node).map(|fact| fact.scope)
 }
 
 fn receiver_base(state: CheckState, type_id: go_types::TypeId) -> Option[go_types::TypeId] {
@@ -32,10 +29,7 @@ fn receiver_base(state: CheckState, type_id: go_types::TypeId) -> Option[go_type
                 type_args: _,
                 methods: _,
             },
-        }) => match go_types::get_object(state.world, object) {
-            Some(object) => Option::Some(object.type_id),
-            None => Option::None,
-        },
+        }) => go_types::get_object(state.world, object).map(|object| object.type_id),
         _ => Option::None,
     }
 }

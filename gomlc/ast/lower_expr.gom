@@ -43,12 +43,9 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                                 Option::None
                             };
                             let else_branch = match first_child(node, cst::NodeKind::BLOCK) {
-                                Some(block_node) => match lower_block(ctx, block_node) {
-                                    Some(block) => Option::Some(
-                                        Expr::Block { block, span: node_span(block_node) },
-                                    ),
-                                    None => Option::None,
-                                },
+                                Some(block_node) => lower_block(ctx, block_node).map(
+                                    |block| Expr::Block { block, span: node_span(block_node) },
+                                ),
                                 None => Option::None,
                             };
                             Option::Some(
@@ -100,10 +97,9 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                 push_error(ctx, node_span(node), "Expression statement missing expression");
                 Option::None
             } else {
-                match lower_expr(ctx, values[0]) {
-                    Some(value) => Option::Some(Stmt::Expr { expr: value, span: node_span(node) }),
-                    None => Option::None,
-                }
+                lower_expr(ctx, values[0]).map(
+                    |value| Stmt::Expr { expr: value, span: node_span(node) },
+                )
             }
         },
         STMT_DEFER => {
@@ -112,10 +108,9 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                 push_error(ctx, node_span(node), "Defer statement missing expression");
                 Option::None
             } else {
-                match lower_expr(ctx, values[0]) {
-                    Some(value) => Option::Some(Stmt::Defer { expr: value, span: node_span(node) }),
-                    None => Option::None,
-                }
+                lower_expr(ctx, values[0]).map(
+                    |value| Stmt::Defer { expr: value, span: node_span(node) },
+                )
             }
         },
         _ => Option::None,
@@ -159,12 +154,7 @@ fn unicode_escape_character(value: string, start: isize) -> Option[char] {
     }
     let mut code = 0;
     for cursor in start..start + 4 {
-        match hex_value(value.byte_get(cursor)) {
-            Some(part) => {
-                code = code * 16 + part;
-            },
-            None => return Option::None,
-        }
+        code = code * 16 + hex_value(value.byte_get(cursor))?;
     }
     char_from_u32(code)
 }
@@ -370,16 +360,13 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
     let applications = children_of_kind(node, cst::NodeKind::TYPE_TAPP);
     if applications.is_empty() {
         match first_child(node, cst::NodeKind::PATH) {
-            Some(path_node) => match lower_path(ctx, path_node) {
-                Some(path) => Option::Some(
-                    LowerIdentParts {
-                        path,
-                        owner_type_args: Vec::new(),
-                        member_type_args: Vec::new(),
-                    },
-                ),
-                None => Option::None,
-            },
+            Some(path_node) => lower_path(ctx, path_node).map(
+                |path| LowerIdentParts {
+                    path,
+                    owner_type_args: Vec::new(),
+                    member_type_args: Vec::new(),
+                },
+            ),
             None => {
                 push_error(ctx, node_span(node), "Missing identifier in expression");
                 Option::None
@@ -390,29 +377,23 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
             Some(first_path) => {
                 let first_args = lower_type_application_args(ctx, applications[0]);
                 if applications.len() > 1 {
-                    match lower_type_application_path(ctx, applications[1]) {
-                        Some(member_path) => Option::Some(
-                            LowerIdentParts {
-                                path: append_path_segments(first_path, member_path),
-                                owner_type_args: first_args,
-                                member_type_args: lower_type_application_args(ctx, applications[1]),
-                            },
-                        ),
-                        None => Option::None,
-                    }
+                    lower_type_application_path(ctx, applications[1]).map(
+                        |member_path| LowerIdentParts {
+                            path: append_path_segments(first_path, member_path),
+                            owner_type_args: first_args,
+                            member_type_args: lower_type_application_args(ctx, applications[1]),
+                        },
+                    )
                 } else {
                     let paths = children_of_kind(node, cst::NodeKind::PATH);
                     if !paths.is_empty() {
-                        match lower_path(ctx, paths[0]) {
-                            Some(member_path) => Option::Some(
-                                LowerIdentParts {
-                                    path: append_path_segments(first_path, member_path),
-                                    owner_type_args: first_args,
-                                    member_type_args: Vec::new(),
-                                },
-                            ),
-                            None => Option::None,
-                        }
+                        lower_path(ctx, paths[0]).map(
+                            |member_path| LowerIdentParts {
+                                path: append_path_segments(first_path, member_path),
+                                owner_type_args: first_args,
+                                member_type_args: Vec::new(),
+                            },
+                        )
                     } else {
                         Option::Some(
                             LowerIdentParts {
@@ -466,25 +447,19 @@ fn lower_closure(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
         }
         match first_child(node, cst::NodeKind::EXPR_CLOSURE_BODY) {
             Some(body_node) => match first_child(body_node, cst::NodeKind::BLOCK) {
-                Some(block_node) => match lower_block(ctx, block_node) {
-                    Some(block) => Option::Some(
-                        Expr::Closure {
-                            params,
-                            body: Expr::Block { block, span: node_span(block_node) },
-                            span: node_span(node),
-                        },
-                    ),
-                    None => Option::None,
-                },
+                Some(block_node) => lower_block(ctx, block_node).map(
+                    |block| Expr::Closure {
+                        params,
+                        body: Expr::Block { block, span: node_span(block_node) },
+                        span: node_span(node),
+                    },
+                ),
                 None => {
                     let values = expr_children(body_node);
                     if !values.is_empty() {
-                        match lower_expr(ctx, values[0]) {
-                            Some(body) => Option::Some(
-                                Expr::Closure { params, body, span: node_span(node) },
-                            ),
-                            None => Option::None,
-                        }
+                        lower_expr(ctx, values[0]).map(
+                            |body| Expr::Closure { params, body, span: node_span(node) },
+                        )
                     } else {
                         push_error(ctx, node_span(body_node), "Closure body missing expr");
                         Option::None
@@ -608,10 +583,9 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             ) {
                 Option::None
             } else {
-                match lower_multiline_string(ctx, node) {
-                    Some(value) => Option::Some(Expr::String { value, span: value_span }),
-                    None => Option::None,
-                }
+                lower_multiline_string(ctx, node).map(
+                    |value| Expr::String { value, span: value_span },
+                )
             },
             EXPR_INTERPOLATED_STRING => {
                 lower_interpolated_string(ctx, node, trailing_args)
@@ -679,12 +653,9 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                 };
                 Option::Some(
                     Expr::Break {
-                        label: match first_token(node, lexer::TokenKind::Label) {
-                            Some(token) => Option::Some(
-                                token.token.text.byte_slice(1, token.token.text.byte_len()),
-                            ),
-                            None => Option::None,
-                        },
+                        label: first_token(node, lexer::TokenKind::Label).map(
+                            |token| token.token.text.byte_slice(1, token.token.text.byte_len()),
+                        ),
                         value,
                         span: value_span,
                     },
@@ -700,12 +671,9 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             } else {
                 Option::Some(
                     Expr::Continue {
-                        label: match first_token(node, lexer::TokenKind::Label) {
-                            Some(token) => Option::Some(
-                                token.token.text.byte_slice(1, token.token.text.byte_len()),
-                            ),
-                            None => Option::None,
-                        },
+                        label: first_token(node, lexer::TokenKind::Label).map(
+                            |token| token.token.text.byte_slice(1, token.token.text.byte_len()),
+                        ),
                         span: value_span,
                     },
                 )
@@ -722,10 +690,9 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                 Option::None
             } else {
                 match first_child(node, cst::NodeKind::BLOCK) {
-                    Some(block_node) => match lower_block(ctx, block_node) {
-                        Some(block) => Option::Some(Expr::Comptime { block, span: value_span }),
-                        None => Option::None,
-                    },
+                    Some(block_node) => lower_block(ctx, block_node).map(
+                        |block| Expr::Comptime { block, span: value_span },
+                    ),
                     None => {
                         push_error(ctx, value_span, "Comptime expression has no block");
                         Option::None
@@ -839,25 +806,15 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
                 if index + 3 >= value.byte_len() - 1 {
                     return Option::None
                 } else {
-                    match (
-                        hex_value(value.byte_get(index + 2)),
-                        hex_value(value.byte_get(index + 3)),
-                    ) {
-                        (Some(high), Some(low)) => {
-                            result.push((high * 16 + low).to_string());
-                            index += 4;
-                        },
-                        _ => return Option::None,
-                    }
+                    let high = hex_value(value.byte_get(index + 2))?;
+                    let low = hex_value(value.byte_get(index + 3))?;
+                    result.push((high * 16 + low).to_string());
+                    index += 4;
                 }
             } else {
-                match byte_escape_value(value.byte_get(index + 1)) {
-                    Some(decoded) => {
-                        result.push(decoded.to_string());
-                        index += 2;
-                    },
-                    None => return Option::None,
-                }
+                let decoded = byte_escape_value(value.byte_get(index + 1))?;
+                result.push(decoded.to_string());
+                index += 2;
             }
         } else if byte > 127 {
             return Option::None
@@ -901,10 +858,7 @@ fn byte_literal_value(value: string) -> Option[string] {
     } else if value.byte_len() == 5 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
         && value.byte_get(2) == b'\\'
         && value.byte_get(4) == b'\'' {
-        match byte_escape_value(value.byte_get(3)) {
-            Some(byte) => Option::Some(byte.to_string()),
-            None => Option::None,
-        }
+        byte_escape_value(value.byte_get(3)).map(|byte| byte.to_string())
     } else if value.byte_len() == 7 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
         && value.byte_get(2) == b'\\'
         && value.byte_get(3) == b'x'

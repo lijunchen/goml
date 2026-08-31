@@ -97,10 +97,9 @@ fn output_transaction[T](anchor: string, action: () -> Result[T, string]) -> Res
 fn read_output_epoch(anchor: string) -> Result[Option[string], string] {
     let epoch_path = output_epoch_path(anchor);
     if fs::exists(epoch_path) {
-        match fs::read_file_structured(epoch_path) {
-            Ok(value) => Result::Ok(Option::Some(value)),
-            Err(error) => Result::Err(error.to_string()),
-        }
+        fs::read_file_structured(epoch_path).map(|value| Option::Some(value)).map_err(
+            |error| error.to_string(),
+        )
     } else {
         Result::Ok(Option::None)
     }

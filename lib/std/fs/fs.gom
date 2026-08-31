@@ -130,18 +130,15 @@ pub fn read_bytes_structured(path: string) -> Result[bytes::Bytes, Error] {
 
 pub fn read_file_structured(path: string) -> Result[string, Error] {
     match read_bytes_structured(path) {
-        Ok(data) => match data.to_string_utf8() {
-            Ok(value) => Result::Ok(value),
-            Err(error) => Result::Err(
-                Error::new(
-                    io::ErrorKind::InvalidData,
-                    "read file",
-                    Option::Some(path),
-                    Option::None,
-                    error.to_string(),
-                ),
+        Ok(data) => data.to_string_utf8().map_err(
+            |error| Error::new(
+                io::ErrorKind::InvalidData,
+                "read file",
+                Option::Some(path),
+                Option::None,
+                error.to_string(),
             ),
-        },
+        ),
         Err(error) => Result::Err(error),
     }
 }
@@ -285,16 +282,14 @@ pub fn read_dir_structured(path: string) -> Result[Vec[DirEntry], Error] {
         let entries: Vec[DirEntry] = Vec::new();
         for name in names {
             let entry_path = host::path_join(path, name);
-            match symlink_metadata(entry_path) {
-                Ok(value) => entries.push(
-                    DirEntry {
-                        name_value: name,
-                        path_value: entry_path,
-                        file_type_value: value.file_type(),
-                    },
-                ),
-                Err(error) => return Result::Err(error),
-            }
+            let value = symlink_metadata(entry_path)?;
+            entries.push(
+                DirEntry {
+                    name_value: name,
+                    path_value: entry_path,
+                    file_type_value: value.file_type(),
+                },
+            )
         }
         Result::Ok(entries)
     }

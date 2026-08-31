@@ -169,10 +169,7 @@ fn expand_specialized_optional_trait_ref(
     value: Option[core::TraitRef],
     path: Vec[string],
 ) -> Option[core::TraitRef] {
-    match value {
-        Some(reference) => Option::Some(expand_specialized_trait_ref(ctx, reference, path)),
-        None => Option::None,
-    }
+    value.map(|reference| expand_specialized_trait_ref(ctx, reference, path))
 }
 
 fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: core::Type, path: Vec[string]) -> core::Type {
@@ -672,10 +669,7 @@ fn lower_exprs(ctx: TypeCtx, values: Vec[core::Expr]) -> Vec[Expr] {
 }
 
 fn lower_optional_expr(ctx: TypeCtx, value: Option[core::Expr]) -> Option[Expr] {
-    match value {
-        Some(expr) => Option::Some(lower_expr(ctx, expr)),
-        None => Option::None,
-    }
+    value.map(|expr| lower_expr(ctx, expr))
 }
 
 fn lower_arms(ctx: TypeCtx, values: Vec[core::Arm]) -> Vec[Arm] {
@@ -1154,16 +1148,13 @@ fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
 }
 
 fn lower_trait_impl(ctx: TypeCtx, value: Option[core::TraitImpl]) -> Option[TraitImpl] {
-    match value {
-        Some(metadata) => Option::Some(
-            TraitImpl {
-                trait_ref: collapse_trait_ref(ctx, metadata.trait_ref),
-                for_ty: collapse_type(ctx, metadata.for_ty),
-                associated_types: collapse_named_types(ctx, metadata.associated_types),
-            },
-        ),
-        None => Option::None,
-    }
+    value.map(
+        |metadata| TraitImpl {
+            trait_ref: collapse_trait_ref(ctx, metadata.trait_ref),
+            for_ty: collapse_type(ctx, metadata.for_ty),
+            associated_types: collapse_named_types(ctx, metadata.associated_types),
+        },
+    )
 }
 
 fn lower_function_origin(ctx: TypeCtx, value: core::FunctionOrigin) -> FunctionOrigin {

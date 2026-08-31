@@ -138,25 +138,16 @@ fn rounded_float_constant(
     maximum_exponent: isize,
 ) -> Option[ConstValue] {
     match value {
-        ConstValue::LargeFloat(value) => match binary_float_round_rational(
+        ConstValue::LargeFloat(value) => binary_float_round_rational(
             value,
             precision,
             minimum_exponent,
             maximum_exponent,
-        ) {
-            Some(value) => Option::Some(ConstValue::Rat(value)),
-            None => Option::None,
-        },
+        ).map(|value| ConstValue::Rat(value)),
         value => match constant_to_rational(value) {
-            Some(value) => match rounded_rational(
-                value,
-                precision,
-                minimum_exponent,
-                maximum_exponent,
-            ) {
-                Some(value) => Option::Some(ConstValue::Rat(value)),
-                None => Option::None,
-            },
+            Some(value) => rounded_rational(value, precision, minimum_exponent, maximum_exponent).map(
+                |value| ConstValue::Rat(value),
+            ),
             None => Option::None,
         },
     }
@@ -193,20 +184,14 @@ pub fn round_constant(value: ConstValue, kind: go_types::BasicKind, sizes: go_ty
             None => Option::None,
         },
         None => match kind {
-            go_types::BasicKind::UntypedInt | go_types::BasicKind::UntypedRune => match constant_to_integer(
+            go_types::BasicKind::UntypedInt | go_types::BasicKind::UntypedRune => constant_to_integer(
                 value,
-            ) {
-                Some(value) => Option::Some(ConstValue::Int(value)),
-                None => Option::None,
-            },
+            ).map(|value| ConstValue::Int(value)),
             go_types::BasicKind::Float32 => rounded_float_constant(value, 24, -126, 127),
             go_types::BasicKind::Float64 => rounded_float_constant(value, 53, -1022, 1023),
             go_types::BasicKind::UntypedFloat => match value {
                 ConstValue::LargeFloat(value) => Option::Some(ConstValue::LargeFloat(value)),
-                value => match constant_to_rational(value) {
-                    Some(value) => Option::Some(ConstValue::Rat(value)),
-                    None => Option::None,
-                },
+                value => constant_to_rational(value).map(|value| ConstValue::Rat(value)),
             },
             go_types::BasicKind::Complex64 | go_types::BasicKind::Complex128 => match constant_to_numeric_complex(
                 value,

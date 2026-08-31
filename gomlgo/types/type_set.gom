@@ -783,12 +783,7 @@ pub fn core_type(world: World, value: TypeId) -> Option[TypeId] {
             for index in 1..terms.terms.len() {
                 let candidate = underlying(world, terms.terms[index].type_id);
                 if !identical(world, result, candidate) {
-                    match common_channel_type(world, result, candidate) {
-                        Some(value) => {
-                            result = value;
-                        },
-                        None => return Option::None,
-                    }
+                    result = common_channel_type(world, result, candidate)?;
                 }
             }
             Option::Some(result)

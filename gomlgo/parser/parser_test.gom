@@ -114,7 +114,7 @@ fn skips_function_bodies_for_package_api_parsing() -> () {
 #[test]
 fn invalid_file_returns_partial_ast() -> () {
     let result = parse_file("package sample\nfunc broken( { if {\n");
-    testing::assert(result.diagnostics.len() > 0);
+    testing::assert(!result.diagnostics.is_empty());
     match result.root {
         Some(value) => testing::assert(ast::kind_equal(value.kind, ast::Kind::File)),
         None => testing::fail("missing partial file AST"),

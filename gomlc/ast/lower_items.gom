@@ -39,32 +39,17 @@ fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     match node_kind(node) {
         ENUM => {
             record_disallowed_self_types(ctx, node);
-            match lower_enum(ctx, node) {
-                Some(value) => Option::Some(Item::EnumDef(value)),
-                None => Option::None,
-            }
+            lower_enum(ctx, node).map(|value| Item::EnumDef(value))
         },
         STRUCT => {
             record_disallowed_self_types(ctx, node);
-            match lower_struct(ctx, node) {
-                Some(value) => Option::Some(Item::StructDef(value)),
-                None => Option::None,
-            }
+            lower_struct(ctx, node).map(|value| Item::StructDef(value))
         },
-        TRAIT => match lower_trait(ctx, node) {
-            Some(value) => Option::Some(Item::TraitDef(value)),
-            None => Option::None,
-        },
-        IMPL => match lower_impl(ctx, node) {
-            Some(value) => Option::Some(Item::ImplBlock(value)),
-            None => Option::None,
-        },
+        TRAIT => lower_trait(ctx, node).map(|value| Item::TraitDef(value)),
+        IMPL => lower_impl(ctx, node).map(|value| Item::ImplBlock(value)),
         FN => {
             record_disallowed_self_types(ctx, node);
-            match lower_function(ctx, node, Option::None) {
-                Some(value) => Option::Some(Item::Function(value)),
-                None => Option::None,
-            }
+            lower_function(ctx, node, Option::None).map(|value| Item::Function(value))
         },
         EXTERN => {
             record_disallowed_self_types(ctx, node);
@@ -93,21 +78,18 @@ fn lower_static(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
         (Some(name), type_count, value_count) => {
             if type_count > 0 && value_count > 0 {
                 match lower_ty(ctx, types[0]) {
-                    Some(ty) => match lower_expr(ctx, values[0]) {
-                        Some(value) => Option::Some(
-                            Item::Static(
-                                Static {
-                                    attrs: lower_attributes(node),
-                                    visibility: lower_visibility(node),
-                                    name: name.token.text,
-                                    ty,
-                                    ty_span: type_head_span(types[0]),
-                                    value,
-                                },
-                            ),
+                    Some(ty) => lower_expr(ctx, values[0]).map(
+                        |value| Item::Static(
+                            Static {
+                                attrs: lower_attributes(node),
+                                visibility: lower_visibility(node),
+                                name: name.token.text,
+                                ty,
+                                ty_span: type_head_span(types[0]),
+                                value,
+                            },
                         ),
-                        None => Option::None,
-                    },
+                    ),
                     None => Option::None,
                 }
             } else {
@@ -129,21 +111,18 @@ fn lower_constant(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
         (Some(name), type_count, value_count) => {
             if type_count > 0 && value_count > 0 {
                 match lower_ty(ctx, types[0]) {
-                    Some(ty) => match lower_expr(ctx, values[0]) {
-                        Some(value) => Option::Some(
-                            Item::Constant(
-                                Constant {
-                                    attrs: lower_attributes(node),
-                                    visibility: lower_visibility(node),
-                                    name: name.token.text,
-                                    ty,
-                                    ty_span: type_head_span(types[0]),
-                                    value,
-                                },
-                            ),
+                    Some(ty) => lower_expr(ctx, values[0]).map(
+                        |value| Item::Constant(
+                            Constant {
+                                attrs: lower_attributes(node),
+                                visibility: lower_visibility(node),
+                                name: name.token.text,
+                                ty,
+                                ty_span: type_head_span(types[0]),
+                                value,
+                            },
                         ),
-                        None => Option::None,
-                    },
+                    ),
                     None => Option::None,
                 }
             } else {

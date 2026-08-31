@@ -58,10 +58,7 @@ fn generic_type_name(state: CheckState, value: go_types::TypeId) -> Option[strin
         }) => object,
         _ => return Option::None,
     };
-    match go_types::get_object(state.world, object) {
-        Some(value) => Option::Some(value.name),
-        None => Option::None,
-    }
+    go_types::get_object(state.world, object).map(|value| value.name)
 }
 
 fn record_instance(state: CheckState, fact: InstanceFact) -> () {
@@ -3386,10 +3383,7 @@ fn partial_explicit_constraint_failure(
 fn complete_inference_arguments(bindings: Vec[InferenceBinding]) -> Option[Vec[go_types::TypeId]] {
     let result: Vec[go_types::TypeId] = Vec::new();
     for binding in bindings {
-        match binding.type_id {
-            Some(value) => result.push(value),
-            None => return Option::None,
-        }
+        result.push(binding.type_id?)
     }
     Option::Some(result)
 }

@@ -51,12 +51,7 @@ fn parse_char_literal(value: string) -> Option[char] {
     } else if value.byte_len() == 6 && value.byte_get(1) == b'u' {
         let mut code = 0.to_u32();
         for index in 2..6 {
-            match char_hex_value(value.byte_get(index)) {
-                Some(digit) => {
-                    code = code * 16 + digit;
-                },
-                None => return Option::None,
-            }
+            code = code * 16 + char_hex_value(value.byte_get(index))?;
         }
         char_from_u32(code)
     } else {
@@ -301,10 +296,7 @@ fn shortest_float32_literal(value: f64) -> string {
 }
 
 fn try_normalized_float32_literal(value: string) -> Option[string] {
-    match numeric::parse_float32(value) {
-        Some(parsed) => Option::Some(shortest_float32_literal(parsed)),
-        None => Option::None,
-    }
+    numeric::parse_float32(value).map(|parsed| shortest_float32_literal(parsed))
 }
 
 fn normalized_float32_literal(value: string) -> string {
@@ -3244,10 +3236,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
             || tast_or_pattern_binding_mismatch(pat);
         invalid_pattern_arms.push(invalidates_coverage);
         let guard_diagnostic_count = ctx.diagnostics.len();
-        let guard = match arm.guard {
-            Some(value) => Option::Some(check_expr(ctx, value, Option::Some(Type::Bool))),
-            None => Option::None,
-        };
+        let guard = arm.guard.map(|value| check_expr(ctx, value, Option::Some(Type::Bool)));
         guard_errors.push(ctx.diagnostics.len() > guard_diagnostic_count);
         let body = check_expr(ctx, arm.body, Option::Some(result_ty));
         typed_arms.push(Arm { pat, guard, body })
@@ -3348,12 +3337,7 @@ fn check_select_expr(
                 typed_arms.push(
                     SelectArm::Receive {
                         channel,
-                        guard: match guard {
-                            Some(value) => Option::Some(
-                                check_expr(ctx, value, Option::Some(Type::Bool)),
-                            ),
-                            None => Option::None,
-                        },
+                        guard: guard.map(|value| check_expr(ctx, value, Option::Some(Type::Bool))),
                         binding: local_name(binding),
                         binding_ty,
                         body: check_expr(ctx, body_source, Option::Some(result_ty)),
@@ -3368,12 +3352,7 @@ fn check_select_expr(
                     SelectArm::Send {
                         channel,
                         value: check_expr(ctx, value_source, Option::Some(elem)),
-                        guard: match guard {
-                            Some(value) => Option::Some(
-                                check_expr(ctx, value, Option::Some(Type::Bool)),
-                            ),
-                            None => Option::None,
-                        },
+                        guard: guard.map(|value| check_expr(ctx, value, Option::Some(Type::Bool))),
                         body: check_expr(ctx, body_source, Option::Some(result_ty)),
                     },
                 )
@@ -3434,10 +3413,7 @@ fn check_if_expr(
 
 fn try_type_parts(builtin: BuiltinContract, value: Type) -> Option[(string, Vec[Type])] {
     match prune(value) {
-        App { ty: base, args } => match type_constructor_name(builtin, base) {
-            Some(name) => Option::Some((name, args)),
-            None => Option::None,
-        },
+        App { ty: base, args } => type_constructor_name(builtin, base).map(|name| (name, args)),
         _ => Option::None,
     }
 }
@@ -4436,10 +4412,7 @@ fn check_break_expr(ctx: Checker, label: Option[string], source: Option[hir::Exp
     check_loop_control(ctx, true);
     let target = loop_target(ctx, label);
     if target.is_none() {
-        let value = match source {
-            Some(expr) => Option::Some(check_expr(ctx, expr, Option::None)),
-            None => Option::None,
-        };
+        let value = source.map(|expr| check_expr(ctx, expr, Option::None));
         Expr::Break { target: 0, value, ty: Type::Never }
     } else {
         let target = match target {
@@ -5142,12 +5115,9 @@ fn check_qualified_constant_pattern(ctx: Checker, head: hir::PatternHead, expect
     Pat,
 ] {
     match head {
-        hir::PatternHead::Qualified { name, span } => match find_constant_by_name(ctx, name) {
-            Some(_) => Option::Some(
-                check_constant_pattern(ctx, hir::NameRef::Other(name), expected, span),
-            ),
-            None => Option::None,
-        },
+        hir::PatternHead::Qualified { name, span } => find_constant_by_name(ctx, name).map(
+            |_| check_constant_pattern(ctx, hir::NameRef::Other(name), expected, span),
+        ),
         _ => Option::None,
     }
 }

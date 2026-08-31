@@ -230,10 +230,7 @@ pub fn latest_version(root: string, name: string) -> Result[string, string] {
     validate_coordinate(name)?;
     let entries = load_index(root)?;
     match entries.get(name) {
-        Some(entry) => match parse_sem_version(entry.latest) {
-            Ok(_) => Result::Ok(entry.latest),
-            Err(message) => Result::Err(message),
-        },
+        Some(entry) => parse_sem_version(entry.latest).map(|_| entry.latest),
         None => Result::Err("module " + name + " not found in registry index"),
     }
 }

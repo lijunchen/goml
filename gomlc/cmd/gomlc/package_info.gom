@@ -313,10 +313,9 @@ fn package_info_parse_use(scanner: PackageInfoScanner, source_path: string) -> R
             Option::Some(segments[segments.len() - 1])
         },
     };
-    match package_info_expect_text(scanner, ";", source_path, "expected ';'") {
-        Ok(_) => Result::Ok(PackageInfoUse { alias, path }),
-        Err(error) => Result::Err(error),
-    }
+    package_info_expect_text(scanner, ";", source_path, "expected ';'").map(
+        |_| PackageInfoUse { alias, path },
+    )
 }
 
 fn parse_package_info_file(source_path: string, source: string) -> Result[PackageInfoFile, string] {

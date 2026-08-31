@@ -302,10 +302,7 @@ fn parse_json_value(value: JsonParser) -> Result[Value, string] {
         match value.input.byte_get(value.index.get()) {
             b'{' => parse_json_object(value),
             b'[' => parse_json_array(value),
-            b'"' => match parse_json_string(value) {
-                Ok(text) => Result::Ok(String(text)),
-                Err(error) => Result::Err(error),
-            },
+            b'"' => parse_json_string(value).map(|text| String(text)),
             b't' => parse_json_literal(value, "true", Bool(true)),
             b'f' => parse_json_literal(value, "false", Bool(false)),
             b'n' => parse_json_literal(value, "null", Null),

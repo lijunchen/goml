@@ -1362,12 +1362,7 @@ fn begin_scheduled_finish(scheduler: Scheduler, goroutine_index: isize, panic: O
 ] {
     let scheduled = scheduled_top(scheduler.goroutines[goroutine_index])?;
     scheduled.finishing.set(true);
-    scheduled.panic.set(
-        match panic {
-            Some(payload) => Option::Some(panic_state(payload)),
-            None => Option::None,
-        },
-    );
+    scheduled.panic.set(panic.map(|payload| panic_state(payload)));
     resume_scheduled_finish(scheduler, goroutine_index)
 }
 

@@ -468,16 +468,11 @@ fn derive_impls(
             for arg in attribute.args {
                 let resolved = match arg {
                     ast::AttributeArg::Ident(value) => resolve_bare_derive(file, environment, value),
-                    ast::AttributeArg::Path(value) => match resolve_qualified_derive(
+                    ast::AttributeArg::Path(value) => resolve_qualified_derive(
                         file,
                         environment,
                         value,
-                    ) {
-                        Ok(value) => Result::Ok(
-                            ResolvedDerive::Handler { module: value.0, entry: value.1 },
-                        ),
-                        Err(message) => Result::Err(message),
-                    },
+                    ).map(|value| ResolvedDerive::Handler { module: value.0, entry: value.1 }),
                     ast::AttributeArg::String(_) | ast::AttributeArg::Named { .. } => continue,
                 };
                 match resolved {

@@ -296,17 +296,11 @@ impl[K: cmp::Ord, V] BTreeMap[K, V] {
     }
 
     pub fn first(self: BTreeMap[K, V]) -> Option[(K, V)] {
-        match self.root.get() {
-            Some(root) => Option::Some(btree_first_entry(root)),
-            None => Option::None,
-        }
+        self.root.get().map(|root| btree_first_entry(root))
     }
 
     pub fn last(self: BTreeMap[K, V]) -> Option[(K, V)] {
-        match self.root.get() {
-            Some(root) => Option::Some(btree_last_entry(root)),
-            None => Option::None,
-        }
+        self.root.get().map(|root| btree_last_entry(root))
     }
 
     pub fn clear(self: BTreeMap[K, V]) -> () {

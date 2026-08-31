@@ -62,10 +62,10 @@ fn invalid_input_returns_partial_ast_and_diagnostics() -> () {
         run_oracle("parse-file", bytes::Bytes::from_string("package main\nfunc main( {\n")),
     );
     testing::assert(!response.ok);
-    testing::assert(response.diagnostics.len() > 0);
+    testing::assert(!response.diagnostics.is_empty());
     testing::assert(response.diagnostics[0].offset >= 0);
     match response.ast {
-        json::Value::Object(fields) => testing::assert(fields.len() > 0),
+        json::Value::Object(fields) => testing::assert(!fields.is_empty()),
         _ => testing::fail("invalid source must retain a partial AST"),
     }
 }

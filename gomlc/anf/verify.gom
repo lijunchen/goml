@@ -121,7 +121,7 @@ fn verify_constructor(
             Some(value) => value,
             None => return Result::Err("constructor references unknown struct " + owner),
         };
-        if constructor.fields.len() == 0 {
+        if constructor.fields.is_empty() {
             let fields: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
             for field in definition.fields {
                 fields.push(field.1)
@@ -635,10 +635,9 @@ fn verify_function(
         }
     }
     let state = VerifyState { join_names: collections::HashSet::new(), closures, structs, enums };
-    match verify_block(state, value.body, value.ret_ty, Vec::new()) {
-        Ok(_) => Result::Ok(()),
-        Err(message) => Result::Err("in function " + value.name + ": " + message),
-    }
+    verify_block(state, value.body, value.ret_ty, Vec::new()).map(|_| ()).map_err(
+        |message| "in function " + value.name + ": " + message,
+    )
 }
 
 pub fn verify(value: File) -> Result[(), string] {

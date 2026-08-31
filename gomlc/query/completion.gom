@@ -117,10 +117,9 @@ fn use_completion_context(source: string, offset: isize) -> Option[UseCompletion
     let prefix = completion_prefix(source, limit);
     let prefix_start = limit - prefix.byte_len();
     match active_use_path_start(source, prefix_start) {
-        Some(path_start) => match normalized_use_namespace(source, path_start, prefix_start) {
-            Some(namespace) => Option::Some(UseCompletionContext { namespace, prefix }),
-            None => Option::None,
-        },
+        Some(path_start) => normalized_use_namespace(source, path_start, prefix_start).map(
+            |namespace| UseCompletionContext { namespace, prefix },
+        ),
         None => Option::None,
     }
 }
@@ -960,10 +959,7 @@ fn completion_scope_kind(value: cst::NodeKind) -> bool {
 }
 
 fn containing_completion_scope(syntax: SyntaxIndex, span: ast::Span) -> Option[SyntaxNode] {
-    let mut current = match token_at(syntax, span.start) {
-        Some(token) => Option::Some(token.parent),
-        None => Option::None,
-    };
+    let mut current = token_at(syntax, span.start).map(|token| token.parent);
     while current.is_some() {
         if let Some(id) = current {
             let node = syntax.nodes[id];

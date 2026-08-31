@@ -40,17 +40,14 @@ fn builtin_reference(state: CheckState, scope: go_types::ScopeId, node: syntax::
             span: _,
             path: _,
             kind: syntax::SyntaxKind::ParenExpr { lparen: _, expression, rparen: _ },
-        }) => match builtin_reference(state, scope, expression) {
-            Some(reference) => Option::Some(
-                BuiltinReference {
-                    name: reference.name,
-                    object: reference.object,
-                    node: reference.node,
-                    fact_node: node,
-                },
-            ),
-            None => Option::None,
-        },
+        }) => builtin_reference(state, scope, expression).map(
+            |reference| BuiltinReference {
+                name: reference.name,
+                object: reference.object,
+                node: reference.node,
+                fact_node: node,
+            },
+        ),
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
@@ -791,12 +788,9 @@ fn check_len_cap(
     } else {
         Operand {
             type_id: basic_type_id(state, "int"),
-            value: match constant_length {
-                Some(value) => Option::Some(
-                    constant::ConstValue::Int(constant::integer_from_int64(value)),
-                ),
-                None => Option::None,
-            },
+            value: constant_length.map(
+                |value| constant::ConstValue::Int(constant::integer_from_int64(value)),
+            ),
             addressable: false,
             assignable: false,
         }
@@ -2745,10 +2739,7 @@ fn incomplete_function_reference_type(
         }) => match go_types::lookup(state.world, scope, name) {
             Some(object) => match pending_function_index(state, object) {
                 Some(index) => if state.pending_functions[index].status == 1 {
-                    match go_types::get_object(state.world, object) {
-                        Some(object) => Option::Some(object.type_id),
-                        None => Option::None,
-                    }
+                    go_types::get_object(state.world, object).map(|object| object.type_id)
                 } else {
                     Option::None
                 },
@@ -2962,10 +2953,7 @@ fn check_deferred_type_info_expressions(state: CheckState) -> () {
 }
 
 fn selection_fact(state: CheckState, node: syntax::NodeId) -> Option[SelectionFact] {
-    match recorded_selection_index(state, node) {
-        Some(index) => Option::Some(state.info.selections[index]),
-        None => Option::None,
-    }
+    recorded_selection_index(state, node).map(|index| state.info.selections[index])
 }
 
 fn record_offsetof_selection(state: CheckState, node: syntax::NodeId, receiver: go_types::TypeId) -> () {
@@ -3373,10 +3361,7 @@ fn check_min_max_builtin(
         return invalid_operand(state)
     }
     let mut result_type = first.type_id;
-    let mut result_value = match first.value {
-        Some(value) => Option::Some(constant::constant_copy(value)),
-        None => Option::None,
-    };
+    let mut result_value = first.value.map(|value| constant::constant_copy(value));
     let mut valid = true;
     for index in 1..arguments.len() {
         let value = check_expression(state, scope, arguments[index]);

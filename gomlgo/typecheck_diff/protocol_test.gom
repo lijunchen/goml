@@ -86,9 +86,9 @@ fn invokes_type_check_oracle() -> () {
     testing::assert_eq(response.universe_scope.len(), 44);
     testing::assert_eq(response.unsafe_scope.len(), 9);
     testing::assert_eq(response.package_scope.len(), 2);
-    testing::assert(response.types.len() > 0);
-    testing::assert(response.defs.len() > 0);
-    testing::assert(response.uses.len() > 0)
+    testing::assert(!response.types.is_empty());
+    testing::assert(!response.defs.is_empty());
+    testing::assert(!response.uses.is_empty())
 }
 
 #[test]

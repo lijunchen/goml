@@ -352,10 +352,7 @@ fn licm_term(value: Term) -> Term {
             Term::Match {
                 scrutinee,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(licm_block(body)),
-                    None => Option::None,
-                },
+                default: default.map(|body| licm_block(body)),
                 ret_ty,
             }
         },
@@ -383,10 +380,7 @@ fn licm_term(value: Term) -> Term {
             Term::Select {
                 mode,
                 arms: lowered,
-                default: match default {
-                    Some(body) => Option::Some(licm_block(body)),
-                    None => Option::None,
-                },
+                default: default.map(|body| licm_block(body)),
                 ret_ty,
             }
         },

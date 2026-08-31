@@ -37,11 +37,8 @@ pub fn read_rpc_payload() -> Result[string, string] {
                 Some(_) => {
                     return Result::Err("duplicate Content-Length header")
                 },
-                None => match content_length(line) {
-                    Ok(value) => {
-                        length = Option::Some(value);
-                    },
-                    Err(error) => return Result::Err(error),
+                None => {
+                    length = Option::Some(content_length(line)?);
                 },
             }
         }

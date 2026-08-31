@@ -85,11 +85,11 @@ fn item_parameter_names(
         },
         ImplBlock(block) => {
             match expected_owner {
-                Some(owner) => match explicit_type_name(block.for_type) {
-                    Some(actual) => if short_type_name(actual) != short_type_name(owner) {
+                Some(owner) => {
+                    let actual = explicit_type_name(block.for_type)?;
+                    if short_type_name(actual) != short_type_name(owner) {
                         return Option::None
-                    },
-                    None => return Option::None,
+                    }
                 },
                 None => if !allow_unresolved {
                     return Option::None

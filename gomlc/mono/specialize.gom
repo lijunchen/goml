@@ -219,10 +219,7 @@ fn substitute_named_types(values: Vec[(string, core::Type)], bindings: Vec[TypeB
 fn substitute_optional_trait_ref(value: Option[core::TraitRef], bindings: Vec[TypeBinding]) -> Option[
     core::TraitRef,
 ] {
-    match value {
-        Some(reference) => Option::Some(substitute_trait_ref(reference, bindings)),
-        None => Option::None,
-    }
+    value.map(|reference| substitute_trait_ref(reference, bindings))
 }
 
 fn substitute_trait_ref(value: core::TraitRef, bindings: Vec[TypeBinding]) -> core::TraitRef {
@@ -1126,12 +1123,9 @@ fn ensure_instance(ctx: SpecializeCtx, original_name: string, bindings: Vec[Type
                 original_name,
                 name,
                 bindings,
-                parent: match ctx.active.get() {
-                    Some(active) => Option::Some(
-                        instance_lookup_key(active.original_name, active.bindings),
-                    ),
-                    None => Option::None,
-                },
+                parent: ctx.active.get().map(
+                    |active| instance_lookup_key(active.original_name, active.bindings),
+                ),
             };
             ctx.instances.push(instance);
             ctx.instance_index.set(
@@ -1968,10 +1962,7 @@ fn specialize_optional_expr(
     bindings: Vec[TypeBinding],
     value: Option[core::Expr],
 ) -> Option[core::Expr] {
-    match value {
-        Some(expr) => Option::Some(specialize_expr(ctx, bindings, expr)),
-        None => Option::None,
-    }
+    value.map(|expr| specialize_expr(ctx, bindings, expr))
 }
 
 fn specialize_arms(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[core::Arm]) -> Vec[
@@ -2624,22 +2615,19 @@ fn specialize_function(ctx: SpecializeCtx, instance: Instance, value: core::Func
         root: true,
         generics: Vec::new(),
         predicates: Vec::new(),
-        trait_impl: match value.trait_impl {
-            Some(metadata) => Option::Some(
-                core::TraitImpl {
-                    trait_ref: specialize_trait_ref(ctx, metadata.trait_ref, instance.bindings),
-                    for_ty: specialize_type(ctx, metadata.for_ty, instance.bindings),
-                    associated_types: specialize_named_types(
-                        ctx,
-                        metadata.associated_types,
-                        instance.bindings,
-                    ),
-                    generic_count: 0,
-                    predicate_count: 0,
-                },
-            ),
-            None => Option::None,
-        },
+        trait_impl: value.trait_impl.map(
+            |metadata| core::TraitImpl {
+                trait_ref: specialize_trait_ref(ctx, metadata.trait_ref, instance.bindings),
+                for_ty: specialize_type(ctx, metadata.for_ty, instance.bindings),
+                associated_types: specialize_named_types(
+                    ctx,
+                    metadata.associated_types,
+                    instance.bindings,
+                ),
+                generic_count: 0,
+                predicate_count: 0,
+            },
+        ),
         params,
         ret_ty: specialize_type(ctx, value.ret_ty, instance.bindings),
         body: specialize_block(ctx, instance.bindings, value.body),

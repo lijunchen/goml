@@ -15,10 +15,7 @@ use std::utf8;
 use utf8::BytesUtf8;
 
 fn result_string[E: ToString](value: Result[string, E], context: string) -> Result[string, string] {
-    match value {
-        Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(f"{context}: {message}"),
-    }
+    value.map_err(|message| f"{context}: {message}")
 }
 
 fn canonical(value: string) -> Result[string, string] {
@@ -183,12 +180,8 @@ fn directory_contains_gom(directory: string) -> Result[bool, string] {
                 None => false,
             } {
             return Result::Ok(true)
-        } else if fs::is_dir(value) {
-            match directory_contains_gom(value) {
-                Ok(true) => return Result::Ok(true),
-                Ok(false) => (),
-                Err(message) => return Result::Err(message),
-            }
+        } else if fs::is_dir(value) && directory_contains_gom(value)? {
+            return Result::Ok(true)
         }
     }
     Result::Ok(false)
@@ -199,14 +192,8 @@ fn black_box_test_files(tests_dir: string) -> Result[Vec[string], string] {
     let names = fs::read_dir(tests_dir).map_err(|error| error.to_string())?;
     for name in names {
         let child = path::join(tests_dir, name);
-        if fs::is_dir(child) {
-            match directory_contains_gom(child) {
-                Ok(true) => return Result::Err(
-                    "black-box test sources must be placed directly in " + tests_dir,
-                ),
-                Ok(false) => (),
-                Err(message) => return Result::Err(message),
-            }
+        if fs::is_dir(child) && directory_contains_gom(child)? {
+            return Result::Err("black-box test sources must be placed directly in " + tests_dir)
         }
     }
     Result::Ok(files)
@@ -476,10 +463,8 @@ fn package_from_info(
             return Result::Err("package declaration mismatch in " + file.path)
         }
         for use_decl in file.uses {
-            match local_import(sources, source.name, use_decl.path) {
-                Ok(Some(value)) => imports.push(value),
-                Ok(None) => (),
-                Err(message) => return Result::Err(message),
+            if let Some(value) = local_import(sources, source.name, use_decl.path)? {
+                imports.push(value)
             }
         }
     }
@@ -908,10 +893,7 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
     let compiler = if fs::is_file(compiler) {
         canonical(compiler)?
     } else {
-        match process::look_path_structured(compiler) {
-            Ok(value) => canonical(value)?,
-            Err(message) => return Result::Err(message.to_string()),
-        }
+        canonical(process::look_path_structured(compiler).map_err(|message| message.to_string())?)?
     };
     let output = process::Command::new(compiler).arg("version").arg("--format").arg("json").output_structured().map_err(
         |error| error.to_string(),

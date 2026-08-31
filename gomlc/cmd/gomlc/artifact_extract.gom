@@ -91,12 +91,9 @@ fn artifact_trait_definition_type(value: tast::Type, owner: string, trait_names:
         Projection { for_ty, name, trait_ref } => tast::Type::Projection {
             for_ty: artifact_trait_definition_type(for_ty, owner, trait_names),
             name,
-            trait_ref: match trait_ref {
-                Some(value) => Option::Some(
-                    artifact_trait_definition_ref(value, owner, trait_names),
-                ),
-                None => Option::None,
-            },
+            trait_ref: trait_ref.map(
+                |value| artifact_trait_definition_ref(value, owner, trait_names),
+            ),
         },
         App { ty: base, args } => {
             let result: Vec[tast::Type] = Vec::new();

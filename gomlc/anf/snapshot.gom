@@ -112,10 +112,7 @@ fn snapshot_imms(names: SnapshotNames, values: Vec[Imm]) -> Vec[Imm] {
 }
 
 fn snapshot_optional_imm(names: SnapshotNames, value: Option[Imm]) -> Option[Imm] {
-    match value {
-        Some(value) => Option::Some(snapshot_imm(names, value)),
-        None => Option::None,
-    }
+    value.map(|value| snapshot_imm(names, value))
 }
 
 fn snapshot_value(names: SnapshotNames, value: Value) -> Value {
@@ -274,10 +271,7 @@ fn snapshot_term(names: SnapshotNames, value: Term) -> Term {
             Term::Match {
                 scrutinee: snapshot_imm(names, scrutinee),
                 arms: renamed,
-                default: match default {
-                    Some(body) => Option::Some(snapshot_block(names, body)),
-                    None => Option::None,
-                },
+                default: default.map(|body| snapshot_block(names, body)),
                 ret_ty,
             }
         },
@@ -289,10 +283,7 @@ fn snapshot_term(names: SnapshotNames, value: Term) -> Term {
             Term::Select {
                 mode,
                 arms: renamed,
-                default: match default {
-                    Some(body) => Option::Some(snapshot_block(names, body)),
-                    None => Option::None,
-                },
+                default: default.map(|body| snapshot_block(names, body)),
                 ret_ty,
             }
         },

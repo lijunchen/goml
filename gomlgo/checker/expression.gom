@@ -909,9 +909,8 @@ fn indexed_concrete_type(state: CheckState, value: go_types::TypeId) -> Option[
 fn indexed_type(state: CheckState, value: go_types::TypeId) -> Option[
     (go_types::TypeId, bool, Option[i64], Option[go_types::TypeId]),
 ] {
-    match indexed_concrete_type(state, value) {
-        Some(value) => return Option::Some(value),
-        None => {},
+    if let Some(value) = indexed_concrete_type(state, value) {
+        return Option::Some(value)
     }
     if !go_types::is_type_parameter(state.world, value) {
         return Option::None
@@ -926,60 +925,58 @@ fn indexed_type(state: CheckState, value: go_types::TypeId) -> Option[
     let mut map_key: Option[go_types::TypeId] = Option::None;
     let mut map_kind: Option[bool] = Option::None;
     for term in terms {
-        match indexed_concrete_type(state, term) {
-            Some((candidate, candidate_addressable, candidate_length, candidate_key)) => {
-                let candidate_map = candidate_key.is_some();
-                match map_kind {
-                    Some(existing) => if existing != candidate_map {
-                        return Option::None
-                    },
-                    None => {
-                        map_kind = Option::Some(candidate_map);
-                    },
-                }
-                match (map_key, candidate_key) {
-                    (Some(existing), Some(candidate)) => if !go_types::identical(
-                        state.world,
-                        existing,
-                        candidate,
-                    ) {
-                        return Option::None
-                    },
-                    (None, Some(candidate)) => {
-                        map_key = Option::Some(candidate);
-                    },
-                    _ => {},
-                }
-                match element {
-                    Some(element) => if !go_types::identical(state.world, element, candidate) {
-                        return Option::None
-                    },
-                    None => {
-                        element = Option::Some(candidate);
-                    },
-                }
-                if !candidate_addressable {
-                    addressable = false;
-                }
-                match candidate_length {
-                    Some(candidate_length) => match length {
-                        Some(existing) => if candidate_length < existing {
-                            length = Option::Some(candidate_length);
-                        },
-                        None => {
-                            length = Option::Some(candidate_length);
-                        },
-                    },
-                    None => {},
-                }
+        let Some((candidate, candidate_addressable, candidate_length, candidate_key)) = indexed_concrete_type(
+            state,
+            term,
+        ) else {
+            return Option::None;
+        };
+        let candidate_map = candidate_key.is_some();
+        match map_kind {
+            Some(existing) => if existing != candidate_map {
+                return Option::None
             },
-            None => return Option::None,
+            None => {
+                map_kind = Option::Some(candidate_map);
+            },
+        }
+        match (map_key, candidate_key) {
+            (Some(existing), Some(candidate)) => if !go_types::identical(
+                state.world,
+                existing,
+                candidate,
+            ) {
+                return Option::None
+            },
+            (None, Some(candidate)) => {
+                map_key = Option::Some(candidate);
+            },
+            _ => {},
+        }
+        match element {
+            Some(element) => if !go_types::identical(state.world, element, candidate) {
+                return Option::None
+            },
+            None => {
+                element = Option::Some(candidate);
+            },
+        }
+        if !candidate_addressable {
+            addressable = false;
+        }
+        match candidate_length {
+            Some(candidate_length) => match length {
+                Some(existing) => if candidate_length < existing {
+                    length = Option::Some(candidate_length);
+                },
+                None => {
+                    length = Option::Some(candidate_length);
+                },
+            },
+            None => {},
         }
     }
-    match element {
-        Some(element) => Option::Some((element, addressable, length, map_key)),
-        None => Option::None,
-    }
+    element.map(|element| (element, addressable, length, map_key))
 }
 
 fn pointer_to_array_type(state: CheckState, value: go_types::TypeId) -> bool {

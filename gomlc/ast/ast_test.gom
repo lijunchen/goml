@@ -235,7 +235,7 @@ fn lowers_cross_file_constructor_patterns() -> () {
 #[test]
 fn parser_diagnostics_prevent_ast_creation() -> () {
     let result = lower(parser::parse("fn broken( {"));
-    testing::assert(result.diagnostics.len() > 0);
+    testing::assert(!result.diagnostics.is_empty());
     if let Some(_) = result.ast {
         testing::fail("unexpected AST")
     }

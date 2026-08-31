@@ -143,39 +143,24 @@ fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr]
                     span: expr_span,
                 },
             ),
-            Index { base, index, span: expr_span } => match apply_trailing_args(
+            Index { base, index, span: expr_span } => apply_trailing_args(
                 ctx,
                 index,
                 trailing_args,
                 value_span,
-            ) {
-                Some(next_index) => Option::Some(
-                    Expr::Index { base, index: next_index, span: expr_span },
-                ),
-                None => Option::None,
-            },
-            Binary { op, lhs, rhs, span: expr_span } => match apply_trailing_args(
+            ).map(|next_index| Expr::Index { base, index: next_index, span: expr_span }),
+            Binary { op, lhs, rhs, span: expr_span } => apply_trailing_args(
                 ctx,
                 rhs,
                 trailing_args,
                 value_span,
-            ) {
-                Some(next_rhs) => Option::Some(
-                    Expr::Binary { op, lhs, rhs: next_rhs, span: expr_span },
-                ),
-                None => Option::None,
-            },
-            Unary { op, expr: inner, span: expr_span } => match apply_trailing_args(
+            ).map(|next_rhs| Expr::Binary { op, lhs, rhs: next_rhs, span: expr_span }),
+            Unary { op, expr: inner, span: expr_span } => apply_trailing_args(
                 ctx,
                 inner,
                 trailing_args,
                 value_span,
-            ) {
-                Some(next_inner) => Option::Some(
-                    Expr::Unary { op, expr: next_inner, span: expr_span },
-                ),
-                None => Option::None,
-            },
+            ).map(|next_inner| Expr::Unary { op, expr: next_inner, span: expr_span }),
             _ => {
                 push_error(ctx, value_span, "Cannot apply arguments to expression");
                 Option::None
@@ -416,12 +401,9 @@ fn lower_binary_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
                     lower_dot_expr(ctx, node, lhs, values[1], trailing_args)
                 } else {
                     match binary_operator(operator.token.kind) {
-                        Some(op) => match lower_expr_with_args(ctx, values[1], trailing_args) {
-                            Some(rhs) => Option::Some(
-                                Expr::Binary { op, lhs, rhs, span: node_span(node) },
-                            ),
-                            None => Option::None,
-                        },
+                        Some(op) => lower_expr_with_args(ctx, values[1], trailing_args).map(
+                            |rhs| Expr::Binary { op, lhs, rhs, span: node_span(node) },
+                        ),
                         None => {
                             push_error(ctx, token_span(operator), "Unsupported binary operator");
                             Option::None

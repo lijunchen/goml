@@ -178,7 +178,7 @@ fn show_tree(value: Tree) -> Doc {
 }
 
 fn show_bracket(values: Vec[Tree]) -> Doc {
-    if values.len() == 0 {
+    if values.is_empty() {
         nil()
     } else {
         append(text("["), append(nest(1, show_trees(values, 0)), text("]")))

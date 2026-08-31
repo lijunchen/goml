@@ -39,17 +39,11 @@ fn default_operand_type(state: CheckState, operand: Operand) -> go_types::TypeId
 fn default_type_for_kind(state: CheckState, kind: go_types::BasicKind) -> Option[go_types::TypeId] {
     if kind == go_types::BasicKind::UntypedRune {
         match go_types::lookup(state.world, state.world.universe, "rune") {
-            Some(object) => match go_types::get_object(state.world, object) {
-                Some(object) => Option::Some(object.type_id),
-                None => Option::None,
-            },
+            Some(object) => go_types::get_object(state.world, object).map(|object| object.type_id),
             None => Option::None,
         }
     } else {
-        match constant::default_type(kind) {
-            Some(kind) => Option::Some(find_basic_kind(state, kind)),
-            None => Option::None,
-        }
+        constant::default_type(kind).map(|kind| find_basic_kind(state, kind))
     }
 }
 
@@ -201,12 +195,9 @@ fn check_local_value_spec(
                     Option::Some(names[0])
                 };
             }
-            let explicit_type = match effective_type {
-                Some(type_node) => Option::Some(
-                    declaration_type(state, scope, type_node, constant_declaration),
-                ),
-                None => Option::None,
-            };
+            let explicit_type = effective_type.map(
+                |type_node| declaration_type(state, scope, type_node, constant_declaration),
+            );
             if constant_declaration
                 && match explicit_type {
                     Some(type_id) => type_id.value == state.world.invalid.value,
@@ -3162,10 +3153,7 @@ fn check_switch_statement(
         },
         None => {},
     }
-    let tag = match tag_node {
-        Some(tag) => Option::Some(check_switch_tag(state, switch_scope, tag)),
-        None => Option::None,
-    };
+    let tag = tag_node.map(|tag| check_switch_tag(state, switch_scope, tag));
     let mut first_default: Option[syntax::NodeId] = Option::None;
     let mut all_terminate = true;
     let seen_cases: Vec[SwitchCaseValue] = Vec::new();
@@ -3911,10 +3899,9 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> () {
     if state.failed_inference_nodes.contains(function.value) {
         return
     }
-    let selected = match recorded_selection_index(state, function) {
-        Some(index) => Option::Some(method_value_type(state, state.info.selections[index].type_id)),
-        None => Option::None,
-    };
+    let selected = recorded_selection_index(state, function).map(
+        |index| method_value_type(state, state.info.selections[index].type_id),
+    );
     let signature = match recorded_type_fact(state, function) {
         Some(fact) => if fact.type_id.value != state.world.invalid.value
             && !type_contains_invalid(state, fact.type_id) {

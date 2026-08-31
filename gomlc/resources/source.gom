@@ -584,10 +584,9 @@ pub fn standard_package_link_closure(package_names: Vec[string]) -> Vec[string] 
 }
 
 pub fn toolchain_lib_dir() -> Result[string, string] {
-    let executable = match env::current_exe_structured() {
-        Ok(value) => value,
-        Err(error) => return Result::Err(f"could not locate compiler executable: {error}"),
-    };
+    let executable = env::current_exe_structured().map_err(
+        |error| f"could not locate compiler executable: {error}",
+    )?;
     let binary_dir = match path::parent(executable) {
         Some(value) => value,
         None => return Result::Err("compiler executable has no parent directory: " + executable),
@@ -606,12 +605,10 @@ fn read_sources_from_dir(lib_dir: string, category: string, relative_paths: Vec[
     let result: Vec[Source] = Vec::new();
     for relative_path in relative_paths {
         let source_path = path::join(lib_dir, relative_path);
-        match fs::read_file_structured(source_path) {
-            Ok(source) => result.push(Source { path: source_path, source }),
-            Err(error) => return Result::Err(
-                f"could not read {category} resource {source_path}: {error}",
-            ),
-        }
+        let source = fs::read_file_structured(source_path).map_err(
+            |error| f"could not read {category} resource {source_path}: {error}",
+        )?;
+        result.push(Source { path: source_path, source })
     }
     Result::Ok(result)
 }
@@ -770,10 +767,9 @@ pub fn prelude_builtin_export_names() -> Vec[string] {
 
 pub fn standard_sources(package_name: string) -> Result[Option[Vec[Source]], string] {
     match standard_package_spec(package_name) {
-        Some(value) => match read_sources("standard library", value.source_paths) {
-            Ok(sources) => Result::Ok(Option::Some(sources)),
-            Err(error) => Result::Err(error),
-        },
+        Some(value) => read_sources("standard library", value.source_paths).map(
+            |sources| Option::Some(sources),
+        ),
         None => Result::Ok(Option::None),
     }
 }

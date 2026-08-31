@@ -338,12 +338,9 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                         strip_suffix(length_token.token.text, ""),
                     ) {
                         Some(length) => if !types.is_empty() {
-                            match lower_ty(ctx, types[0]) {
-                                Some(element) => Option::Some(
-                                    TypeExpr::Array { len: length, elem: element },
-                                ),
-                                None => Option::None,
-                            }
+                            lower_ty(ctx, types[0]).map(
+                                |element| TypeExpr::Array { len: length, elem: element },
+                            )
                         } else {
                             push_error(ctx, node_span(node), "Array type missing element type");
                             Option::None
@@ -485,10 +482,7 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
         Some(path_node) => match lower_path(ctx, path_node) {
             Some(path) => {
                 let alias = if has_token(node, lexer::TokenKind::AsKeyword) {
-                    match first_token(node, lexer::TokenKind::Ident) {
-                        Some(token) => Option::Some(token.token.text),
-                        None => Option::None,
-                    }
+                    first_token(node, lexer::TokenKind::Ident).map(|token| token.token.text)
                 } else {
                     Option::None
                 };

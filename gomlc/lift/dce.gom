@@ -36,10 +36,7 @@ fn dce_exprs(values: Vec[Expr]) -> Vec[Expr] {
 }
 
 fn dce_optional_expr(value: Option[Expr]) -> Option[Expr] {
-    match value {
-        Some(value) => Option::Some(dce_expr(value)),
-        None => Option::None,
-    }
+    value.map(|value| dce_expr(value))
 }
 
 fn dce_arms(values: Vec[Arm]) -> Vec[Arm] {

@@ -1226,10 +1226,7 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
         Tuple { items: values } => Type::Tuple { items: normalize_types(ctx, values) },
         Projection { for_ty: base, name, trait_ref: qualifier } => {
             let base = normalize_type(ctx, base);
-            let qualifier = match qualifier {
-                Some(reference) => Option::Some(normalize_trait_ref(ctx, reference)),
-                None => Option::None,
-            };
+            let qualifier = qualifier.map(|reference| normalize_trait_ref(ctx, reference));
             let projection = Type::Projection { for_ty: base, name, trait_ref: qualifier };
             let candidate = match dyn_associated_type(base, name) {
                 Some(value) => Option::Some(value),

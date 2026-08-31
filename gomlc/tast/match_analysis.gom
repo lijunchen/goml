@@ -720,10 +720,7 @@ fn coverage_enum_domain(info: EnumInfo, ty: Type) -> Vec[CoverageConstructor] {
 }
 
 fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstructor]] {
-    match builtin_source_enum_info(name) {
-        Some(info) => Option::Some(coverage_enum_domain(info, ty)),
-        None => Option::None,
-    }
+    builtin_source_enum_info(name).map(|info| coverage_enum_domain(info, ty))
 }
 
 fn coverage_domain_uncached(ctx: CoverageContext, ty: Type) -> Option[Vec[CoverageConstructor]] {
@@ -986,10 +983,9 @@ fn coverage_sequence_specialize_row(row: Vec[CoveragePat], length: isize, elemen
     if row.is_empty() {
         Option::None
     } else {
-        match coverage_sequence_specialize_pattern(row[0], length, element) {
-            Some(fields) => Option::Some(coverage_join(fields, coverage_tail(row))),
-            None => Option::None,
-        }
+        coverage_sequence_specialize_pattern(row[0], length, element).map(
+            |fields| coverage_join(fields, coverage_tail(row)),
+        )
     }
 }
 
@@ -1422,12 +1418,12 @@ fn coverage_find_witness(
                                 }
                             }
                         },
-                        None => match coverage_find_witness(ctx, coverage_default(matrix), tail) {
-                            Some(values) => Option::Some(
-                                coverage_prepend_witness(coverage_witness_wild(head.ty), values),
+                        None => coverage_find_witness(ctx, coverage_default(matrix), tail).map(
+                            |values| coverage_prepend_witness(
+                                coverage_witness_wild(head.ty),
+                                values,
                             ),
-                            None => Option::None,
-                        },
+                        ),
                     },
                 },
             },

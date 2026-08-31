@@ -452,10 +452,7 @@ fn diagnostic_type(value: Type) -> Type {
             Type::Tuple { items: result }
         },
         Projection { for_ty: base, name, trait_ref: qualifier } => {
-            let qualifier = match qualifier {
-                Some(reference) => Option::Some(diagnostic_trait_ref(reference)),
-                None => Option::None,
-            };
+            let qualifier = qualifier.map(|reference| diagnostic_trait_ref(reference));
             Type::Projection { for_ty: diagnostic_type(base), name, trait_ref: qualifier }
         },
         App { ty: base, args } => {

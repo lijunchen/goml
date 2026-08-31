@@ -398,7 +398,7 @@ fn formats_static_items() -> () {
 fn rejects_invalid_source() -> () {
     match format_source("fn main( {") {
         Ok(_) => testing::fail("invalid source formatted"),
-        Err(error) => testing::assert(error.diagnostics.len() > 0),
+        Err(error) => testing::assert(!error.diagnostics.is_empty()),
     }
 }
 

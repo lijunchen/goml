@@ -321,20 +321,17 @@ fn load_checked_packages_with_order(
                 package_indices[package_id.value] = Option::Some(index);
             }
         }
-        match main_function {
-            Some(main_function) => Option::Some(
-                ExecutionProgram {
-                    world,
-                    packages,
-                    package_indices,
-                    initialization_order,
-                    main_package: root_id,
-                    main_function,
-                    toolchain: listed.toolchain,
-                },
-            ),
-            None => Option::None,
-        }
+        main_function.map(
+            |main_function| ExecutionProgram {
+                world,
+                packages,
+                package_indices,
+                initialization_order,
+                main_package: root_id,
+                main_function,
+                toolchain: listed.toolchain,
+            },
+        )
     } else {
         Option::None
     };

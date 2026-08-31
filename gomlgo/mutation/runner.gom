@@ -108,7 +108,7 @@ fn first_string_token(source: bytes::Bytes) -> Option[token::Token] {
 
 fn mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
     let result: Vec[bytes::Bytes] = Vec::new();
-    if source.len() > 0 {
+    if !source.is_empty() {
         let half = copy_bytes(source);
         half.truncate(source.len() / 2);
         result.push(half);

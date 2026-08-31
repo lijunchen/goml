@@ -71,10 +71,7 @@ fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
     let prefix = direct_prefix_doc(node, open);
     let open_doc = token_doc(open);
     let close_doc = token_doc(close);
-    let first = match first_significant_token(node) {
-        Some(token) => Option::Some(token.token.kind),
-        None => Option::None,
-    };
+    let first = first_significant_token(node).map(|token| token.token.kind);
     let last = Option::Some(close.token.kind);
     if items.is_empty() {
         built(concat(Vec::from_array([prefix, open_doc, close_doc])), first, last)
@@ -150,10 +147,7 @@ fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDo
     } else {
         concat2(Doc::HardLine, token_doc(close))
     };
-    let first = match first_significant_token(node) {
-        Some(token) => Option::Some(token.token.kind),
-        None => Option::None,
-    };
+    let first = first_significant_token(node).map(|token| token.token.kind);
     built(
         concat(
             Vec::from_array([prefix, token_doc(open), Doc::HardLine, indent(body_doc.doc), closing]),
@@ -204,10 +198,7 @@ fn format_where_clause_with_body(value: Builder, node: LocatedNode, body_follows
         last: if body_follows {
             Option::None
         } else {
-            match last_significant_token(node) {
-                Some(token) => Option::Some(token.token.kind),
-                None => Option::None,
-            }
+            last_significant_token(node).map(|token| token.token.kind)
         },
         starts_with_line: true,
         trailing_lines: 0,

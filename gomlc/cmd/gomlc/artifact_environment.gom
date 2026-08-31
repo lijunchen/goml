@@ -28,10 +28,7 @@ fn artifact_dependency_trait_ref(value: tast::TraitRef) -> tast::TraitRef {
 }
 
 fn artifact_dependency_optional_trait_ref(value: Option[tast::TraitRef]) -> Option[tast::TraitRef] {
-    match value {
-        Some(value) => Option::Some(artifact_dependency_trait_ref(value)),
-        None => Option::None,
-    }
+    value.map(|value| artifact_dependency_trait_ref(value))
 }
 
 fn artifact_dependency_trait_type(value: tast::Type) -> tast::Type {

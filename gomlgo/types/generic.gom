@@ -102,22 +102,19 @@ fn instantiate_method_object(
             let signature = add_type(
                 world,
                 TypeKind::Signature {
-                    receiver: match receiver {
-                        Some(receiver) => Option::Some(
-                            Variable {
-                                name: receiver.name,
-                                owner: receiver.owner,
-                                type_id: match get_type(world, unalias(world, receiver.type_id)) {
-                                    Some(TypeData { id: _, kind: TypeKind::Pointer { element: _ } }) => add_type(
-                                        world,
-                                        TypeKind::Pointer { element: receiver_type },
-                                    ),
-                                    _ => receiver_type,
-                                },
+                    receiver: receiver.map(
+                        |receiver| Variable {
+                            name: receiver.name,
+                            owner: receiver.owner,
+                            type_id: match get_type(world, unalias(world, receiver.type_id)) {
+                                Some(TypeData { id: _, kind: TypeKind::Pointer { element: _ } }) => add_type(
+                                    world,
+                                    TypeKind::Pointer { element: receiver_type },
+                                ),
+                                _ => receiver_type,
                             },
-                        ),
-                        None => Option::None,
-                    },
+                        },
+                    ),
                     receiver_type_params,
                     type_params,
                     params: substitute_inner(
@@ -294,12 +291,9 @@ fn substitute_inner(
                 );
                 result.push(
                     StructField {
-                        object: match field.object {
-                            Some(object) => Option::Some(
-                                clone_object_with_type(world, object, field_type),
-                            ),
-                            None => Option::None,
-                        },
+                        object: field.object.map(
+                            |object| clone_object_with_type(world, object, field_type),
+                        ),
                         variable: Variable {
                             name: field.variable.name,
                             owner: field.variable.owner,
@@ -340,72 +334,69 @@ fn substitute_inner(
             add_type(
                 world,
                 TypeKind::Signature {
-                    receiver: match receiver {
-                        Some(receiver) => Option::Some(
-                            Variable {
-                                name: receiver.name,
-                                owner: receiver.owner,
-                                type_id: match type_data(world, unalias(world, receiver.type_id)) {
-                                    TypeData {
-                                        id: _,
-                                        kind: TypeKind::Named {
-                                            object: receiver_object,
-                                            underlying: _,
-                                            type_params: receiver_parameters,
-                                            type_args: receiver_arguments,
-                                            methods: _,
-                                        },
-                                    } => if receiver_arguments.is_empty()
-                                        && !receiver_parameters.is_empty() {
-                                        let arguments: Vec[TypeId] = Vec::new();
-                                        let mut complete = true;
-                                        for parameter in receiver_parameters {
-                                            match substitution_argument(
-                                                parameter.object,
-                                                signature_parameters,
-                                                signature_arguments,
-                                            ) {
-                                                Some(argument) => arguments.push(argument),
-                                                None => {
-                                                    complete = false;
-                                                },
-                                            }
-                                        }
-                                        if complete {
-                                            add_type(
-                                                world,
-                                                TypeKind::Named {
-                                                    object: receiver_object,
-                                                    underlying: world.invalid,
-                                                    type_params: receiver_parameters,
-                                                    type_args: arguments,
-                                                    methods: Vec::new(),
-                                                },
-                                            )
-                                        } else {
-                                            receiver.type_id
-                                        }
-                                    } else {
-                                        substitute_inner(
-                                            world,
-                                            receiver.type_id,
+                    receiver: receiver.map(
+                        |receiver| Variable {
+                            name: receiver.name,
+                            owner: receiver.owner,
+                            type_id: match type_data(world, unalias(world, receiver.type_id)) {
+                                TypeData {
+                                    id: _,
+                                    kind: TypeKind::Named {
+                                        object: receiver_object,
+                                        underlying: _,
+                                        type_params: receiver_parameters,
+                                        type_args: receiver_arguments,
+                                        methods: _,
+                                    },
+                                } => if receiver_arguments.is_empty()
+                                    && !receiver_parameters.is_empty() {
+                                    let arguments: Vec[TypeId] = Vec::new();
+                                    let mut complete = true;
+                                    for parameter in receiver_parameters {
+                                        match substitution_argument(
+                                            parameter.object,
                                             signature_parameters,
                                             signature_arguments,
-                                            entries,
+                                        ) {
+                                            Some(argument) => arguments.push(argument),
+                                            None => {
+                                                complete = false;
+                                            },
+                                        }
+                                    }
+                                    if complete {
+                                        add_type(
+                                            world,
+                                            TypeKind::Named {
+                                                object: receiver_object,
+                                                underlying: world.invalid,
+                                                type_params: receiver_parameters,
+                                                type_args: arguments,
+                                                methods: Vec::new(),
+                                            },
                                         )
-                                    },
-                                    _ => substitute_inner(
+                                    } else {
+                                        receiver.type_id
+                                    }
+                                } else {
+                                    substitute_inner(
                                         world,
                                         receiver.type_id,
                                         signature_parameters,
                                         signature_arguments,
                                         entries,
-                                    ),
+                                    )
                                 },
+                                _ => substitute_inner(
+                                    world,
+                                    receiver.type_id,
+                                    signature_parameters,
+                                    signature_arguments,
+                                    entries,
+                                ),
                             },
-                        ),
-                        None => Option::None,
-                    },
+                        },
+                    ),
                     receiver_type_params,
                     type_params,
                     params: substitute_inner(

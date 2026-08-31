@@ -296,10 +296,7 @@ fn parse_value(source: string) -> Result[Value, string] {
     if value == "" {
         Result::Err("missing value")
     } else if value.byte_get(0) == b'"' || value.byte_get(0) == b'\'' {
-        match parse_quoted(value) {
-            Ok(result) => Result::Ok(Value::String(result)),
-            Err(error) => Result::Err(error),
-        }
+        parse_quoted(value).map(|result| Value::String(result))
     } else if value == "true" {
         Result::Ok(Value::Boolean(true))
     } else if value == "false" {
@@ -406,29 +403,28 @@ pub fn parse(input: string) -> Result[Value, string] {
                 || line.byte_len() > 1 && line.byte_get(1) == b'[' {
                 return Result::Err(toml_error(line_number, "invalid table header"))
             }
-            match parse_key_path(line.byte_slice(1, line.byte_len() - 1)) {
-                Ok(path) => {
-                    section = path;
-                },
-                Err(error) => return Result::Err(toml_error(line_number, error)),
-            }
+            section = parse_key_path(line.byte_slice(1, line.byte_len() - 1)).map_err(
+                |error| toml_error(line_number, error),
+            )?;
         } else {
             let Some(separator) = top_level_separator(line, b'=') else {
                 return Result::Err(toml_error(line_number, "key/value pair requires `=`"))
             };
-            let path = match parse_key_path(line.byte_slice(0, separator)) {
-                Ok(path) => append_path(section, path),
-                Err(error) => return Result::Err(toml_error(line_number, error)),
-            };
+            let path = append_path(
+                section,
+                parse_key_path(line.byte_slice(0, separator)).map_err(
+                    |error| toml_error(line_number, error),
+                )?,
+            );
             for entry in entries {
                 if same_path(entry.path, path) {
                     return Result::Err(toml_error(line_number, "duplicate key"))
                 }
             }
-            match parse_value(line.byte_slice(separator + 1, line.byte_len())) {
-                Ok(value) => entries.push(FlatEntry { path, value }),
-                Err(error) => return Result::Err(toml_error(line_number, error)),
-            }
+            let value = parse_value(line.byte_slice(separator + 1, line.byte_len())).map_err(
+                |error| toml_error(line_number, error),
+            )?;
+            entries.push(FlatEntry { path, value })
         }
     }
     table_from_entries(entries, Vec::new())

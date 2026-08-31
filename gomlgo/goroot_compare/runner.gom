@@ -168,10 +168,7 @@ fn compare_package(
                 let check_config = config;
                 check_config.include_tests = false;
                 check_config.external_tests = false;
-                match loader::check_sources(check_config, package_path, sources) {
-                    Ok(_) => Result::Ok(()),
-                    Err(message) => Result::Err(message),
-                }
+                loader::check_sources(check_config, package_path, sources).map(|_| ())
             } else {
                 loader::check_import_path_acceptance_in_session(session, import_path)
             };

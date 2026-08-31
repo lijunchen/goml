@@ -44,10 +44,7 @@ fn run_git(arguments: Vec[string]) -> Result[(), string] {
 }
 
 fn config_path() -> Result[string, string] {
-    match home_directory() {
-        Ok(home) => Result::Ok(path::join(home, "config.toml")),
-        Err(message) => Result::Err(message),
-    }
+    home_directory().map(|home| path::join(home, "config.toml"))
 }
 
 fn config_registry_source() -> Result[string, string] {

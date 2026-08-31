@@ -316,7 +316,7 @@ fn checks_block_and_byte_string_types() -> () {
     );
     testing::assert_eq(valid.len(), 0);
     let invalid = checked_diagnostics("fn wrong() -> Vec[isize] { b\"value\" }");
-    testing::assert(invalid.len() > 0)
+    testing::assert(!invalid.is_empty())
 }
 
 fn dependency_hir(source: string, package_name: string) -> hir::File {
@@ -409,9 +409,9 @@ fn records_typecheck_query_facts() -> () {
         ),
     );
     testing::assert_eq(result.diagnostics.len(), 0);
-    testing::assert(result.typeck_results.exprs.len() > 0);
-    testing::assert(result.typeck_results.pats.len() > 0);
-    testing::assert(result.typeck_results.locals.len() > 0);
+    testing::assert(!result.typeck_results.exprs.is_empty());
+    testing::assert(!result.typeck_results.pats.is_empty());
+    testing::assert(!result.typeck_results.locals.is_empty());
     testing::assert_eq(result.typeck_results.calls.len(), 1);
     match resolve_type(result.typeck_results.calls.get(0).callee_ty) {
         Func { params, ret_ty } => {
@@ -1132,7 +1132,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> () {
             "main.gom",
         ),
     );
-    testing::assert(bad_application.diagnostics.len() > 0);
+    testing::assert(!bad_application.diagnostics.is_empty());
     testing::assert_eq(
         bad_application.diagnostics.get(0).message,
         "Expected a type constructor, got T",
@@ -1212,12 +1212,7 @@ fn rejects_self_types_outside_impl_methods() -> () {
     testing::assert_eq(diagnostics.len(), 6);
     for diagnostic in diagnostics {
         testing::assert_eq(diagnostic.message, "Self type is only valid in impl methods");
-        testing::assert(
-            match diagnostic.span {
-                Some(_) => true,
-                None => false,
-            },
-        )
+        testing::assert(diagnostic.span.is_some())
     }
 }
 
@@ -1547,7 +1542,7 @@ fn checks_loop_control_contexts_and_impl_overlap() -> () {
             "main.gom",
         ),
     );
-    testing::assert(overlap.diagnostics.len() > 0);
+    testing::assert(!overlap.diagnostics.is_empty());
     testing::assert_eq(
         overlap.diagnostics.get(0).message,
         "Trait Pick implementation for T overlaps with implementation main#0",
@@ -1573,12 +1568,7 @@ fn rejects_impls_overlapping_builtin_ref_blankets() -> () {
         "Trait Hash implementation for Ref[i32] overlaps with builtin implementation",
     );
     for diagnostic in diagnostics {
-        testing::assert(
-            match diagnostic.span {
-                Some(_) => true,
-                None => false,
-            },
-        )
+        testing::assert(diagnostic.span.is_some())
     }
 }
 
@@ -1629,12 +1619,7 @@ fn checks_indexed_assignment_roots() -> () {
             "array indexed assignment requires a writable root such as a mutable local or `ref.get()`",
         ),
     );
-    testing::assert(
-        match temporary.get(0).span {
-            Some(_) => true,
-            None => false,
-        },
-    );
+    testing::assert(temporary.get(0).span.is_some());
     let readonly = checked_diagnostics(
         "fn main() -> () { let values = Vec::new().pushed(1); let view = values.slice(0, 1); view[0] = 2; }",
     );
@@ -2403,7 +2388,7 @@ fn applies_where_type_equalities_in_function_bodies() -> () {
 fn rejects_unsatisfied_impl_equality_predicates() -> () {
     let source = "trait Selected { fn selected(self: Self) -> (); } struct Wrap[T] { value: T } impl[T] Selected for Wrap[T] where T = i32 { fn selected(self: Wrap[T]) -> () { () } } fn require[T: Selected](value: T) -> () { () } fn main() -> () { require(Wrap { value: \"no\" }) }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
-    testing::assert(result.diagnostics.len() > 0)
+    testing::assert(!result.diagnostics.is_empty())
 }
 
 #[test]

@@ -36,18 +36,15 @@ pub fn read_stdin_structured() -> Result[bytes::Bytes, Error] {
 
 pub fn read_stdin_to_string() -> Result[string, Error] {
     match read_stdin_structured() {
-        Ok(data) => match data.to_string_utf8() {
-            Ok(value) => Result::Ok(value),
-            Err(error) => Result::Err(
-                Error::new(
-                    ErrorKind::InvalidData,
-                    "read stdin",
-                    Option::None,
-                    Option::None,
-                    error.to_string(),
-                ),
+        Ok(data) => data.to_string_utf8().map_err(
+            |error| Error::new(
+                ErrorKind::InvalidData,
+                "read stdin",
+                Option::None,
+                Option::None,
+                error.to_string(),
             ),
-        },
+        ),
         Err(error) => Result::Err(error),
     }
 }

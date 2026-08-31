@@ -28,17 +28,11 @@ impl[K: Eq + Hash] HashSet[K] {
     }
 
     pub fn insert(self: HashSet[K], value: K) -> bool {
-        match self.entries.insert(value, ()) {
-            Some(_) => false,
-            None => true,
-        }
+        self.entries.insert(value, ()).is_none()
     }
 
     pub fn remove(self: HashSet[K], value: K) -> bool {
-        match self.entries.remove_value(value) {
-            Some(_) => true,
-            None => false,
-        }
+        self.entries.remove_value(value).is_some()
     }
 
     pub fn to_vec(self: HashSet[K]) -> Vec[K] {

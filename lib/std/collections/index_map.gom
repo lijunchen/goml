@@ -172,10 +172,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let hash = Hash::hash(key);
         match self.probe(key, hash) {
             Found(_, dense_index) => {
-                match self.entries.get()[dense_index] {
-                    Some(entry) => Option::Some(entry.value),
-                    None => Option::None,
-                }
+                self.entries.get()[dense_index].map(|entry| entry.value)
             },
             Vacant(_) => Option::None,
         }

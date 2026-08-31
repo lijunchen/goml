@@ -162,18 +162,15 @@ impl Command {
 
     pub fn output_structured(self: Command) -> Result[Output, Error] {
         let program = self.program;
-        match self.output_raw() {
-            Ok(output) => Result::Ok(output),
-            Err(message) => Result::Err(
-                Error::new(
-                    io::ErrorKind::Other,
-                    "execute",
-                    Option::Some(program),
-                    Option::None,
-                    message,
-                ),
+        self.output_raw().map_err(
+            |message| Error::new(
+                io::ErrorKind::Other,
+                "execute",
+                Option::Some(program),
+                Option::None,
+                message,
             ),
-        }
+        )
     }
 
     pub fn output_timeout_structured(self: Command, timeout: time::Duration) -> Result[
@@ -310,18 +307,15 @@ impl Command {
 
     pub fn status_structured(self: Command) -> Result[ExitStatus, Error] {
         let program = self.program;
-        match self.status_raw() {
-            Ok(status) => Result::Ok(status),
-            Err(message) => Result::Err(
-                Error::new(
-                    io::ErrorKind::Other,
-                    "execute",
-                    Option::Some(program),
-                    Option::None,
-                    message,
-                ),
+        self.status_raw().map_err(
+            |message| Error::new(
+                io::ErrorKind::Other,
+                "execute",
+                Option::Some(program),
+                Option::None,
+                message,
             ),
-        }
+        )
     }
 
     pub fn status_timeout_structured(self: Command, timeout: time::Duration) -> Result[
@@ -435,16 +429,13 @@ fn look_path_raw(program: string) -> Result[string, string] {
 }
 
 pub fn look_path_structured(program: string) -> Result[string, Error] {
-    match look_path_raw(program) {
-        Ok(path) => Result::Ok(path),
-        Err(message) => Result::Err(
-            Error::new(
-                io::ErrorKind::NotFound,
-                "look path",
-                Option::Some(program),
-                Option::None,
-                message,
-            ),
+    look_path_raw(program).map_err(
+        |message| Error::new(
+            io::ErrorKind::NotFound,
+            "look path",
+            Option::Some(program),
+            Option::None,
+            message,
         ),
-    }
+    )
 }

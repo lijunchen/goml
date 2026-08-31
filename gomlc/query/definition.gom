@@ -386,10 +386,9 @@ fn local_definition_syntax(value: Analysis, fact: tast::LocalFact) -> Option[Syn
     if fact.source_path == value.source_path {
         Option::Some(value.syntax)
     } else {
-        match source_by_path(value.sources, fact.source_path) {
-            Some(source) => Option::Some(syntax_index(parser::parse(source.source).root)),
-            None => Option::None,
-        }
+        source_by_path(value.sources, fact.source_path).map(
+            |source| syntax_index(parser::parse(source.source).root),
+        )
     }
 }
 
@@ -410,10 +409,7 @@ fn local_definition_span_from_fact(value: Analysis, fact: tast::LocalFact) -> Op
             },
         ),
         None => {
-            let mut current = match token_at(syntax, span.start) {
-                Some(token) => Option::Some(token.parent),
-                None => Option::None,
-            };
+            let mut current = token_at(syntax, span.start).map(|token| token.parent);
             while current.is_some() {
                 if let Some(id) = current {
                     let node = syntax.nodes[id];
@@ -494,10 +490,7 @@ fn callable_name(value: tast::Callable) -> string {
 }
 
 fn token_text(value: Analysis, offset: isize) -> Option[string] {
-    match token_at(value.syntax, offset) {
-        Some(token) => Option::Some(token.text),
-        None => Option::None,
-    }
+    token_at(value.syntax, offset).map(|token| token.text)
 }
 
 fn target_symbol_name(value: Analysis, target: tast::ReferenceTarget, offset: isize) -> Option[
@@ -505,10 +498,7 @@ fn target_symbol_name(value: Analysis, target: tast::ReferenceTarget, offset: is
 ] {
     match target {
         Local(_) => Option::None,
-        Definition(_) => match token_text(value, offset) {
-            Some(name) => Option::Some(value.package_name + "::" + name),
-            None => Option::None,
-        },
+        Definition(_) => token_text(value, offset).map(|name| value.package_name + "::" + name),
         Callable(callable) => {
             Option::Some(callable_name(callable))
         },
@@ -537,12 +527,9 @@ fn semantic_definition(value: Analysis, offset: isize) -> Option[DefinitionResul
                 local_definition_span(value, local)
             },
             target => match target_symbol_name(value, target, offset) {
-                Some(name) => match find_symbol(build_symbol_index(value), name) {
-                    Some(symbol) => Option::Some(
-                        DefinitionResult { source_path: symbol.source_path, span: symbol.span },
-                    ),
-                    None => Option::None,
-                },
+                Some(name) => find_symbol(build_symbol_index(value), name).map(
+                    |symbol| DefinitionResult { source_path: symbol.source_path, span: symbol.span },
+                ),
                 None => Option::None,
             },
         },
@@ -570,14 +557,7 @@ pub fn goto_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult]
             width = fact_width;
         }
     }
-    for definition in member_definitions(
-        value,
-        offset,
-        match reference {
-            Some(fact) => Option::Some(fact.target),
-            None => Option::None,
-        },
-    ) {
+    for definition in member_definitions(value, offset, reference.map(|fact| fact.target)) {
         push_definition(result, definition)
     }
     if result.is_empty() {

@@ -21,7 +21,7 @@ fn serde_items_to_toml(items: Vec[serde::Value]) -> Result[Vec[Value], string] {
 }
 
 fn serde_optional_to_toml(items: Vec[serde::Value]) -> Result[Value, string] {
-    if items.len() == 0 {
+    if items.is_empty() {
         Result::Err("TOML has no null value")
     } else if items.len() == 1 {
         from_serde_value(items[0])
@@ -59,10 +59,9 @@ fn unsigned_integer(value: u64) -> Result[Value, string] {
 }
 
 fn float32_value(value: f32) -> Result[Value, string] {
-    match num::parse_float64_structured(value.to_string()) {
-        Ok(parsed) => Result::Ok(Value::Float(parsed)),
-        Err(error) => Result::Err(error.to_string()),
-    }
+    num::parse_float64_structured(value.to_string()).map(|parsed| Value::Float(parsed)).map_err(
+        |error| error.to_string(),
+    )
 }
 
 pub fn from_serde_value(value: serde::Value) -> Result[Value, string] {
@@ -83,10 +82,9 @@ pub fn from_serde_value(value: serde::Value) -> Result[Value, string] {
         serde::Value::Float64(value) => Result::Ok(Value::Float(value)),
         serde::Value::Number(value) => match parse_integer(value) {
             Ok(parsed) => Result::Ok(Value::Integer(parsed)),
-            Err(_) => match num::parse_float64_structured(value) {
-                Ok(parsed) => Result::Ok(Value::Float(parsed)),
-                Err(_) => Result::Err("invalid TOML number"),
-            },
+            Err(_) => num::parse_float64_structured(value).map(|parsed| Value::Float(parsed)).map_err(
+                |_| "invalid TOML number",
+            ),
         },
         serde::Value::String(value) => Result::Ok(Value::String(value)),
         serde::Value::Char(value) => Result::Ok(Value::String(value.to_string())),

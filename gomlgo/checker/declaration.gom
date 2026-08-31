@@ -929,10 +929,7 @@ fn identifier(state: CheckState, node: syntax::NodeId) -> Option[string] {
 }
 
 fn node_file(state: CheckState, node: syntax::NodeId) -> Option[syntax::FileId] {
-    match syntax::get_node(state.syntax.arena, node) {
-        Some(value) => Option::Some(value.file),
-        None => Option::None,
-    }
+    syntax::get_node(state.syntax.arena, node).map(|value| value.file)
 }
 
 fn node_start(state: CheckState, node: syntax::NodeId) -> isize {
@@ -1741,14 +1738,8 @@ fn named_type_reference_after(
     if result.is_some() {
         return result
     }
-    let target_name = match go_types::get_object(state.world, target) {
-        Some(object) => object.name,
-        None => return Option::None,
-    };
-    let file = match syntax::get_node(state.syntax.arena, rhs) {
-        Some(node) => node.file,
-        None => return Option::None,
-    };
+    let target_name = go_types::get_object(state.world, target)?.name;
+    let file = syntax::get_node(state.syntax.arena, rhs)?.file;
     for candidate_value in state.syntax.arena.nodes {
         let Some(candidate) = candidate_value else {
             continue
@@ -1843,10 +1834,7 @@ fn report_named_type_cycle(state: CheckState, values: Vec[go_types::ObjectId], p
     }
     let cycle_nodes: Vec[Option[syntax::NodeId]] = Vec::new();
     let root_rhs = if preserve_start {
-        match pending_type_index(state, instantiation_root) {
-            Some(index) => Option::Some(state.pending_types[index].rhs),
-            None => Option::None,
-        }
+        pending_type_index(state, instantiation_root).map(|index| state.pending_types[index].rhs)
     } else {
         Option::None
     };
@@ -2057,10 +2045,7 @@ fn direct_named_dependency(state: CheckState, object: go_types::ObjectId) -> Opt
             state.pending_types[index].file_scope,
             name,
         ) {
-            Some(value) => match pending_type_index(state, value) {
-                Some(_) => Option::Some(value),
-                None => Option::None,
-            },
+            Some(value) => pending_type_index(state, value).map(|_| value),
             None => Option::None,
         },
         None => Option::None,
@@ -5814,12 +5799,9 @@ fn evaluate_pending_value(state: CheckState, index: isize) -> () {
             None => Option::None,
         };
     }
-    let explicit_type = match pending.type_node {
-        Some(node) => Option::Some(
-            declaration_type(state, pending.file_scope, node, pending.constant_declaration),
-        ),
-        None => Option::None,
-    };
+    let explicit_type = pending.type_node.map(
+        |node| declaration_type(state, pending.file_scope, node, pending.constant_declaration),
+    );
     state.pending_values[index].invalid_constant_type = pending.constant_declaration
         && match explicit_type {
             Some(type_id) => !valid_constant_declaration_type(state, type_id),

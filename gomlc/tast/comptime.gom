@@ -2071,20 +2071,17 @@ fn rewrite_comptime_block(
     }
     Block {
         stmts,
-        tail: match value.tail {
-            Some(value) => Option::Some(
-                rewrite_comptime_expr(
-                    builtin,
-                    file,
-                    module,
-                    dependencies,
-                    diagnostics,
-                    next_site,
-                    value,
-                ),
+        tail: value.tail.map(
+            |value| rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                value,
             ),
-            None => Option::None,
-        },
+        ),
     }
 }
 
@@ -2232,20 +2229,17 @@ fn rewrite_comptime_expr(
                 result.push(
                     Arm {
                         pat: arm.pat,
-                        guard: match arm.guard {
-                            Some(value) => Option::Some(
-                                rewrite_comptime_expr(
-                                    builtin,
-                                    file,
-                                    module,
-                                    dependencies,
-                                    diagnostics,
-                                    next_site,
-                                    value,
-                                ),
+                        guard: arm.guard.map(
+                            |value| rewrite_comptime_expr(
+                                builtin,
+                                file,
+                                module,
+                                dependencies,
+                                diagnostics,
+                                next_site,
+                                value,
                             ),
-                            None => Option::None,
-                        },
+                        ),
                         body: rewrite_comptime_expr(
                             builtin,
                             file,
@@ -2288,20 +2282,17 @@ fn rewrite_comptime_expr(
                                 next_site,
                                 channel,
                             ),
-                            guard: match guard {
-                                Some(value) => Option::Some(
-                                    rewrite_comptime_expr(
-                                        builtin,
-                                        file,
-                                        module,
-                                        dependencies,
-                                        diagnostics,
-                                        next_site,
-                                        value,
-                                    ),
+                            guard: guard.map(
+                                |value| rewrite_comptime_expr(
+                                    builtin,
+                                    file,
+                                    module,
+                                    dependencies,
+                                    diagnostics,
+                                    next_site,
+                                    value,
                                 ),
-                                None => Option::None,
-                            },
+                            ),
                             binding,
                             binding_ty,
                             body: rewrite_comptime_expr(
@@ -2333,20 +2324,17 @@ fn rewrite_comptime_expr(
                                 next_site,
                                 value,
                             ),
-                            guard: match guard {
-                                Some(value) => Option::Some(
-                                    rewrite_comptime_expr(
-                                        builtin,
-                                        file,
-                                        module,
-                                        dependencies,
-                                        diagnostics,
-                                        next_site,
-                                        value,
-                                    ),
+                            guard: guard.map(
+                                |value| rewrite_comptime_expr(
+                                    builtin,
+                                    file,
+                                    module,
+                                    dependencies,
+                                    diagnostics,
+                                    next_site,
+                                    value,
                                 ),
-                                None => Option::None,
-                            },
+                            ),
                             body: rewrite_comptime_expr(
                                 builtin,
                                 file,
@@ -2465,38 +2453,32 @@ fn rewrite_comptime_expr(
         },
         Break { target, value, ty } => Expr::Break {
             target,
-            value: match value {
-                Some(value) => Option::Some(
-                    rewrite_comptime_expr(
-                        builtin,
-                        file,
-                        module,
-                        dependencies,
-                        diagnostics,
-                        next_site,
-                        value,
-                    ),
+            value: value.map(
+                |value| rewrite_comptime_expr(
+                    builtin,
+                    file,
+                    module,
+                    dependencies,
+                    diagnostics,
+                    next_site,
+                    value,
                 ),
-                None => Option::None,
-            },
+            ),
             ty,
         },
         Continue { .. } => value,
         Return { expr, ty } => Expr::Return {
-            expr: match expr {
-                Some(value) => Option::Some(
-                    rewrite_comptime_expr(
-                        builtin,
-                        file,
-                        module,
-                        dependencies,
-                        diagnostics,
-                        next_site,
-                        value,
-                    ),
+            expr: expr.map(
+                |value| rewrite_comptime_expr(
+                    builtin,
+                    file,
+                    module,
+                    dependencies,
+                    diagnostics,
+                    next_site,
+                    value,
                 ),
-                None => Option::None,
-            },
+            ),
             ty,
         },
         Go { expr, ty } => Expr::Go {

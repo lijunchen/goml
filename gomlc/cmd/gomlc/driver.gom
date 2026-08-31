@@ -532,10 +532,7 @@ fn compile_prelude_package(builtins: core::File, builtin_interface: artifact::Ar
 }
 
 fn expand_builtin_derives_with_compiler(compiler: SourceCompiler, value: ast::LowerResult) -> ast::LowerResult {
-    let builtin_module = match compiler.builtin_interface.comptime {
-        Some(value) => Option::Some(value.module),
-        None => Option::None,
-    };
+    let builtin_module = compiler.builtin_interface.comptime.map(|value| value.module);
     hir::expand_derives_with_environment(
         value,
         hir::DeriveEnvironment {
@@ -1765,13 +1762,12 @@ fn cleanup_temp_directory(go_file: string) -> () {
 }
 
 fn execute_with_go_run(directory: string, go_file: string) -> Result[process::Output, string] {
-    match process::Command::new("go").arg("run").arg(go_file).current_dir(directory).env(
-        "TZ",
-        "UTC",
-    ).env("GOWORK", "off").env("GO111MODULE", "off").output_structured() {
-        Ok(output) => Result::Ok(output),
-        Err(error) => Result::Err(f"failed to execute go run: {error}"),
-    }
+    process::Command::new("go").arg("run").arg(go_file).current_dir(directory).env("TZ", "UTC").env(
+        "GOWORK",
+        "off",
+    ).env("GO111MODULE", "off").output_structured().map_err(
+        |error| f"failed to execute go run: {error}",
+    )
 }
 
 fn execute_go_source(source_path: string, source: string) -> () {

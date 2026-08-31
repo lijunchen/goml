@@ -373,10 +373,7 @@ fn verified_signature_shape(program: BytecodeProgram, type_id: go_types::TypeId)
         } => match (verified_tuple_types(program, params), verified_tuple_types(program, results)) {
             (Some(parameters), Some(results)) => Option::Some(
                 SignatureShape {
-                    receiver: match receiver {
-                        Some(value) => Option::Some(value.type_id),
-                        None => Option::None,
-                    },
+                    receiver: receiver.map(|value| value.type_id),
                     parameters,
                     results,
                     variadic,

@@ -959,20 +959,16 @@ fn call_target(state: EvalState, current: ctir::CtModule, target: ctir::CtCallTa
     (ctir::CtModule, ctir::CtFunction),
 ] {
     match target {
-        ctir::CtCallTarget::Local(id) => match find_function(current, id) {
-            Some(function) => Option::Some((current, function)),
-            None => Option::None,
-        },
+        ctir::CtCallTarget::Local(id) => find_function(current, id).map(
+            |function| (current, function),
+        ),
         ctir::CtCallTarget::External { package_name, entry_name } => match find_module(
             state.modules,
             package_name,
         ) {
             Some(module) => match find_entry(module, entry_name) {
                 Some(function) => Option::Some((module, function)),
-                None => match find_derive_entry(module, entry_name) {
-                    Some(function) => Option::Some((module, function)),
-                    None => Option::None,
-                },
+                None => find_derive_entry(module, entry_name).map(|function| (module, function)),
             },
             None => Option::None,
         },
@@ -1825,8 +1821,7 @@ pub fn evaluate_derive_entry(
         Vec::from_array([ctir::CtValue::Meta { kind: "DeriveInput", id: 0 }]),
         function.origin,
     )?;
-    match derive::output(derive_state, value) {
-        Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(ct_error(state, module, function.origin, message)),
-    }
+    derive::output(derive_state, value).map_err(
+        |message| ct_error(state, module, function.origin, message),
+    )
 }

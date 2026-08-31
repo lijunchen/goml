@@ -37,10 +37,7 @@ pub fn lower_trait_ref(value: tast::TraitRef) -> TraitRef {
 }
 
 fn lower_optional_trait_ref(value: Option[tast::TraitRef]) -> Option[TraitRef] {
-    match value {
-        Some(value) => Option::Some(lower_trait_ref(value)),
-        None => Option::None,
-    }
+    value.map(|value| lower_trait_ref(value))
 }
 
 pub fn lower_type(value: tast::Type) -> Type {
@@ -517,10 +514,7 @@ pub fn type_to_tast(value: Type) -> tast::Type {
         Projection { for_ty, name, trait_ref } => tast::Type::Projection {
             for_ty: type_to_tast(for_ty),
             name,
-            trait_ref: match trait_ref {
-                Some(value) => Option::Some(trait_ref_to_tast(value)),
-                None => Option::None,
-            },
+            trait_ref: trait_ref.map(|value| trait_ref_to_tast(value)),
         },
         App { ty, args } => tast::Type::App { ty: type_to_tast(ty), args: tast_types(args) },
         Array { len, elem } => tast::Type::Array { len, elem: type_to_tast(elem) },
@@ -541,17 +535,11 @@ pub fn type_to_tast(value: Type) -> tast::Type {
 }
 
 pub fn builtin_projection(for_ty: Type, name: string, trait_ref: Option[TraitRef]) -> Option[Type] {
-    match tast::builtin_projection(
+    tast::builtin_projection(
         type_to_tast(for_ty),
         name,
-        match trait_ref {
-            Some(value) => Option::Some(trait_ref_to_tast(value)),
-            None => Option::None,
-        },
-    ) {
-        Some(value) => Option::Some(lower_type(value)),
-        None => Option::None,
-    }
+        trait_ref.map(|value| trait_ref_to_tast(value)),
+    ).map(|value| lower_type(value))
 }
 
 pub fn builtin_trait_satisfied(for_ty: Type, trait_ref: TraitRef) -> bool {

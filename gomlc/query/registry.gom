@@ -102,10 +102,9 @@ fn parse_sem_version(value: string) -> Option[SemVersion] {
     } else {
         match decimal_number(parts[0]) {
             Some(major) => match decimal_number(parts[1]) {
-                Some(minor) => match decimal_number(parts[2]) {
-                    Some(patch) => Option::Some(SemVersion { major, minor, patch }),
-                    None => Option::None,
-                },
+                Some(minor) => decimal_number(parts[2]).map(
+                    |patch| SemVersion { major, minor, patch },
+                ),
                 None => Option::None,
             },
             None => Option::None,
@@ -155,10 +154,7 @@ fn registry_home() -> Result[string, string] {
 }
 
 fn registry_root() -> Result[string, string] {
-    match registry_home() {
-        Ok(home) => Result::Ok(path::join(path::join(home, "cache"), "registry")),
-        Err(error) => Result::Err(error),
-    }
+    registry_home().map(|home| path::join(path::join(home, "cache"), "registry"))
 }
 
 fn registry_versions(root: string, module_name: string) -> Result[Vec[string], string] {
@@ -227,12 +223,12 @@ fn select_registry_version(root: string, requirement: DependencyRequirement) -> 
 }
 
 fn module_segments(value: string) -> Option[(string, string)] {
-    match text::find(value, "::") {
-        Some(separator) => Option::Some(
-            (value.byte_slice(0, separator), value.byte_slice(separator + 2, value.byte_len())),
+    text::find(value, "::").map(
+        |separator| (
+            value.byte_slice(0, separator),
+            value.byte_slice(separator + 2, value.byte_len()),
         ),
-        None => Option::None,
-    }
+    )
 }
 
 fn module_directory(registry: string, module_name: string, version: string) -> Result[
@@ -346,10 +342,9 @@ fn external_package_sources(
     let modules = resolve_external_modules(module_root)?;
     for module in modules {
         if let Some(directory) = external_package_directory(module, package_name) {
-            match collect_dependency_files(directory, overrides) {
-                Ok(files) => return Result::Ok(source_files_with_package(files, package_name)),
-                Err(error) => return Result::Err(error),
-            }
+            return collect_dependency_files(directory, overrides).map(
+                |files| source_files_with_package(files, package_name),
+            )
         }
     }
     Result::Err("package " + package_name + " is not provided by a resolved dependency")

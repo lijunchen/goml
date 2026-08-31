@@ -85,7 +85,7 @@ pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Resul
             }
             serializer.end_tuple()
         },
-        Value::Optional(values) => if values.len() == 0 {
+        Value::Optional(values) => if values.is_empty() {
             serializer.begin_optional(false)?;
             serializer.end_optional()
         } else if values.len() == 1 {

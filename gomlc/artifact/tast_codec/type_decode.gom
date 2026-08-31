@@ -101,10 +101,7 @@ fn artifact_decode_optional_trait_ref(context: ArtifactDecodeContext, value: wir
 ] {
     match value {
         Null => Result::Ok(Option::None),
-        other => match artifact_decode_trait_ref(context, other) {
-            Ok(value) => Result::Ok(Option::Some(value)),
-            Err(error) => Result::Err(error),
-        },
+        other => artifact_decode_trait_ref(context, other).map(|value| Option::Some(value)),
     }
 }
 
@@ -173,22 +170,16 @@ pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::Artifac
                 TYPE_DYN_TAG => artifact_decode_dyn_type(context, payload),
                 TYPE_PARAM_TAG => {
                     let object = wire::artifact_json_object(payload, "type parameter")?;
-                    match wire::artifact_json_field_string(object, "name") {
-                        Ok(value) => Result::Ok(tast::Type::Param { name: value }),
-                        Err(error) => Result::Err(error),
-                    }
+                    wire::artifact_json_field_string(object, "name").map(
+                        |value| tast::Type::Param { name: value },
+                    )
                 },
                 TYPE_TUPLE_TAG => {
                     let object = wire::artifact_json_object(payload, "tuple type")?;
                     match wire::artifact_json_required_field(object, "typs") {
-                        Ok(value) => match artifact_decode_type_array(
-                            context,
-                            value,
-                            "tuple elements",
-                        ) {
-                            Ok(value) => Result::Ok(tast::Type::Tuple { items: value }),
-                            Err(error) => Result::Err(error),
-                        },
+                        Ok(value) => artifact_decode_type_array(context, value, "tuple elements").map(
+                            |value| tast::Type::Tuple { items: value },
+                        ),
                         Err(error) => Result::Err(error),
                     }
                 },
@@ -240,28 +231,24 @@ pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::Artifac
                     Result::Ok(tast::Type::Array { len: length, elem })
                 },
                 TYPE_SLICE_TAG => {
-                    match artifact_decode_element_type(context, payload, "slice type") {
-                        Ok(value) => Result::Ok(tast::Type::Slice { elem: value }),
-                        Err(error) => Result::Err(error),
-                    }
+                    artifact_decode_element_type(context, payload, "slice type").map(
+                        |value| tast::Type::Slice { elem: value },
+                    )
                 },
                 TYPE_MUT_SLICE_TAG => {
-                    match artifact_decode_element_type(context, payload, "mutable slice type") {
-                        Ok(value) => Result::Ok(tast::Type::MutSlice { elem: value }),
-                        Err(error) => Result::Err(error),
-                    }
+                    artifact_decode_element_type(context, payload, "mutable slice type").map(
+                        |value| tast::Type::MutSlice { elem: value },
+                    )
                 },
                 TYPE_VEC_TAG => {
-                    match artifact_decode_element_type(context, payload, "vector type") {
-                        Ok(value) => Result::Ok(tast::Type::VecType { elem: value }),
-                        Err(error) => Result::Err(error),
-                    }
+                    artifact_decode_element_type(context, payload, "vector type").map(
+                        |value| tast::Type::VecType { elem: value },
+                    )
                 },
                 TYPE_REF_TAG => {
-                    match artifact_decode_element_type(context, payload, "reference type") {
-                        Ok(value) => Result::Ok(tast::Type::RefType { elem: value }),
-                        Err(error) => Result::Err(error),
-                    }
+                    artifact_decode_element_type(context, payload, "reference type").map(
+                        |value| tast::Type::RefType { elem: value },
+                    )
                 },
                 TYPE_CHANNEL_TAG => {
                     let object = wire::artifact_json_object(payload, "channel type")?;

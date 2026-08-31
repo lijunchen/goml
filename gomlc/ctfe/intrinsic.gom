@@ -113,12 +113,7 @@ pub fn call_value_intrinsic(target: ctir::CtTarget, name: string, args: Vec[ctir
     match name {
         COMPTIME_STRING_LEN_INTRINSIC | COMPTIME_STRING_BYTE_LEN_INTRINSIC => {
             let value = intrinsic_string_argument(args, 0);
-            Option::Some(
-                match value {
-                    Ok(value) => Result::Ok(intrinsic_int_value(target, value.byte_len())),
-                    Err(error) => Result::Err(error),
-                },
-            )
+            Option::Some(value.map(|value| intrinsic_int_value(target, value.byte_len())))
         },
         COMPTIME_STRING_GET_INTRINSIC => {
             let value = intrinsic_string_argument(args, 0);

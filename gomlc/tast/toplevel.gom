@@ -211,13 +211,7 @@ fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
             },
         )
     }
-    Block {
-        stmts,
-        tail: match value.tail {
-            Some(expr) => Option::Some(resolve_deferred_expr(ctx, expr)),
-            None => Option::None,
-        },
-    }
+    Block { stmts, tail: value.tail.map(|expr| resolve_deferred_expr(ctx, expr)) }
 }
 
 fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
@@ -1530,10 +1524,7 @@ fn resolve_impl_alias_type(ctx: Checker, value: Type) -> Type {
                 None => Type::Projection {
                     for_ty: resolve_impl_alias_type(ctx, for_ty),
                     name,
-                    trait_ref: match trait_ref {
-                        Some(value) => Option::Some(resolve_impl_alias_trait_ref(ctx, value)),
-                        None => Option::None,
-                    },
+                    trait_ref: trait_ref.map(|value| resolve_impl_alias_trait_ref(ctx, value)),
                 },
             }
         },

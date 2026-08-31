@@ -220,10 +220,7 @@ fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::Artif
         result.push(
             tast::dependency_environment_with_comptime(
                 environment,
-                match value.comptime {
-                    Some(value) => Option::Some(value.module),
-                    None => Option::None,
-                },
+                value.comptime.map(|value| value.module),
             ),
         )
     }

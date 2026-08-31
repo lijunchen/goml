@@ -262,10 +262,9 @@ fn read_string(decoder: Decoder) -> Result[string, string] {
         for _ in 0..length {
             values.push(read_byte(decoder)?);
         }
-        match bytes::Bytes::from_vec(values).to_string_utf8() {
-            Ok(value) => Result::Ok(value),
-            Err(_) => Result::Err(decoder_error(decoder, "invalid UTF-8 string")),
-        }
+        bytes::Bytes::from_vec(values).to_string_utf8().map_err(
+            |_| decoder_error(decoder, "invalid UTF-8 string"),
+        )
     }
 }
 

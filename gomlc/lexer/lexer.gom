@@ -436,10 +436,7 @@ fn raw_string_hash_count(source: string, start: isize) -> Option[isize] {
 }
 
 fn starts_raw_string(source: string, start: isize) -> bool {
-    match raw_string_hash_count(source, start) {
-        Some(_) => true,
-        None => false,
-    }
+    raw_string_hash_count(source, start).is_some()
 }
 
 fn scan_raw_string_end(source: string, start: isize, hash_count: isize) -> Option[isize] {
@@ -472,43 +469,19 @@ fn scan_interpolation_expr_end(source: string, start: isize) -> Option[isize] {
                 index += 1;
             }
         } else if value == b'r' && starts_raw_string(source, position) {
-            match raw_string_hash_count(source, position) {
-                Some(hash_count) => match scan_raw_string_end(source, position, hash_count) {
-                    Some(end) => {
-                        index = end;
-                    },
-                    None => return Option::None,
-                },
-                None => return Option::None,
-            }
+            let hash_count = raw_string_hash_count(source, position)?;
+            index = scan_raw_string_end(source, position, hash_count)?;
         } else if value == b'b' && position + 1 < source.byte_len()
             && byte_at(source, position + 1) == b'r'
             && starts_raw_string(source, position + 1) {
-            match raw_string_hash_count(source, position + 1) {
-                Some(hash_count) => match scan_raw_string_end(source, position + 1, hash_count) {
-                    Some(end) => {
-                        index = end;
-                    },
-                    None => return Option::None,
-                },
-                None => return Option::None,
-            }
+            let hash_count = raw_string_hash_count(source, position + 1)?;
+            index = scan_raw_string_end(source, position + 1, hash_count)?;
         } else if value == b'f' && position + 1 < source.byte_len()
             && byte_at(source, position + 1) == b'"' {
-            match scan_fstring_end(source, position) {
-                Some(end) => {
-                    index = end;
-                },
-                None => return Option::None,
-            }
+            index = scan_fstring_end(source, position)?;
         } else if value == b'b' && position + 1 < source.byte_len()
             && byte_at(source, position + 1) == b'"' {
-            match scan_byte_string_end(source, position) {
-                Some(end) => {
-                    index = end;
-                },
-                None => return Option::None,
-            }
+            index = scan_byte_string_end(source, position)?;
         } else if value == b'"' {
             let (valid, end) = scan_string(source, position);
             if valid {
@@ -518,19 +491,9 @@ fn scan_interpolation_expr_end(source: string, start: isize) -> Option[isize] {
             }
         } else if value == b'b' && position + 1 < source.byte_len()
             && byte_at(source, position + 1) == b'\'' {
-            match scan_byte_char_end(source, position) {
-                Some(end) => {
-                    index = end;
-                },
-                None => return Option::None,
-            }
+            index = scan_byte_char_end(source, position)?;
         } else if value == b'\'' {
-            match scan_char_end(source, position) {
-                Some(end) => {
-                    index = end;
-                },
-                None => return Option::None,
-            }
+            index = scan_char_end(source, position)?;
         } else if value == b'{' {
             depth += 1;
             index = position + 1;
@@ -560,22 +523,12 @@ fn scan_fstring_end(source: string, start: isize) -> Option[isize] {
         } else if value < 32 {
             return Option::None
         } else if value == b'\\' {
-            match scan_escape_end(source, position, 34) {
-                Some(next) => {
-                    index = next;
-                },
-                None => return Option::None,
-            }
+            index = scan_escape_end(source, position, 34)?;
         } else if value == b'{' {
             if position + 1 < source.byte_len() && byte_at(source, position + 1) == b'{' {
                 index = position + 2;
             } else {
-                match scan_interpolation_expr_end(source, position + 1) {
-                    Some(end) => {
-                        index = end + 1;
-                    },
-                    None => return Option::None,
-                }
+                index = scan_interpolation_expr_end(source, position + 1)? + 1;
             }
         } else if value == b'}' {
             if position + 1 < source.byte_len() && byte_at(source, position + 1) == b'}' {
@@ -694,12 +647,7 @@ fn scan_byte_string_end(source: string, start: isize) -> Option[isize] {
         } else if value < 32 || value > 126 {
             return Option::None
         } else if value == b'\\' {
-            match scan_byte_escape_end(source, index, b'"') {
-                Some(next) => {
-                    index = next;
-                },
-                None => return Option::None,
-            }
+            index = scan_byte_escape_end(source, index, b'"')?;
         } else {
             index += 1;
         }
@@ -852,10 +800,7 @@ fn scan_symbol(source: string, start: isize) -> Option[(TokenKind, isize)] {
             b'#' => Option::Some(TokenKind::Pound),
             _ => Option::None,
         };
-        match kind {
-            Some(value) => Option::Some((value, start + 1)),
-            None => Option::None,
-        }
+        kind.map(|value| (value, start + 1))
     }
 }
 
@@ -887,16 +832,13 @@ fn push_error_token(
 
 fn append_fragment_tokens(tokens: Vec[Token], source: string, start: isize, end: isize) -> () {
     for token in lex(source.byte_slice(start, end)) {
-        let error = match token.error {
-            Some(value) => Option::Some(
-                LexError {
-                    message: value.message,
-                    start: start + value.start,
-                    end: start + value.end,
-                },
-            ),
-            None => Option::None,
-        };
+        let error = token.error.map(
+            |value| LexError {
+                message: value.message,
+                start: start + value.start,
+                end: start + value.end,
+            },
+        );
         tokens.push(
             Token {
                 kind: token.kind,

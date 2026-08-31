@@ -204,14 +204,10 @@ fn artifact_binary_decode_value_at(
         0 => Result::Ok(ArtifactValue::Null),
         1 => Result::Ok(ArtifactValue::Bool(false)),
         2 => Result::Ok(ArtifactValue::Bool(true)),
-        3 => match artifact_binary_read_string(reader) {
-            Ok(value) => Result::Ok(ArtifactValue::Number(value)),
-            Err(error) => Result::Err(error),
-        },
-        4 => match artifact_binary_decode_string_id(reader, table) {
-            Ok(value) => Result::Ok(ArtifactValue::String(value)),
-            Err(error) => Result::Err(error),
-        },
+        3 => artifact_binary_read_string(reader).map(|value| ArtifactValue::Number(value)),
+        4 => artifact_binary_decode_string_id(reader, table).map(
+            |value| ArtifactValue::String(value),
+        ),
         5 => {
             let count = artifact_binary_read_u32(reader)?.to_isize();
             if count > 10000000 {

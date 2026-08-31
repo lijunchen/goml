@@ -106,14 +106,9 @@ fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
     let result = loop {
         let manifest = path::join(current, MANIFEST_FILENAME);
         if fs::is_file(manifest) {
-            match fs::read_file_structured(manifest) {
-                Ok(source) => match manifest_module_path(source) {
-                    Some(module_path) => break Option::Some(
-                        ModuleInfo { root: current, path: module_path },
-                    ),
-                    None => (),
-                },
-                Err(error) => return Result::Err(error.to_string()),
+            let source = fs::read_file_structured(manifest).map_err(|error| error.to_string())?;
+            if let Some(module_path) = manifest_module_path(source) {
+                break Option::Some(ModuleInfo { root: current, path: module_path })
             }
         }
         match path::parent(current) {
@@ -228,19 +223,12 @@ fn collect_package_files(
 ) -> Result[Vec[SourceFile], string] {
     let files: Vec[SourceFile] = Vec::new();
     let include_tests = source_path.ends_with("_test.gom");
-    match fs::read_dir(package_dir) {
-        Ok(names) => for name in names {
-            let file_path = path::join(package_dir, name);
-            if fs::is_file(file_path) && include_source_file(file_path, include_tests) {
-                match read_project_source(file_path, source_path, source, overrides) {
-                    Ok(file_source) => files.push(
-                        SourceFile { path: file_path, source: file_source, package_name: "" },
-                    ),
-                    Err(error) => return Result::Err(error),
-                }
-            }
-        },
-        Err(error) => return Result::Err(error.to_string()),
+    for name in fs::read_dir(package_dir).map_err(|error| error.to_string())? {
+        let file_path = path::join(package_dir, name);
+        if fs::is_file(file_path) && include_source_file(file_path, include_tests) {
+            let file_source = read_project_source(file_path, source_path, source, overrides)?;
+            files.push(SourceFile { path: file_path, source: file_source, package_name: "" })
+        }
     }
     for value in overrides {
         let value_parent = source_directory(value.path);
@@ -298,19 +286,12 @@ fn collect_dependency_files(package_dir: string, overrides: Vec[SourceOverride])
     string,
 ] {
     let files: Vec[SourceFile] = Vec::new();
-    match fs::read_dir(package_dir) {
-        Ok(names) => for name in names {
-            let file_path = path::join(package_dir, name);
-            if fs::is_file(file_path) && include_source_file(file_path, false) {
-                match read_project_source(file_path, "", "", overrides) {
-                    Ok(file_source) => files.push(
-                        SourceFile { path: file_path, source: file_source, package_name: "" },
-                    ),
-                    Err(error) => return Result::Err(error),
-                }
-            }
-        },
-        Err(error) => return Result::Err(error.to_string()),
+    for name in fs::read_dir(package_dir).map_err(|error| error.to_string())? {
+        let file_path = path::join(package_dir, name);
+        if fs::is_file(file_path) && include_source_file(file_path, false) {
+            let file_source = read_project_source(file_path, "", "", overrides)?;
+            files.push(SourceFile { path: file_path, source: file_source, package_name: "" })
+        }
     }
     for value in overrides {
         let value_parent = source_directory(value.path);
