@@ -2015,51 +2015,51 @@ fn std::num::integer_magnitude(
               }
           } else {
               {
-                let digit/1 =
-                  {
-                    let mtmp1 = std::num::integer_digit(current/0) in
-                    match mtmp1 {
-                      Option__isize::None => {
-                        return (false, 0, "invalid syntax")
-                      },
-                      Option__isize::Some(x1) => {
+                let mtmp1 = std::num::integer_digit(current/0) in
+                match mtmp1 {
+                  Option__isize::Some(x1) => {
+                    {
+                      let x1 = Option__isize::Some._0(mtmp1) in
+                      {
+                        let digit/1 = x1 in
                         {
-                          let x1 = Option__isize::Some._0(mtmp1) in
-                          {
-                            let digit/2 = x1 in
-                            digit/2
-                          }
+                          let _wild5 =
+                            if (digit/1 >= radix/0) {
+                                {
+                                  return (false, 0, "invalid syntax")
+                                }
+                            } else {
+                                ()
+                            } in
+                          let unsigned_digit/0 = (digit/1 as u64) in
+                          let unsigned_radix/0 = (radix/0 as u64) in
+                          let _wild6 =
+                            if (result/0 > ((limit/0 - unsigned_digit/0) / unsigned_radix/0)) {
+                                {
+                                  return (false, 0, "value out of range")
+                                }
+                            } else {
+                                ()
+                            } in
+                          let _wild7 =
+                            result/0 = ((result/0 * unsigned_radix/0) + unsigned_digit/0) in
+                          let _wild8 = saw_digit/0 = true in
+                          let _wild9 = previous_digit/0 = true in
+                          let _wild10 =
+                            {
+                              let compound_old1 = index/0 in
+                              let compound_value1 = 1 in
+                              index/0 = (compound_old1 + compound_value1)
+                            } in
                         }
-                      },
+                      }
                     }
-                  } in
-                let _wild5 =
-                  if (digit/1 >= radix/0) {
-                      {
-                        return (false, 0, "invalid syntax")
-                      }
-                  } else {
-                      ()
-                  } in
-                let unsigned_digit/0 = (digit/1 as u64) in
-                let unsigned_radix/0 = (radix/0 as u64) in
-                let _wild6 =
-                  if (result/0 > ((limit/0 - unsigned_digit/0) / unsigned_radix/0)) {
-                      {
-                        return (false, 0, "value out of range")
-                      }
-                  } else {
-                      ()
-                  } in
-                let _wild7 = result/0 = ((result/0 * unsigned_radix/0) + unsigned_digit/0) in
-                let _wild8 = saw_digit/0 = true in
-                let _wild9 = previous_digit/0 = true in
-                let _wild10 =
-                  {
-                    let compound_old1 = index/0 in
-                    let compound_value1 = 1 in
-                    index/0 = (compound_old1 + compound_value1)
-                  } in
+                  },
+                  _ =>
+                    {
+                      let _wild11 = return (false, 0, "invalid syntax") in
+                    },
+                }
               }
           }
         }
@@ -2752,7 +2752,12 @@ fn std::serde::schema_field_index(
                       } else {
                           ()
                       } in
-                    let _wild2 = index/1 = (index/1 + 1) in
+                    let _wild2 =
+                      {
+                        let compound_old0 = index/1 in
+                        let compound_value0 = 1 in
+                        index/1 = (compound_old0 + compound_value0)
+                      } in
                   }
               } in
             -1
@@ -2789,7 +2794,12 @@ fn std::serde::schema_variant_index(
                       } else {
                           ()
                       } in
-                    let _wild2 = index/0 = (index/0 + 1) in
+                    let _wild2 =
+                      {
+                        let compound_old0 = index/0 in
+                        let compound_value0 = 1 in
+                        index/0 = (compound_old0 + compound_value0)
+                      } in
                   }
               } in
             -1
@@ -2818,7 +2828,12 @@ fn std::serde::schema_variant_index(
                       } else {
                           ()
                       } in
-                    let _wild5 = index/1 = (index/1 + 1) in
+                    let _wild5 =
+                      {
+                        let compound_old1 = index/1 in
+                        let compound_value1 = 1 in
+                        index/1 = (compound_old1 + compound_value1)
+                      } in
                   }
               } in
             -1
@@ -6809,7 +6824,12 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes
               values/0,
               std::serde::Value::Uint8(@intrinsic(slice.get)(value/0, index/0))
             ) in
-          let _wild2 = index/0 = (index/0 + 1) in
+          let _wild2 =
+            {
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
+            } in
         }
     } in
   std::serde::append_serialized_value(self/0, std::serde::Value::Sequence(values/0))
@@ -16105,7 +16125,12 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
               std::json::JsonSerializer.builder(self/0),
               trait_impl#ToString#u8#to_string(@intrinsic(slice.get)(value/0, index/0))
             ) in
-          let _wild5 = index/0 = (index/0 + 1) in
+          let _wild5 =
+            {
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
+            } in
         }
     } in
   let _wild6 =

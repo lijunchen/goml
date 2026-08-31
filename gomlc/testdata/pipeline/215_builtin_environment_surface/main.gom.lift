@@ -64,17 +64,17 @@ fn std::iter::fold__A_isize__I_FnIterator[isize]__T_isize(
 ) -> isize {
   let accumulator/0 = initial/0 in
   let _wild0 =
-    loop let mtmp0 = trait_impl#Iterator#FnIterator__isize#next(iterator/0) in
-    match mtmp0 {
-      Option__isize::None => {
-        break
-      },
-      Option__isize::Some(x0) => {
-        let x0 = Option__isize::Some._0(mtmp0) in
-        let value/0 = x0 in
-        let _wild1 = accumulator/0 = combine/0(accumulator/0, value/0) in
-        ()
-      },
+    while true {
+        let mtmp0 = trait_impl#Iterator#FnIterator__isize#next(iterator/0) in
+        match mtmp0 {
+          Option__isize::Some(x0) => {
+            let x0 = Option__isize::Some._0(mtmp0) in
+            let value/0 = x0 in
+            let _wild1 = accumulator/0 = combine/0(accumulator/0, value/0) in
+            ()
+          },
+          _ => break,
+        }
     } in
   accumulator/0
 }

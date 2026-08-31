@@ -2881,47 +2881,44 @@ fn std::num::integer_magnitude(
               }
             } else {
               let mtmp1 = std::num::integer_digit(current/0) in
-              join k7(jp5: isize) -> (bool, u64, string) {
-                let t23 = (jp5 >= radix/0) in
-                join k8() -> (bool, u64, string) {
-                  let unsigned_digit/0 = (jp5 as u64) in
-                  let t24 = (limit/0 - unsigned_digit/0) in
-                  let t25 = (t24 / unsigned_radix/0) in
-                  let t26 = (result/0 > t25) in
-                  join k9() -> (bool, u64, string) {
-                    let t27 = (result/0 * unsigned_radix/0) in
-                    let t28 = (t27 + unsigned_digit/0) in
-                    let _wild1 = result/0 = t28 in
-                    let _wild2 = saw_digit/0 = true in
-                    let _wild3 = previous_digit/0 = true in
-                    let compound_old1 = index/0 in
-                    let compound_value1 = 1 in
-                    let t29 = (compound_old1 + compound_value1) in
-                    let t30 = index/0 = t29 in
-                    jump loop0()
-                  } in
-                  if t26 {
-                    let t31 = (false, 0, "value out of range") in
-                    t31
-                  } else {
-                    jump k9()
-                  }
-                } in
-                if t23 {
-                  let t32 = (false, 0, "invalid syntax") in
-                  t32
-                } else {
-                  jump k8()
-                }
-              } in
               match mtmp1 {
-                Tag_0 => {
-                  let t33 = (false, 0, "invalid syntax") in
-                  t33
-                },
                 Tag_1 => {
                   let x1 = Option__isize::Some._0(mtmp1) in
-                  jump k7(x1)
+                  let t23 = (x1 >= radix/0) in
+                  join k7() -> (bool, u64, string) {
+                    let unsigned_digit/0 = (x1 as u64) in
+                    let t24 = (limit/0 - unsigned_digit/0) in
+                    let t25 = (t24 / unsigned_radix/0) in
+                    let t26 = (result/0 > t25) in
+                    join k8() -> (bool, u64, string) {
+                      let t27 = (result/0 * unsigned_radix/0) in
+                      let t28 = (t27 + unsigned_digit/0) in
+                      let _wild1 = result/0 = t28 in
+                      let _wild2 = saw_digit/0 = true in
+                      let _wild3 = previous_digit/0 = true in
+                      let compound_old1 = index/0 in
+                      let compound_value1 = 1 in
+                      let t29 = (compound_old1 + compound_value1) in
+                      let t30 = index/0 = t29 in
+                      jump loop0()
+                    } in
+                    if t26 {
+                      let t31 = (false, 0, "value out of range") in
+                      t31
+                    } else {
+                      jump k8()
+                    }
+                  } in
+                  if t23 {
+                    let t32 = (false, 0, "invalid syntax") in
+                    t32
+                  } else {
+                    jump k7()
+                  }
+                },
+                _ => {
+                  let t33 = (false, 0, "invalid syntax") in
+                  t33
                 },
               }
             }
@@ -3562,8 +3559,10 @@ fn std::serde::schema_field_index(
               let t6 = t5.0 in
               let t7 = (t6 == x1) in
               join k1() -> isize {
-                let t8 = (index/0 + 1) in
-                let _wild0 = index/0 = t8 in
+                let compound_old0 = index/0 in
+                let compound_value0 = 1 in
+                let t8 = (compound_old0 + compound_value0) in
+                let t9 = index/0 = t8 in
                 jump loop0()
               } in
               if t7 {
@@ -3604,8 +3603,10 @@ fn std::serde::schema_variant_index(
               let t3 = std::serde::VariantSchema.index(t2) in
               let t4 = (t3 == x0) in
               join k0() -> isize {
-                let t5 = (index/0 + 1) in
-                let _wild0 = index/0 = t5 in
+                let compound_old0 = index/0 in
+                let compound_value0 = 1 in
+                let t5 = (compound_old0 + compound_value0) in
+                let t6 = index/0 = t5 in
                 jump loop0()
               } in
               if t4 {
@@ -3631,18 +3632,20 @@ fn std::serde::schema_variant_index(
       } in
       joinrec {
         join loop1() -> isize {
-          join inline_cont1(t6: isize) -> isize {
-            let t7 = (index/1 < t6) in
-            if t7 {
-              let t8 = @intrinsic(vec.get)(variants/0, index/1) in
-              let t9 = std::serde::VariantSchema.name(t8) in
-              let t10 = (t9 == x1) in
+          join inline_cont1(t7: isize) -> isize {
+            let t8 = (index/1 < t7) in
+            if t8 {
+              let t9 = @intrinsic(vec.get)(variants/0, index/1) in
+              let t10 = std::serde::VariantSchema.name(t9) in
+              let t11 = (t10 == x1) in
               join k1() -> isize {
-                let t11 = (index/1 + 1) in
-                let _wild1 = index/1 = t11 in
+                let compound_old1 = index/1 in
+                let compound_value1 = 1 in
+                let t12 = (compound_old1 + compound_value1) in
+                let t13 = index/1 = t12 in
                 jump loop1()
               } in
-              if t10 {
+              if t11 {
                 index/1
               } else {
                 jump k1()
@@ -8220,8 +8223,10 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes
               let t5 = @intrinsic(slice.get)(value/0, index/0) in
               let t6 = std::serde::Value::Uint8(t5) in
               join inline_cont3(_wild0: ()) -> Result__()__string {
-                let t7 = (index/0 + 1) in
-                let _wild1 = index/0 = t7 in
+                let compound_old0 = index/0 in
+                let compound_value0 = 1 in
+                let t7 = (compound_old0 + compound_value0) in
+                let t8 = index/0 = t7 in
                 jump loop0()
               } in
               let inline0 = @intrinsic(vec.push)(values/0, t6) in
@@ -19519,20 +19524,22 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
                       t6,
                       t8
                     ) in
-                  let t9 = (index/0 + 1) in
-                  let _wild3 = index/0 = t9 in
+                  let compound_old0 = index/0 in
+                  let compound_value0 = 1 in
+                  let t9 = (compound_old0 + compound_value0) in
+                  let t10 = index/0 = t9 in
                   jump loop0()
                 } in
                 let inline3 = __goml_builtin_uint8_to_string(t7) in
                 jump inline_cont3(inline3)
               } in
               if t5 {
-                let t10 = std::json::JsonSerializer.builder(self/0) in
+                let t11 = std::json::JsonSerializer.builder(self/0) in
                 let inline4 = ',' in
                 let inline5 = inherent#char#char#to_string(inline4) in
                 let inline6 =
                   inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                    t10,
+                    t11,
                     inline5
                   ) in
                 jump k1()
@@ -19561,8 +19568,8 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
     },
     Tag_1 => {
       let x0 = Result__()__string::Err._0(mtmp0) in
-      let t11 = Result__()__string::Err(x0) in
-      t11
+      let t12 = Result__()__string::Err(x0) in
+      t12
     },
   }
 }

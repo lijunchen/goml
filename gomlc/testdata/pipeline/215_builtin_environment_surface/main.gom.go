@@ -347,22 +347,20 @@ func main0() struct{} {
 
 func _goml_m_std_p_iter_p_fold____A__isize____I__FnIterator_l_isize_r_____T__isize(iterator__0 FnIterator__isize, initial__0 int, combine__0 func(int, int) int) int {
     var accumulator__0 int = initial__0
-    Loop_loop_expr0:
+    Loop_loop0:
     for {
         var mtmp0 Option__isize
         var inline0 func() Option__isize = iterator__0.next_fn
         var inline1 Option__isize = inline0()
         mtmp0 = inline1
         switch mtmp0._tag {
-        case 0:
-            break Loop_loop_expr0
         case 1:
             var x0 int = mtmp0._v1_0
             var t0 int = combine__0(accumulator__0, x0)
             accumulator__0 = t0
             continue
         default:
-            panic("non-exhaustive match")
+            break Loop_loop0
         }
     }
     return accumulator__0

@@ -343,17 +343,17 @@ fn std::iter::fold__A_isize__I_FnIterator[isize]__T_isize(
     accumulator/0
   } in
   joinrec {
-    join loop_expr0() -> isize {
+    join loop0() -> isize {
       join inline_cont0(mtmp0: Option__isize) -> isize {
         match mtmp0 {
-          Tag_0 => {
-            jump exit0()
-          },
           Tag_1 => {
             let x0 = Option__isize::Some._0(mtmp0) in
             let t0 = combine/0(accumulator/0, x0) in
             let _wild0 = accumulator/0 = t0 in
-            jump loop_expr0()
+            jump loop0()
+          },
+          _ => {
+            jump exit0()
           },
         }
       } in
@@ -362,7 +362,7 @@ fn std::iter::fold__A_isize__I_FnIterator[isize]__T_isize(
       jump inline_cont0(inline1)
     } in
   } in
-  jump loop_expr0()
+  jump loop0()
 }
 
 fn range(start/0: isize, end/0: isize) -> FnIterator__isize {
@@ -393,16 +393,16 @@ fn std::iter::collect__I_FnIterator[string]__T_string(iterator/0: FnIterator__st
       values/0
     } in
     joinrec {
-      join loop_expr0() -> Vec[string] {
+      join loop0() -> Vec[string] {
         join inline_cont1(mtmp0: Option__string) -> Vec[string] {
           match mtmp0 {
-            Tag_0 => {
-              jump exit0()
-            },
             Tag_1 => {
               let x0 = Option__string::Some._0(mtmp0) in
               let inline0 = @intrinsic(vec.push)(values/0, x0) in
-              jump loop_expr0()
+              jump loop0()
+            },
+            _ => {
+              jump exit0()
             },
           }
         } in
@@ -411,7 +411,7 @@ fn std::iter::collect__I_FnIterator[string]__T_string(iterator/0: FnIterator__st
         jump inline_cont1(inline2)
       } in
     } in
-    jump loop_expr0()
+    jump loop0()
   } in
   let inline3 = @intrinsic(vec.new)() in
   jump inline_cont0(inline3)
@@ -746,13 +746,13 @@ fn inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#closure_env_std
 ) -> Option__i32 {
   let iterator/0 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5.iterator_0(env0) in
   let predicate/0 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5.predicate_1(env0) in
+  join exit0() -> Option__i32 {
+    Tag_0
+  } in
   joinrec {
-    join loop_expr0() -> Option__i32 {
+    join loop0() -> Option__i32 {
       join inline_cont0(mtmp0: Option__i32) -> Option__i32 {
         match mtmp0 {
-          Tag_0 => {
-            Tag_0
-          },
           Tag_1 => {
             let x0 = Option__i32::Some._0(mtmp0) in
             let t0 = predicate/0(x0) in
@@ -760,8 +760,11 @@ fn inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#closure_env_std
               let t1 = Option__i32::Some(x0) in
               t1
             } else {
-              jump loop_expr0()
+              jump loop0()
             }
+          },
+          _ => {
+            jump exit0()
           },
         }
       } in
@@ -770,7 +773,7 @@ fn inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#closure_env_std
       jump inline_cont0(inline1)
     } in
   } in
-  jump loop_expr0()
+  jump loop0()
 }
 
 fn inherent#closure_env_std_iter_take_I_FnIterator_i32_6#closure_env_std_iter_take_I_FnIterator_i32_6#apply(

@@ -169,31 +169,33 @@ fn std::iter::filter__I_FnIterator[i32]__T_i32(
 ) -> FnIterator__i32 {
   inherent#FnIterator#FnIterator[T]#from_fn__T_i0(
     || {
-      loop {
-        {
-          let mtmp0 = trait_impl#Iterator#FnIterator__i32#next(iterator/0) in
-          match mtmp0 {
-            Option__i32::None => {
-              return Option__i32::None
-            },
-            Option__i32::Some(x0) => {
-              {
-                let x0 = Option__i32::Some._0(mtmp0) in
-                {
-                  let value/0 = x0 in
-                  if predicate/0(value/0) {
+      let _wild0 =
+        while true {
+            {
+              let mtmp0 = trait_impl#Iterator#FnIterator__i32#next(iterator/0) in
+              match mtmp0 {
+                Option__i32::Some(x0) => {
+                  {
+                    let x0 = Option__i32::Some._0(mtmp0) in
+                    {
+                      let value/0 = x0 in
                       {
-                        return Option__i32::Some(value/0)
+                        if predicate/0(value/0) {
+                            {
+                              return Option__i32::Some(value/0)
+                            }
+                        } else {
+                            ()
+                        }
                       }
-                  } else {
-                      ()
+                    }
                   }
-                }
+                },
+                _ => break,
               }
-            },
-          }
-        }
-      }
+            }
+        } in
+      Option__i32::None
     }
   )
 }
@@ -249,26 +251,24 @@ fn std::iter::fold__A_isize__I_FnIterator[isize]__T_isize(
 ) -> isize {
   let accumulator/0 = initial/0 in
   let _wild0 =
-    loop {
-      {
-        let mtmp0 = trait_impl#Iterator#FnIterator__isize#next(iterator/0) in
-        match mtmp0 {
-          Option__isize::None => {
-            break
-          },
-          Option__isize::Some(x0) => {
-            {
-              let x0 = Option__isize::Some._0(mtmp0) in
+    while true {
+        {
+          let mtmp0 = trait_impl#Iterator#FnIterator__isize#next(iterator/0) in
+          match mtmp0 {
+            Option__isize::Some(x0) => {
               {
-                let value/0 = x0 in
+                let x0 = Option__isize::Some._0(mtmp0) in
                 {
-                  let _wild1 = accumulator/0 = combine/0(accumulator/0, value/0) in
+                  let value/0 = x0 in
+                  {
+                    let _wild1 = accumulator/0 = combine/0(accumulator/0, value/0) in
+                  }
                 }
               }
-            }
-          },
+            },
+            _ => break,
+          }
         }
-      }
     } in
   accumulator/0
 }
@@ -286,24 +286,24 @@ fn std::iter::collect__I_FnIterator[string]__T_string(iterator/0: FnIterator__st
 ] {
   let values/0 = inherent#Vec#Vec[T]#new__T_string() in
   let _wild0 =
-    loop {
-      {
-        let mtmp0 = trait_impl#Iterator#FnIterator__string#next(iterator/0) in
-        match mtmp0 {
-          Option__string::None => {
-            break
-          },
-          Option__string::Some(x0) => {
-            {
-              let x0 = Option__string::Some._0(mtmp0) in
+    while true {
+        {
+          let mtmp0 = trait_impl#Iterator#FnIterator__string#next(iterator/0) in
+          match mtmp0 {
+            Option__string::Some(x0) => {
               {
-                let value/0 = x0 in
-                inherent#Vec#Vec[T]#push__T_string(values/0, value/0)
+                let x0 = Option__string::Some._0(mtmp0) in
+                {
+                  let value/0 = x0 in
+                  {
+                    inherent#Vec#Vec[T]#push__T_string(values/0, value/0)
+                  }
+                }
               }
-            }
-          },
+            },
+            _ => break,
+          }
         }
-      }
     } in
   values/0
 }

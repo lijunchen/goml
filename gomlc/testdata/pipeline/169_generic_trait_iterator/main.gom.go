@@ -386,22 +386,20 @@ func convert_to__T_i32__V_Token(value__0 Token) int32 {
 
 func _goml_m_std_p_iter_p_fold____A__isize____I__FnIterator_l_isize_r_____T__isize(iterator__0 FnIterator__isize, initial__0 int, combine__0 func(int, int) int) int {
     var accumulator__0 int = initial__0
-    Loop_loop_expr0:
+    Loop_loop0:
     for {
         var mtmp0 Option__isize
         var inline0 func() Option__isize = iterator__0.next_fn
         var inline1 Option__isize = inline0()
         mtmp0 = inline1
         switch mtmp0._tag {
-        case 0:
-            break Loop_loop_expr0
         case 1:
             var x0 int = mtmp0._v1_0
             var t0 int = combine__0(accumulator__0, x0)
             accumulator__0 = t0
             continue
         default:
-            panic("non-exhaustive match")
+            break Loop_loop0
         }
     }
     return accumulator__0
@@ -411,21 +409,19 @@ func _goml_m_std_p_iter_p_collect____I__FnIterator_l_string_r_____T__string(iter
     var values__0 *_goml_vec_string
     var inline3 *_goml_vec_string = vec_new__Vec_6string()
     values__0 = inline3
-    Loop_loop_expr0:
+    Loop_loop0:
     for {
         var mtmp0 Option__string
         var inline1 func() Option__string = iterator__0.next_fn
         var inline2 Option__string = inline1()
         mtmp0 = inline2
         switch mtmp0._tag {
-        case 0:
-            break Loop_loop_expr0
         case 1:
             var x0 string = mtmp0._v1_0
             vec_push__Vec_6string(values__0, x0)
             continue
         default:
-            panic("non-exhaustive match")
+            break Loop_loop0
         }
     }
     return values__0
@@ -638,16 +634,13 @@ func _goml_m_inherent_i_closure__en_h645d7a9bc4d79b01cd03faf046af5461_nter__4_i_
 func _goml_m_inherent_i_closure__en_h8f163b2d5b8bf9739c89e2204772b07d__i32__5_i_apply(env0 closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5) Option__i32 {
     var iterator__0 FnIterator__i32 = env0.iterator_0
     var predicate__0 func(int32) bool = env0.predicate_1
+    Loop_loop0:
     for {
         var mtmp0 Option__i32
         var inline0 func() Option__i32 = iterator__0.next_fn
         var inline1 Option__i32 = inline0()
         mtmp0 = inline1
         switch mtmp0._tag {
-        case 0:
-            return Option__i32{
-                _tag: 0,
-            }
         case 1:
             var x0 int32 = mtmp0._v1_0
             var t0 bool = predicate__0(x0)
@@ -661,8 +654,11 @@ func _goml_m_inherent_i_closure__en_h8f163b2d5b8bf9739c89e2204772b07d__i32__5_i_
                 continue
             }
         default:
-            panic("non-exhaustive match")
+            break Loop_loop0
         }
+    }
+    return Option__i32{
+        _tag: 0,
     }
 }
 
