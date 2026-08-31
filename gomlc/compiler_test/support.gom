@@ -464,10 +464,7 @@ fn module_diagnostic_projects() -> Vec[string] {
 }
 
 fn assert_module_diagnostic(source_project: string) -> () {
-    let name = match path::file_name(source_project) {
-        Some(value) => value,
-        None => "module-diagnostic",
-    };
+    let name = path::file_name(source_project).unwrap_or("module-diagnostic");
     let project = path::join(
         path::join(
             repository_root(),

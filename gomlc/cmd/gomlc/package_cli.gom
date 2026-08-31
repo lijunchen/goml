@@ -133,10 +133,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
-            let value = match inline_cli_value(argument, "--help") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--help").unwrap_or("");
             return Result::Err(
                 unexpected_value_error_with_usage(
                     value,
@@ -204,10 +201,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
-            let value = match inline_cli_value(argument, "--input") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--input").unwrap_or("");
             if value == "" {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             } else {
@@ -298,23 +292,11 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
     } else {
         Result::Ok(
             PackageCommandArgs {
-                package_name: match package_name {
-                    Some(value) => value,
-                    None => "",
-                },
-                module_name: match module_name {
-                    Some(value) => value,
-                    None => match package_name {
-                        Some(value) => value,
-                        None => "",
-                    },
-                },
+                package_name: package_name.unwrap_or(""),
+                module_name: module_name.unwrap_or_else(|| package_name.unwrap_or("")),
                 inputs: sorted_unique_package_inputs(inputs),
                 interface_paths,
-                output: match output {
-                    Some(value) => value,
-                    None => "",
-                },
+                output: output.unwrap_or(""),
                 world: extracted.world,
             },
         )
@@ -338,10 +320,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
-            let value = match inline_cli_value(argument, "--help") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--help").unwrap_or("");
             return Result::Err(
                 unexpected_value_error_with_usage(
                     value,
@@ -372,10 +351,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
-            let value = match inline_cli_value(argument, "--input") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--input").unwrap_or("");
             if value == "" {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             } else {
@@ -445,14 +421,8 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
         Result::Ok(
             LinkCommandArgs {
                 inputs,
-                entry: match entry {
-                    Some(value) => value,
-                    None => "",
-                },
-                output: match output {
-                    Some(value) => value,
-                    None => "",
-                },
+                entry: entry.unwrap_or(""),
+                output: output.unwrap_or(""),
                 world: extracted.world,
             },
         )
@@ -477,10 +447,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
-            let value = match inline_cli_value(argument, "--help") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--help").unwrap_or("");
             return Result::Err(
                 unexpected_value_error_with_usage(
                     value,
@@ -511,10 +478,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
-            let value = match inline_cli_value(argument, "--input") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--input").unwrap_or("");
             if value == "" {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             } else {
@@ -602,14 +566,8 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
             TestLinkCommandArgs {
                 inputs,
                 packages,
-                output: match output {
-                    Some(value) => value,
-                    None => "",
-                },
-                manifest: match manifest {
-                    Some(value) => value,
-                    None => "",
-                },
+                output: output.unwrap_or(""),
+                manifest: manifest.unwrap_or(""),
                 world: extracted.world,
             },
         )

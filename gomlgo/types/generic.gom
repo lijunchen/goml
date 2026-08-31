@@ -230,9 +230,8 @@ fn substitute_inner(
     arguments: Vec[TypeId],
     entries: SubstitutionEntries,
 ) -> TypeId {
-    match substituted_entry(entries, value) {
-        Some(value) => return value,
-        None => {},
+    if let Some(value) = substituted_entry(entries, value) {
+        return value
     }
     match type_data(world, value) {
         TypeData { id: _, kind: TypeKind::TypeParam { object, constraint: _, index: _ } } => substitution_argument(
@@ -736,9 +735,8 @@ pub fn refresh_named_instances(world: World, origin: TypeId) -> () {
         },
         _ => return,
     };
-    let instances = match world.named_instances[origin_data.0.value] {
-        Some(value) => value,
-        None => return,
+    let Some(instances) = world.named_instances[origin_data.0.value] else {
+        return;
     };
     for instance in instances {
         if instance.value >= 0 && instance.value < world.types.len() {

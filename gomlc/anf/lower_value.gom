@@ -24,10 +24,7 @@ fn match_imm(value: lift::Expr) -> Imm {
             Some(tag) => Imm::Tag { index: tag, ty },
             None => unit_imm(),
         },
-        other => match try_imm(other) {
-            Some(value) => value,
-            None => unit_imm(),
-        },
+        other => try_imm(other).unwrap_or_else(|| unit_imm()),
     }
 }
 

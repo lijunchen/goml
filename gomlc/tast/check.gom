@@ -64,10 +64,7 @@ fn checked_char_literal(ctx: Checker, value: string) -> char {
         Some(character) => character,
         None => {
             push_diagnostic(ctx, "invalid char literal");
-            match char_from_u32(0) {
-                Some(character) => character,
-                None => ' ',
-            }
+            char_from_u32(0).unwrap_or(' ')
         },
     }
 }
@@ -232,14 +229,8 @@ fn closer_float_literal(
     right: string,
     right_coefficient: string,
 ) -> string {
-    let left_value = match num::parse_float64_structured(left) {
-        Ok(value) => value,
-        Err(_) => 0.0,
-    };
-    let right_value = match num::parse_float64_structured(right) {
-        Ok(value) => value,
-        Err(_) => 0.0,
-    };
+    let left_value = num::parse_float64_structured(left).unwrap_or(0.0);
+    let right_value = num::parse_float64_structured(right).unwrap_or(0.0);
     let left_distance = absolute_float64(left_value - expected);
     let right_distance = absolute_float64(right_value - expected);
     if left_distance < right_distance {
@@ -300,10 +291,7 @@ fn try_normalized_float32_literal(value: string) -> Option[string] {
 }
 
 fn normalized_float32_literal(value: string) -> string {
-    match try_normalized_float32_literal(value) {
-        Some(normalized) => normalized,
-        None => value,
-    }
+    try_normalized_float32_literal(value).unwrap_or(value)
 }
 
 fn try_normalized_float64_literal(value: string) -> Option[string] {
@@ -314,10 +302,7 @@ fn try_normalized_float64_literal(value: string) -> Option[string] {
 }
 
 fn normalized_float64_literal(value: string) -> string {
-    match try_normalized_float64_literal(value) {
-        Some(normalized) => normalized,
-        None => value,
-    }
+    try_normalized_float64_literal(value).unwrap_or(value)
 }
 
 fn integer_magnitude(value: string) -> string {
@@ -1689,10 +1674,7 @@ fn check_closure_expr(
         },
         None => (Vec::new(), Option::None),
     };
-    let ret_ty = match expected_parts.1 {
-        Some(ty) => ty,
-        None => fresh_type(ctx.counter, VarKind::Any),
-    };
+    let ret_ty = expected_parts.1.unwrap_or_else(|| fresh_type(ctx.counter, VarKind::Any));
     let closure_ctx = closure_context(ctx, ret_ty);
     let typed_params: Vec[ClosureParam] = Vec::new();
     let param_types: Vec[Type] = Vec::new();
@@ -1716,10 +1698,7 @@ fn check_closure_expr(
                 }
                 declared
             },
-            None => match contextual {
-                Some(ty) => ty,
-                None => fresh_type(ctx.counter, VarKind::Any),
-            },
+            None => contextual.unwrap_or_else(|| fresh_type(ctx.counter, VarKind::Any)),
         };
         let previous_span = closure_ctx.current_span.get();
         closure_ctx.current_span.set(Option::Some(param.span));
@@ -3214,10 +3193,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
     } else {
         scrutinee
     };
-    let result_ty = match expected {
-        Some(ty) => ty,
-        None => fresh_type(ctx.counter, VarKind::Any),
-    };
+    let result_ty = expected.unwrap_or_else(|| fresh_type(ctx.counter, VarKind::Any));
     let typed_arms: Vec[Arm] = Vec::new();
     let pattern_spans: Vec[ast::Span] = Vec::new();
     let invalid_pattern_arms: Vec[bool] = Vec::new();
@@ -3321,10 +3297,7 @@ fn check_select_expr(
     arms: Vec[hir::SelectArm],
     expected: Option[Type],
 ) -> Expr {
-    let result_ty = match expected {
-        Some(ty) => ty,
-        None => fresh_type(ctx.counter, VarKind::Any),
-    };
+    let result_ty = expected.unwrap_or_else(|| fresh_type(ctx.counter, VarKind::Any));
     let typed_arms: Vec[SelectArm] = Vec::with_capacity(arms.len());
     for arm in arms {
         match arm {
@@ -3392,10 +3365,7 @@ fn check_if_expr(
     else_branch: hir::Expr,
     expected: Option[Type],
 ) -> Expr {
-    let result_ty = match expected {
-        Some(ty) => ty,
-        None => fresh_type(ctx.counter, VarKind::Any),
-    };
+    let result_ty = expected.unwrap_or_else(|| fresh_type(ctx.counter, VarKind::Any));
     let cond = check_expr(ctx, cond, Option::Some(Type::Bool));
     let then_branch = check_expr(ctx, then_branch, Option::Some(result_ty));
     let else_branch = check_expr(ctx, else_branch, Option::Some(result_ty));
@@ -4346,10 +4316,9 @@ fn check_loop_expr(
     body_source: hir::Expr,
     expected: Option[Type],
 ) -> Expr {
-    let result_ty = match propagated_expected(expected) {
-        Some(ty) => ty,
-        None => fresh_type(ctx.counter, VarKind::Any),
-    };
+    let result_ty = propagated_expected(expected).unwrap_or_else(
+        || fresh_type(ctx.counter, VarKind::Any),
+    );
     let loop_result = LoopResult {
         label,
         result_ty: Option::Some(result_ty),
@@ -4415,10 +4384,7 @@ fn check_break_expr(ctx: Checker, label: Option[string], source: Option[hir::Exp
         let value = source.map(|expr| check_expr(ctx, expr, Option::None));
         Expr::Break { target: 0, value, ty: Type::Never }
     } else {
-        let target = match target {
-            Some(value) => value,
-            None => 0,
-        };
+        let target = target.unwrap_or(0);
         let current = ctx.loop_results[ctx.loop_results.len() - 1 - target];
         current.has_break.set(true);
         let value = match current.result_ty {
@@ -4525,13 +4491,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             Break { label, value } => check_break_expr(ctx, label, value),
             Continue { label } => {
                 check_loop_control(ctx, false);
-                Expr::Continue {
-                    target: match loop_target(ctx, label) {
-                        Some(value) => value,
-                        None => 0,
-                    },
-                    ty: Type::Never,
-                }
+                Expr::Continue { target: loop_target(ctx, label).unwrap_or(0), ty: Type::Never }
             },
             Return { expr: value } => {
                 let typed = match value {
@@ -4675,14 +4635,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             };
             let result = check_name_ref_inner(ctx, reference);
             if unresolved_local && contains_unresolved_inference(ctx, expr_type(result)) {
-                push_inference_diagnostic_at(
-                    ctx,
-                    match ctx.current_span.get() {
-                        Some(span) => span,
-                        None => value_span,
-                    },
-                    0,
-                )
+                push_inference_diagnostic_at(ctx, ctx.current_span.get().unwrap_or(value_span), 0)
             }
             if unresolved_other && ctx.suppress_unresolved_ref_diagnostic.get() == 0
                 && contains_unresolved_inference(ctx, expr_type(result)) {
@@ -5462,10 +5415,9 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
             },
             Constr { head, args } => {
                 if args.is_empty() {
-                    match check_qualified_constant_pattern(ctx, head, expected) {
-                        Some(value) => value,
-                        None => check_constructor_pattern(ctx, head, args, expected),
-                    }
+                    check_qualified_constant_pattern(ctx, head, expected).unwrap_or_else(
+                        || check_constructor_pattern(ctx, head, args, expected),
+                    )
                 } else {
                     check_constructor_pattern(ctx, head, args, expected)
                 }

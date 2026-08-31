@@ -85,30 +85,27 @@ pub fn artifact_json_field_string(values: Vec[(string, ArtifactValue)], name: st
     string,
     string,
 ] {
-    match artifact_json_required_field(values, name) {
-        Ok(value) => artifact_json_string_value(value, "string field " + name),
-        Err(error) => Result::Err(error),
-    }
+    artifact_json_required_field(values, name).and_then(
+        |value| artifact_json_string_value(value, "string field " + name),
+    )
 }
 
 pub fn artifact_json_field_array(values: Vec[(string, ArtifactValue)], name: string) -> Result[
     Vec[ArtifactValue],
     string,
 ] {
-    match artifact_json_required_field(values, name) {
-        Ok(value) => artifact_json_array(value, "array field " + name),
-        Err(error) => Result::Err(error),
-    }
+    artifact_json_required_field(values, name).and_then(
+        |value| artifact_json_array(value, "array field " + name),
+    )
 }
 
 pub fn artifact_json_field_object(values: Vec[(string, ArtifactValue)], name: string) -> Result[
     Vec[(string, ArtifactValue)],
     string,
 ] {
-    match artifact_json_required_field(values, name) {
-        Ok(value) => artifact_json_object(value, "object field " + name),
-        Err(error) => Result::Err(error),
-    }
+    artifact_json_required_field(values, name).and_then(
+        |value| artifact_json_object(value, "object field " + name),
+    )
 }
 
 pub fn artifact_parse_nonnegative_int(value: string) -> Result[isize, string] {

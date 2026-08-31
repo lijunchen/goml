@@ -326,16 +326,14 @@ fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedCon
 
 fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[ResolvedConstructor] {
     match value {
-        Resolved { enum_def: id, variant_index: variant } => match find_enum_by_def(ctx, id) {
-            Some(info) => resolve_user_constructor(ctx, info, variant),
-            None => Option::None,
-        },
+        Resolved { enum_def: id, variant_index: variant } => find_enum_by_def(ctx, id).and_then(
+            |info| resolve_user_constructor(ctx, info, variant),
+        ),
         Unresolved(name) => match resolve_builtin_constructor(ctx, name) {
             Some(value) => Option::Some(value),
-            None => match split_constructor_name(name) {
-                Some(parts) => resolve_named_constructor(ctx, parts.0, parts.1),
-                None => Option::None,
-            },
+            None => split_constructor_name(name).and_then(
+                |parts| resolve_named_constructor(ctx, parts.0, parts.1),
+            ),
         },
     }
 }
@@ -2855,10 +2853,9 @@ fn resolve_trait_reference_method(
                         name,
                         params,
                         substitute_type(method.ret_ty, substitutions),
-                        match find_substitution(substitutions, "Self") {
-                            Some(ty) => ty,
-                            None => fresh_type(ctx.counter, VarKind::Any),
-                        },
+                        find_substitution(substitutions, "Self").unwrap_or_else(
+                            || fresh_type(ctx.counter, VarKind::Any),
+                        ),
                         method.has_receiver,
                     );
                     let predicates = expand_implied_predicates(

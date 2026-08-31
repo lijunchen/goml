@@ -413,10 +413,9 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                         predicates: lower_where_clause(ctx, node),
                         params,
                         ret_ty: value,
-                        body: match first_child(node, cst::NodeKind::BLOCK) {
-                            Some(block) => lower_block(ctx, block),
-                            None => Option::None,
-                        },
+                        body: first_child(node, cst::NodeKind::BLOCK).and_then(
+                            |block| lower_block(ctx, block),
+                        ),
                     },
                 ),
                 None => {

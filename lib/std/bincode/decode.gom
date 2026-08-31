@@ -318,10 +318,9 @@ fn read_float(decoder: Decoder, width: isize) -> Result[serde::Value, string] {
 
 fn read_char(decoder: Decoder) -> Result[serde::Value, string] {
     let value = read_unsigned(decoder, 32)?;
-    match char_from_u32(value.to_u32()) {
-        Some(value) => Result::Ok(serde::Value::Char(value)),
-        None => Result::Err(decoder_error(decoder, "invalid Unicode scalar value")),
-    }
+    char_from_u32(value.to_u32()).map(|value| serde::Value::Char(value)).ok_or(
+        decoder_error(decoder, "invalid Unicode scalar value"),
+    )
 }
 
 fn read_sequence(decoder: Decoder, schemas: Vec[serde::Schema]) -> Result[serde::Value, string] {
@@ -581,10 +580,7 @@ impl serde::Deserializer for Decoder {
     fn deserialize_char(self: Decoder) -> Result[char, string] {
         claim_bincode_input(self)?;
         let value = read_unsigned(self, 32)?;
-        match char_from_u32(value.to_u32()) {
-            Some(value) => Result::Ok(value),
-            None => Result::Err(decoder_error(self, "invalid Unicode scalar value")),
-        }
+        char_from_u32(value.to_u32()).ok_or(decoder_error(self, "invalid Unicode scalar value"))
     }
 
     fn deserialize_bytes(self: Decoder) -> Result[Vec[byte], string] {

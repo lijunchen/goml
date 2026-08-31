@@ -90,9 +90,8 @@ fn collect_packages(
         return Result::Ok(())
     }
     match directory_import_path(root, directory) {
-        Some(import_path) => match loader::selected_sources(config, import_path) {
-            Ok(_) => packages.push(import_path),
-            Err(_) => {},
+        Some(import_path) => if let Ok(_) = loader::selected_sources(config, import_path) {
+            packages.push(import_path)
         },
         None => {},
     }

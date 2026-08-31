@@ -612,10 +612,7 @@ fn source_compiler_for_ast(value: ast::LowerResult) -> SourceCompiler {
 }
 
 fn select_source_compiler(compiler: Option[SourceCompiler], value: ast::LowerResult) -> SourceCompiler {
-    match compiler {
-        Some(value) => value,
-        None => source_compiler_for_ast(value),
-    }
+    compiler.unwrap_or_else(|| source_compiler_for_ast(value))
 }
 
 fn builtin_artifact_json() -> string {
@@ -869,10 +866,7 @@ fn diagnostic_source(source_path: string, fallback_path: string, fallback_source
     if source_path == fallback_path {
         fallback_source
     } else {
-        match fs::read_file_structured(source_path) {
-            Ok(source) => source,
-            Err(_) => "",
-        }
+        fs::read_file_structured(source_path).unwrap_or("")
     }
 }
 
@@ -1697,10 +1691,7 @@ fn write_stdout(data: bytes::Bytes) -> () {
 }
 
 fn bytes_to_string(data: bytes::Bytes) -> string {
-    match data.to_string_utf8() {
-        Ok(value) => value,
-        Err(error) => fail_string(error.to_string()),
-    }
+    data.to_string_utf8().unwrap_or_else(|error| fail_string(error.to_string()))
 }
 
 fn fail_string(message: string) -> string {
@@ -1772,10 +1763,7 @@ fn execute_with_go_run(directory: string, go_file: string) -> Result[process::Ou
 
 fn execute_go_source(source_path: string, source: string) -> () {
     let go_file = temp_go_path(source_path, source);
-    let directory = match path::parent(go_file) {
-        Some(value) => value,
-        None => temp_root(),
-    };
+    let directory = path::parent(go_file).unwrap_or_else(|| temp_root());
     let result = match fs::write_file_structured(go_file, source) {
         Ok(()) => execute_with_go_run(directory, go_file),
         Err(error) => Result::Err(error.to_string()),

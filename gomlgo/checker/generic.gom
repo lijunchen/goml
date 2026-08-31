@@ -669,12 +669,9 @@ fn verify_type_arguments(
                             + constraint_text
                             + if detail != "" {
                                 " " + detail
-                            } else if missing_tilde.is_some() {
+                            } else if let Some(missing_tilde) = missing_tilde {
                                 " (possibly missing ~ for "
-                                    + diagnostic_type_string(
-                                        state,
-                                        missing_tilde.unwrap_or(state.world.invalid),
-                                    )
+                                    + diagnostic_type_string(state, missing_tilde)
                                     + " in "
                                     + diagnostic_type_string(state, constraint)
                                     + ")"
@@ -788,9 +785,8 @@ fn check_deferred_instances(state: CheckState) -> () {
                     type_args: _,
                     methods: _,
                 },
-            }) => match go_types::get_object(state.world, object) {
-                Some(object) => go_types::refresh_named_instances(state.world, object.type_id),
-                None => {},
+            }) => if let Some(object) = go_types::get_object(state.world, object) {
+                go_types::refresh_named_instances(state.world, object.type_id)
             },
             _ => {},
         }
@@ -966,9 +962,8 @@ fn validate_union_term(
                     + " is an interface)",
                 false,
             );
-            match state.diagnostics.pop() {
-                Some(value) => state.deferred_union_diagnostics.push(value),
-                None => {},
+            if let Some(value) = state.diagnostics.pop() {
+                state.deferred_union_diagnostics.push(value)
             }
             false
         } else if !go_types::identical(
@@ -986,9 +981,8 @@ fn validate_union_term(
                     + ")",
                 false,
             );
-            match state.diagnostics.pop() {
-                Some(value) => state.deferred_union_diagnostics.push(value),
-                None => {},
+            if let Some(value) = state.diagnostics.pop() {
+                state.deferred_union_diagnostics.push(value)
             }
             false
         } else {
@@ -1003,9 +997,8 @@ fn validate_union_term(
                 "cannot use " + rendered + " in union (" + rendered + " contains methods)",
                 false,
             );
-            match state.diagnostics.pop() {
-                Some(value) => state.deferred_union_diagnostics.push(value),
-                None => {},
+            if let Some(value) = state.diagnostics.pop() {
+                state.deferred_union_diagnostics.push(value)
             }
             false
         } else if go_types::interface_requires_comparable(state.world, term.type_id) {
@@ -1021,9 +1014,8 @@ fn validate_union_term(
                     },
                 false,
             );
-            match state.diagnostics.pop() {
-                Some(value) => state.deferred_union_diagnostics.push(value),
-                None => {},
+            if let Some(value) = state.diagnostics.pop() {
+                state.deferred_union_diagnostics.push(value)
             }
             false
         } else {
@@ -1110,9 +1102,8 @@ fn resolve_union_type(
                         + union_term_string(state, left_term),
                     true,
                 );
-                match state.diagnostics.pop() {
-                    Some(value) => state.deferred_union_diagnostics.push(value),
-                    None => {},
+                if let Some(value) = state.diagnostics.pop() {
+                    state.deferred_union_diagnostics.push(value)
                 }
                 overlap = true;
             }
@@ -1300,13 +1291,11 @@ fn merge_inference_channels(
     left_type: go_types::TypeId,
     right_type: go_types::TypeId,
 ) -> go_types::TypeId {
-    let left = match inference_channel(state, left_type) {
-        Some(value) => value,
-        None => return state.world.invalid,
+    let Some(left) = inference_channel(state, left_type) else {
+        return state.world.invalid;
     };
-    let right = match inference_channel(state, right_type) {
-        Some(value) => value,
-        None => return state.world.invalid,
+    let Some(right) = inference_channel(state, right_type) else {
+        return state.world.invalid;
     };
     if !go_types::identical(state.world, left.element, right.element) || (left.named && right.named) {
         state.world.invalid
@@ -1465,9 +1454,8 @@ fn inference_mismatch(
     for binding in bindings {
         if binding.type_id.is_none()
             && type_contains_parameter(state, pair.formal, binding.object, Vec::new()) {
-            match go_types::get_object(state.world, binding.object) {
-                Some(parameter) => uninferred_names.push(parameter.name),
-                None => {},
+            if let Some(parameter) = go_types::get_object(state.world, binding.object) {
+                uninferred_names.push(parameter.name)
             }
         }
     }
@@ -1798,9 +1786,8 @@ fn infer_from_interface_methods(
     visited: Vec[InferenceTypePair],
 ) -> bool {
     for required in go_types::interface_methods(state.world, formal) {
-        let required_object = match go_types::get_object(state.world, required) {
-            Some(value) => value,
-            None => return false,
+        let Some(required_object) = go_types::get_object(state.world, required) else {
+            return false;
         };
         let selection = match go_types::lookup_field_or_method(
             state.world,
@@ -1825,9 +1812,8 @@ fn infer_from_interface_methods(
                 }
             },
         };
-        let actual_object = match go_types::get_object(state.world, selection.object) {
-            Some(value) => value,
-            None => return false,
+        let Some(actual_object) = go_types::get_object(state.world, selection.object) else {
+            return false;
         };
         if !infer_from_types_inner(
             state,
@@ -2812,12 +2798,9 @@ fn infer_signature(
                                 + constraint_text
                                 + if detail != "" {
                                     " " + detail
-                                } else if missing_tilde.is_some() {
+                                } else if let Some(missing_tilde) = missing_tilde {
                                     " (possibly missing ~ for "
-                                        + diagnostic_type_string(
-                                            state,
-                                            missing_tilde.unwrap_or(state.world.invalid),
-                                        )
+                                        + diagnostic_type_string(state, missing_tilde)
                                         + " in "
                                         + diagnostic_type_string(state, constraint)
                                         + ")"

@@ -84,9 +84,8 @@ fn available_import_name(state: CheckState, path: string) -> Option[string] {
     } else if path == "C" && state.config.fake_import_c {
         return Option::Some("C")
     }
-    match package_by_path(state, path) {
-        Some(package_id) => return Option::Some(state.world.packages[package_id.value].name),
-        None => {},
+    if let Some(package_id) = package_by_path(state, path) {
+        return Option::Some(state.world.packages[package_id.value].name)
     }
     for available in state.config.available_imports {
         if available.path == path {
@@ -106,17 +105,15 @@ fn import_error_message(state: CheckState, path: string) -> string {
 }
 
 fn imported_package(state: CheckState, path: string, name: string) -> go_types::PackageId {
-    match package_by_path(state, path) {
-        Some(value) => value,
-        None => go_types::add_package(state.world, path, name, state.world.universe, true),
-    }
+    package_by_path(state, path).unwrap_or_else(
+        || go_types::add_package(state.world, path, name, state.world.universe, true),
+    )
 }
 
 fn incomplete_imported_package(state: CheckState, path: string, name: string) -> go_types::PackageId {
-    match package_by_path(state, path) {
-        Some(value) => value,
-        None => go_types::add_package(state.world, path, name, state.world.universe, false),
-    }
+    package_by_path(state, path).unwrap_or_else(
+        || go_types::add_package(state.world, path, name, state.world.universe, false),
+    )
 }
 
 fn ignored_import(state: CheckState, path: string) -> bool {

@@ -68,10 +68,7 @@ pub fn canonical(names: Names, value: string) -> string {
         None => match name_shape(value) {
             Some(shape) => {
                 let key = shape.separator + shape.prefix;
-                let mut index = match names.counters[key] {
-                    Some(index) => index,
-                    None => 0,
-                };
+                let mut index = names.counters[key].unwrap_or(0);
                 let mut replacement = f"{shape.prefix}{shape.separator}{index}";
                 while names.reserved.contains(replacement) {
                     index += 1;

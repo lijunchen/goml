@@ -212,10 +212,9 @@ fn resolve_derive_export_target(
         if targets.len() > 1 {
             return Result::Err("ambiguous derive re-export `" + display_name + "`")
         } else if targets.is_empty() {
-            return match split_derive_export_target(current) {
-                Some(value) => Result::Ok(value),
-                None => Result::Err("invalid derive export target `" + current + "`"),
-            }
+            return split_derive_export_target(current).ok_or(
+                "invalid derive export target `" + current + "`",
+            )
         } else {
             current = targets[0];
         }
@@ -273,12 +272,9 @@ fn resolve_qualified_derive(file: ast::File, environment: DeriveEnvironment, tar
             "custom derive target `" + target + "` must use an imported package alias",
         )
     }
-    let package_name = match package_alias_target(file, segments[0]) {
-        Some(value) => value,
-        None => return Result::Err(
-            "derive target package `" + segments[0] + "` is not imported in this file",
-        ),
-    };
+    let package_name = package_alias_target(file, segments[0]).ok_or(
+        "derive target package `" + segments[0] + "` is not imported in this file",
+    )?;
     resolve_package_derive(environment, package_name, segments[1], target)
 }
 
@@ -326,10 +322,7 @@ fn derive_imports(file: ast::File, environment: DeriveEnvironment) -> Vec[Import
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
         if !use_decl.items.is_empty() {
-            let base = match expand_use_alias(aliases, target) {
-                Some(value) => value,
-                None => target,
-            };
+            let base = expand_use_alias(aliases, target).unwrap_or(target);
             let package_name = join_segments(base);
             for item in use_decl.items {
                 append_imported_derives(
@@ -337,10 +330,7 @@ fn derive_imports(file: ast::File, environment: DeriveEnvironment) -> Vec[Import
                     environment,
                     package_name,
                     item.name,
-                    match item.alias {
-                        Some(value) => value,
-                        None => item.name,
-                    },
+                    item.alias.unwrap_or(item.name),
                 )
             }
         } else {
@@ -356,10 +346,7 @@ fn derive_imports(file: ast::File, environment: DeriveEnvironment) -> Vec[Import
                         environment,
                         join_segments(package_segments),
                         export_name,
-                        match use_decl.alias {
-                            Some(value) => value,
-                            None => export_name,
-                        },
+                        use_decl.alias.unwrap_or(export_name),
                     )
                 }
             }

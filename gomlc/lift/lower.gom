@@ -33,15 +33,9 @@ pub fn lower_checked_with_counter(value: mono::File, counter: Ref[isize]) -> Res
 }
 
 pub fn lower(value: mono::File) -> File {
-    match lower_checked(value) {
-        Ok(value) => value,
-        Err(_) => empty_file(),
-    }
+    lower_checked(value).unwrap_or_else(|_| empty_file())
 }
 
 pub fn lower_with_counter(value: mono::File, counter: Ref[isize]) -> File {
-    match lower_checked_with_counter(value, counter) {
-        Ok(value) => value,
-        Err(_) => empty_file(),
-    }
+    lower_checked_with_counter(value, counter).unwrap_or_else(|_| empty_file())
 }

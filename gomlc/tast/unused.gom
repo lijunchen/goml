@@ -245,9 +245,8 @@ fn warn_unused_functions(values: Vec[hir::File], diagnostics: Vec[Diagnostic]) -
         push_reachable_unused_function(functions, reachable, pending, root)
     }
     while !pending.is_empty() {
-        let current = match pending.pop_front() {
-            Some(value) => value,
-            None => break,
+        let Some(current) = pending.pop_front() else {
+            break;
         };
         if let Some(function) = package_function_by_def(functions, current) {
             let references: Vec[hir::DefId] = Vec::new();

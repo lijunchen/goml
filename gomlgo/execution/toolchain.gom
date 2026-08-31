@@ -55,27 +55,16 @@ fn successful_output(output: process::Output, operation: string) -> Result[strin
 }
 
 fn required_json_string(value: json::Value, name: string) -> Result[string, string] {
-    match json::field(value, name) {
-        Some(field) => match json::as_string(field) {
-            Some(result) => Result::Ok(result),
-            None => Result::Err("go tool JSON field " + name + " must be a string"),
-        },
-        None => Result::Err("go tool JSON omitted " + name),
-    }
+    let field = json::field(value, name).ok_or("go tool JSON omitted " + name)?;
+    json::as_string(field).ok_or("go tool JSON field " + name + " must be a string")
 }
 
 fn optional_json_string(value: json::Value, name: string) -> string {
-    match json::field(value, name) {
-        Some(field) => json::as_string(field).unwrap_or(""),
-        None => "",
-    }
+    json::field(value, name).and_then(|field| json::as_string(field)).unwrap_or("")
 }
 
 fn optional_json_bool(value: json::Value, name: string) -> bool {
-    match json::field(value, name) {
-        Some(field) => json::as_bool(field).unwrap_or(false),
-        None => false,
-    }
+    json::field(value, name).and_then(|field| json::as_bool(field)).unwrap_or(false)
 }
 
 fn optional_json_strings(value: json::Value, name: string) -> Result[Vec[string], string] {
@@ -87,10 +76,10 @@ fn optional_json_strings(value: json::Value, name: string) -> Result[Vec[string]
     };
     let result: Vec[string] = Vec::with_capacity(items.len());
     for item in items {
-        match json::as_string(item) {
-            Some(value) => result.push(value),
-            None => return Result::Err("go tool JSON field " + name + " must contain strings"),
-        }
+        let value = json::as_string(item).ok_or(
+            "go tool JSON field " + name + " must contain strings",
+        )?;
+        result.push(value)
     }
     Result::Ok(result)
 }
@@ -176,10 +165,7 @@ pub fn discover_toolchain(go_binary: string) -> Result[GoToolchain, string] {
 }
 
 fn package_module_field(value: json::Value, name: string) -> Option[json::Value] {
-    match json::field(value, "Module") {
-        Some(module) => json::field(module, name),
-        None => Option::None,
-    }
+    json::field(value, "Module").and_then(|module| json::field(module, name))
 }
 
 fn package_module_string(value: json::Value, name: string) -> string {

@@ -854,10 +854,7 @@ fn sequential_super_operation(
                             } else {
                                 32
                             },
-                            place: match jump {
-                                Some(target) => target,
-                                None => left_place.value,
-                            },
+                            place: jump.unwrap_or(left_place.value),
                             source: left_local.value,
                             target: left.value,
                         }
@@ -2089,9 +2086,8 @@ fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunc
                     || base.value >= registers.len() {
                     return FastFunction::Unavailable
                 }
-                let operand = match fast_operand(registers[base.value]) {
-                    Some(value) => value,
-                    None => return FastFunction::Unavailable,
+                let Some(operand) = fast_operand(registers[base.value]) else {
+                    return FastFunction::Unavailable;
                 };
                 registers[target.value] = FastExpression::Operand(
                     extend_fast_operand(operand, index, function.register_types[target.value]),
@@ -2105,13 +2101,11 @@ fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunc
                     || !fast_binary_operation(op) {
                     return FastFunction::Unavailable
                 }
-                let left = match fast_operand(registers[left.value]) {
-                    Some(value) => value,
-                    None => return FastFunction::Unavailable,
+                let Some(left) = fast_operand(registers[left.value]) else {
+                    return FastFunction::Unavailable;
                 };
-                let right = match fast_operand(registers[right.value]) {
-                    Some(value) => value,
-                    None => return FastFunction::Unavailable,
+                let Some(right) = fast_operand(registers[right.value]) else {
+                    return FastFunction::Unavailable;
                 };
                 if !fast_operand_type(world, left.type_id)
                     || !fast_operand_type(world, right.type_id) {
@@ -2558,10 +2552,7 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
                 )
             }
         }
-        match frame.registers[id.value] {
-            Some(value) => Result::Ok(value),
-            None => Result::Err(f"register {id.value} is undefined in {frame.name}"),
-        }
+        frame.registers[id.value].ok_or(f"register {id.value} is undefined in {frame.name}")
     }
 }
 
@@ -3184,9 +3175,8 @@ fn execute_fast_static_call(
             if !fast_steps_available(state, steps) {
                 return Option::None
             }
-            let value = match fast_call_operand(state, frame, arguments, operand) {
-                Ok(value) => value,
-                Err(_) => return Option::None,
+            let Ok(value) = fast_call_operand(state, frame, arguments, operand) else {
+                return Option::None;
             };
             consume_fast_steps(state, steps);
             Option::Some(set_register(frame, results[0], value))
@@ -3195,13 +3185,11 @@ fn execute_fast_static_call(
             if !fast_steps_available(state, steps) {
                 return Option::None
             }
-            let left = match fast_borrow_call_operand(state, frame, arguments, left) {
-                Ok(value) => value,
-                Err(_) => return Option::None,
+            let Ok(left) = fast_borrow_call_operand(state, frame, arguments, left) else {
+                return Option::None;
             };
-            let right = match fast_borrow_call_operand(state, frame, arguments, right) {
-                Ok(value) => value,
-                Err(_) => return Option::None,
+            let Ok(right) = fast_borrow_call_operand(state, frame, arguments, right) else {
+                return Option::None;
             };
             let value = match binary_value_cached(
                 operation,
@@ -4940,9 +4928,8 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
         },
         None => {
             if type_id.value >= 0 && type_id.value < state.zero_values.len() {
-                match state.zero_values[type_id.value] {
-                    Some(value) => return Result::Ok(copy_value(value)),
-                    None => {},
+                if let Some(value) = state.zero_values[type_id.value] {
+                    return Result::Ok(copy_value(value))
                 }
             }
             let result = match go_types::type_data(
@@ -6667,10 +6654,9 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                 },
                 None => Option::None,
             };
-            let function = match receiver {
-                Some(receiver) => native_interface_method_target(state, method, receiver.get()),
-                None => Option::None,
-            };
+            let function = receiver.and_then(
+                |receiver| native_interface_method_target(state, method, receiver.get()),
+            );
             set_register(
                 frame,
                 target,
@@ -6739,9 +6725,8 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
         bytecode::InstructionKind::MapIterNext { key, value, ok, iterator } => {
             let next = map_iterator_next(state, integer_host(register(frame, iterator)?)?)?;
             set_register(frame, key, next.0)?;
-            match value {
-                Some(target) => set_register(frame, target, next.1)?,
-                None => {},
+            if let Some(target) = value {
+                set_register(frame, target, next.1)?
             }
             set_register(frame, ok, Value::Local(LocalValue::Bool(next.2)))
         },
@@ -7954,14 +7939,13 @@ fn execute_sequential_bool_slice_index(
             f"index out of range [{index}] with length {slice.length}",
         )
     }
-    let backing = match slice.backing {
-        Some(value) => value,
-        None => return sequential_error_at(
+    let Some(backing) = slice.backing else {
+        return sequential_error_at(
             state,
             frame,
             block.instructions[instruction_index + 4].location,
             "index of nil slice",
-        ),
+        )
     };
     match bool_backing(state.memory, backing) {
         Some(elements) => if set_scalar_bool_register(
@@ -8086,14 +8070,13 @@ fn execute_sequential_bool_slice_store(
             f"index out of range [{index}] with length {slice.length}",
         )
     }
-    let backing = match slice.backing {
-        Some(value) => value,
-        None => return sequential_error_at(
+    let Some(backing) = slice.backing else {
+        return sequential_error_at(
             state,
             frame,
             block.instructions[instruction_index + 3].location,
             "index of nil slice",
-        ),
+        )
     };
     match bool_backing(state.memory, backing) {
         Some(elements) => {
@@ -8169,14 +8152,13 @@ fn execute_fast_bool_slice_index(
             f"index out of range [{index}] with length {slice.length}",
         )
     }
-    let backing = match slice.backing {
-        Some(value) => value,
-        None => return sequential_error_at(
+    let Some(backing) = slice.backing else {
+        return sequential_error_at(
             state,
             frame,
             block.instructions[instruction_index + 4].location,
             "index of nil slice",
-        ),
+        )
     };
     match backing.projections {
         Some(projections) if !projections.is_empty() => return sequential_error_at(
@@ -8267,14 +8249,13 @@ fn execute_fast_bool_slice_store(
             f"index out of range [{index}] with length {slice.length}",
         )
     }
-    let backing = match slice.backing {
-        Some(value) => value,
-        None => return sequential_error_at(
+    let Some(backing) = slice.backing else {
+        return sequential_error_at(
             state,
             frame,
             block.instructions[instruction_index + 3].location,
             "index of nil slice",
-        ),
+        )
     };
     match backing.projections {
         Some(projections) if !projections.is_empty() => return sequential_error_at(
@@ -8350,14 +8331,13 @@ fn execute_bool_slice_update_effect(
             f"index out of range [{index}] with length {slice.length}",
         )
     }
-    let backing = match slice.backing {
-        Some(value) => value,
-        None => return sequential_error_at(
+    let Some(backing) = slice.backing else {
+        return sequential_error_at(
             state,
             frame,
             block.instructions[instruction_index + 3].location,
             "index of nil slice",
-        ),
+        )
     };
     match backing.projections {
         Some(projections) if !projections.is_empty() => return sequential_error_at(
@@ -8538,14 +8518,13 @@ fn execute_fast_bool_slice_branch(
             f"index out of range [{index}] with length {slice.length}",
         )
     }
-    let backing = match slice.backing {
-        Some(value) => value,
-        None => return sequential_error_at(
+    let Some(backing) = slice.backing else {
+        return sequential_error_at(
             state,
             frame,
             block.instructions[instruction_index + 4].location,
             "index of nil slice",
-        ),
+        )
     };
     match backing.projections {
         Some(projections) if !projections.is_empty() => return sequential_error_at(
@@ -8954,10 +8933,7 @@ fn method_field_path_type(world: go_types::World, source: go_types::TypeId, fiel
 ] {
     let mut current = source;
     for field in fields {
-        current = match pointer_type(world, current) {
-            Some(element) => element,
-            None => current,
-        };
+        current = pointer_type(world, current).unwrap_or(current);
         match go_types::get_type(world, go_types::underlying(world, current)) {
             Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => if field
                 < 0

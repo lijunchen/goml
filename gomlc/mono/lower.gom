@@ -767,10 +767,9 @@ fn lower_static_trait_call(
         params.push(expr_type(arg));
         call_args.push(arg)
     }
-    let name = match instance_name {
-        Some(value) => value,
-        None => lowered_trait_impl_name(reference, for_ty, method_name),
-    };
+    let name = instance_name.unwrap_or_else(
+        || lowered_trait_impl_name(reference, for_ty, method_name),
+    );
     Expr::Call {
         func: Expr::Var { name, ty: Type::Func { params, ret_ty: ty } },
         args: call_args,

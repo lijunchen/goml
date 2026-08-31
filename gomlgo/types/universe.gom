@@ -220,9 +220,8 @@ fn add_any_type(world: World) -> () {
 }
 
 pub fn set_alias_enabled(world: World, enabled: bool) -> () {
-    let object = match lookup_local(world, world.universe, "any") {
-        Some(value) => value,
-        None => return,
+    let Some(object) = lookup_local(world, world.universe, "any") else {
+        return;
     };
     let object_type = match get_object(world, object) {
         Some(value) => value.type_id,

@@ -117,10 +117,7 @@ fn string_contains(value: string, expected: string) -> bool {
 }
 
 fn string_index(value: string, expected: string) -> isize {
-    match text::find(value, expected) {
-        Some(index) => index,
-        None => -1,
-    }
+    text::find(value, expected).unwrap_or(-1)
 }
 
 #[test]

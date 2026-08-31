@@ -2496,10 +2496,7 @@ fn validate_lang_item_attributes(ctx: Checker, attrs: Vec[ast::Attribute], allow
     if allow_lang_items {} else {
         for attribute in attrs {
             if attribute.name == "lang" {
-                let name = match lang_item_attribute(Vec::from_array([attribute])) {
-                    Some(value) => value,
-                    None => "<invalid>",
-                };
+                let name = lang_item_attribute(Vec::from_array([attribute])).unwrap_or("<invalid>");
                 ctx.diagnostics.push(
                     new_diagnostic(
                         TYPER_STAGE,
@@ -3433,9 +3430,8 @@ fn finalize_check_comptime(
     dependencies: Vec[ctir::CtModule],
     environments: Vec[DependencyEnvironment],
 ) -> CheckResult {
-    let builtin = match builtin_contract() {
-        Ok(value) => value,
-        Err(_) => return checked,
+    let Ok(builtin) = builtin_contract() else {
+        return checked;
     };
     match checked.tast {
         Some(file) => {
@@ -3614,10 +3610,7 @@ pub fn check_package_files_for_link_with_dependencies(
     values: Vec[hir::File],
     dependencies: Vec[hir::File],
 ) -> CheckResult {
-    let dependencies = match dependency_environments(dependencies) {
-        Ok(values) => values,
-        Err(_) => Vec::new(),
-    };
+    let dependencies = dependency_environments(dependencies).unwrap_or_else(|_| Vec::new());
     check_package_files_for_link_with_environments_options(values, dependencies, false, false)
 }
 
@@ -3629,10 +3622,7 @@ pub fn check_package_files_for_link_with_dependencies_allowing_externs(
     values: Vec[hir::File],
     dependencies: Vec[hir::File],
 ) -> CheckResult {
-    let dependencies = match dependency_environments(dependencies) {
-        Ok(values) => values,
-        Err(_) => Vec::new(),
-    };
+    let dependencies = dependency_environments(dependencies).unwrap_or_else(|_| Vec::new());
     check_package_files_for_link_with_environments_options(values, dependencies, true, false)
 }
 

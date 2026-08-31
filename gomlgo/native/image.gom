@@ -27,13 +27,11 @@ fn valid_cached_image(plan: BuildPlan) -> bool {
     if !fs::is_file(executable) || !fs::is_file(metadata_file) {
         return false
     }
-    let executable_hash = match fs::sha256_file(executable) {
-        Ok(value) => value,
-        Err(_) => return false,
+    let Ok(executable_hash) = fs::sha256_file(executable) else {
+        return false;
     };
-    let metadata = match fs::read_file_structured(metadata_file) {
-        Ok(value) => value,
-        Err(_) => return false,
+    let Ok(metadata) = fs::read_file_structured(metadata_file) else {
+        return false;
     };
     completion_matches(plan, metadata, executable_hash)
 }

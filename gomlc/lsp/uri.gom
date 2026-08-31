@@ -19,10 +19,7 @@ fn uri_hex(value: u8) -> char {
 }
 
 pub fn path_to_uri(value: string) -> string {
-    let absolute = match path::absolute_structured(value) {
-        Ok(result) => result,
-        Err(_) => path::clean(value),
-    };
+    let absolute = path::absolute_structured(value).unwrap_or_else(|_| path::clean(value));
     let builder = text::StringBuilder::new();
     builder.write_string("file://");
     for index in 0..absolute.byte_len() {

@@ -62,17 +62,12 @@ fn unicode_escape(value: string, start: isize, length: isize) -> Result[(char, i
     }
     let mut codepoint = 0.to_u32();
     for index in start..start + length {
-        match hex_digit(value.byte_get(index)) {
-            Some(digit) => {
-                codepoint = codepoint * 16 + digit;
-            },
-            None => return Result::Err("invalid unicode escape"),
-        }
+        let digit = hex_digit(value.byte_get(index)).ok_or("invalid unicode escape")?;
+        codepoint = codepoint * 16 + digit;
     }
-    match char_from_u32(codepoint) {
-        Some(character) => Result::Ok((character, start + length)),
-        None => Result::Err("invalid unicode scalar"),
-    }
+    char_from_u32(codepoint).map(|character| (character, start + length)).ok_or(
+        "invalid unicode scalar",
+    )
 }
 
 fn parse_basic_string(value: string) -> Result[string, string] {

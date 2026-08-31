@@ -167,9 +167,8 @@ fn artifact_resolve_interface_units(
     let resolved_names: collections::HashSet[string] = collections::HashSet::new();
     let resolved: Vec[artifact::ArtifactInterfaceUnit] = Vec::new();
     while !pending.is_empty() {
-        let request = match pending.pop() {
-            Some(value) => value,
-            None => break,
+        let Some(request) = pending.pop() else {
+            break;
         };
         if request.package_name == "builtin" {
             if artifact_dependency_hash_matches(
@@ -408,10 +407,7 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
             }
         }
     }
-    match name {
-        Some(value) => Result::Ok(value),
-        None => Result::Err("package has no valid source files"),
-    }
+    name.ok_or("package has no valid source files")
 }
 
 fn artifact_find_function(functions: Vec[artifact::ArtifactFnScheme], name: string) -> Option[
@@ -807,10 +803,7 @@ fn compile_artifact_package(
         artifact_comptime_unit(comptime_module, public_exports),
         deps,
     );
-    let interface_unit = match production_interface {
-        Some(value) => value,
-        None => generated_interface,
-    };
+    let interface_unit = production_interface.unwrap_or(generated_interface);
     let core_ir = if build {
         core::eliminate_dead_locals(
             core::lower_with_counter_types_and_options(
@@ -909,9 +902,8 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
     }
     let names: collections::HashSet[string] = collections::HashSet::new();
     while !pending.is_empty() {
-        let package_name = match pending.pop() {
-            Some(value) => value,
-            None => break,
+        let Some(package_name) = pending.pop() else {
+            break;
         };
         if !names.insert(package_name) {} else {
             let Some(core_unit) = artifact_find_core_unit(values, package_name) else {

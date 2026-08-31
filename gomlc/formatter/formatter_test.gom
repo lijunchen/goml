@@ -81,10 +81,7 @@ fn expect_format(source: string, expected: string) -> () {
 }
 
 fn repository_root() -> string {
-    match env::var_structured("GOML_REPO") {
-        Ok(value) => value,
-        Err(_) => "..",
-    }
+    env::var_structured("GOML_REPO").unwrap_or("..")
 }
 
 fn read_fixture(path_value: string) -> string {

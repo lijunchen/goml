@@ -295,9 +295,8 @@ fn collapse_parenthesized_embedded_fact(
     node: syntax::NodeId,
     expression: syntax::NodeId,
 ) -> () {
-    match recorded_type_fact(state, expression) {
-        Some(fact) => update_operand_fact(state, node, fact.type_id, Option::None),
-        None => {},
+    if let Some(fact) = recorded_type_fact(state, expression) {
+        update_operand_fact(state, node, fact.type_id, Option::None)
     }
     let _ = state.omitted_type_fact_nodes.insert(expression.value);
     let mut object: Option[go_types::ObjectId] = Option::None;

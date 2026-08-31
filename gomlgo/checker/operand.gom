@@ -121,9 +121,13 @@ fn similar_field_in_type_inner(
             }
             for field in fields {
                 if field.embedded {
-                    match similar_field_in_type_inner(state, field.variable.type_id, name, visited) {
-                        Some(object) => return Option::Some(object),
-                        None => {},
+                    if let Some(object) = similar_field_in_type_inner(
+                        state,
+                        field.variable.type_id,
+                        name,
+                        visited,
+                    ) {
+                        return Option::Some(object)
                     }
                 }
             }
@@ -214,10 +218,7 @@ fn similar_method_in_type(
 }
 
 fn basic_type_id(state: CheckState, name: string) -> go_types::TypeId {
-    match go_types::basic_type(state.world, name) {
-        Some(value) => value,
-        None => state.world.invalid,
-    }
+    go_types::basic_type(state.world, name).unwrap_or(state.world.invalid)
 }
 
 fn basic_kind(state: CheckState, type_id: go_types::TypeId) -> go_types::BasicKind {
@@ -2162,10 +2163,9 @@ fn argument_assignable(state: CheckState, source: Operand, target: go_types::Typ
         Some(value) => if go_types::is_type_parameter(state.world, target) {
             constant_assignable_to_type_parameter(state, value, target)
         } else if go_types::is_interface(state.world, target) {
-            let source_type = match default_type_for_kind(state, basic_kind(state, source.type_id)) {
-                Some(type_id) => type_id,
-                None => source.type_id,
-            };
+            let source_type = default_type_for_kind(state, basic_kind(state, source.type_id)).unwrap_or(
+                source.type_id,
+            );
             go_types::implements(state.world, source_type, target)
         } else if !go_types::is_untyped(state.world, source.type_id) {
             go_types::assignable_types(state.world, source.type_id, target)
@@ -3733,9 +3733,8 @@ fn selector_operand(
         },
         None => {},
     }
-    match conversion_target(state, scope, expression) {
-        Some(receiver) => return method_expression_operand(state, node, selector, receiver, name),
-        None => {},
+    if let Some(receiver) = conversion_target(state, scope, expression) {
+        return method_expression_operand(state, node, selector, receiver, name)
     }
     match identifier(state, expression) {
         Some(package_name) => match go_types::lookup(state.world, scope, package_name) {

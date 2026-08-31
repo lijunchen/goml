@@ -587,14 +587,12 @@ pub fn toolchain_lib_dir() -> Result[string, string] {
     let executable = env::current_exe_structured().map_err(
         |error| f"could not locate compiler executable: {error}",
     )?;
-    let binary_dir = match path::parent(executable) {
-        Some(value) => value,
-        None => return Result::Err("compiler executable has no parent directory: " + executable),
-    };
-    let prefix = match path::parent(binary_dir) {
-        Some(value) => value,
-        None => return Result::Err("compiler bin directory has no parent directory: " + binary_dir),
-    };
+    let binary_dir = path::parent(executable).ok_or(
+        "compiler executable has no parent directory: " + executable,
+    )?;
+    let prefix = path::parent(binary_dir).ok_or(
+        "compiler bin directory has no parent directory: " + binary_dir,
+    )?;
     Result::Ok(path::join(prefix, "lib"))
 }
 

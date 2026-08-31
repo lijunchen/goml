@@ -196,10 +196,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
             while index >= 0 {
                 let use_decl = file.uses[index];
                 for item in use_decl.items {
-                    let candidate = match item.alias {
-                        Some(name) => name,
-                        None => item.name,
-                    };
+                    let candidate = item.alias.unwrap_or(item.name);
                     if candidate == alias {
                         return Option::Some(
                             expand_module_namespace(value.module_path, path_text(use_decl.path))
@@ -208,10 +205,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
                         )
                     }
                 }
-                let candidate = match use_decl.alias {
-                    Some(name) => name,
-                    None => last_path_segment(use_decl.path),
-                };
+                let candidate = use_decl.alias.unwrap_or_else(|| last_path_segment(use_decl.path));
                 if candidate == alias {
                     return Option::Some(
                         expand_module_namespace(value.module_path, path_text(use_decl.path)),
@@ -796,10 +790,9 @@ fn explicit_receiver_type(value: Analysis, dot: isize) -> Option[string] {
     match significant_token_before(value, dot) {
         Some(token) => {
             let lowered = value.lowered;
-            let explicit = match lowered.ast {
-                Some(file) => file_parameter_explicit_type(file, token.text),
-                None => Option::None,
-            };
+            let explicit = lowered.ast.and_then(
+                |file| file_parameter_explicit_type(file, token.text),
+            );
             match explicit {
                 Some(name) => Option::Some(name),
                 None => source_explicit_receiver_type(value.source, token.text, dot),
@@ -1097,10 +1090,7 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
         for import in file.uses {
             let package_name = expand_module_namespace(value.module_path, path_text(import.path));
             if analysis_has_package(value, package_name) {
-                let alias = match import.alias {
-                    Some(name) => name,
-                    None => last_path_segment(import.path),
-                };
+                let alias = import.alias.unwrap_or_else(|| last_path_segment(import.path));
                 push_completion(
                     result,
                     CompletionItem {

@@ -50,10 +50,7 @@ pub fn finish_value_serializer(serializer: ValueSerializer) -> Result[Value, str
     if !serializer.frames.is_empty() {
         Result::Err("serialization ended inside a compound value")
     } else {
-        match serializer.result.get() {
-            Some(value) => Result::Ok(value),
-            None => Result::Err("serialization produced no value"),
-        }
+        serializer.result.get().ok_or("serialization produced no value")
     }
 }
 

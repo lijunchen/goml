@@ -148,17 +148,11 @@ fn current_range(parser: Parser) -> (isize, isize) {
 }
 
 fn current_lex_error(parser: Parser) -> Option[lexer::LexError] {
-    match current_token_index(parser) {
-        Some(index) => parser.tokens[index].error,
-        None => Option::None,
-    }
+    current_token_index(parser).and_then(|index| parser.tokens[index].error)
 }
 
 fn missing_range(parser: Parser) -> (isize, isize) {
-    let current = match current_token_index(parser) {
-        Some(index) => index,
-        None => parser.tokens.len(),
-    };
+    let current = current_token_index(parser).unwrap_or_else(|| parser.tokens.len());
     let mut index = current - 1;
     while index >= 0 {
         let token = parser.tokens[index];

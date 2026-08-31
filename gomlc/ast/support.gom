@@ -71,10 +71,7 @@ fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
 }
 
 fn type_head_span(value: LocatedNode) -> Span {
-    match first_significant_token_span(value) {
-        Some(value) => value,
-        None => trimmed_node_span(value),
-    }
+    first_significant_token_span(value).unwrap_or_else(|| trimmed_node_span(value))
 }
 
 fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {

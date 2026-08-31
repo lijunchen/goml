@@ -186,10 +186,9 @@ fn world_required_package(values: Vec[ToolchainPackage], package_name: string) -
     ToolchainPackage,
     string,
 ] {
-    match world_find_package(values, package_name) {
-        Some(value) => Result::Ok(value),
-        None => Result::Err("world artifact is missing package " + package_name),
-    }
+    world_find_package(values, package_name).ok_or(
+        "world artifact is missing package " + package_name,
+    )
 }
 
 fn world_sorted_packages(values: Vec[ToolchainPackage]) -> Result[Vec[ToolchainPackage], string] {
@@ -400,10 +399,9 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     if container.kind != 3 {
         return Result::Err("binary artifact is not a compiler world")
     }
-    let metadata_section = match wire::artifact_binary_find_section(container, 1) {
-        Some(value) => value,
-        None => return Result::Err("world artifact is missing a required section"),
-    };
+    let metadata_section = wire::artifact_binary_find_section(container, 1).ok_or(
+        "world artifact is missing a required section",
+    )?;
     if metadata_section.flags != wire::required_section_flag() {
         return Result::Err("invalid world artifact section")
     }

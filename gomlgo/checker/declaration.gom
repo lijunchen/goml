@@ -1437,9 +1437,8 @@ fn record_call_result_type_cycle(
         objects.push(value)
     }
     if !state.active_value_objects.is_empty() {
-        match function {
-            Some(value) => objects.push(value),
-            None => {},
+        if let Some(value) = function {
+            objects.push(value)
         }
     }
     let omit = state.active_value_objects.is_empty();
@@ -1769,9 +1768,8 @@ fn named_type_reference_in_rhs(
     let pending_index = match pending_type_index(state, owner) {
         Some(index) => state.pending_types[index],
         None => {
-            let owner_object = match go_types::get_object(state.world, owner) {
-                Some(object) => object,
-                None => return fallback,
+            let Some(owner_object) = go_types::get_object(state.world, owner) else {
+                return fallback;
             };
             let mut found = Option::None;
             for index in 0..state.pending_types.len() {
@@ -1794,10 +1792,9 @@ fn named_type_reference_in_rhs(
         },
     };
     let pending = pending_index;
-    match named_type_reference_after(state, pending.rhs, target, node_start(state, pending.rhs) - 1) {
-        Some(result) => result,
-        None => fallback,
-    }
+    named_type_reference_after(state, pending.rhs, target, node_start(state, pending.rhs) - 1).unwrap_or(
+        fallback,
+    )
 }
 
 fn named_type_rhs_reference(state: CheckState, object: go_types::ObjectId, fallback: syntax::NodeId) -> syntax::NodeId {
@@ -1843,15 +1840,13 @@ fn report_named_type_cycle(state: CheckState, values: Vec[go_types::ObjectId], p
         None => -1,
     };
     for index in 0..cycle.len() {
-        let mut selected = match go_types::get_object(state.world, cycle[index]) {
-            Some(object) => object.node,
-            None => Option::None,
-        };
+        let mut selected = go_types::get_object(state.world, cycle[index]).and_then(
+            |object| object.node,
+        );
         if preserve_start && (index > 0 || rotate_instantiated_cycle) {
-            let root_selected = match root_rhs {
-                Some(rhs) => named_type_reference_after(state, rhs, cycle[index], root_position),
-                None => Option::None,
-            };
+            let root_selected = root_rhs.and_then(
+                |rhs| named_type_reference_after(state, rhs, cycle[index], root_position),
+            );
             match root_selected {
                 Some(node) => {
                     selected = Option::Some(node);
@@ -2237,9 +2232,8 @@ fn check_map_keys_in_type_node(state: CheckState, node: syntax::NodeId) -> () {
             path: _,
             kind: syntax::SyntaxKind::StructType { struct_pos: _, fields, incomplete: _ },
         }) => for field in field_list_nodes(state, fields) {
-            match field_data(state, field) {
-                Some((_, type_node, _)) => check_map_keys_in_type_node(state, type_node),
-                None => {},
+            if let Some((_, type_node, _)) = field_data(state, field) {
+                check_map_keys_in_type_node(state, type_node)
             }
         },
         Some(syntax::SyntaxNode {
@@ -2249,9 +2243,8 @@ fn check_map_keys_in_type_node(state: CheckState, node: syntax::NodeId) -> () {
             path: _,
             kind: syntax::SyntaxKind::FieldList { opening: _, list, closing: _ },
         }) => for field in list {
-            match field_data(state, field) {
-                Some((_, type_node, _)) => check_map_keys_in_type_node(state, type_node),
-                None => {},
+            if let Some((_, type_node, _)) = field_data(state, field) {
+                check_map_keys_in_type_node(state, type_node)
             }
         },
         Some(syntax::SyntaxNode {
@@ -2279,9 +2272,8 @@ fn check_deferred_map_keys(state: CheckState, type_id: go_types::TypeId) -> () {
         }) => object,
         _ => return,
     };
-    let pending_index = match pending_type_index(state, object) {
-        Some(value) => value,
-        None => return,
+    let Some(pending_index) = pending_type_index(state, object) else {
+        return;
     };
     check_map_keys_in_type_node(state, state.pending_types[pending_index].rhs)
 }
@@ -3161,9 +3153,8 @@ fn diagnostic_in_type_declaration(state: CheckState, value: CheckDiagnostic) -> 
 }
 
 fn evaluate_type_object(state: CheckState, object: go_types::ObjectId) -> bool {
-    let index = match pending_type_index(state, object) {
-        Some(value) => value,
-        None => return true,
+    let Some(index) = pending_type_index(state, object) else {
+        return true;
     };
     if state.pending_types[index].status == 2 {
         return true
@@ -3361,9 +3352,8 @@ fn pending_function_index(state: CheckState, object: go_types::ObjectId) -> Opti
 }
 
 fn evaluate_function_object(state: CheckState, object: go_types::ObjectId) -> bool {
-    let index = match pending_function_index(state, object) {
-        Some(value) => value,
-        None => return true,
+    let Some(index) = pending_function_index(state, object) else {
+        return true;
     };
     if state.pending_functions[index].status == 2 {
         return true
@@ -4435,9 +4425,8 @@ fn declare_object(
 }
 
 fn save_declared_object(state: CheckState, node: syntax::NodeId, object: Option[go_types::ObjectId]) -> () {
-    match object {
-        Some(object) => state.declarations.push(DeclaredObject { node, object }),
-        None => {},
+    if let Some(object) = object {
+        state.declarations.push(DeclaredObject { node, object })
     }
 }
 
@@ -5129,10 +5118,9 @@ fn declaration_operand(
             diagnostic(state, node, "use of untyped nil in variable declaration", false);
             (state.world.invalid, Option::None)
         } else {
-            let type_id = match default_type_for_kind(state, basic_kind(state, operand.type_id)) {
-                Some(type_id) => type_id,
-                None => operand.type_id,
-            };
+            let type_id = default_type_for_kind(state, basic_kind(state, operand.type_id)).unwrap_or(
+                operand.type_id,
+            );
             match operand.value {
                 Some(value) => match constant::round_constant(
                     value,
@@ -5169,10 +5157,9 @@ fn declaration_operand(
                 let fact_type = match explicit_type {
                     Some(type_id) => if !constant_declaration
                         && go_types::is_interface(state.world, type_id) {
-                        match default_type_for_kind(state, basic_kind(state, operand.type_id)) {
-                            Some(type_id) => type_id,
-                            None => operand.type_id,
-                        }
+                        default_type_for_kind(state, basic_kind(state, operand.type_id)).unwrap_or(
+                            operand.type_id,
+                        )
                     } else {
                         type_id
                     },
@@ -5341,9 +5328,8 @@ fn record_initialization_dependency(state: CheckState, object: go_types::ObjectI
 }
 
 fn evaluate_object(state: CheckState, object: go_types::ObjectId) -> () {
-    match pending_value_index(state, object) {
-        Some(index) => evaluate_pending_value(state, index),
-        None => {},
+    if let Some(index) = pending_value_index(state, object) {
+        evaluate_pending_value(state, index)
     }
     let _ = evaluate_function_object(state, object);
 }
@@ -5794,10 +5780,9 @@ fn evaluate_pending_value(state: CheckState, index: isize) -> () {
     let previous_diagnostic_override = state.diagnostic_override;
     state.current_iota = pending.iota_value;
     if pending.inherited_initializer {
-        state.diagnostic_override = match go_types::get_object(state.world, pending.object) {
-            Some(object) => object.node,
-            None => Option::None,
-        };
+        state.diagnostic_override = go_types::get_object(state.world, pending.object).and_then(
+            |object| object.node,
+        );
     }
     let explicit_type = pending.type_node.map(
         |node| declaration_type(state, pending.file_scope, node, pending.constant_declaration),
@@ -6205,9 +6190,11 @@ fn check_declaration(
         }) => match receiver {
             Some(_) => if !state.config.ignore_func_bodies {
                 match (declared_object(state, name), body) {
-                    (Some(object), Some(body)) => match go_types::get_object(state.world, object) {
-                        Some(object) => check_function_body(state, type_node, object.type_id, body),
-                        None => {},
+                    (Some(object), Some(body)) => if let Some(object) = go_types::get_object(
+                        state.world,
+                        object,
+                    ) {
+                        check_function_body(state, type_node, object.type_id, body)
                     },
                     _ => {},
                 }
@@ -6749,9 +6736,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     let source_texts: Vec[(string, string)] = Vec::new();
     for file in input.files {
         source_lengths.push((file.name, file.source.len()));
-        match file.source.to_string_utf8() {
-            Ok(text) => source_texts.push((file.name, text)),
-            Err(_) => {},
+        if let Ok(text) = file.source.to_string_utf8() {
+            source_texts.push((file.name, text))
         }
         let parsed = if config.exported_api_only {
             parser::parse_file_bytes_without_bodies(file.source)
@@ -6770,9 +6756,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
                 },
             )
         }
-        match parsed.root {
-            Some(root) => syntax_sources.push(syntax::SourceFile { name: file.name, root }),
-            None => {},
+        if let Some(root) = parsed.root {
+            syntax_sources.push(syntax::SourceFile { name: file.name, root })
         }
     }
     let syntax_package = if !config.retain_syntax_paths

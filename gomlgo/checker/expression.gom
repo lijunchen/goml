@@ -1151,10 +1151,7 @@ fn check_index_expression(
 fn check_slice_index(state: CheckState, scope: go_types::ScopeId, value: Option[syntax::NodeId]) -> Option[
     isize,
 ] {
-    match value {
-        Some(value) => constant_index(state, scope, value, false),
-        None => Option::None,
-    }
+    value.and_then(|value| constant_index(state, scope, value, false))
 }
 
 fn check_slice_bounds(

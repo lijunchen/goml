@@ -78,10 +78,7 @@ pub fn type_fact_extra(key: Option[string], constant_kind: string, constant: Opt
 }
 
 pub fn type_fact_key(value: TypeFact) -> Option[string] {
-    match value.extra {
-        Some(extra) => extra.key,
-        None => Option::None,
-    }
+    value.extra.and_then(|extra| extra.key)
 }
 
 pub fn type_fact_constant_kind(value: TypeFact) -> string {
@@ -92,10 +89,7 @@ pub fn type_fact_constant_kind(value: TypeFact) -> string {
 }
 
 pub fn type_fact_constant(value: TypeFact) -> Option[string] {
-    match value.extra {
-        Some(extra) => extra.constant,
-        None => Option::None,
-    }
+    value.extra.and_then(|extra| extra.constant)
 }
 
 pub struct ObjectFact {

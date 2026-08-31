@@ -682,9 +682,8 @@ fn collect_native_type(
             results,
             variadic: _,
         } => {
-            match receiver {
-                Some(value) => collect_native_type(program, paths, seen, values, value.type_id),
-                None => {},
+            if let Some(value) = receiver {
+                collect_native_type(program, paths, seen, values, value.type_id)
             }
             collect_native_type(program, paths, seen, values, params);
             collect_native_type(program, paths, seen, values, results)

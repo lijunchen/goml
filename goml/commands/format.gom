@@ -109,10 +109,7 @@ pub fn format_module(check: bool, formatter_override: Option[string]) -> Result[
         let _ = command.arg(relative_path(module_root, file));
     }
     match command.status_structured() {
-        Ok(status) => match process::ExitStatus::code(status) {
-            Some(code) => Result::Ok(code),
-            None => Result::Err("gomlfmt terminated by signal"),
-        },
+        Ok(status) => process::ExitStatus::code(status).ok_or("gomlfmt terminated by signal"),
         Err(error) => Result::Err(error.to_string()),
     }
 }

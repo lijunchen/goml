@@ -56,30 +56,17 @@ struct Execution {
 }
 
 fn bytes_text(value: bytes::Bytes) -> string {
-    match value.to_string_utf8() {
-        Ok(value) => value,
-        Err(_) => "<non-UTF-8 output>",
-    }
+    value.to_string_utf8().unwrap_or("<non-UTF-8 output>")
 }
 
 fn required_string(value: json::Value, name: string) -> Result[string, string] {
-    match json::field(value, name) {
-        Some(value) => match json::as_string(value) {
-            Some(value) => Result::Ok(value),
-            None => Result::Err(f"{name} must be a string"),
-        },
-        None => Result::Err(f"test manifest omitted {name}"),
-    }
+    let field = json::field(value, name).ok_or(f"test manifest omitted {name}")?;
+    json::as_string(field).ok_or(f"{name} must be a string")
 }
 
 fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
-    match json::field(value, name) {
-        Some(value) => match json::as_bool(value) {
-            Some(value) => Result::Ok(value),
-            None => Result::Err(f"{name} must be boolean"),
-        },
-        None => Result::Err(f"test manifest omitted {name}"),
-    }
+    let field = json::field(value, name).ok_or(f"test manifest omitted {name}")?;
+    json::as_bool(field).ok_or(f"{name} must be boolean")
 }
 
 fn load_tests(group: Group) -> Result[Vec[Test], string] {
@@ -93,10 +80,9 @@ fn load_tests(group: Group) -> Result[Vec[Test], string] {
         let id = required_string(value, "id")?;
         let display_name = required_string(value, "display_name")?;
         let ignored = required_bool(value, "ignored")?;
-        let ignore_reason = match json::field(value, "ignore_reason") {
-            Some(value) => json::as_string(value),
-            None => Option::None,
-        };
+        let ignore_reason = json::field(value, "ignore_reason").and_then(
+            |value| json::as_string(value),
+        );
         result.push(
             Test {
                 id,
@@ -192,12 +178,7 @@ fn run_one(module_dir: string, index: isize, test: Test, options: Options) -> Ex
                     status: if process::ExitStatus::success(status) {
                         Status::Passed
                     } else {
-                        Status::Failed(
-                            match process::ExitStatus::code(status) {
-                                Some(value) => value,
-                                None => -1,
-                            },
-                        )
+                        Status::Failed(process::ExitStatus::code(status).unwrap_or(-1))
                     },
                     stdout: "",
                     stderr: "",
@@ -226,10 +207,9 @@ fn run_one(module_dir: string, index: isize, test: Test, options: Options) -> Ex
                             Status::Passed
                         } else {
                             Status::Failed(
-                                match process::ExitStatus::code(process::Output::status(output)) {
-                                    Some(value) => value,
-                                    None => -1,
-                                },
+                                process::ExitStatus::code(process::Output::status(output)).unwrap_or(
+                                    -1,
+                                ),
                             )
                         },
                         stdout: bytes_text(process::Output::stdout(output)),

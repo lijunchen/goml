@@ -350,10 +350,7 @@ fn append_path_segments(base: Path, suffix: Path) -> Path {
 }
 
 fn lower_type_application_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
-    match first_child(node, cst::NodeKind::PATH) {
-        Some(path_node) => lower_path(ctx, path_node),
-        None => Option::None,
-    }
+    first_child(node, cst::NodeKind::PATH).and_then(|path_node| lower_path(ctx, path_node))
 }
 
 fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts] {
@@ -902,10 +899,9 @@ fn lower_byte_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[E
     } else {
         let values = match first_token(node, lexer::TokenKind::ByteStr) {
             Some(token) => byte_string_values(token.token.text),
-            None => match first_token(node, lexer::TokenKind::RawByteStr) {
-                Some(token) => raw_byte_string_values(token.token.text),
-                None => Option::None,
-            },
+            None => first_token(node, lexer::TokenKind::RawByteStr).and_then(
+                |token| raw_byte_string_values(token.token.text),
+            ),
         };
         match values {
             Some(values) => {

@@ -20,10 +20,7 @@ use std::utf8;
 use utf8::BytesUtf8;
 
 pub fn repo_root() -> string {
-    match env::var_structured("GOML_REPO") {
-        Ok(value) => value,
-        Err(_) => "..",
-    }
+    env::var_structured("GOML_REPO").unwrap_or("..")
 }
 
 pub fn fixture_dir(name: string) -> string {

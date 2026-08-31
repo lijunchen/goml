@@ -68,10 +68,7 @@ fn compare_object(
     let actual_value = json::Value::Object(actual);
     let expected_value = json::Value::Object(expected);
     let offset = match json::field(expected_value, "start") {
-        Some(value) => match json::as_int(value) {
-            Some(value) => value,
-            None => parent_offset,
-        },
+        Some(value) => json::as_int(value).unwrap_or(parent_offset),
         None => parent_offset,
     };
     for entry in expected {

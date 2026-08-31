@@ -314,13 +314,11 @@ fn load_builtin_source_lang_items() -> Result[FrozenVec[BuiltinLangItem], string
 
 fn load_builtin_source_traits() -> FrozenVec[TraitInfo] {
     let result: Vec[TraitInfo] = Vec::new();
-    let builtin = match builtin_contract() {
-        Ok(value) => value,
-        Err(_) => return result.freeze(),
+    let Ok(builtin) = builtin_contract() else {
+        return result.freeze();
     };
-    let source = match resources::builtin_contract_source() {
-        Ok(value) => value,
-        Err(_) => return result.freeze(),
+    let Ok(source) = resources::builtin_contract_source() else {
+        return result.freeze();
     };
     let inputs = Vec::from_array([(ast::lower(parser::parse(source.source)), source.path)]);
     for lowered in hir::lower_package_files(inputs, "builtin") {
@@ -350,13 +348,11 @@ fn builtin_source_trait_info(name: string) -> Option[TraitInfo] {
 
 fn load_builtin_source_enums() -> FrozenVec[EnumInfo] {
     let result: Vec[EnumInfo] = Vec::new();
-    let builtin = match builtin_contract() {
-        Ok(value) => value,
-        Err(_) => return result.freeze(),
+    let Ok(builtin) = builtin_contract() else {
+        return result.freeze();
     };
-    let sources = match resources::builtin_enum_sources() {
-        Ok(values) => values,
-        Err(_) => return result.freeze(),
+    let Ok(sources) = resources::builtin_enum_sources() else {
+        return result.freeze();
     };
     let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     for source in sources {
@@ -394,13 +390,11 @@ fn builtin_source_enum_info(name: string) -> Option[EnumInfo] {
 
 fn load_builtin_source_structs() -> FrozenVec[StructInfo] {
     let result: Vec[StructInfo] = Vec::new();
-    let builtin = match builtin_contract() {
-        Ok(value) => value,
-        Err(_) => return result.freeze(),
+    let Ok(builtin) = builtin_contract() else {
+        return result.freeze();
     };
-    let source = match resources::builtin_contract_source() {
-        Ok(value) => value,
-        Err(_) => return result.freeze(),
+    let Ok(source) = resources::builtin_contract_source() else {
+        return result.freeze();
     };
     let inputs = Vec::from_array([(ast::lower(parser::parse(source.source)), source.path)]);
     for lowered in hir::lower_package_files(inputs, "builtin") {
@@ -431,13 +425,11 @@ fn builtin_source_struct_info(name: string) -> Option[StructInfo] {
 
 fn load_builtin_source_functions() -> FrozenVec[FunctionScheme] {
     let result: Vec[FunctionScheme] = Vec::new();
-    let builtin = match builtin_contract() {
-        Ok(value) => value,
-        Err(_) => return result.freeze(),
+    let Ok(builtin) = builtin_contract() else {
+        return result.freeze();
     };
-    let files = match implicit_builtin_hir_files() {
-        Ok(values) => values,
-        Err(_) => return result.freeze(),
+    let Ok(files) = implicit_builtin_hir_files() else {
+        return result.freeze();
     };
     for file in files {
         for value in dependency_environment_from_hir_with_contract(file, builtin).functions {
@@ -481,9 +473,8 @@ fn append_builtin_source_type_arity(values: Vec[(string, isize)], value: hir::Ty
 
 fn load_builtin_source_arities() -> FrozenVec[(string, isize)] {
     let result: Vec[(string, isize)] = Vec::new();
-    let files = match implicit_builtin_hir_files() {
-        Ok(values) => values,
-        Err(_) => return result.freeze(),
+    let Ok(files) = implicit_builtin_hir_files() else {
+        return result.freeze();
     };
     for file in files {
         for item in file.items {
@@ -523,13 +514,11 @@ fn builtin_source_nominal_arity(name: string) -> Option[isize] {
 
 fn load_builtin_source_impls() -> FrozenVec[ImplInfo] {
     let result: Vec[ImplInfo] = Vec::new();
-    let builtin = match builtin_contract() {
-        Ok(value) => value,
-        Err(_) => return result.freeze(),
+    let Ok(builtin) = builtin_contract() else {
+        return result.freeze();
     };
-    let files = match implicit_builtin_hir_files() {
-        Ok(values) => values,
-        Err(_) => return result.freeze(),
+    let Ok(files) = implicit_builtin_hir_files() else {
+        return result.freeze();
     };
     for file in files {
         for value in dependency_environment_from_hir_with_contract(file, builtin).impls {

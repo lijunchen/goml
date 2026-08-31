@@ -141,9 +141,8 @@ pub fn set_scope_parent(world: World, scope: ScopeId, parent: ScopeId) -> bool {
     if unchanged {
         return true
     }
-    match previous {
-        Some(value) => remove_scope_child(world, value, scope),
-        None => {},
+    if let Some(value) = previous {
+        remove_scope_child(world, value, scope)
     }
     world.scopes[scope.value].parent = Option::Some(parent);
     world.scopes[parent.value].children.push(scope);
@@ -279,9 +278,8 @@ pub fn insert(world: World, scope: ScopeId, name: string, object: ObjectId) -> O
     if scope.value < 0 || scope.value >= world.scopes.len() {
         return Option::Some(object)
     }
-    match world.scopes[scope.value].entry_objects[name] {
-        Some(existing) => return Option::Some(existing),
-        None => {},
+    if let Some(existing) = world.scopes[scope.value].entry_objects[name] {
+        return Option::Some(existing)
     }
     world.scopes[scope.value].entries.push(ScopeEntry { name, object });
     world.scopes[scope.value].entry_objects[name] = object;
@@ -294,9 +292,8 @@ pub fn lookup(world: World, scope: ScopeId, name: string) -> Option[ObjectId] {
         if scope_id_value.value < 0 || scope_id_value.value >= world.scopes.len() {
             return Option::None
         }
-        match world.scopes[scope_id_value.value].entry_objects[name] {
-            Some(object) => return Option::Some(object),
-            None => {},
+        if let Some(object) = world.scopes[scope_id_value.value].entry_objects[name] {
+            return Option::Some(object)
         }
         current = world.scopes[scope_id_value.value].parent;
     }

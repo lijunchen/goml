@@ -213,13 +213,9 @@ fn select_registry_version(root: string, requirement: DependencyRequirement) -> 
             None => return Result::Err("invalid registry semver `" + version + "`"),
         }
     }
-    match selected {
-        Some(version) => Result::Ok(version),
-        None => Result::Err(
-            "registry has no version for " + requirement.name + " satisfying >= "
-                + requirement.version,
-        ),
-    }
+    selected.ok_or(
+        "registry has no version for " + requirement.name + " satisfying >= " + requirement.version,
+    )
 }
 
 fn module_segments(value: string) -> Option[(string, string)] {
@@ -259,9 +255,8 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
     }
     let selected: collections::IndexMap[string, ResolvedModule] = collections::IndexMap::new();
     while !queue.is_empty() {
-        let requirement = match queue.pop_front() {
-            Some(value) => value,
-            None => break,
+        let Some(requirement) = queue.pop_front() else {
+            break;
         };
         let version = select_registry_version(registry, requirement)?;
         let Some(parsed) = parse_sem_version(version) else {
@@ -302,10 +297,7 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
 }
 
 fn resolve_external_modules(module_root: string) -> Result[Vec[ResolvedModule], string] {
-    match registry_root() {
-        Ok(registry) => resolve_external_modules_at(module_root, registry),
-        Err(error) => Result::Err(error),
-    }
+    registry_root().and_then(|registry| resolve_external_modules_at(module_root, registry))
 }
 
 fn module_matches_package(module_name: string, package_name: string) -> bool {

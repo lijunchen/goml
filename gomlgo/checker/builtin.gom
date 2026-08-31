@@ -625,9 +625,8 @@ fn len_cap_classification(state: CheckState, name: string, value: go_types::Type
 }
 
 fn expression_has_nonconstant_call_or_receive(state: CheckState, node: syntax::NodeId) -> bool {
-    let outer = match syntax::get_node(state.syntax.arena, node) {
-        Some(value) => value,
-        None => return false,
+    let Some(outer) = syntax::get_node(state.syntax.arena, node) else {
+        return false;
     };
     let mut low = 0;
     let mut high = state.effect_expression_nodes.len();
@@ -931,10 +930,9 @@ fn make_type_parameter_kind(state: CheckState, value: go_types::TypeId) -> Resul
         return Result::Err("type must be slice, map, or channel")
     }
     let first_type = terms[0];
-    let mut selected = match underlying_kind(state, first_type) {
-        Some(kind) => kind,
-        None => return Result::Err("type must be slice, map, or channel"),
-    };
+    let mut selected = underlying_kind(state, first_type).ok_or(
+        "type must be slice, map, or channel",
+    )?;
     match selected {
         go_types::TypeKind::Slice { element: _ } | go_types::TypeKind::Map { key: _, value: _ } | go_types::TypeKind::Chan {
             direction: _,
@@ -944,10 +942,9 @@ fn make_type_parameter_kind(state: CheckState, value: go_types::TypeId) -> Resul
     }
     for index in 1..terms.len() {
         let candidate_type = terms[index];
-        let candidate = match underlying_kind(state, candidate_type) {
-            Some(kind) => kind,
-            None => return Result::Err("type must be slice, map, or channel"),
-        };
+        let candidate = underlying_kind(state, candidate_type).ok_or(
+            "type must be slice, map, or channel",
+        )?;
         match (selected, candidate) {
             (
                 go_types::TypeKind::Slice { element: left },

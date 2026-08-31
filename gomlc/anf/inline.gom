@@ -52,10 +52,7 @@ fn renamed_inline_name(values: Vec[InlineName], name: string) -> string {
 }
 
 fn renamed_inline_join(values: Vec[InlineJoin], name: string) -> string {
-    match find_inline_join(values, name) {
-        Some(value) => value,
-        None => name,
-    }
+    find_inline_join(values, name).unwrap_or(name)
 }
 
 fn add_inline_local(values: Vec[InlineName], name: string, ty: repr::Type, counter: Ref[isize]) -> () {
@@ -153,10 +150,7 @@ fn collect_inline_block_names(
 
 fn clone_inline_imm(value: Imm, names: Vec[InlineName]) -> Imm {
     match value {
-        Var { name, ty: _ } => match find_inline_name(names, name) {
-            Some(value) => value,
-            None => value,
-        },
+        Var { name, ty: _ } => find_inline_name(names, name).unwrap_or(value),
         _ => value,
     }
 }

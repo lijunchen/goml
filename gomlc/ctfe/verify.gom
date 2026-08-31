@@ -551,10 +551,7 @@ fn short_derive_name(value: string) -> string {
 }
 
 fn derive_export_name(value: ctir::CtDeriveEntry) -> string {
-    match value.export_name {
-        Some(name) => name,
-        None => short_derive_name(value.name),
-    }
+    value.export_name.unwrap_or_else(|| short_derive_name(value.name))
 }
 
 fn call_function(ctx: VerifyContext, target: ctir::CtCallTarget) -> Option[ctir::CtFunction] {

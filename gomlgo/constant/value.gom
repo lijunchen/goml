@@ -513,9 +513,8 @@ pub fn constant_equal(left: ConstValue, right: ConstValue) -> bool {
         },
         _ => Option::None,
     };
-    match binary {
-        Some(value) => return value,
-        None => {},
+    if let Some(value) = binary {
+        return value
     }
     match (left, right) {
         (ConstValue::Unknown, ConstValue::Unknown) => true,

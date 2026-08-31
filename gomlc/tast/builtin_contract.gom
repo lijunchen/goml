@@ -113,10 +113,7 @@ fn required_lang_item(item: string) -> Result[BuiltinLangItem, string] {
             }
         }
     }
-    match found.get() {
-        Some(value) => Result::Ok(value),
-        None => Result::Err("missing builtin lang item " + item),
-    }
+    found.get().ok_or("missing builtin lang item " + item)
 }
 
 fn required_lang_property(value: BuiltinLangItem, property: string) -> Result[string, string] {
@@ -136,10 +133,7 @@ fn required_lang_property(value: BuiltinLangItem, property: string) -> Result[st
             }
         }
     }
-    match found.get() {
-        Some(value) => Result::Ok(value),
-        None => Result::Err("missing property " + property + " on builtin lang item " + value.item),
-    }
+    found.get().ok_or("missing property " + property + " on builtin lang item " + value.item)
 }
 
 fn optional_lang_property(value: BuiltinLangItem, property: string) -> Result[

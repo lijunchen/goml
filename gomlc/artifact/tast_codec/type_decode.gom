@@ -127,10 +127,9 @@ fn artifact_decode_element_type(
     expected: string,
 ) -> Result[tast::Type, string] {
     let object = wire::artifact_json_object(value, expected)?;
-    match wire::artifact_json_required_field(object, "elem") {
-        Ok(value) => artifact_decode_type(context, value),
-        Err(error) => Result::Err(error),
-    }
+    wire::artifact_json_required_field(object, "elem").and_then(
+        |value| artifact_decode_type(context, value),
+    )
 }
 
 pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[

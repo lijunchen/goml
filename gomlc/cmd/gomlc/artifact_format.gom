@@ -173,15 +173,9 @@ fn write_artifact_interface(path_value: string, value: artifact::ArtifactInterfa
     (),
     string,
 ] {
-    match interface_codec::encode_binary(value) {
-        Ok(data) => atomic_write_data(path_value, data),
-        Err(error) => Result::Err(error),
-    }
+    interface_codec::encode_binary(value).and_then(|data| atomic_write_data(path_value, data))
 }
 
 fn write_artifact_core(path_value: string, value: artifact::ArtifactCoreUnit) -> Result[(), string] {
-    match core_codec::encode_binary(value) {
-        Ok(data) => atomic_write_data(path_value, data),
-        Err(error) => Result::Err(error),
-    }
+    core_codec::encode_binary(value).and_then(|data| atomic_write_data(path_value, data))
 }

@@ -131,10 +131,7 @@ fn extracts_exported_api_without_checking_initializers_or_bodies() -> () {
 }
 
 fn syntax_key_for_object(result: CheckResult, object: go_types::ObjectId) -> Option[string] {
-    match result.world.objects[object.value].node {
-        Some(node) => syntax::node_key(result.syntax, node),
-        None => Option::None,
-    }
+    result.world.objects[object.value].node.and_then(|node| syntax::node_key(result.syntax, node))
 }
 
 fn package_object(result: CheckResult, name: string) -> go_types::Object {

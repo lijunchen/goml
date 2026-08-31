@@ -255,10 +255,7 @@ pub fn select_version(root: string, name: string, minimum: string) -> Result[str
             selected_value = Option::Some(parsed);
         }
     }
-    match selected {
-        Some(value) => Result::Ok(value),
-        None => Result::Err("registry has no version for " + name + " satisfying >= " + minimum),
-    }
+    selected.ok_or("registry has no version for " + name + " satisfying >= " + minimum)
 }
 
 pub fn cached_root() -> Result[string, string] {
@@ -301,9 +298,8 @@ pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModul
     }
     let selected: collections::IndexMap[string, ResolvedModule] = collections::IndexMap::new();
     while !queue.is_empty() {
-        let requirement = match queue.pop_front() {
-            Some(value) => value,
-            None => break,
+        let Some(requirement) = queue.pop_front() else {
+            break;
         };
         let version = select_version(root, requirement.name, requirement.version)?;
         let parsed = parse_sem_version(version)?;

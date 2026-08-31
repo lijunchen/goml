@@ -112,9 +112,8 @@ fn scheduled_entries(state: VmState) -> Vec[bytecode::FunctionId] {
     for package_id in state.program.initialization_order {
         for package_value in state.program.packages {
             if package_value.package_id.value == package_id.value {
-                match package_value.initializer {
-                    Some(function) => entries.push(function),
-                    None => {},
+                if let Some(function) = package_value.initializer {
+                    entries.push(function)
                 }
             }
         }
@@ -1039,9 +1038,8 @@ fn poll_scheduled_native(scheduler: Scheduler) -> Result[Option[InvocationOutcom
     for index in 0..scheduler.goroutines.len() {
         match scheduler.goroutines[index].native.get() {
             Some(pending) => if native_completion_ready(pending.invocation) {
-                match complete_scheduled_native(scheduler, index, pending)? {
-                    Some(outcome) => return Result::Ok(Option::Some(outcome)),
-                    None => {},
+                if let Some(outcome) = complete_scheduled_native(scheduler, index, pending)? {
+                    return Result::Ok(Option::Some(outcome))
                 }
             },
             None => {},

@@ -203,32 +203,20 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
         if !use_decl.items.is_empty() {
-            let base = match expand_any_use_alias(aliases, prospective, target) {
-                Some(expanded) => expanded,
-                None => target,
-            };
+            let base = expand_any_use_alias(aliases, prospective, target).unwrap_or(target);
             for item in use_decl.items {
                 let item_target = copy_strings(base);
                 item_target.push(item.name);
                 aliases.push(
                     AliasEntry {
-                        alias: match item.alias {
-                            Some(alias) => alias,
-                            None => item.name,
-                        },
+                        alias: item.alias.unwrap_or(item.name),
                         target: item_target,
                         item: true,
                     },
                 );
                 match use_decl.visibility {
                     ast::Visibility::Public => public_reexports.push(
-                        (
-                            match item.alias {
-                                Some(alias) => alias,
-                                None => item.name,
-                            },
-                            join_segments(item_target),
-                        ),
+                        (item.alias.unwrap_or(item.name), join_segments(item_target)),
                     ),
                     ast::Visibility::Private => (),
                 }
@@ -237,13 +225,9 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
         } else {
             match expand_any_use_alias(aliases, prospective, target) {
                 Some(expanded) => {
-                    let exported_name = match use_decl.alias {
-                        Some(alias) => alias,
-                        None => match last_string(expanded) {
-                            Some(name) => name,
-                            None => "",
-                        },
-                    };
+                    let exported_name = use_decl.alias.unwrap_or_else(
+                        || last_string(expanded).unwrap_or(""),
+                    );
                     if let Some(alias) = use_decl.alias {
                         aliases.push(AliasEntry { alias, target: expanded, item: true })
                     }
@@ -314,10 +298,7 @@ fn import_aliases_from_file(file: ast::File, aliases: Vec[AliasEntry]) -> Vec[Im
     for use_decl in file.uses {
         if !use_decl.items.is_empty() {
             let target = path_segments(use_decl.path);
-            let target = match expand_use_alias(aliases, target) {
-                Some(expanded) => expanded,
-                None => target,
-            };
+            let target = expand_use_alias(aliases, target).unwrap_or(target);
             result.push(ImportAlias { alias: "", package_name: join_segments(target) })
         }
     }
@@ -395,10 +376,7 @@ fn static_member(
     }
     ExprKind::StaticMember {
         owner: join_segments(owner_parts),
-        member: match last_string(parts) {
-            Some(member) => member,
-            None => "<error>",
-        },
+        member: last_string(parts).unwrap_or("<error>"),
         owner_type_args,
         owner_type_arg_spans,
         member_type_args,
@@ -551,10 +529,7 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
 }
 
 fn unresolved_constructor(ctx: LowerCtx, path: ast::Path) -> ConstructorRef {
-    match constructor_ref(ctx, path) {
-        Some(value) => value,
-        None => ConstructorRef::Unresolved(path_text(ctx, path)),
-    }
+    constructor_ref(ctx, path).unwrap_or_else(|| ConstructorRef::Unresolved(path_text(ctx, path)))
 }
 
 fn pattern_head_span(path: ast::Path) -> ast::Span {
@@ -798,10 +773,9 @@ fn bind_pattern_name(ctx: LowerCtx, env: Vec[(string, LocalId)], state: PatternS
             existing
         },
         None => {
-            let local = match find_binding(state.preferred, name) {
-                Some(preferred) => preferred,
-                None => fresh_local(ctx, name),
-            };
+            let local = find_binding(state.preferred, name).unwrap_or_else(
+                || fresh_local(ctx, name),
+            );
             state.seen.push((name, local));
             env.push((name, local));
             local
@@ -1442,10 +1416,7 @@ fn lower_function(
         env.push((param.0, local))
     }
     for param in value.params {
-        let local = match find_binding(env, param.0) {
-            Some(local) => local,
-            None => fresh_local(ctx, param.0),
-        };
+        let local = find_binding(env, param.0).unwrap_or_else(|| fresh_local(ctx, param.0));
         params.push((local, lower_type(ctx, param.1, type_params)))
     }
     let predicates: Vec[Predicate] = Vec::new();

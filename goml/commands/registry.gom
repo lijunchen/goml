@@ -19,10 +19,7 @@ const DEFAULT_REGISTRY_KEY: string = "default";
 const LOCAL_REGISTRY_OPTION: string = "--local-registry";
 
 fn command_output(value: bytes::Bytes) -> string {
-    match value.to_string_utf8() {
-        Ok(value) => value,
-        Err(_) => "<non-UTF-8 output>",
-    }
+    value.to_string_utf8().unwrap_or("<non-UTF-8 output>")
 }
 
 fn run_git(arguments: Vec[string]) -> Result[(), string] {
@@ -351,10 +348,7 @@ fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string])
             },
         }
     }
-    match dependency {
-        Some(value) => Result::Ok((value, local)),
-        None => Result::Err("dependency is required"),
-    }
+    dependency.map(|value| (value, local)).ok_or("dependency is required")
 }
 
 pub fn add_dependency(args: Vec[string]) -> Result[(), string] {

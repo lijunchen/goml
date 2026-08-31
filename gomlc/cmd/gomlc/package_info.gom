@@ -21,10 +21,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
-            let value = match inline_cli_value(argument, "--help") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--help").unwrap_or("");
             return Result::Err(
                 unexpected_value_error_with_usage(
                     value,
@@ -45,10 +42,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
-            let value = match inline_cli_value(argument, "--input") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--input").unwrap_or("");
             if value == "" {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             } else {
@@ -91,10 +85,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
             )
         }
     }
-    let selected_format = match format {
-        Some(value) => value,
-        None => "json",
-    };
+    let selected_format = format.unwrap_or("json");
     if selected_format != "json" {
         Result::Err(
             "error: invalid value '" + selected_format

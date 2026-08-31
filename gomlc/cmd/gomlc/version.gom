@@ -34,10 +34,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
-            let value = match inline_cli_value(argument, "--help") {
-                Some(value) => value,
-                None => "",
-            };
+            let value = inline_cli_value(argument, "--help").unwrap_or("");
             return Result::Err(
                 unexpected_value_error_with_usage(value, "--help", "gomlc version --help"),
             )

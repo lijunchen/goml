@@ -1148,10 +1148,9 @@ fn commute_binds(
                     ),
                 };
                 let rest = commute_binds(binds, index + 1, term, known, counter);
-                match try_commute_join(lowered, rest, known, counter) {
-                    Some(result) => result,
-                    None => prepend_commute_bind(Bind::Join(lowered), rest),
-                }
+                try_commute_join(lowered, rest, known, counter).unwrap_or_else(
+                    || prepend_commute_bind(Bind::Join(lowered), rest),
+                )
             },
             JoinRec(values) => {
                 let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());

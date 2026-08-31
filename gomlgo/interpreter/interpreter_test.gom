@@ -257,9 +257,8 @@ fn writes_native_slice_mutations_back_with_interpreted_goroutine_identity() -> (
 fn passes_native_backed_pointers_through_native_interfaces() -> () {
     let program = load_bytecode("native_locker");
     let manifest = testing::expect_ok(bytecode::native_manifest(program), "native manifest failed");
-    match native::install_catalog_error(manifest) {
-        Some(error) => testing::fail(error),
-        None => {},
+    if let Some(error) = native::install_catalog_error(manifest) {
+        testing::fail(error)
     }
     let result = run(program, default_config());
     if result.exit_code != 0 {

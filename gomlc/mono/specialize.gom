@@ -414,10 +414,7 @@ fn add_indexed_function(index: FunctionIndex, key: string, function: core::Funct
 }
 
 fn indexed_functions(index: FunctionIndex, key: string) -> Vec[core::Function] {
-    match index[key] {
-        Some(functions) => functions,
-        None => Vec::new(),
-    }
+    index[key].unwrap_or_else(|| Vec::new())
 }
 
 fn mono_short_name(value: string) -> string {

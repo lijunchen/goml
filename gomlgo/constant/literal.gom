@@ -53,10 +53,7 @@ fn parse_exponent(value: string) -> Result[isize, string] {
     }
     let mut result = 0;
     while index < value.byte_len() {
-        let digit = match literal_digit(value.byte_get(index), 10) {
-            Some(value) => value,
-            None => return Result::Err("invalid exponent"),
-        };
+        let digit = literal_digit(value.byte_get(index), 10).ok_or("invalid exponent")?;
         if result > LITERAL_EXPONENT_LIMIT / 10 || result * 10 + digit > LITERAL_EXPONENT_LIMIT {
             return Result::Err("exponent is too large")
         }
@@ -133,10 +130,7 @@ pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
     let hexadecimal = normalized.byte_len() >= 2 && normalized.byte_get(0) == b'0'
         && (normalized.byte_get(1) == b'x' || normalized.byte_get(1) == b'X');
     let marker = exponent_marker(normalized, hexadecimal);
-    let mantissa_end = match marker {
-        Some(index) => index,
-        None => normalized.byte_len(),
-    };
+    let mantissa_end = marker.unwrap_or_else(|| normalized.byte_len());
     let exponent = match marker {
         Some(index) => parse_exponent(normalized.byte_slice(index + 1, normalized.byte_len()))?,
         None => if hexadecimal {
@@ -177,10 +171,7 @@ pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
     } else {
         binary_float_from_decimal(magnitude, scaled_exponent, binary_float_default_precision())
     };
-    let approximate = match approximate {
-        Some(value) => value,
-        None => return Result::Err("exponent is too large"),
-    };
+    let approximate = approximate.ok_or("exponent is too large")?;
     let binary_exponent = binary_float_mantissa_exponent(approximate);
     if binary_exponent > -4096 && binary_exponent < 4096 {
         if hexadecimal {

@@ -7,10 +7,7 @@ use std::process;
 fn main() -> () {
     let arguments = env::args();
     let mode = if arguments.len() >= 2 {
-        match parser_diff::mode_from_string(arguments[1]) {
-            Some(value) => value,
-            None => parser_diff::Mode::Acceptance,
-        }
+        parser_diff::mode_from_string(arguments[1]).unwrap_or(parser_diff::Mode::Acceptance)
     } else {
         parser_diff::Mode::Acceptance
     };

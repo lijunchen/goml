@@ -25,18 +25,10 @@ pub fn parse_rpc_message(value: json::Value) -> Result[RpcMessage, string] {
         Some(_) => return Result::Err("JSON-RPC version must be a string"),
         None => return Result::Err("JSON-RPC message has no version"),
     }
-    let method = match json::field(value, "method") {
-        Some(method) => match json::as_string(method) {
-            Some(method) => method,
-            None => return Result::Err("JSON-RPC method must be a string"),
-        },
-        None => return Result::Err("JSON-RPC message has no method"),
-    };
+    let method_value = json::field(value, "method").ok_or("JSON-RPC message has no method")?;
+    let method = json::as_string(method_value).ok_or("JSON-RPC method must be a string")?;
     let id = json::field(value, "id");
-    let params = match json::field(value, "params") {
-        Some(params) => params,
-        None => json::Value::Null,
-    };
+    let params = json::field(value, "params").unwrap_or(json::Value::Null);
     Result::Ok(RpcMessage { id, method, params })
 }
 
@@ -145,13 +137,8 @@ pub fn range_json(value: Range) -> json::Value {
 }
 
 pub fn parse_position(value: json::Value) -> Result[Position, string] {
-    let line = match json::field(value, "line") {
-        Some(line) => match json::as_int(line) {
-            Some(line) => line,
-            None => return Result::Err("position line must be an integer"),
-        },
-        None => return Result::Err("position has no line"),
-    };
+    let line_value = json::field(value, "line").ok_or("position has no line")?;
+    let line = json::as_int(line_value).ok_or("position line must be an integer")?;
     let character = match json::field(value, "character") {
         Some(character) => match json::as_int(character) {
             Some(character) => character,

@@ -92,10 +92,7 @@ fn mapped_function_name(values: FunctionNames, value: string) -> Option[string] 
 }
 
 fn env_function_name(env: LowerEnv, value: string) -> string {
-    match mapped_function_name(env.function_names, value) {
-        Some(name) => name,
-        None => function_name(value),
-    }
+    mapped_function_name(env.function_names, value).unwrap_or_else(|| function_name(value))
 }
 
 fn function_type_names(
@@ -216,10 +213,9 @@ fn build_function_names(
         let name = if function.name == "main" {
             entry_name
         } else {
-            match mapped_function_name(resolved, function.name) {
-                Some(name) => name,
-                None => function_name(function.name),
-            }
+            mapped_function_name(resolved, function.name).unwrap_or_else(
+                || function_name(function.name),
+            )
         };
         add_function_name(result, function.name, name)
     }
@@ -247,10 +243,9 @@ fn build_top_level_names(
     let _ = result.insert("main");
     for function in functions {
         let _ = result.insert(
-            match mapped_function_name(function_names, function.name) {
-                Some(name) => name,
-                None => function_name(function.name),
-            },
+            mapped_function_name(function_names, function.name).unwrap_or_else(
+                || function_name(function.name),
+            ),
         );
     }
     for value in constants {
@@ -624,10 +619,7 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
         },
         Constr { constructor, args, ty } => {
             let fields: Vec[(string, Expr)] = Vec::with_capacity(args.len());
-            let info = match constructor.tag {
-                Some(tag) => find_variant_info(variants, ty, tag),
-                None => Option::None,
-            };
+            let info = constructor.tag.and_then(|tag| find_variant_info(variants, ty, tag));
             if let Some(value) = info {
                 if value.compact {
                     fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
@@ -642,13 +634,7 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
                             Some(value) => value.compact,
                             None => false,
                         } {
-                            compact_variant_field_name(
-                                match constructor.tag {
-                                    Some(tag) => tag,
-                                    None => 0,
-                                },
-                                index,
-                            )
+                            compact_variant_field_name(constructor.tag.unwrap_or(0), index)
                         } else {
                             f"_{index}"
                         },
@@ -2230,10 +2216,7 @@ fn compile_constructor(
     let info = if constructor.is_struct {
         Option::None
     } else {
-        match constructor.tag {
-            Some(tag) => find_variant_info(env.variants, ty, tag),
-            None => Option::None,
-        }
+        constructor.tag.and_then(|tag| find_variant_info(env.variants, ty, tag))
     };
     if constructor.is_struct {
         for field_ty in struct_field_types(env, ty) {
@@ -2261,13 +2244,7 @@ fn compile_constructor(
             Some(value) => value.compact,
             None => false,
         } {
-            compact_variant_field_name(
-                match constructor.tag {
-                    Some(tag) => tag,
-                    None => 0,
-                },
-                index,
-            )
+            compact_variant_field_name(constructor.tag.unwrap_or(0), index)
         } else {
             f"_{index}"
         };
@@ -2337,23 +2314,16 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         },
         ConstrGet { expr, constructor, field_index: index, ty: _ } => {
             let owner_ty = anf::imm_type(expr);
-            let info = match constructor.tag {
-                Some(tag) => find_variant_info(env.variants, owner_ty, tag),
-                None => Option::None,
-            };
+            let info = constructor.tag.and_then(
+                |tag| find_variant_info(env.variants, owner_ty, tag),
+            );
             let field = if constructor.is_struct && index < constructor.fields.len() {
                 go_ident(constructor.fields[index])
             } else if match info {
                 Some(value) => value.compact,
                 None => false,
             } {
-                compact_variant_field_name(
-                    match constructor.tag {
-                        Some(tag) => tag,
-                        None => 0,
-                    },
-                    index,
-                )
+                compact_variant_field_name(constructor.tag.unwrap_or(0), index)
             } else {
                 f"_{index}"
             };
@@ -3248,10 +3218,7 @@ fn compile_select(
         ast::SelectMode::Normal => result.push(Stmt::Select { cases, default: lowered_default }),
         ast::SelectMode::Priority => {
             let nested: Ref[Block] = Ref::new(
-                match lowered_default {
-                    Some(body) => body,
-                    None => Block { stmts: Vec::new() },
-                },
+                lowered_default.unwrap_or_else(|| Block { stmts: Vec::new() }),
             );
             let mut index = cases.len() - 1;
             while index >= 0 {
@@ -5756,10 +5723,9 @@ fn test_main_function(
 ) -> Function {
     let cases: Vec[SwitchCase] = Vec::new();
     for test_case in test_cases {
-        let function_name = match mapped_function_name(function_names, test_case.1) {
-            Some(name) => name,
-            None => function_name(test_case.1),
-        };
+        let function_name = mapped_function_name(function_names, test_case.1).unwrap_or_else(
+            || function_name(test_case.1),
+        );
         let body_stmts: Vec[Stmt] = Vec::new();
         let arguments: Vec[Expr] = Vec::new();
         for argument in test_case.2 {
@@ -5931,10 +5897,7 @@ fn lower_with_test_cases(
         }
     } else {
         let stmts: Vec[Stmt] = Vec::new();
-        let entry_name = match mapped_function_name(function_names, "main") {
-            Some(name) => name,
-            None => "main0",
-        };
+        let entry_name = mapped_function_name(function_names, "main").unwrap_or("main0");
         stmts.push(
             Stmt::Expr {
                 expr: Expr::Call { func: Expr::Var { name: entry_name }, args: Vec::new() },

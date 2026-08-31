@@ -711,10 +711,9 @@ fn non_never_ct_type(primary: ctir::CtType, fallback: ctir::CtType) -> ctir::CtT
 
 fn lowered_expr_type(ctx: CtLowerContext, kind: ctir::CtExprKind, fallback: ctir::CtType) -> ctir::CtType {
     match kind {
-        ctir::CtExprKind::Call { target, args: _ } => match external_call_return_type(ctx, target) {
-            Some(value) => value,
-            None => fallback,
-        },
+        ctir::CtExprKind::Call { target, args: _ } => external_call_return_type(ctx, target).unwrap_or(
+            fallback,
+        ),
         ctir::CtExprKind::Tuple(values) => {
             let types: Vec[ctir::CtType] = Vec::new();
             for value in values {
@@ -1178,18 +1177,16 @@ fn build_comptime_module(
         if !module.derive_entries[index].public {
             continue
         }
-        let name = match module.derive_entries[index].export_name {
-            Some(value) => value,
-            None => short_comptime_name(module.derive_entries[index].name),
-        };
+        let name = module.derive_entries[index].export_name.unwrap_or_else(
+            || short_comptime_name(module.derive_entries[index].name),
+        );
         for other in 0..index {
             if !module.derive_entries[other].public {
                 continue
             }
-            let other_name = match module.derive_entries[other].export_name {
-                Some(value) => value,
-                None => short_comptime_name(module.derive_entries[other].name),
-            };
+            let other_name = module.derive_entries[other].export_name.unwrap_or_else(
+                || short_comptime_name(module.derive_entries[other].name),
+            );
             if name == other_name {
                 let function = functions[module.derive_entries[index].function_id];
                 diagnostics.push(

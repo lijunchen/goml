@@ -15,9 +15,8 @@ fn contains_id(values: Vec[isize], value: isize) -> bool {
 }
 
 fn predeclared_any_type(world: World, id: TypeId) -> bool {
-    let object = match lookup_local(world, world.universe, "any") {
-        Some(value) => value,
-        None => return false,
+    let Some(object) = lookup_local(world, world.universe, "any") else {
+        return false;
     };
     match get_object(world, object) {
         Some(value) => if value.type_id.value != id.value {

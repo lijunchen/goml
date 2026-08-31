@@ -119,10 +119,9 @@ fn validate_pack_closure(
     ty: repr::Type,
     context: string,
 ) -> Result[(), string] {
-    let definition = match ctx.closures_by_apply[apply] {
-        Some(value) => value,
-        None => return Result::Err(context + " references unknown closure apply function " + apply),
-    };
+    let definition = ctx.closures_by_apply[apply].ok_or(
+        context + " references unknown closure apply function " + apply,
+    )?;
     if repr::types_equal(ty, definition.signature) {} else {
         return Result::Err(context + " closure signature does not match " + apply)
     }
@@ -240,12 +239,9 @@ fn validate_closure_definition(
     if structs.contains(definition.environment) {} else {
         return Result::Err("closure apply function has no environment " + definition.environment)
     }
-    let function = match functions[definition.apply] {
-        Some(value) => value,
-        None => return Result::Err(
-            "closure environment has no apply function " + definition.environment,
-        ),
-    };
+    let function = functions[definition.apply].ok_or(
+        "closure environment has no apply function " + definition.environment,
+    )?;
     match function.origin {
         Inherent { owner: ClosureEnvironment { name }, method_name } if name
             == definition.environment

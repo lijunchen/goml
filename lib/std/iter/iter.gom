@@ -167,10 +167,9 @@ pub fn enumerate[I: Iterator](iterator: I) -> FnIterator[(isize, I::Item)] {
 pub fn zip[A: Iterator, B: Iterator](left: A, right: B) -> FnIterator[(A::Item, B::Item)] {
     FnIterator::from_fn(
         || {
-            match left.next() {
-                Some(left_value) => right.next().map(|right_value| (left_value, right_value)),
-                None => Option::None,
-            }
+            left.next().and_then(
+                |left_value| right.next().map(|right_value| (left_value, right_value)),
+            )
         },
     )
 }

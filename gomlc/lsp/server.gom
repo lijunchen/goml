@@ -50,28 +50,16 @@ const STATUS_METHOD: string = "goml/status";
 const CHECK_DIAGNOSTICS_METHOD: string = "goml/checkDiagnostics";
 
 fn required_field(value: json::Value, name: string) -> Result[json::Value, string] {
-    match json::field(value, name) {
-        Some(field) => Result::Ok(field),
-        None => Result::Err("missing field " + name),
-    }
+    json::field(value, name).ok_or("missing field " + name)
 }
 
 fn required_string_field(value: json::Value, name: string) -> Result[string, string] {
-    match required_field(value, name) {
-        Ok(field) => match json::as_string(field) {
-            Some(text) => Result::Ok(text),
-            None => Result::Err("field " + name + " must be a string"),
-        },
-        Err(error) => Result::Err(error),
-    }
+    json::as_string(required_field(value, name)?).ok_or("field " + name + " must be a string")
 }
 
 fn optional_int_field(value: json::Value, name: string, fallback: isize) -> isize {
     match json::field(value, name) {
-        Some(field) => match json::as_int(field) {
-            Some(number) => number,
-            None => fallback,
-        },
+        Some(field) => json::as_int(field).unwrap_or(fallback),
         None => fallback,
     }
 }
@@ -81,32 +69,22 @@ fn text_document(value: json::Value) -> Result[json::Value, string] {
 }
 
 fn text_document_uri(value: json::Value) -> Result[string, string] {
-    match text_document(value) {
-        Ok(document) => required_string_field(document, "uri"),
-        Err(error) => Result::Err(error),
-    }
+    text_document(value).and_then(|document| required_string_field(document, "uri"))
 }
 
 fn request_document(server: Server, params: json::Value) -> Result[Document, string] {
     let uri = text_document_uri(params)?;
-    match server_document(server, uri) {
-        Some(document) => Result::Ok(document),
-        None => Result::Err("document is not open: " + uri),
-    }
+    server_document(server, uri).ok_or("document is not open: " + uri)
 }
 
 fn request_position(params: json::Value) -> Result[Position, string] {
-    match required_field(params, "position") {
-        Ok(position) => parse_position(position),
-        Err(error) => Result::Err(error),
-    }
+    required_field(params, "position").and_then(|position| parse_position(position))
 }
 
 fn request_offset(document: Document, position: Position) -> Result[isize, string] {
-    match position_to_offset_checked_with_index(document.line_index, position) {
-        Some(offset) => Result::Ok(offset),
-        None => Result::Err("position is outside the document"),
-    }
+    position_to_offset_checked_with_index(document.line_index, position).ok_or(
+        "position is outside the document",
+    )
 }
 
 fn initialize_result() -> json::Value {
@@ -436,10 +414,7 @@ fn fix_action(diagnostic: json::Value, fix: json::Value) -> Option[json::Value] 
     };
     let replacement = json::as_string(replacement_value)?;
     let title = match json::field(fix, "title") {
-        Some(value) => match json::as_string(value) {
-            Some(value) => value,
-            None => "Apply suggested fix",
-        },
+        Some(value) => json::as_string(value).unwrap_or("Apply suggested fix"),
         None => "Apply suggested fix",
     };
     let preferred = match json::field(fix, "preferred") {
@@ -503,10 +478,7 @@ fn diagnostic_json(
     analysis: query::Analysis,
     value: tast::Diagnostic,
 ) -> json::Value {
-    let span = match value.span {
-        Some(span) => span,
-        None => ast::span(0, 0),
-    };
+    let span = value.span.unwrap_or_else(|| ast::span(0, 0));
     let fields: Vec[(string, json::Value)] = Vec::new();
     push_json_field(
         fields,
@@ -621,18 +593,14 @@ fn did_change(server: Server, params: json::Value) -> Result[(), string] {
     }
     let text = required_string_field(changes[changes.len() - 1], "text")?;
     change_document(server, uri, text, version);
-    match server_document(server, uri) {
-        Some(_) => Result::Ok(()),
-        None => Result::Err("document is not open: " + uri),
-    }
+    server_document(server, uri).map(|_| ()).ok_or("document is not open: " + uri)
 }
 
 fn check_diagnostics(server: Server, params: json::Value) -> Result[json::Value, string] {
     let uri = text_document_uri(params)?;
-    match server_document(server, uri) {
-        Some(document) => Result::Ok(publish_diagnostics(server, document)),
-        None => Result::Err("document is not open: " + uri),
-    }
+    server_document(server, uri).map(|document| publish_diagnostics(server, document)).ok_or(
+        "document is not open: " + uri,
+    )
 }
 
 fn did_close(server: Server, params: json::Value) -> Result[json::Value, string] {
@@ -646,10 +614,9 @@ fn did_close(server: Server, params: json::Value) -> Result[json::Value, string]
 
 fn did_save(server: Server, params: json::Value) -> Result[json::Value, string] {
     let uri = text_document_uri(params)?;
-    match server_document(server, uri) {
-        Some(document) => Result::Ok(publish_diagnostics(server, document)),
-        None => Result::Err("document is not open: " + uri),
-    }
+    server_document(server, uri).map(|document| publish_diagnostics(server, document)).ok_or(
+        "document is not open: " + uri,
+    )
 }
 
 fn request_result(server: Server, message: RpcMessage) -> Result[json::Value, string] {

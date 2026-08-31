@@ -19,10 +19,7 @@ fn comptime_short_name(value: string) -> string {
 }
 
 fn comptime_derive_name(value: ctir::CtDeriveEntry) -> string {
-    match value.export_name {
-        Some(name) => name,
-        None => comptime_short_name(value.name),
-    }
+    value.export_name.unwrap_or_else(|| comptime_short_name(value.name))
 }
 
 fn derive_attribute_at(value: Analysis, offset: isize) -> bool {
@@ -70,9 +67,8 @@ fn comptime_derive_paths(value: Analysis, canonical: string) -> Vec[string] {
     pending.push_back(canonical);
     let _ = seen.insert(canonical);
     while !pending.is_empty() {
-        let current = match pending.pop_front() {
-            Some(value) => value,
-            None => break,
+        let Some(current) = pending.pop_front() else {
+            break;
         };
         for environment in value.environments {
             for reexport in environment.reexports {

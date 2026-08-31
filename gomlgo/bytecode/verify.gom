@@ -265,9 +265,8 @@ fn check_optional_register(
     instruction: isize,
     register: Option[RegisterId],
 ) -> () {
-    match register {
-        Some(value) => check_register(function, diagnostics, block, instruction, value),
-        None => {},
+    if let Some(value) = register {
+        check_register(function, diagnostics, block, instruction, value)
     }
 }
 
@@ -1650,9 +1649,8 @@ fn check_instruction(
         },
         InstructionKind::MakeInterfaceMethodValue { target, method, receiver } => {
             check_register(function, diagnostics, block, instruction, target);
-            match receiver {
-                Some(value) => check_register(function, diagnostics, block, instruction, value),
-                None => {},
+            if let Some(value) = receiver {
+                check_register(function, diagnostics, block, instruction, value)
             }
             if method.value < 0 || method.value >= program.world.objects.len() {
                 report(
@@ -2069,9 +2067,8 @@ fn check_signature(
     match verified_signature_shape(program, function.signature) {
         Some(shape) => {
             let parameters: Vec[go_types::TypeId] = Vec::new();
-            match shape.receiver {
-                Some(receiver) => parameters.push(receiver),
-                None => {},
+            if let Some(receiver) = shape.receiver {
+                parameters.push(receiver)
             }
             for parameter in shape.parameters {
                 parameters.push(parameter)

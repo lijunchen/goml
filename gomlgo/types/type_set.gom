@@ -92,9 +92,8 @@ fn intersect_type_terms(world: World, left: TypeTerms, right: TypeTerms) -> Type
         let terms: Vec[UnionTerm] = Vec::new();
         for left_term in left.terms {
             for right_term in right.terms {
-                match term_intersection(world, left_term, right_term) {
-                    Some(value) => push_unique_term(world, terms, value),
-                    None => {},
+                if let Some(value) = term_intersection(world, left_term, right_term) {
+                    push_unique_term(world, terms, value)
                 }
             }
         }
@@ -670,9 +669,8 @@ fn type_set_basic_property(world: World, value: TypeId, property: isize) -> bool
         return false
     }
     for term in terms.terms {
-        let kind = match concrete_basic_kind(world, term.type_id) {
-            Some(value) => value,
-            None => return false,
+        let Some(kind) = concrete_basic_kind(world, term.type_id) else {
+            return false;
         };
         let valid = if property == 1 {
             integer_basic_kind(kind)

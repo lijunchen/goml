@@ -519,9 +519,8 @@ fn respects_static_inline_limits() -> () {
 fn exhausts_static_inline_budget() -> () {
     let file = lower_source("fn id(value: string) -> string { value }");
     let functions = inline_function_index(file.functions);
-    let callee = match functions["id"] {
-        Some(value) => value,
-        None => return testing::fail("missing inline candidate"),
+    let Some(callee) = functions["id"] else {
+        return testing::fail("missing inline candidate");
     };
     let args: Vec[Imm] = Vec::new();
     args.push(Imm::Prim { value: repr::Primitive::String { value: "x" }, ty: repr::Type::String });
@@ -636,9 +635,8 @@ fn invalidates_commuting_constructors_after_assignment() -> () {
 
 fn encoded_function(output: string, name: string) -> string {
     let marker = "fn " + name + "(";
-    let start = match text::find(output, marker) {
-        Some(value) => value,
-        None => return "",
+    let Some(start) = text::find(output, marker) else {
+        return "";
     };
     let suffix = output.byte_slice(start, output.byte_len());
     let end = match text::find(suffix, "\n}\n\n") {

@@ -445,10 +445,9 @@ fn run_toolchain_build(args: Vec[string]) -> () {
             Err(error) => Result::Err(error),
         }
     } else {
-        match compile_toolchain_project_request(request.command, request.without_roots) {
-            Ok(compilation) => write_toolchain_package(request.command, compilation, Option::None),
-            Err(error) => Result::Err(error),
-        }
+        compile_toolchain_project_request(request.command, request.without_roots).and_then(
+            |compilation| write_toolchain_package(request.command, compilation, Option::None),
+        )
     };
     if let Err(error) = result {
         fail(COMPILE_ERROR_PREFIX + error)
@@ -480,29 +479,14 @@ fn parse_toolchain_pack_args(args: Vec[string]) -> Result[ToolchainPackArgs, str
         index += 2;
     }
     if inputs.is_empty() {
-        Result::Err("toolchain pack requires --input")
-    } else if sources.is_empty() {
-        Result::Err("toolchain pack requires --source")
-    } else if output.is_none() {
-        Result::Err("toolchain pack requires --output")
-    } else if counter_file.is_none() {
-        Result::Err("toolchain pack requires --counter-file")
-    } else {
-        Result::Ok(
-            ToolchainPackArgs {
-                inputs,
-                sources,
-                output: match output {
-                    Some(value) => value,
-                    None => "",
-                },
-                counter_file: match counter_file {
-                    Some(value) => value,
-                    None => "",
-                },
-            },
-        )
+        return Result::Err("toolchain pack requires --input")
     }
+    if sources.is_empty() {
+        return Result::Err("toolchain pack requires --source")
+    }
+    let output = output.ok_or("toolchain pack requires --output")?;
+    let counter_file = counter_file.ok_or("toolchain pack requires --counter-file")?;
+    Result::Ok(ToolchainPackArgs { inputs, sources, output, counter_file })
 }
 
 fn toolchain_source_digest(paths: Vec[string]) -> Result[string, string] {

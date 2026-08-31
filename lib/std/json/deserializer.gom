@@ -999,15 +999,13 @@ impl serde::Deserializer for JsonDeserializer {
                 let _ = representation;
                 let _ = length;
                 let next = next_json_object_field(self, first.get(), done.get())?;
-                if next.2.is_some() {
+                let field = next.2.map(|name| serde::FieldKey::Name(name));
+                if field.is_some() {
                     index.set(index.get() + 1)
                 }
                 first.set(next.0);
                 done.set(next.1);
-                match next.2 {
-                    Some(name) => Result::Ok(Option::Some(serde::FieldKey::Name(name))),
-                    None => Result::Ok(Option::None),
-                }
+                Result::Ok(field)
             },
             _ => Result::Err(json_error(self.parser, "variant field outside a variant")),
         }

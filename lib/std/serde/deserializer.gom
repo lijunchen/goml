@@ -72,10 +72,7 @@ pub fn variant_key_matches(value: VariantKey, index: isize, name: string) -> boo
 }
 
 pub fn required_field[T](value: Option[T], name: string) -> Result[T, string] {
-    match value {
-        Some(value) => Result::Ok(value),
-        None => Result::Err("missing field `" + name + "`"),
-    }
+    value.ok_or("missing field `" + name + "`")
 }
 
 fn schema_field_index(fields: Vec[(string, Schema)], key: FieldKey) -> isize {

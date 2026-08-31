@@ -268,10 +268,7 @@ fn lower_diagnostic(
 fn package_node(package_value: execution::ExecutionPackage, node: syntax::NodeId) -> Option[
     syntax::SyntaxNode,
 ] {
-    match package_value.syntax {
-        Some(value) => syntax::get_node(value.arena, node),
-        None => Option::None,
-    }
+    package_value.syntax.and_then(|value| syntax::get_node(value.arena, node))
 }
 
 fn signature_type_parameters(world: go_types::World, signature: go_types::TypeId) -> Vec[
@@ -508,9 +505,8 @@ fn inherit_literal_type_parameters(
     for index in 0..sources.len() {
         let source = sources[index];
         let package_value = program.packages[source.package_index];
-        let package_syntax = match package_value.syntax {
-            Some(value) => value,
-            None => continue,
+        let Some(package_syntax) = package_value.syntax else {
+            continue;
         };
         let node = if source.literal {
             source.declaration
@@ -793,29 +789,24 @@ fn node_type(builder: FunctionBuilder, node: syntax::NodeId) -> Result[go_types:
         Ok(value) => Result::Ok(value.type_id),
         Err(message) => {
             let definition_type = match execution::require_definition_index(builder.index, node) {
-                Ok(fact_index) => match builder.index.definitions[fact_index].object {
-                    Some(object) => object_type(builder, object),
-                    None => Option::None,
-                },
+                Ok(fact_index) => builder.index.definitions[fact_index].object.and_then(
+                    |object| object_type(builder, object),
+                ),
                 Err(_) => Option::None,
             };
             match definition_type {
                 Some(value) => Result::Ok(value),
                 None => {
                     let use_type = match execution::require_use_index(builder.index, node) {
-                        Ok(fact_index) => match builder.index.uses[fact_index].object {
-                            Some(object) => object_type(builder, object),
-                            None => Option::None,
-                        },
+                        Ok(fact_index) => builder.index.uses[fact_index].object.and_then(
+                            |object| object_type(builder, object),
+                        ),
                         Err(_) => Option::None,
                     };
-                    match use_type {
-                        Some(value) => Result::Ok(value),
-                        None => Result::Err(
-                            message + " at "
-                                + syntax::node_key(builder.syntax, node).unwrap_or("unknown node"),
-                        ),
-                    }
+                    use_type.ok_or(
+                        message + " at "
+                            + syntax::node_key(builder.syntax, node).unwrap_or("unknown node"),
+                    )
                 },
             }
         },
@@ -832,10 +823,9 @@ fn definition_object(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
 }
 
 fn use_object(builder: FunctionBuilder, node: syntax::NodeId) -> Result[go_types::ObjectId, string] {
-    match builder.index.uses[execution::require_use_index(builder.index, node)?].object {
-        Some(object) => Result::Ok(object),
-        None => Result::Err(f"use fact has no object for node {node.value}"),
-    }
+    builder.index.uses[execution::require_use_index(builder.index, node)?].object.ok_or(
+        f"use fact has no object for node {node.value}",
+    )
 }
 
 fn identifier(builder: FunctionBuilder, node: syntax::NodeId) -> Result[string, string] {
@@ -2023,10 +2013,7 @@ fn field_path_type(builder: FunctionBuilder, source: go_types::TypeId, fields: V
 ] {
     let mut current = source;
     for field in fields {
-        current = match pointer_element(builder, current) {
-            Some(element) => element,
-            None => current,
-        };
+        current = pointer_element(builder, current).unwrap_or(current);
         match go_types::get_type(builder.world, go_types::underlying(builder.world, current)) {
             Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => if field
                 < 0
@@ -2652,9 +2639,8 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             };
             emit(builder, node, InstructionKind::Receive { value, ok, channel })?;
             let result = Vec::from_array([value]);
-            match ok {
-                Some(register) => result.push(register),
-                None => {},
+            if let Some(register) = ok {
+                result.push(register)
             }
             Result::Ok(result)
         } else {
@@ -2788,9 +2774,8 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             }
         },
         syntax::SyntaxKind::IndexExpr { expression, lbrack: _, index, rbrack: _ } => {
-            match lower_generic_function_value(builder, node)? {
-                Some(value) => return Result::Ok(Vec::from_array([value])),
-                None => {},
+            if let Some(value) = lower_generic_function_value(builder, node)? {
+                return Result::Ok(Vec::from_array([value]))
             }
             let expression_type = node_type(builder, expression)?;
             if pointer_to_array(builder, expression_type) {
@@ -2829,9 +2814,8 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                 InstructionKind::IndexValue { target, base, index: coerced_index, ok },
             )?;
             let result = Vec::from_array([target]);
-            match ok {
-                Some(value) => result.push(value),
-                None => {},
+            if let Some(value) = ok {
+                result.push(value)
             }
             Result::Ok(result)
         },
@@ -2982,9 +2966,8 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                 InstructionKind::TypeAssert { target, ok, source, type_id: result_types[0] },
             )?;
             let values = Vec::from_array([target]);
-            match ok {
-                Some(value) => values.push(value),
-                None => {},
+            if let Some(value) = ok {
+                values.push(value)
             }
             Result::Ok(values)
         },
@@ -3323,9 +3306,8 @@ fn lower_if(
     body: syntax::NodeId,
     else_branch: Option[syntax::NodeId],
 ) -> Result[(), string] {
-    match initialization {
-        Some(value) => lower_statement(builder, value)?,
-        None => {},
+    if let Some(value) = initialization {
+        lower_statement(builder, value)?
     }
     let condition = lower_single_expression(builder, condition)?;
     let then_block = new_block(builder);
@@ -3348,9 +3330,8 @@ fn lower_if(
         terminate(builder, node, TerminatorKind::Jump { target: join_block, arguments: Vec::new() })?
     }
     switch_to(builder, else_block);
-    match else_branch {
-        Some(value) => lower_statement(builder, value)?,
-        None => {},
+    if let Some(value) = else_branch {
+        lower_statement(builder, value)?
     }
     if !current_terminated(builder) {
         terminate(builder, node, TerminatorKind::Jump { target: join_block, arguments: Vec::new() })?
@@ -3393,9 +3374,8 @@ fn lower_for(
     label: Option[string],
 ) -> Result[(), string] {
     let iteration_locals = for_definition_locals(builder, initialization)?;
-    match initialization {
-        Some(value) => lower_statement(builder, value)?,
-        None => {},
+    if let Some(value) = initialization {
+        lower_statement(builder, value)?
     }
     let condition_block = new_block(builder);
     let body_block = new_block(builder);
@@ -3446,9 +3426,8 @@ fn lower_for(
     for local in iteration_locals {
         emit(builder, node, InstructionKind::CloneLocal { local })?
     }
-    match post {
-        Some(value) => lower_statement(builder, value)?,
-        None => {},
+    if let Some(value) = post {
+        lower_statement(builder, value)?
     }
     if !current_terminated(builder) {
         terminate(
@@ -3479,13 +3458,11 @@ fn renew_range_definition_locals(
     if !define {
         return Result::Ok(())
     }
-    match key {
-        Some(target) => renew_definition_local(builder, target)?,
-        None => {},
+    if let Some(target) = key {
+        renew_definition_local(builder, target)?
     }
-    match value {
-        Some(target) => renew_definition_local(builder, target)?,
-        None => {},
+    if let Some(target) = value {
+        renew_definition_local(builder, target)?
     }
     Result::Ok(())
 }
@@ -4087,9 +4064,8 @@ fn lower_switch(
     body: syntax::NodeId,
     label: Option[string],
 ) -> Result[(), string] {
-    match initialization {
-        Some(value) => lower_statement(builder, value)?,
-        None => {},
+    if let Some(value) = initialization {
+        lower_statement(builder, value)?
     }
     let tag_value = match tag {
         Some(value) => lower_single_expression(builder, value)?,
@@ -4207,9 +4183,8 @@ fn type_switch_binding(
     variable: Option[syntax::NodeId],
     target: BlockId,
 ) -> Result[(BlockId, Option[TypeSwitchBinding]), string] {
-    let variable = match variable {
-        Some(value) => value,
-        None => return Result::Ok((target, Option::None)),
+    let Some(variable) = variable else {
+        return Result::Ok((target, Option::None));
     };
     if identifier(builder, variable)? == "_" {
         return Result::Ok((target, Option::None))
@@ -4282,9 +4257,8 @@ fn lower_type_switch(
     body: syntax::NodeId,
     label: Option[string],
 ) -> Result[(), string] {
-    match initialization {
-        Some(value) => lower_statement(builder, value)?,
-        None => {},
+    if let Some(value) = initialization {
+        lower_statement(builder, value)?
     }
     let guard = type_switch_guard(builder, assignment)?;
     let source = lower_single_expression(builder, guard.0)?;
@@ -4482,9 +4456,8 @@ fn lower_select_operation(builder: FunctionBuilder, clause: SelectClause) -> Res
     SelectOperation,
     string,
 ] {
-    let communication = match clause.communication {
-        Some(value) => value,
-        None => return Result::Ok(SelectOperation::Default),
+    let Some(communication) = clause.communication else {
+        return Result::Ok(SelectOperation::Default);
     };
     match node_kind(builder, communication) {
         syntax::SyntaxKind::SendStmt { channel, arrow: _, value } => {
@@ -4543,9 +4516,8 @@ fn lower_select_binding(builder: FunctionBuilder, clause: SelectClause) -> Resul
             }
             let targets = lower_assignment_targets(builder, binding.left)?;
             let values = Vec::from_array([binding.value]);
-            match binding.ok {
-                Some(value) => values.push(value),
-                None => {},
+            if let Some(value) = binding.ok {
+                values.push(value)
             }
             store_assignment_values(builder, clause.node, binding.left, targets, values)
         } else {
@@ -4890,9 +4862,8 @@ fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), 
             Result::Ok(())
         },
         syntax::SyntaxKind::IfStmt { if_pos: _, init, condition: _, body, else_branch } => {
-            match init {
-                Some(value) => collect_labels(builder, value)?,
-                None => {},
+            if let Some(value) = init {
+                collect_labels(builder, value)?
             }
             collect_labels(builder, body)?;
             match else_branch {
@@ -4901,13 +4872,11 @@ fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), 
             }
         },
         syntax::SyntaxKind::ForStmt { for_pos: _, init, condition: _, post, body } => {
-            match init {
-                Some(value) => collect_labels(builder, value)?,
-                None => {},
+            if let Some(value) = init {
+                collect_labels(builder, value)?
             }
-            match post {
-                Some(value) => collect_labels(builder, value)?,
-                None => {},
+            if let Some(value) = post {
+                collect_labels(builder, value)?
             }
             collect_labels(builder, body)
         },
@@ -4927,9 +4896,8 @@ fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), 
             assignment: _,
             body,
         } => {
-            match init {
-                Some(value) => collect_labels(builder, value)?,
-                None => {},
+            if let Some(value) = init {
+                collect_labels(builder, value)?
             }
             collect_labels(builder, body)
         },

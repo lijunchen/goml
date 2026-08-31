@@ -112,15 +112,11 @@ fn verify_constructor(
     args: Vec[Imm],
     ty: repr::Type,
 ) -> Result[(), string] {
-    let owner = match nominal_type_name(ty) {
-        Some(value) => value,
-        None => return Result::Err("constructor result has a non-nominal type"),
-    };
+    let owner = nominal_type_name(ty).ok_or("constructor result has a non-nominal type")?;
     let expected: Vec[repr::Type] = if constructor.is_struct {
-        let definition = match state.structs[owner] {
-            Some(value) => value,
-            None => return Result::Err("constructor references unknown struct " + owner),
-        };
+        let definition = state.structs[owner].ok_or(
+            "constructor references unknown struct " + owner,
+        )?;
         if constructor.fields.is_empty() {
             let fields: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
             for field in definition.fields {
@@ -140,10 +136,7 @@ fn verify_constructor(
             fields
         }
     } else {
-        let definition = match state.enums[owner] {
-            Some(value) => value,
-            None => return Result::Err("constructor references unknown enum " + owner),
-        };
+        let definition = state.enums[owner].ok_or("constructor references unknown enum " + owner)?;
         let name = constructor_variant_name(constructor.name);
         let mut found: Option[Vec[repr::Type]] = Option::None;
         for variant in definition.variants {
@@ -197,10 +190,7 @@ fn verify_jump(
     expected_ty: repr::Type,
     joins: Vec[JoinSignature],
 ) -> Result[(), string] {
-    let signature = match find_join_signature(joins, target) {
-        Some(value) => value,
-        None => return Result::Err("jump to out-of-scope join " + target),
-    };
+    let signature = find_join_signature(joins, target).ok_or("jump to out-of-scope join " + target)?;
     if args.len() != signature.params.len() {
         return Result::Err("jump argument count does not match join " + target)
     }
@@ -386,29 +376,22 @@ fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
         },
         ConstrGet { expr, constructor, field_index, ty } => {
             verify_imm(expr)?;
-            let owner = match nominal_type_name(imm_type(expr)) {
-                Some(value) => value,
-                None => return Result::Err("constructor projection has a non-nominal source"),
-            };
+            let owner = nominal_type_name(imm_type(expr)).ok_or(
+                "constructor projection has a non-nominal source",
+            )?;
             let fields: Vec[repr::Type] = if constructor.is_struct {
-                let definition = match state.structs[owner] {
-                    Some(value) => value,
-                    None => return Result::Err(
-                        "constructor projection references unknown struct " + owner,
-                    ),
-                };
+                let definition = state.structs[owner].ok_or(
+                    "constructor projection references unknown struct " + owner,
+                )?;
                 let result: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
                 for field in definition.fields {
                     result.push(field.1)
                 }
                 result
             } else {
-                let definition = match state.enums[owner] {
-                    Some(value) => value,
-                    None => return Result::Err(
-                        "constructor projection references unknown enum " + owner,
-                    ),
-                };
+                let definition = state.enums[owner].ok_or(
+                    "constructor projection references unknown enum " + owner,
+                )?;
                 let name = constructor_variant_name(constructor.name);
                 let mut found: Option[Vec[repr::Type]] = Option::None;
                 for variant in definition.variants {
@@ -416,12 +399,9 @@ fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
                         found = Option::Some(enum_variant_types(variant.fields));
                     }
                 }
-                match found {
-                    Some(value) => value,
-                    None => return Result::Err(
-                        "constructor projection references unknown variant " + owner + "::" + name,
-                    ),
-                }
+                found.ok_or(
+                    "constructor projection references unknown variant " + owner + "::" + name,
+                )?
             };
             if field_index < 0 || field_index >= fields.len() {
                 Result::Err("constructor projection field index is out of bounds")
@@ -473,12 +453,9 @@ fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
                 Func { params: _, ret_ty: _ } => (),
                 _ => return Result::Err("closure pack has a non-function type"),
             }
-            let definition = match state.closures[apply] {
-                Some(value) => value,
-                None => return Result::Err(
-                    "closure pack references unknown apply function " + apply,
-                ),
-            };
+            let definition = state.closures[apply].ok_or(
+                "closure pack references unknown apply function " + apply,
+            )?;
             verify_type(ty, definition.signature, "closure pack signature does not match " + apply)?;
             match imm_type(environment) {
                 ClosureEnvironment { name } if name == definition.environment => Result::Ok(()),
@@ -571,12 +548,9 @@ fn verify_closure_definition(
     if structs.contains(definition.environment) {} else {
         return Result::Err("closure apply function has no environment " + definition.environment)
     }
-    let function = match functions[definition.apply] {
-        Some(value) => value,
-        None => return Result::Err(
-            "closure environment has no apply function " + definition.environment,
-        ),
-    };
+    let function = functions[definition.apply].ok_or(
+        "closure environment has no apply function " + definition.environment,
+    )?;
     match function.origin {
         Inherent { owner: ClosureEnvironment { name }, method_name } if name
             == definition.environment

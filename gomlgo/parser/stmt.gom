@@ -486,10 +486,7 @@ fn parse_switch_statement(parser: Parser) -> ast::Node {
                 ],
             )
         } else {
-            let tag = match tag_or_guard {
-                Some(value) => expression_from_statement(value),
-                None => Option::None,
-            };
+            let tag = tag_or_guard.and_then(|value| expression_from_statement(value));
             Vec::from_array(
                 [
                     ast::field("switch", ast::int_value(keyword.start)),

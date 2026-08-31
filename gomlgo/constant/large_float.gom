@@ -127,9 +127,8 @@ fn binary_float_from_ratio(
     } else {
         denominator
     };
-    let divided = match natural_div_rem(scaled_numerator, scaled_denominator) {
-        Ok(value) => value,
-        Err(_) => return Option::None,
+    let Ok(divided) = natural_div_rem(scaled_numerator, scaled_denominator) else {
+        return Option::None;
     };
     let mut magnitude = divided.0;
     let doubled_remainder = natural_mul_small(divided.1, 2.to_u32());

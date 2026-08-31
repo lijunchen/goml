@@ -67,10 +67,7 @@ fn target_directory(target: string) -> Result[string, string] {
     let resolved = path::absolute_structured(target).map_err(|error| error.to_string())?;
     let resolved = canonical(resolved)?;
     if fs::is_file(resolved) {
-        match path::parent(resolved) {
-            Some(value) => Result::Ok(value),
-            None => Result::Err("target file has no parent directory"),
-        }
+        path::parent(resolved).ok_or("target file has no parent directory")
     } else if fs::is_dir(resolved) {
         Result::Ok(resolved)
     } else {
@@ -200,10 +197,7 @@ fn black_box_test_files(tests_dir: string) -> Result[Vec[string], string] {
 }
 
 fn output_text(value: bytes::Bytes) -> string {
-    match value.to_string_utf8() {
-        Ok(value) => value,
-        Err(_) => "<non-UTF-8 output>",
-    }
+    value.to_string_utf8().unwrap_or("<non-UTF-8 output>")
 }
 
 fn compiler_package_info(compiler: string, module_dir: string, files: Vec[string]) -> Result[
@@ -229,56 +223,28 @@ fn compiler_package_info(compiler: string, module_dir: string, files: Vec[string
         },
         _ => return Result::Err("package-info omitted protocol_version"),
     }
-    let values = match json::field(root, "files") {
-        Some(value) => match json::as_array(value) {
-            Some(values) => values,
-            None => return Result::Err("package-info files must be an array"),
-        },
-        None => return Result::Err("package-info omitted files"),
-    };
+    let files = json::field(root, "files").ok_or("package-info omitted files")?;
+    let values = json::as_array(files).ok_or("package-info files must be an array")?;
     let result: Vec[PackageInfoFile] = Vec::new();
     for value in values {
-        let source_path = match json::field(value, "path") {
-            Some(value) => match json::as_string(value) {
-                Some(value) => value,
-                None => return Result::Err("package-info path must be a string"),
-            },
-            None => return Result::Err("package-info file omitted path"),
-        };
-        let package_name = match json::field(value, "package") {
-            Some(value) => match json::as_string(value) {
-                Some(value) => value,
-                None => return Result::Err("package-info package must be a string"),
-            },
-            None => return Result::Err("package-info file omitted package"),
-        };
-        let package_explicit = match json::field(value, "package_explicit") {
-            Some(value) => match json::as_bool(value) {
-                Some(value) => value,
-                None => return Result::Err("package_explicit must be boolean"),
-            },
-            None => return Result::Err("package-info omitted package_explicit"),
-        };
-        let uses = match json::field(value, "uses") {
-            Some(value) => match json::as_array(value) {
-                Some(value) => value,
-                None => return Result::Err("package-info uses must be an array"),
-            },
-            None => return Result::Err("package-info omitted uses"),
-        };
+        let source_path = json::as_string(
+            json::field(value, "path").ok_or("package-info file omitted path")?,
+        ).ok_or("package-info path must be a string")?;
+        let package_name = json::as_string(
+            json::field(value, "package").ok_or("package-info file omitted package")?,
+        ).ok_or("package-info package must be a string")?;
+        let package_explicit = json::as_bool(
+            json::field(value, "package_explicit").ok_or("package-info omitted package_explicit")?,
+        ).ok_or("package_explicit must be boolean")?;
+        let uses = json::as_array(json::field(value, "uses").ok_or("package-info omitted uses")?).ok_or(
+            "package-info uses must be an array",
+        )?;
         let parsed_uses: Vec[PackageInfoUse] = Vec::new();
         for use_value in uses {
-            let use_path = match json::field(use_value, "path") {
-                Some(value) => match json::as_string(value) {
-                    Some(value) => value,
-                    None => return Result::Err("use path must be a string"),
-                },
-                None => return Result::Err("use omitted path"),
-            };
-            let alias = match json::field(use_value, "alias") {
-                Some(value) => json::as_string(value),
-                None => Option::None,
-            };
+            let use_path = json::as_string(
+                json::field(use_value, "path").ok_or("use omitted path")?,
+            ).ok_or("use path must be a string")?;
+            let alias = json::field(use_value, "alias").and_then(|value| json::as_string(value));
             parsed_uses.push(PackageInfoUse { path: use_path, alias })
         }
         result.push(
@@ -789,9 +755,8 @@ fn discover_graph(
     let seen: collections::HashSet[string] = collections::HashSet::new();
     pending.push_back(entry_package);
     while !pending.is_empty() {
-        let package_name = match pending.pop_front() {
-            Some(value) => value,
-            None => break,
+        let Some(package_name) = pending.pop_front() else {
+            break;
         };
         if seen.insert(package_name) {
             let package_value = load_package(
@@ -1026,9 +991,8 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
         }
     }
     while !pending.is_empty() {
-        let package_name = match pending.pop_front() {
-            Some(value) => value,
-            None => break,
+        let Some(package_name) = pending.pop_front() else {
+            break;
         };
         if seen.insert(package_name) {
             let current = load_package(

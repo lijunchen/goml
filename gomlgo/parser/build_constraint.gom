@@ -37,10 +37,7 @@ fn build_version_tag(value: string) -> isize {
     if value == "go1" {
         0
     } else if value.starts_with("go1.") && value.byte_len() > 4 {
-        match num::parse_int_structured(value.byte_slice(4, value.byte_len())) {
-            Ok(version) => version,
-            Err(_) => -1,
-        }
+        num::parse_int_structured(value.byte_slice(4, value.byte_len())).unwrap_or(-1)
     } else {
         -1
     }

@@ -1712,14 +1712,10 @@ fn hashmap_option_info(
     match find_instance(instances, builtin.option.name, args) {
         Some(instance) => {
             let definition = find_enum(enums, instance.name);
-            let variants = match definition {
-                Some(value) => value.option_variants,
-                None => Option::None,
-            };
-            let variants = match variants {
-                Some(value) => value,
-                None => (builtin.option.some.name, builtin.option.none.name),
-            };
+            let variants = definition.and_then(|value| value.option_variants);
+            let variants = variants.unwrap_or_else(
+                || (builtin.option.some.name, builtin.option.none.name),
+            );
             let mut some_tag = 0;
             let mut none_tag = 1;
             let compact = match definition {

@@ -290,42 +290,37 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
         } else {
             let parsed_target_dir = option_value(args, index, argument, "--target-dir")?;
             index = parsed_target_dir.1;
-            if parsed_target_dir.0.is_some() {
+            if let Some(value) = parsed_target_dir.0 {
                 if target_dir.is_some() {
                     return Result::Err("--target-dir cannot be repeated")
                 } else {
-                    target_dir = parsed_target_dir.0;
+                    target_dir = Option::Some(value);
                 }
             } else {
                 let parsed_compiler = option_value(args, index, argument, "--compiler")?;
                 index = parsed_compiler.1;
-                if parsed_compiler.0.is_some() {
+                if let Some(value) = parsed_compiler.0 {
                     if compiler.is_some() {
                         return Result::Err("--compiler cannot be repeated")
                     } else {
-                        compiler = parsed_compiler.0;
+                        compiler = Option::Some(value);
                     }
                 } else if command == TEST_COMMAND {
                     let parsed_timeout = option_value(args, index, argument, "--timeout")?;
                     index = parsed_timeout.1;
-                    if parsed_timeout.0.is_some() {
-                        let value = parsed_timeout.0.unwrap_or("30s");
+                    if let Some(value) = parsed_timeout.0 {
                         test_timeout_ms = parse_duration(value)?;
                     } else {
                         let parsed_jobs = option_value(args, index, argument, "--jobs")?;
                         index = parsed_jobs.1;
-                        if parsed_jobs.0.is_some() {
-                            let value = util::parse_positive_int(parsed_jobs.0.unwrap_or("1"))?;
+                        if let Some(value) = parsed_jobs.0 {
+                            let value = util::parse_positive_int(value)?;
                             test_jobs = value;
                             build_jobs = value;
                         } else {
                             let parsed_kind = option_value(args, index, argument, "--kind")?;
                             index = parsed_kind.1;
-                            if parsed_kind.0.is_some() {
-                                let value = match parsed_kind.0 {
-                                    Some(value) => value,
-                                    None => ALL_TEST_KIND,
-                                };
+                            if let Some(value) = parsed_kind.0 {
                                 match value {
                                     INTERNAL_TEST_KIND | EXTERNAL_TEST_KIND | ALL_TEST_KIND => {
                                         test_kind = value;
@@ -501,10 +496,7 @@ fn toolchain_finalize_value(args: Vec[string], name: string) -> Result[string, s
             return Result::Err("unexpected argument " + args[index])
         }
     }
-    match result {
-        Some(value) => Result::Ok(value),
-        None => Result::Err(name + " is required"),
-    }
+    result.ok_or(name + " is required")
 }
 
 fn run_toolchain_finalize(args: Vec[string]) -> Result[(), string] {

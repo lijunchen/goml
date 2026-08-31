@@ -188,12 +188,7 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
                     value.name,
                     trait_names,
                 ),
-                body: tast::Callable::Function(
-                    match method.default_name {
-                        Some(name) => name,
-                        None => method.name,
-                    },
-                ),
+                body: tast::Callable::Function(method.default_name.unwrap_or(method.name)),
             },
         )
     }
@@ -257,12 +252,7 @@ fn artifact_method_scheme(
         type_params,
         constraints: artifact_method_constraints(value, constraint_start),
         ty: artifact_function_type(value.params, value.ret_ty),
-        body: tast::Callable::Function(
-            match artifact_default_method_name(value) {
-                Some(name) => name,
-                None => value.name,
-            },
-        ),
+        body: tast::Callable::Function(artifact_default_method_name(value).unwrap_or(value.name)),
     }
 }
 
@@ -645,10 +635,7 @@ fn artifact_comptime_unit(value: ctir::CtModule, exports: artifact::ArtifactPack
         module.origins.set(
             index,
             ctir::CtOrigin {
-                source_path: match path::file_name(origin.source_path) {
-                    Some(value) => value,
-                    None => origin.source_path,
-                },
+                source_path: path::file_name(origin.source_path).unwrap_or(origin.source_path),
                 start: origin.start,
                 end: origin.end,
             },

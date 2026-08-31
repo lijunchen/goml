@@ -15,10 +15,7 @@ pub struct SignatureResult {
 fn call_target_name(value: Analysis, fact: tast::CallFact) -> string {
     match fact.target {
         Local(local) => local.hint,
-        Definition(_) => match token_text(value, fact.callee_span.start) {
-            Some(name) => name,
-            None => "<function>",
-        },
+        Definition(_) => token_text(value, fact.callee_span.start).unwrap_or("<function>"),
         Callable(callable) => callable_name(callable),
         Constructor(constructor) => constructor.name,
         Unresolved(name) => name,
@@ -292,16 +289,14 @@ fn symbol_parameter_names(
     expected_owner: Option[string],
 ) -> Option[Vec[string]] {
     if symbol.source_path == value.source_path {
-        match value.lowered.ast {
-            Some(file) => file_parameter_names(file, expected, expected_owner, false),
-            None => Option::None,
-        }
+        value.lowered.ast.and_then(
+            |file| file_parameter_names(file, expected, expected_owner, false),
+        )
     } else {
         match source_by_path(value.sources, symbol.source_path) {
-            Some(source) => match ast::lower(parser::parse(source.source)).ast {
-                Some(file) => file_parameter_names(file, expected, expected_owner, false),
-                None => Option::None,
-            },
+            Some(source) => ast::lower(parser::parse(source.source)).ast.and_then(
+                |file| file_parameter_names(file, expected, expected_owner, false),
+            ),
             None => Option::None,
         }
     }
@@ -338,10 +333,9 @@ fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Ve
     let expected_owner = signature_target_owner(fact.target);
     match fact.target {
         Unresolved(_) => unresolved_parameter_names(value, expected),
-        _ => match signature_target_symbol(value, fact) {
-            Some(symbol) => symbol_parameter_names(value, symbol, expected, expected_owner),
-            None => Option::None,
-        },
+        _ => signature_target_symbol(value, fact).and_then(
+            |symbol| symbol_parameter_names(value, symbol, expected, expected_owner),
+        ),
     }
 }
 

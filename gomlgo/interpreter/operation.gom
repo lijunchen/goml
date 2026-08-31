@@ -253,10 +253,9 @@ pub fn constant_value(
     constant_kind: string,
     exact: string,
 ) -> Result[Value, string] {
-    let constant = match constant::constant_from_exact(constant_kind, exact) {
-        Some(value) => value,
-        None => return Result::Err("invalid exact constant " + exact),
-    };
+    let constant = constant::constant_from_exact(constant_kind, exact).ok_or(
+        "invalid exact constant " + exact,
+    )?;
     let kind = basic_kind(world, type_id).ok_or("constant type is not basic")?;
     if kind == go_types::BasicKind::Complex64 || kind == go_types::BasicKind::Complex128
         || kind == go_types::BasicKind::UntypedComplex {

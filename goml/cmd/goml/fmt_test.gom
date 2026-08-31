@@ -6,10 +6,7 @@ use std::process;
 use std::testing;
 
 fn fmt_status_code(output: process::Output) -> isize {
-    match process::ExitStatus::code(process::Output::status(output)) {
-        Some(value) => value,
-        None => -1,
-    }
+    process::ExitStatus::code(process::Output::status(output)).unwrap_or(-1)
 }
 
 fn write_fmt_project(root: string) -> () {

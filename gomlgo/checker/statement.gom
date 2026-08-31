@@ -30,18 +30,14 @@ fn new_node_scope(
 }
 
 fn default_operand_type(state: CheckState, operand: Operand) -> go_types::TypeId {
-    match default_type_for_kind(state, basic_kind(state, operand.type_id)) {
-        Some(type_id) => type_id,
-        None => operand.type_id,
-    }
+    default_type_for_kind(state, basic_kind(state, operand.type_id)).unwrap_or(operand.type_id)
 }
 
 fn default_type_for_kind(state: CheckState, kind: go_types::BasicKind) -> Option[go_types::TypeId] {
     if kind == go_types::BasicKind::UntypedRune {
-        match go_types::lookup(state.world, state.world.universe, "rune") {
-            Some(object) => go_types::get_object(state.world, object).map(|object| object.type_id),
-            None => Option::None,
-        }
+        go_types::lookup(state.world, state.world.universe, "rune").and_then(
+            |object| go_types::get_object(state.world, object).map(|object| object.type_id),
+        )
     } else {
         constant::default_type(kind).map(|kind| find_basic_kind(state, kind))
     }
@@ -976,10 +972,9 @@ fn assign_existing(
     source_node: syntax::NodeId,
     source: Operand,
 ) -> () {
-    let assignment_object = match assignment_identifier_name(state, node) {
-        Some(name) => go_types::lookup(state.world, scope, name),
-        None => Option::None,
-    };
+    let assignment_object = assignment_identifier_name(state, node).and_then(
+        |name| go_types::lookup(state.world, scope, name),
+    );
     let assignment_object_used = match assignment_object {
         Some(object) => local_object_used(state, object),
         None => false,
@@ -1209,10 +1204,9 @@ fn check_assignment(
                 targets.push(state.world.invalid);
                 target_operands.push(invalid_operand(state))
             } else {
-                let assignment_object = match assignment_identifier_name(state, target_node) {
-                    Some(name) => go_types::lookup(state.world, scope, name),
-                    None => Option::None,
-                };
+                let assignment_object = assignment_identifier_name(state, target_node).and_then(
+                    |name| go_types::lookup(state.world, scope, name),
+                );
                 let assignment_object_used = match assignment_object {
                     Some(object) => local_object_used(state, object),
                     None => false,
@@ -1606,9 +1600,8 @@ fn collect_labels(state: CheckState, node: syntax::NodeId) -> () {
             kind: syntax::SyntaxKind::IfStmt { if_pos: _, init: _, condition: _, body, else_branch },
         }) => {
             collect_labels(state, body);
-            match else_branch {
-                Some(value) => collect_labels(state, value),
-                None => {},
+            if let Some(value) = else_branch {
+                collect_labels(state, value)
             }
         },
         Some(syntax::SyntaxNode {
@@ -1897,9 +1890,8 @@ fn check_for_statement(
         },
         None => {},
     }
-    match condition {
-        Some(condition) => check_condition(state, scope, condition, "for"),
-        None => {},
+    if let Some(condition) = condition {
+        check_condition(state, scope, condition, "for")
     }
     match post {
         Some(post) => match syntax::get_node(state.syntax.arena, post) {
@@ -1945,10 +1937,7 @@ fn check_for_statement(
 }
 
 fn loop_label_name(state: CheckState, loop_node: syntax::NodeId) -> string {
-    match state.loop_labels[loop_node.value] {
-        Some(name) => name,
-        None => "",
-    }
+    state.loop_labels[loop_node.value].unwrap_or("")
 }
 
 fn node_breaks_loop(state: CheckState, node: syntax::NodeId, label: string, nested_breakable: isize) -> bool {
@@ -2427,10 +2416,9 @@ fn assign_integer_range_value(
     if !contextualize_source {
         return
     }
-    let assignment_object = match assignment_identifier_name(state, node) {
-        Some(name) => go_types::lookup(state.world, scope, name),
-        None => Option::None,
-    };
+    let assignment_object = assignment_identifier_name(state, node).and_then(
+        |name| go_types::lookup(state.world, scope, name),
+    );
     let assignment_object_used = match assignment_object {
         Some(object) => local_object_used(state, object),
         None => false,
@@ -2552,13 +2540,11 @@ fn check_range_statement(
         )
     }
     let left: Vec[syntax::NodeId] = Vec::new();
-    match key {
-        Some(key) => left.push(key),
-        None => {},
+    if let Some(key) = key {
+        left.push(key)
     }
-    match value {
-        Some(value) => left.push(value),
-        None => {},
+    if let Some(value) = value {
+        left.push(value)
     }
     if source.type_id.value == state.world.invalid.value {
         if token == DEFINE_OPERATOR {
@@ -4252,10 +4238,7 @@ fn check_statement(
 }
 
 fn local_object_used(state: CheckState, object: go_types::ObjectId) -> bool {
-    match state.used_objects[object.value] {
-        Some(value) => value,
-        None => false,
-    }
+    state.used_objects[object.value].unwrap_or(false)
 }
 
 fn local_scope_depth(state: CheckState, scope: go_types::ScopeId) -> isize {
@@ -4708,9 +4691,8 @@ fn check_function_body(
             kind: syntax::SyntaxKind::FuncType { func_pos: _, type_params: _, params, results },
         }) => {
             check_map_keys_in_type_node(state, params);
-            match results {
-                Some(results) => check_map_keys_in_type_node(state, results),
-                None => {},
+            if let Some(results) = results {
+                check_map_keys_in_type_node(state, results)
             }
         },
         _ => {},
