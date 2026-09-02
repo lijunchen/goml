@@ -73,7 +73,11 @@ fn diagnostic_containing(diagnostics: Vec[cst::Diagnostic], expected: string) ->
 
 #[test]
 fn parses_lossless_precedence_tree() -> () {
-    let source = "fn main() -> i32 {\n    1 + 2 * 3 // keep\n}\n";
+    let source = \\fn main() -> i32 {
+        \\    1 + 2 * 3 // keep
+        \\}
+        \\
+    ;
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert(cst::node_kind_equal(cst::node_kind(result.root), cst::NodeKind::FILE));
@@ -135,7 +139,15 @@ fn reports_recoverable_syntax_errors() -> () {
 
 #[test]
 fn recovers_missing_semicolons_without_consuming_following_expressions() -> () {
-    let source = "fn main() -> () {\n    let first = 1\n    println(first)\n    let second = 2;\n    ()\n}\nfn after() -> () {}\n";
+    let source = \\fn main() -> () {
+        \\    let first = 1
+        \\    println(first)
+        \\    let second = 2;
+        \\    ()
+        \\}
+        \\fn after() -> () {}
+        \\
+    ;
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 2);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::FN), 2);
@@ -153,7 +165,11 @@ fn recovers_missing_semicolons_without_consuming_following_expressions() -> () {
 
 #[test]
 fn recovers_missing_closing_delimiters_at_outer_boundaries() -> () {
-    let params = parse("fn first(value: i32 -> () { () }\nfn after() -> () { () }");
+    let params = parse(
+        \\fn first(value: i32 -> () { () }
+        \\fn after() -> () { () }
+        ,
+    );
     testing::assert_eq(params.diagnostics.len(), 1);
     testing::assert_eq(count_nodes(params.root, cst::NodeKind::FN), 2);
     testing::assert(diagnostic_containing(params.diagnostics, "expect \")\"").is_some());
@@ -166,14 +182,24 @@ fn recovers_missing_closing_delimiters_at_outer_boundaries() -> () {
     testing::assert_eq(count_nodes(call.root, cst::NodeKind::EXPR_CALL), 1);
     testing::assert_eq(count_nodes(call.root, cst::NodeKind::STMT_LET), 2);
     testing::assert(diagnostic_containing(call.diagnostics, "expect \")\"").is_some());
-    let block = parse("fn first() -> () { ()\nfn after() -> () { () }");
+    let block = parse(
+        \\fn first() -> () { ()
+        \\fn after() -> () { () }
+        ,
+    );
     testing::assert_eq(count_nodes(block.root, cst::NodeKind::FN), 2);
     testing::assert(diagnostic_containing(block.diagnostics, "expect \"}\"").is_some())
 }
 
 #[test]
 fn reports_unterminated_literals_and_continues_parsing() -> () {
-    let source = "fn main() -> () {\n    let text = \"unterminated\n    let letter = 'x;\n    println(\"ok\");\n}\n";
+    let source = \\fn main() -> () {
+        \\    let text = "unterminated
+        \\    let letter = 'x;
+        \\    println("ok");
+        \\}
+        \\
+    ;
     let result = parse(source);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::STMT_LET), 2);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_CALL), 1);
@@ -342,7 +368,9 @@ fn postfix_expressions_bind_tighter_than_prefix_operators() -> () {
 
 #[test]
 fn recovers_non_function_extern_declarations() -> () {
-    let source = "extern bogus;\nfn main() -> () { () }";
+    let source = \\extern bogus;
+        \\fn main() -> () { () }
+    ;
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 1);
     testing::assert_eq(

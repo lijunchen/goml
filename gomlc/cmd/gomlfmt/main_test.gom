@@ -80,9 +80,17 @@ fn read_test_file(path_value: string) -> string {
 fn writes_only_after_all_files_format_successfully() -> () {
     let valid = test_file("atomic-valid.gom");
     let invalid = test_file("atomic-invalid.gom");
-    let original = "package main;\nfn main( )->(){()}\n";
+    let original = \\package main;
+        \\fn main( )->(){()}
+        \\
+    ;
     write_test_file(valid, original);
-    write_test_file(invalid, "package main;\nfn broken( {");
+    write_test_file(
+        invalid,
+        \\package main;
+        \\fn broken( {
+        ,
+    );
     let code = run(
         Options { write: true, list: false, check: false, paths: Vec::from_array([valid, invalid]) },
     );
@@ -93,7 +101,13 @@ fn writes_only_after_all_files_format_successfully() -> () {
 #[test]
 fn writes_and_checks_formatted_files() -> () {
     let file = test_file("write-check.gom");
-    write_test_file(file, "package main;\nfn main( )->(){()}\n");
+    write_test_file(
+        file,
+        \\package main;
+        \\fn main( )->(){()}
+        \\
+        ,
+    );
     testing::assert_eq(
         run(Options { write: false, list: false, check: true, paths: Vec::from_array([file]) }),
         1,
@@ -111,7 +125,10 @@ fn writes_and_checks_formatted_files() -> () {
 #[test]
 fn list_mode_does_not_modify_files() -> () {
     let file = test_file("list.gom");
-    let original = "package main;\nfn main( )->(){()}\n";
+    let original = \\package main;
+        \\fn main( )->(){()}
+        \\
+    ;
     write_test_file(file, original);
     testing::assert_eq(
         run(Options { write: false, list: true, check: false, paths: Vec::from_array([file]) }),

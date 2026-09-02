@@ -83,7 +83,25 @@ fn fail(message: string) -> () {
 }
 
 fn top_help() -> string {
-    "Usage: goml <COMMAND>\n\nCommands:\n  new\n  check\n  build\n  run\n  test\n  fmt\n  clean\n  update\n  add\n  remove\n  home\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
+    \\Usage: goml <COMMAND>
+        \\
+        \\Commands:
+        \\  new
+        \\  check
+        \\  build
+        \\  run
+        \\  test
+        \\  fmt
+        \\  clean
+        \\  update
+        \\  add
+        \\  remove
+        \\  home
+        \\  version
+        \\  help
+        \\
+        \\Options:
+        \\  -h, --help  Print help
 }
 
 fn command_help(command: string) -> string {
@@ -558,7 +576,13 @@ fn main() -> () {
                 Err(message) => fail(message),
             },
             HOME_COMMAND => if args.len() == 3 && (args[2] == "-h" || args[2] == "--help") {
-                io::println("Usage: goml home\n\nOptions:\n  -h, --help")
+                io::println(
+                    \\Usage: goml home
+                    \\
+                    \\Options:
+                    \\  -h, --help
+                    ,
+                )
             } else if args.len() != 2 {
                 fail(f"unexpected argument {args[2]}")
             } else {

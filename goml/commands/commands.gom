@@ -121,11 +121,23 @@ pub fn new_project(name: string, base: string) -> Result[(), string] {
     write_file(
         path::join(project, "main.gom"),
         "package main;\n\nuse " + name
-            + "::lib;\n\nfn main() -> () {\n    println(lib::message())\n}\n",
+            + \\::lib;
+                \\
+                \\fn main() -> () {
+                \\    println(lib::message())
+                \\}
+                \\
+        ,
     )?;
     write_file(
         path::join(lib, "lib.gom"),
-        "package lib;\n\npub fn message() -> string {\n    \"hello from lib\"\n}\n",
+        \\package lib;
+            \\
+            \\pub fn message() -> string {
+            \\    "hello from lib"
+            \\}
+            \\
+        ,
     )?;
     io::println("Created project at " + project);
     io::println("Next steps:");

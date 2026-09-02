@@ -128,7 +128,13 @@ fn initializes_and_answers_hover_requests() -> () {
                     Some(contents) => match json::field(contents, "value") {
                         Some(value) => match json::as_string(value) {
                             Some(value) => {
-                                testing::assert_eq(value, "```goml\ni32\n```")
+                                testing::assert_eq(
+                                    value,
+                                    \\```goml
+                                    \\i32
+                                    \\```
+                                    ,
+                                )
                             },
                             None => testing::fail("expected hover text"),
                         },

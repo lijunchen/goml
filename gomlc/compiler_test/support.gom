@@ -511,13 +511,47 @@ pub fn assert_standard_binary_stdio() -> () {
     create_directory(project);
     if let Err(message) = fs::write_file_structured(
         path::join(project, "goml.toml"),
-        "[module]\npath = \"stdio_test\"\n",
+        \\[module]
+            \\path = "stdio_test"
+            \\
+        ,
     ) {
         testing::fail(message.to_string())
     }
     if let Err(message) = fs::write_file_structured(
         path::join(project, "main.gom"),
-        "package main;\n\nuse std::bytes;\nuse std::env;\nuse std::io;\nuse std::process;\n\nfn main() -> () {\n    match env::var_structured(\"GOML_EMPTY\") {\n        Result::Ok(value) => if value != \"\" { process::exit(1) } else { () },\n        Result::Err(_) => process::exit(1),\n    };\n    match env::var_structured(\"GOML_MISSING_ENVIRONMENT_VALUE\") {\n        Result::Ok(_) => process::exit(1),\n        Result::Err(_) => (),\n    };\n    match io::read_stdin_structured() {\n        Result::Ok(data) => {\n            match io::write_stdout_structured(data) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            };\n            match io::write_stderr_structured(bytes::Bytes::from_string(\"binary stderr\")) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            }\n        },\n        Result::Err(_) => process::exit(1),\n    }\n}\n",
+        \\package main;
+            \\
+            \\use std::bytes;
+            \\use std::env;
+            \\use std::io;
+            \\use std::process;
+            \\
+            \\fn main() -> () {
+            \\    match env::var_structured("GOML_EMPTY") {
+            \\        Result::Ok(value) => if value != "" { process::exit(1) } else { () },
+            \\        Result::Err(_) => process::exit(1),
+            \\    };
+            \\    match env::var_structured("GOML_MISSING_ENVIRONMENT_VALUE") {
+            \\        Result::Ok(_) => process::exit(1),
+            \\        Result::Err(_) => (),
+            \\    };
+            \\    match io::read_stdin_structured() {
+            \\        Result::Ok(data) => {
+            \\            match io::write_stdout_structured(data) {
+            \\                Result::Ok(()) => (),
+            \\                Result::Err(_) => process::exit(1),
+            \\            };
+            \\            match io::write_stderr_structured(bytes::Bytes::from_string("binary stderr")) {
+            \\                Result::Ok(()) => (),
+            \\                Result::Err(_) => process::exit(1),
+            \\            }
+            \\        },
+            \\        Result::Err(_) => process::exit(1),
+            \\    }
+            \\}
+            \\
+        ,
     ) {
         testing::fail(message.to_string())
     }

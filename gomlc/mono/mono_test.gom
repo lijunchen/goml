@@ -122,7 +122,13 @@ fn string_index(value: string, expected: string) -> isize {
 
 #[test]
 fn preserves_monomorphic_core_programs() -> () {
-    testing::assert_eq(encode(lower_source("fn main() -> i32 { 1 }")), "fn main() -> i32 {\n  1\n}")
+    testing::assert_eq(
+        encode(lower_source("fn main() -> i32 { 1 }")),
+        \\fn main() -> i32 {
+        \\  1
+        \\}
+        ,
+    )
 }
 
 #[test]
@@ -210,7 +216,10 @@ fn rejects_open_types_at_the_mono_boundary() -> () {
 fn resolves_static_trait_calls() -> () {
     testing::assert_eq(
         encode(lower_source("fn main() -> string { true.to_string() }")),
-        "fn main() -> string {\n  trait_impl#ToString#bool#to_string(true)\n}",
+        \\fn main() -> string {
+            \\  trait_impl#ToString#bool#to_string(true)
+            \\}
+        ,
     )
 }
 
@@ -379,7 +388,27 @@ fn specializes_generic_enum_constructors() -> () {
     let source = "enum Weird[T] { Next(Ref[Weird[(i32) -> i32]]), Done(T) } fn main() -> () { let x: Weird[i32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> () {\n  let x/0 = Weird__i32::Done(1) in\n  match x/0 {\n    Weird__i32::Next(x0) => {\n      {\n        let x0 = Weird__i32::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird__i32::Done(x1) => {\n      {\n        let x1 = Weird__i32::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#i32#i32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
+        \\fn main() -> () {
+            \\  let x/0 = Weird__i32::Done(1) in
+            \\  match x/0 {
+            \\    Weird__i32::Next(x0) => {
+            \\      {
+            \\        let x0 = Weird__i32::Next._0(x/0) in
+            \\        println("next")
+            \\      }
+            \\    },
+            \\    Weird__i32::Done(x1) => {
+            \\      {
+            \\        let x1 = Weird__i32::Done._0(x/0) in
+            \\        {
+            \\          let v/1 = x1 in
+            \\          println(inherent#i32#i32#to_string(v/1))
+            \\        }
+            \\      }
+            \\    },
+            \\  }
+            \\}
+        ,
     )
 }
 
@@ -388,7 +417,19 @@ fn specializes_generic_functions_with_collision_safe_names() -> () {
     let source = "fn id[T](x: T) -> T { x } fn id__T_i32(x: i32) -> i32 { x + 1 } fn main() -> () { println(id(10)); println(id__T_i32(10)) }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn id__T_i32(x/1: i32) -> i32 {\n  (x/1 + 1)\n}\n\nfn main() -> () {\n  let _wild0 = println(id__T_isize(10)) in\n  println(id__T_i32(10))\n}\n\nfn id__T_isize(x/0: isize) -> isize {\n  x/0\n}",
+        \\fn id__T_i32(x/1: i32) -> i32 {
+            \\  (x/1 + 1)
+            \\}
+            \\
+            \\fn main() -> () {
+            \\  let _wild0 = println(id__T_isize(10)) in
+            \\  println(id__T_i32(10))
+            \\}
+            \\
+            \\fn id__T_isize(x/0: isize) -> isize {
+            \\  x/0
+            \\}
+        ,
     )
 }
 
@@ -397,7 +438,38 @@ fn prints_monomorphic_closures_without_parameter_types() -> () {
     let source = "enum MaybeFn { Some((i32) -> i32), None } fn next(flag: bool) -> MaybeFn { if flag { MaybeFn::Some(|x| x + 1) } else { MaybeFn::None } } fn main() -> () { match next(true) { MaybeFn::Some(f) => println(f(41).to_string()), MaybeFn::None => println(\"none\"), } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn next(flag/0: bool) -> MaybeFn {\n  if flag/0 {\n      {\n        MaybeFn::Some(|x/1| (x/1 + 1))\n      }\n  } else {\n      {\n        MaybeFn::None\n      }\n  }\n}\n\nfn main() -> () {\n  {\n    let mtmp0 = next(true) in\n    match mtmp0 {\n      MaybeFn::Some(x1) => {\n        {\n          let x1 = MaybeFn::Some._0(mtmp0) in\n          {\n            let f/2 = x1 in\n            println(inherent#i32#i32#to_string(f/2(41)))\n          }\n        }\n      },\n      MaybeFn::None => {\n        println(\"none\")\n      },\n    }\n  }\n}",
+        \\fn next(flag/0: bool) -> MaybeFn {
+            \\  if flag/0 {
+            \\      {
+            \\        MaybeFn::Some(|x/1| (x/1 + 1))
+            \\      }
+            \\  } else {
+            \\      {
+            \\        MaybeFn::None
+            \\      }
+            \\  }
+            \\}
+            \\
+            \\fn main() -> () {
+            \\  {
+            \\    let mtmp0 = next(true) in
+            \\    match mtmp0 {
+            \\      MaybeFn::Some(x1) => {
+            \\        {
+            \\          let x1 = MaybeFn::Some._0(mtmp0) in
+            \\          {
+            \\            let f/2 = x1 in
+            \\            println(inherent#i32#i32#to_string(f/2(41)))
+            \\          }
+            \\        }
+            \\      },
+            \\      MaybeFn::None => {
+            \\        println("none")
+            \\      },
+            \\    }
+            \\  }
+            \\}
+        ,
     )
 }
 
@@ -414,7 +486,12 @@ fn specializes_generic_types_with_collision_safe_names() -> () {
     let source = "struct Box[T] { value: T } struct Box__i32 { value: i32 } fn main() -> () { let a = Box { value: 10 }; let b = Box__i32 { value: 20 }; println(a.value + b.value) }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> () {\n  let a/0 = Box__i32__mono1 { value: 10 } in\n  let b/1 = Box__i32 { value: 20 } in\n  println((Box__i32__mono1.value(a/0) + Box__i32.value(b/1)))\n}",
+        \\fn main() -> () {
+            \\  let a/0 = Box__i32__mono1 { value: 10 } in
+            \\  let b/1 = Box__i32 { value: 20 } in
+            \\  println((Box__i32__mono1.value(a/0) + Box__i32.value(b/1)))
+            \\}
+        ,
     )
 }
 
@@ -423,7 +500,37 @@ fn specializes_generic_inherent_methods() -> () {
     let source = "struct Point[U, V] { x: U, y: V } impl[U, V] Point[U, V] { fn new(x: U, y: V) -> Point[U, V] { Point { x, y } } fn swap(self: Point[U, V]) -> Point[V, U] { Point { x: self.y, y: self.x } } fn get_x(self: Point[U, V]) -> U { self.x } } fn main() -> () { let p1: Point[i32, string] = Point::new(10, \"hello\"); let p2: Point[string, string] = Point::new(\"goml\", \"lang\"); let p3: Point[string, i32] = p1.swap(); let x: i32 = p3.y; println(x.to_string()); let x2: string = p2.get_x(); println(x2) }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> () {\n  let p1/4 = inherent#Point#Point[U,V]#new__U_i32__V_string(10, \"hello\") in\n  let p2/5 = inherent#Point#Point[U,V]#new__U_string__V_string(\"goml\", \"lang\") in\n  let p3/6 = inherent#Point#Point[U,V]#swap__U_i32__V_string(p1/4) in\n  let x/7 = Point__string__i32.y(p3/6) in\n  let _wild0 = println(inherent#i32#i32#to_string(x/7)) in\n  let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in\n  println(x2/8)\n}\n\nfn inherent#Point#Point[U,V]#new__U_i32__V_string(x/0: i32, y/1: string) -> Point__i32__string {\n  Point__i32__string { x: x/0, y: y/1 }\n}\n\nfn inherent#Point#Point[U,V]#new__U_string__V_string(\n  x/0: string,\n  y/1: string\n) -> Point__string__string {\n  Point__string__string { x: x/0, y: y/1 }\n}\n\nfn inherent#Point#Point[U,V]#swap__U_i32__V_string(\n  self/2: Point__i32__string\n) -> Point__string__i32 {\n  Point__string__i32 { x: Point__i32__string.y(self/2), y: Point__i32__string.x(self/2) }\n}\n\nfn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {\n  Point__string__string.x(self/3)\n}",
+        \\fn main() -> () {
+            \\  let p1/4 = inherent#Point#Point[U,V]#new__U_i32__V_string(10, "hello") in
+            \\  let p2/5 = inherent#Point#Point[U,V]#new__U_string__V_string("goml", "lang") in
+            \\  let p3/6 = inherent#Point#Point[U,V]#swap__U_i32__V_string(p1/4) in
+            \\  let x/7 = Point__string__i32.y(p3/6) in
+            \\  let _wild0 = println(inherent#i32#i32#to_string(x/7)) in
+            \\  let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in
+            \\  println(x2/8)
+            \\}
+            \\
+            \\fn inherent#Point#Point[U,V]#new__U_i32__V_string(x/0: i32, y/1: string) -> Point__i32__string {
+            \\  Point__i32__string { x: x/0, y: y/1 }
+            \\}
+            \\
+            \\fn inherent#Point#Point[U,V]#new__U_string__V_string(
+            \\  x/0: string,
+            \\  y/1: string
+            \\) -> Point__string__string {
+            \\  Point__string__string { x: x/0, y: y/1 }
+            \\}
+            \\
+            \\fn inherent#Point#Point[U,V]#swap__U_i32__V_string(
+            \\  self/2: Point__i32__string
+            \\) -> Point__string__i32 {
+            \\  Point__string__i32 { x: Point__i32__string.y(self/2), y: Point__i32__string.x(self/2) }
+            \\}
+            \\
+            \\fn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {
+            \\  Point__string__string.x(self/3)
+            \\}
+        ,
     )
 }
 
@@ -432,7 +539,34 @@ fn specializes_associated_type_functions_and_impls() -> () {
     let source = "trait Provider { type Item: ToString; fn get(self: Self) -> Self::Item; } struct Number { value: i32 } struct Box[T] { value: T } impl Provider for Number { type Item = i32; fn get(self: Number) -> i32 { self.value } } impl[T: ToString] Provider for Box[T] { type Item = T; fn get(self: Box[T]) -> T { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn read_as[P, T](provider: P) -> T where P: Provider, P::Item = T { provider.get() } fn main() -> () { println(read(Number { value: 42 }).to_string()); let value: i32 = read_as(Number { value: 7 }); println(value.to_string()); println(read(Box { value: \"generic\" })); println(Provider::get(Number { value: 11 }).to_string()) }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn trait_impl#Provider#Number#get(self/0: Number) -> i32 {\n  Number.value(self/0)\n}\n\nfn main() -> () {\n  let _wild0 = println(inherent#i32#i32#to_string(read__P_Number(Number { value: 42 }))) in\n  let value/4 = read_as__P_Number__T_i32(Number { value: 7 }) in\n  let _wild1 = println(inherent#i32#i32#to_string(value/4)) in\n  let _wild2 = println(read__P_Box[string](Box__string { value: \"generic\" })) in\n  println(inherent#i32#i32#to_string(trait_impl#Provider#Number#get(Number { value: 11 })))\n}\n\nfn read__P_Number(provider/2: Number) -> i32 {\n  trait_impl#Provider#Number#get(provider/2)\n}\n\nfn read_as__P_Number__T_i32(provider/3: Number) -> i32 {\n  trait_impl#Provider#Number#get(provider/3)\n}\n\nfn read__P_Box[string](provider/2: Box__string) -> string {\n  trait_impl#Provider#Box__string#get(provider/2)\n}\n\nfn trait_impl#Provider#Box__string#get(self/1: Box__string) -> string {\n  Box__string.value(self/1)\n}",
+        \\fn trait_impl#Provider#Number#get(self/0: Number) -> i32 {
+            \\  Number.value(self/0)
+            \\}
+            \\
+            \\fn main() -> () {
+            \\  let _wild0 = println(inherent#i32#i32#to_string(read__P_Number(Number { value: 42 }))) in
+            \\  let value/4 = read_as__P_Number__T_i32(Number { value: 7 }) in
+            \\  let _wild1 = println(inherent#i32#i32#to_string(value/4)) in
+            \\  let _wild2 = println(read__P_Box[string](Box__string { value: "generic" })) in
+            \\  println(inherent#i32#i32#to_string(trait_impl#Provider#Number#get(Number { value: 11 })))
+            \\}
+            \\
+            \\fn read__P_Number(provider/2: Number) -> i32 {
+            \\  trait_impl#Provider#Number#get(provider/2)
+            \\}
+            \\
+            \\fn read_as__P_Number__T_i32(provider/3: Number) -> i32 {
+            \\  trait_impl#Provider#Number#get(provider/3)
+            \\}
+            \\
+            \\fn read__P_Box[string](provider/2: Box__string) -> string {
+            \\  trait_impl#Provider#Box__string#get(provider/2)
+            \\}
+            \\
+            \\fn trait_impl#Provider#Box__string#get(self/1: Box__string) -> string {
+            \\  Box__string.value(self/1)
+            \\}
+        ,
     )
 }
 
@@ -441,7 +575,22 @@ fn orders_nested_associated_calls_by_resolved_callees() -> () {
     let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } struct Box[T] { value: T } impl[T] Source for Box[T] { type Item = T; fn get(self: Box[T]) -> T { self.value } } fn boxed[T](value: T) -> Box[T] { Box { value } } fn read[S: Source](source: S) -> S::Item { source.get() } fn main() -> i32 { read(boxed(99)) }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> i32 {\n  read__S_Box[i32](boxed__T_i32(99))\n}\n\nfn boxed__T_i32(value/1: i32) -> Box__i32 {\n  Box__i32 { value: value/1 }\n}\n\nfn read__S_Box[i32](source/2: Box__i32) -> i32 {\n  trait_impl#Source#Box__i32#get(source/2)\n}\n\nfn trait_impl#Source#Box__i32#get(self/0: Box__i32) -> i32 {\n  Box__i32.value(self/0)\n}",
+        \\fn main() -> i32 {
+            \\  read__S_Box[i32](boxed__T_i32(99))
+            \\}
+            \\
+            \\fn boxed__T_i32(value/1: i32) -> Box__i32 {
+            \\  Box__i32 { value: value/1 }
+            \\}
+            \\
+            \\fn read__S_Box[i32](source/2: Box__i32) -> i32 {
+            \\  trait_impl#Source#Box__i32#get(source/2)
+            \\}
+            \\
+            \\fn trait_impl#Source#Box__i32#get(self/0: Box__i32) -> i32 {
+            \\  Box__i32.value(self/0)
+            \\}
+        ,
     )
 }
 

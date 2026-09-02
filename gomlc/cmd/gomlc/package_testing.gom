@@ -656,21 +656,54 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
         if index > 0 {
             builder.write_char(',')
         }
-        builder.write_string("\n  {\n    \"id\": ");
+        builder.write_string(
+            \\
+            \\  {
+            \\    "id": 
+            ,
+        );
         write_test_json_string(builder, value.id);
-        builder.write_string(",\n    \"package\": ");
+        builder.write_string(
+            \\,
+            \\    "package": 
+            ,
+        );
         write_test_json_string(builder, value.package_name);
-        builder.write_string(",\n    \"symbol\": ");
+        builder.write_string(
+            \\,
+            \\    "symbol": 
+            ,
+        );
         write_test_json_string(builder, value.symbol);
-        builder.write_string(",\n    \"display_name\": ");
+        builder.write_string(
+            \\,
+            \\    "display_name": 
+            ,
+        );
         write_test_json_string(builder, value.display_name);
-        builder.write_string(",\n    \"source_path\": ");
+        builder.write_string(
+            \\,
+            \\    "source_path": 
+            ,
+        );
         write_test_json_string(builder, value.source_path);
-        builder.write_string(",\n    \"start\": ");
+        builder.write_string(
+            \\,
+            \\    "start": 
+            ,
+        );
         builder.write_string(value.start.to_string());
-        builder.write_string(",\n    \"end\": ");
+        builder.write_string(
+            \\,
+            \\    "end": 
+            ,
+        );
         builder.write_string(value.end.to_string());
-        builder.write_string(",\n    \"ignored\": ");
+        builder.write_string(
+            \\,
+            \\    "ignored": 
+            ,
+        );
         builder.write_string(
             if value.ignored {
                 "true"
@@ -678,12 +711,20 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
                 "false"
             },
         );
-        builder.write_string(",\n    \"ignore_reason\": ");
+        builder.write_string(
+            \\,
+            \\    "ignore_reason": 
+            ,
+        );
         match value.ignore_reason {
             Some(reason) => write_test_json_string(builder, reason),
             None => builder.write_string("null"),
         }
-        builder.write_string(",\n    \"arguments\": [");
+        builder.write_string(
+            \\,
+            \\    "arguments": [
+            ,
+        );
         for argument_index in 0..value.arguments.len() {
             if argument_index > 0 {
                 builder.write_char(',')

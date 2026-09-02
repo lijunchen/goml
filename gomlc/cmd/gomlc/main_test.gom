@@ -429,7 +429,13 @@ fn parses_version_formats() -> () {
 
 #[test]
 fn parses_package_information_without_lowering_file_bodies() -> () {
-    let source = "// header\npackage sample;\nuse alpha::beta;\nuse gamma::delta as other;\nuse theta::api::{Thing, make as create,};\nfn main() -> () { let _ = \"use hidden::path;\"; }";
+    let source = \\// header
+        \\package sample;
+        \\use alpha::beta;
+        \\use gamma::delta as other;
+        \\use theta::api::{Thing, make as create,};
+        \\fn main() -> () { let _ = "use hidden::path;"; }
+    ;
     match parse_package_info_file("main.gom", source) {
         Ok(value) => {
             testing::assert_eq(value.package_name, "sample");
@@ -465,7 +471,11 @@ fn parses_package_information_without_lowering_file_bodies() -> () {
 
 #[test]
 fn package_information_scanner_stops_at_the_first_body_token() -> () {
-    let source = "// header\npackage main;\nuse alpha::beta as value;\nfn main() -> () {}";
+    let source = \\// header
+        \\package main;
+        \\use alpha::beta as value;
+        \\fn main() -> () {}
+    ;
     let scanner = new_package_info_scanner(source);
     package_info_skip_trivia(scanner);
     testing::assert(package_info_consume_keyword(scanner, "package"));
@@ -513,7 +523,11 @@ fn reports_driver_protocol_version() -> () {
     match parse_version_format("yaml") {
         Err(error) => testing::assert_eq(
             error,
-            "error: invalid value 'yaml' for '--format <FORMAT>'\n  [possible values: text, json]\n\nFor more information, try '--help'.",
+            \\error: invalid value 'yaml' for '--format <FORMAT>'
+                \\  [possible values: text, json]
+                \\
+                \\For more information, try '--help'.
+            ,
         ),
         Ok(_) => testing::fail("expected invalid version format"),
     }
@@ -523,15 +537,34 @@ fn reports_driver_protocol_version() -> () {
 fn suggests_similar_subcommands() -> () {
     testing::assert_eq(
         unknown_subcommand_error("chec"),
-        "error: unrecognized subcommand 'chec'\n\n  tip: a similar subcommand exists: 'check'\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'.",
+        \\error: unrecognized subcommand 'chec'
+            \\
+            \\  tip: a similar subcommand exists: 'check'
+            \\
+            \\Usage: gomlc <COMMAND>
+            \\
+            \\For more information, try '--help'.
+        ,
     );
     testing::assert_eq(
         unknown_subcommand_error("unknown"),
-        "error: unrecognized subcommand 'unknown'\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'.",
+        \\error: unrecognized subcommand 'unknown'
+            \\
+            \\Usage: gomlc <COMMAND>
+            \\
+            \\For more information, try '--help'.
+        ,
     );
     testing::assert_eq(
         unknown_subcommand_error("xcheck"),
-        "error: unrecognized subcommand 'xcheck'\n\n  tip: some similar subcommands exist: 'test-check', 'check'\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'.",
+        \\error: unrecognized subcommand 'xcheck'
+            \\
+            \\  tip: some similar subcommands exist: 'test-check', 'check'
+            \\
+            \\Usage: gomlc <COMMAND>
+            \\
+            \\For more information, try '--help'.
+        ,
     )
 }
 
@@ -897,7 +930,14 @@ fn collects_all_invalid_test_attribute_diagnostics() -> () {
 fn labels_duplicate_test_ids_across_files() -> () {
     let parsed = Vec::new();
     parsed.push(parser::parse("package tests; #[test] fn duplicate() -> () { () }"));
-    parsed.push(parser::parse("package tests;\n#[test]\nfn duplicate() -> () { () }"));
+    parsed.push(
+        parser::parse(
+            \\package tests;
+        \\#[test]
+        \\fn duplicate() -> () { () }
+            ,
+        ),
+    );
     let files = ast::lower_package(parsed);
     let paths = Vec::new();
     paths.push("first.gom");
@@ -980,20 +1020,38 @@ fn adds_canonical_entry_wrapper() -> () {
 fn rejects_invalid_run_single_arguments() -> () {
     assert_parse_error(
         Vec::new(),
-        "error: the following required arguments were not provided:\n  <FILE>\n\nUsage: gomlc run-single <FILE>\n\nFor more information, try '--help'.",
+        \\error: the following required arguments were not provided:
+            \\  <FILE>
+            \\
+            \\Usage: gomlc run-single <FILE>
+            \\
+            \\For more information, try '--help'.
+        ,
     );
     let unknown = Vec::new();
     unknown.push("--unknown");
     assert_parse_error(
         unknown,
-        "error: unexpected argument '--unknown' found\n\n  tip: to pass '--unknown' as a value, use '-- --unknown'\n\nUsage: gomlc run-single [OPTIONS] <FILE>\n\nFor more information, try '--help'.",
+        \\error: unexpected argument '--unknown' found
+            \\
+            \\  tip: to pass '--unknown' as a value, use '-- --unknown'
+            \\
+            \\Usage: gomlc run-single [OPTIONS] <FILE>
+            \\
+            \\For more information, try '--help'.
+        ,
     );
     let multiple = Vec::new();
     multiple.push("one.gom");
     multiple.push("two.gom");
     assert_parse_error(
         multiple,
-        "error: unexpected argument 'two.gom' found\n\nUsage: gomlc run-single [OPTIONS] <FILE>\n\nFor more information, try '--help'.",
+        \\error: unexpected argument 'two.gom' found
+            \\
+            \\Usage: gomlc run-single [OPTIONS] <FILE>
+            \\
+            \\For more information, try '--help'.
+        ,
     )
 }
 
@@ -1003,7 +1061,13 @@ fn matches_cli_help_and_empty_value_semantics() -> () {
     dump.push("--dump-go");
     assert_parse_error(
         dump,
-        "error: the following required arguments were not provided:\n  <FILE>\n\nUsage: gomlc run-single --dump-go <FILE>\n\nFor more information, try '--help'.",
+        \\error: the following required arguments were not provided:
+            \\  <FILE>
+            \\
+            \\Usage: gomlc run-single --dump-go <FILE>
+            \\
+            \\For more information, try '--help'.
+        ,
     );
     let version_help = Vec::new();
     version_help.push("--help");
@@ -1017,7 +1081,11 @@ fn matches_cli_help_and_empty_value_semantics() -> () {
     match parse_version_args(version_args_with(missing_format)) {
         Err(error) => testing::assert_eq(
             error,
-            "error: a value is required for '--format <FORMAT>' but none was supplied\n  [possible values: text, json]\n\nFor more information, try '--help'.",
+            \\error: a value is required for '--format <FORMAT>' but none was supplied
+                \\  [possible values: text, json]
+                \\
+                \\For more information, try '--help'.
+            ,
         ),
         Ok(_) => testing::fail("expected missing version format"),
     }
@@ -1026,7 +1094,14 @@ fn matches_cli_help_and_empty_value_semantics() -> () {
     match parse_package_command_args(command_args_with("check", empty_package)) {
         Err(error) => testing::assert_eq(
             error,
-            "error: the following required arguments were not provided:\n  --input <INPUT>...\n  --output <OUTPUT>\n\nUsage: gomlc check --package <PACKAGE> --input <INPUT>... --output <OUTPUT>\n\nFor more information, try '--help'.",
+            \\error: the following required arguments were not provided:
+                \\  --input <INPUT>...
+                \\  --output <OUTPUT>
+                \\
+                \\Usage: gomlc check --package <PACKAGE> --input <INPUT>... --output <OUTPUT>
+                \\
+                \\For more information, try '--help'.
+            ,
         ),
         Ok(_) => testing::fail("expected missing package arguments"),
     }
@@ -1035,7 +1110,10 @@ fn matches_cli_help_and_empty_value_semantics() -> () {
     match parse_package_command_args(command_args_with("check", empty_interface)) {
         Err(error) => testing::assert_eq(
             error,
-            "error: a value is required for '--interface-path <INTERFACE_FILE>' but none was supplied\n\nFor more information, try '--help'.",
+            \\error: a value is required for '--interface-path <INTERFACE_FILE>' but none was supplied
+                \\
+                \\For more information, try '--help'.
+            ,
         ),
         Ok(_) => testing::fail("expected missing interface path"),
     }
@@ -1057,7 +1135,12 @@ fn matches_cli_help_and_empty_value_semantics() -> () {
     match parse_version_args(version_args_with(unknown_format)) {
         Err(error) => testing::assert_eq(
             error,
-            "error: unexpected argument '--wat' found\n\nUsage: gomlc version [OPTIONS]\n\nFor more information, try '--help'.",
+            \\error: unexpected argument '--wat' found
+                \\
+                \\Usage: gomlc version [OPTIONS]
+                \\
+                \\For more information, try '--help'.
+            ,
         ),
         Ok(_) => testing::fail("expected unknown version argument"),
     }
@@ -1233,7 +1316,15 @@ fn writes_compact_artifact_json() -> () {
 fn writes_pretty_artifact_json() -> () {
     testing::assert_eq(
         sample_artifact_json(true),
-        "{\n  \"text\": \"quote \\\" slash \\\\ line\\n tab\\t zero\\u0000 é\",\n  \"values\": [\n    12,\n    true,\n    null\n  ]\n}",
+        \\{
+            \\  "text": "quote \" slash \\ line\n tab\t zero\u0000 é",
+            \\  "values": [
+            \\    12,
+            \\    true,
+            \\    null
+            \\  ]
+            \\}
+        ,
     )
 }
 
@@ -2589,7 +2680,11 @@ fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> () {
 
 #[test]
 fn renders_all_parser_diagnostics_with_spans() -> () {
-    let source = "fn main() {\n    let x 42;\n}\n";
+    let source = \\fn main() {
+        \\    let x 42;
+        \\}
+        \\
+    ;
     let diagnostics = ast::lower(parser::parse(source)).diagnostics;
     testing::assert_eq(
         render_typer_diagnostics(
@@ -2597,7 +2692,11 @@ fn renders_all_parser_diagnostics_with_spans() -> () {
             "main.gom",
             source,
         ),
-        "error[parser]: expect \"=\", actual \"int_lit\"\nprimary: main.gom:2:10\n2 |     let x 42;\n  |          ^",
+        \\error[parser]: expect "=", actual "int_lit"
+            \\primary: main.gom:2:10
+            \\2 |     let x 42;
+            \\  |          ^
+        ,
     )
 }
 
@@ -2637,7 +2736,9 @@ fn renders_source_path_for_spanless_diagnostics() -> () {
     );
     testing::assert_eq(
         render_typer_diagnostics(diagnostics, "helper.gom", ""),
-        "error[typer]: Unknown trait Missing\nat: helper.gom",
+        \\error[typer]: Unknown trait Missing
+            \\at: helper.gom
+        ,
     )
 }
 

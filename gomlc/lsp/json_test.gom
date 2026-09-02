@@ -11,7 +11,12 @@ fn parses_and_encodes_json_values() -> () {
             match json::field(value, "name") {
                 Some(name) => match json::as_string(name) {
                     Some(text) => {
-                        testing::assert_eq(text, "GoML\n语言")
+                        testing::assert_eq(
+                            text,
+                            \\GoML
+                            \\语言
+                            ,
+                        )
                     },
                     None => testing::fail("expected string name"),
                 },
@@ -51,7 +56,9 @@ fn rejects_invalid_json() -> () {
 
 #[test]
 fn converts_utf16_positions_and_file_uris() -> () {
-    let source = "a😀中\nx";
+    let source = \\a😀中
+        \\x
+    ;
     let position = offset_to_position(source, 5);
     testing::assert_eq(position.line, 0);
     testing::assert_eq(position.character, 3);

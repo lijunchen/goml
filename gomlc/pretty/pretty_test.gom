@@ -22,7 +22,13 @@ fn append_is_associative() -> () {
     let left = append(append(first, second), third);
     let right = append(first, append(second, third));
     testing::assert_eq(layout(left), layout(right));
-    testing::assert_eq(layout(left), "a\n  b\nc")
+    testing::assert_eq(
+        layout(left),
+        \\a
+        \\  b
+        \\c
+        ,
+    )
 }
 
 #[test]
@@ -30,7 +36,10 @@ fn nesting_only_changes_indentation_after_a_line() -> () {
     testing::assert_eq(layout(nest(4, text("start"))), "start");
     testing::assert_eq(
         layout(append(nest(2, append(line(), text("inside"))), append(line(), text("outside")))),
-        "\n  inside\noutside",
+        \\
+            \\  inside
+            \\outside
+        ,
     );
     testing::assert_eq(layout(nest(2, line())), "\n  ")
 }
@@ -49,39 +58,104 @@ fn nesting_distributes_and_adds() -> () {
 
 #[test]
 fn text_normalizes_embedded_newlines() -> () {
-    testing::assert_eq(layout(nest(2, text("a\nb\n"))), "a\n  b\n  ");
+    testing::assert_eq(
+        layout(
+            nest(
+                2,
+                text(
+                    \\a
+        \\b
+        \\
+                    ,
+                ),
+            ),
+        ),
+        \\a
+        \\  b
+        \\  
+        ,
+    );
     testing::assert_eq(layout(text("")), "");
-    testing::assert_eq(pretty(20, group(text("a\nb"))), "a b")
+    testing::assert_eq(
+        pretty(
+            20,
+            group(
+                text(
+                    \\a
+        \\b
+                    ,
+                ),
+            ),
+        ),
+        "a b",
+    )
 }
 
 #[test]
 fn group_uses_flat_layout_exactly_at_the_width() -> () {
     let value = group(above(text("abc"), text("de")));
     assert_pretty(6, value, "abc de");
-    assert_pretty(5, value, "abc\nde");
-    assert_pretty(0, value, "abc\nde")
+    assert_pretty(
+        5,
+        value,
+        \\abc
+        \\de
+        ,
+    );
+    assert_pretty(
+        0,
+        value,
+        \\abc
+        \\de
+        ,
+    )
 }
 
 #[test]
 fn group_accounts_for_the_existing_column() -> () {
     let value = append(text("xx"), group(above(text("abc"), text("d"))));
     assert_pretty(7, value, "xxabc d");
-    assert_pretty(6, value, "xxabc\nd")
+    assert_pretty(
+        6,
+        value,
+        \\xxabc
+        \\d
+        ,
+    )
 }
 
 #[test]
 fn nested_groups_choose_independently() -> () {
     let value = group(above(text("a"), group(above(text("bb"), text("cc")))));
     assert_pretty(7, value, "a bb cc");
-    assert_pretty(6, value, "a\nbb cc");
-    assert_pretty(4, value, "a\nbb\ncc");
+    assert_pretty(
+        6,
+        value,
+        \\a
+        \\bb cc
+        ,
+    );
+    assert_pretty(
+        4,
+        value,
+        \\a
+        \\bb
+        \\cc
+        ,
+    );
     testing::assert_eq(pretty(4, group(value)), pretty(4, value))
 }
 
 #[test]
 fn unavoidable_overflow_uses_the_shorter_first_line() -> () {
     let value = group(above(text("abcdefgh"), text("x")));
-    assert_pretty(3, value, "abcdefgh\nx")
+    assert_pretty(
+        3,
+        value,
+        \\abcdefgh
+        \\x
+        ,
+    )
 }
 
 #[test]
@@ -95,7 +169,10 @@ fn concat_join_and_folddoc_cover_empty_and_nil_elements() -> () {
     );
     testing::assert_eq(
         layout(folddoc(above, Vec::from_array([text("a"), text("b"), text("c")]))),
-        "a\nb\nc",
+        \\a
+            \\b
+            \\c
+        ,
     );
     testing::assert_eq(layout(folddoc(append, Vec::new())), "");
     testing::assert_eq(layout(folddoc(append, Vec::from_array([text("only")]))), "only")
@@ -104,29 +181,72 @@ fn concat_join_and_folddoc_cover_empty_and_nil_elements() -> () {
 #[test]
 fn spread_stack_beside_and_above_match_the_paper() -> () {
     testing::assert_eq(layout(spread(Vec::from_array([text("a"), text("b"), text("c")]))), "a b c");
-    testing::assert_eq(layout(stack(Vec::from_array([text("a"), text("b"), text("c")]))), "a\nb\nc");
+    testing::assert_eq(
+        layout(stack(Vec::from_array([text("a"), text("b"), text("c")]))),
+        \\a
+        \\b
+        \\c
+        ,
+    );
     testing::assert_eq(layout(beside(text("a"), text("b"))), "a b");
-    testing::assert_eq(layout(above(text("a"), text("b"))), "a\nb")
+    testing::assert_eq(
+        layout(above(text("a"), text("b"))),
+        \\a
+        \\b
+        ,
+    )
 }
 
 #[test]
 fn softline_and_bracket_have_flat_and_broken_layouts() -> () {
     let soft = append(text("a"), append(softline(), text("b")));
     assert_pretty(3, soft, "a b");
-    assert_pretty(2, soft, "a\nb");
+    assert_pretty(
+        2,
+        soft,
+        \\a
+        \\b
+        ,
+    );
     assert_pretty(3, soft_beside(text("a"), text("b")), "a b");
-    assert_pretty(2, soft_beside(text("a"), text("b")), "a\nb");
+    assert_pretty(
+        2,
+        soft_beside(text("a"), text("b")),
+        \\a
+        \\b
+        ,
+    );
     let value = bracket("[", spread(Vec::from_array([text("a"), text("b")])), "]");
     assert_pretty(7, value, "[ a b ]");
-    assert_pretty(6, value, "[\n  a b\n]")
+    assert_pretty(
+        6,
+        value,
+        \\[
+        \\  a b
+        \\]
+        ,
+    )
 }
 
 #[test]
 fn fill_greedily_packs_plain_documents() -> () {
     let value = fill(Vec::from_array([text("aaa"), text("bb"), text("c"), text("dddd")]));
     assert_pretty(100, value, "aaa bb c dddd");
-    assert_pretty(6, value, "aaa bb\nc dddd");
-    assert_pretty(5, value, "aaa\nbb c\ndddd");
+    assert_pretty(
+        6,
+        value,
+        \\aaa bb
+        \\c dddd
+        ,
+    );
+    assert_pretty(
+        5,
+        value,
+        \\aaa
+        \\bb c
+        \\dddd
+        ,
+    );
     testing::assert_eq(pretty(5, group(value)), pretty(5, value));
     testing::assert_eq(pretty(5, fill(Vec::new())), "");
     testing::assert_eq(pretty(5, fill(Vec::from_array([text("only")]))), "only")
@@ -137,8 +257,24 @@ fn fill_flattens_a_document_only_when_put_beside_another() -> () {
     let element = group(above(text("<em>"), above(text("word"), text("</em>"))));
     let value = fill(Vec::from_array([text("before"), element, text("after")]));
     assert_pretty(40, value, "before <em> word </em> after");
-    assert_pretty(16, value, "before\n<em> word </em>\nafter");
-    assert_pretty(13, value, "before\n<em>\nword\n</em>\nafter")
+    assert_pretty(
+        16,
+        value,
+        \\before
+        \\<em> word </em>
+        \\after
+        ,
+    );
+    assert_pretty(
+        13,
+        value,
+        \\before
+        \\<em>
+        \\word
+        \\</em>
+        \\after
+        ,
+    )
 }
 
 #[test]
@@ -153,7 +289,13 @@ fn fill_copies_its_input_vector() -> () {
 fn fillwords_collapses_ascii_whitespace() -> () {
     let value = fillwords("  alpha\tbeta\n gamma\r\n ");
     assert_pretty(40, value, "alpha beta gamma");
-    assert_pretty(10, value, "alpha beta\ngamma");
+    assert_pretty(
+        10,
+        value,
+        \\alpha beta
+        \\gamma
+        ,
+    );
     testing::assert_eq(pretty(10, fillwords(" \n\t ")), "")
 }
 
@@ -162,7 +304,13 @@ fn unicode_width_is_counted_in_scalars_not_bytes() -> () {
     testing::assert_eq(text_width("语言a"), 3);
     let value = group(above(text("语言"), text("a")));
     assert_pretty(4, value, "语言 a");
-    assert_pretty(3, value, "语言\na")
+    assert_pretty(
+        3,
+        value,
+        \\语言
+        \\a
+        ,
+    )
 }
 
 enum Tree {
@@ -225,7 +373,10 @@ fn paper_tree() -> Tree {
 fn reproduces_wadlers_tree_example_at_width_30() -> () {
     testing::assert_eq(
         pretty(30, show_tree(paper_tree())),
-        "aaa[bbbbb[ccc, dd],\n    eee,\n    ffff[gg, hhh, ii]]",
+        \\aaa[bbbbb[ccc, dd],
+            \\    eee,
+            \\    ffff[gg, hhh, ii]]
+        ,
     )
 }
 
@@ -266,16 +417,35 @@ fn hard_lines_and_break_lines_have_distinct_flat_layouts() -> () {
     let forced = group(append(text("a"), append(hardline(), text("b"))));
     testing::assert_eq(pretty(10, with_space), "a b");
     testing::assert_eq(pretty(10, without_space), "ab");
-    testing::assert_eq(pretty(10, forced), "a\nb")
+    testing::assert_eq(
+        pretty(10, forced),
+        \\a
+        \\b
+        ,
+    )
 }
 
 #[test]
 fn delimited_and_block_build_structured_documents() -> () {
     let arguments = delimited("(", ",", ")", Vec::from_array([text("first"), text("second")]));
     testing::assert_eq(pretty(20, arguments), "(first, second)");
-    testing::assert_eq(pretty(8, arguments), "(\n  first,\n  second\n)");
+    testing::assert_eq(
+        pretty(8, arguments),
+        \\(
+        \\  first,
+        \\  second
+        \\)
+        ,
+    );
     let body = block(text("fn main()"), Vec::from_array([text("first"), text("second")]));
-    testing::assert_eq(layout(body), "fn main() {\n  first\n  second\n}")
+    testing::assert_eq(
+        layout(body),
+        \\fn main() {
+        \\  first
+        \\  second
+        \\}
+        ,
+    )
 }
 
 #[test]

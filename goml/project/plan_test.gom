@@ -226,7 +226,10 @@ fn installed_world_compiler(root: string) -> string {
     let compiler = path::join(path::join(root, "bin"), "gomlc");
     test_support::write_file(
         compiler,
-        "#!/bin/sh\nprintf '%s\\n' '{\"driver_protocol\":2,\"installed_world\":1}'\n",
+        \\#!/bin/sh
+            \\printf '%s\n' '{"driver_protocol":2,"installed_world":1}'
+            \\
+        ,
     );
     match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
@@ -377,7 +380,14 @@ fn build_graph_exposes_dependency_cycles() -> () {
 #[test]
 fn go_module_builds_delegate_freshness_to_go() -> () {
     let root = test_support::workspace("go_module_cache");
-    test_support::write_file(path::join(root, "go.mod"), "module example.com/app\n\ngo 1.25\n");
+    test_support::write_file(
+        path::join(root, "go.mod"),
+        \\module example.com/app
+        \\
+        \\go 1.25
+        \\
+        ,
+    );
     let context = cancellation_test_context(root, "gomlc");
     let command = Command::GoBuild { input: "out/main.go", output: "out/main" };
     match prepare_cached_command(digest_cache(), context, command, "gomlc") {
@@ -424,7 +434,23 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> () {
     let compiler = path::join(root, "compiler");
     test_support::write_file(
         compiler,
-        "#!/bin/sh\ncase \" $* \" in\n    *\" --package slow \"*)\n        touch out/slow.interface\n        sleep 30 &\n        child=$!\n        echo \"$child\" > slow.pid\n        wait \"$child\"\n        ;;\n    *\" --package fail \"*)\n        while [ ! -f slow.pid ]; do sleep 0.01; done\n        touch out/fail.interface\n        exit 1\n        ;;\nesac\n",
+        \\#!/bin/sh
+            \\case " $* " in
+            \\    *" --package slow "*)
+            \\        touch out/slow.interface
+            \\        sleep 30 &
+            \\        child=$!
+            \\        echo "$child" > slow.pid
+            \\        wait "$child"
+            \\        ;;
+            \\    *" --package fail "*)
+            \\        while [ ! -f slow.pid ]; do sleep 0.01; done
+            \\        touch out/fail.interface
+            \\        exit 1
+            \\        ;;
+            \\esac
+            \\
+        ,
     );
     test_support::write_file(path::join(root, "slow.input"), "slow");
     test_support::write_file(path::join(root, "fail.input"), "fail");
@@ -473,7 +499,13 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> () {
 fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> () {
     let root = test_support::workspace("uncommitted_plan_cache");
     let compiler = path::join(root, "compiler");
-    test_support::write_file(compiler, "#!/bin/sh\ntouch out/owned.interface\n");
+    test_support::write_file(
+        compiler,
+        \\#!/bin/sh
+        \\touch out/owned.interface
+        \\
+        ,
+    );
     match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
         Err(message) => testing::fail(message.to_string()),

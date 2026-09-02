@@ -165,7 +165,11 @@ fn lexes_numeric_literals() -> () {
 
 #[test]
 fn lexes_strings_chars_comments_and_multiline_strings() -> () {
-    let source = "\"héllo \\n \\u0041\" '中' '\\n' // λ\n\\\\first\n  \\\\second\nnext";
+    let source = \\"héllo \n \u0041" '中' '\n' // λ
+        \\\\first
+        \\  \\second
+        \\next
+    ;
     let tokens = lex(source);
     testing::assert_eq(tokens.len(), 11);
     testing::assert(token_kind_equal(tokens.get(0).kind, TokenKind::Str));
@@ -173,7 +177,12 @@ fn lexes_strings_chars_comments_and_multiline_strings() -> () {
     testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::CharLit));
     testing::assert(token_kind_equal(tokens.get(6).kind, TokenKind::Comment));
     testing::assert(token_kind_equal(tokens.get(8).kind, TokenKind::MultilineStr));
-    testing::assert_eq(tokens.get(8).text, "\\\\first\n  \\\\second");
+    testing::assert_eq(
+        tokens.get(8).text,
+        \\\\first
+        \\  \\second
+        ,
+    );
     testing::assert(token_kind_equal(tokens.get(9).kind, TokenKind::Whitespace));
     testing::assert(token_kind_equal(tokens.get(10).kind, TokenKind::Ident))
 }
@@ -259,7 +268,11 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> () {
         },
         None => testing::fail("expected unterminated character metadata"),
     }
-    let multiline = lex("\"hello \\\nworld\";");
+    let multiline = lex(
+        \\"hello \
+        \\world";
+        ,
+    );
     testing::assert_eq(multiline.get(0).text, "\"hello \\");
     match multiline.get(0).error {
         Some(error) => {
@@ -274,24 +287,38 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> () {
 
 #[test]
 fn lexes_raw_strings_and_preserves_delimiters() -> () {
-    let source = "r\"plain \\\\ text\" r##\"quoted \"text\" and #\nnext\"## r#\"unterminated";
+    let source = \\r"plain \\ text" r##"quoted "text" and #
+        \\next"## r#"unterminated
+    ;
     let tokens = lex(source);
     assert_token(tokens, 0, TokenKind::RawStr, "r\"plain \\\\ text\"", 0, 16);
     testing::assert(token_kind_equal(tokens.get(2).kind, TokenKind::RawStr));
-    testing::assert_eq(tokens.get(2).text, "r##\"quoted \"text\" and #\nnext\"##");
+    testing::assert_eq(
+        tokens.get(2).text,
+        \\r##"quoted "text" and #
+        \\next"##
+        ,
+    );
     testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::Error));
     testing::assert_eq(tokens.get(4).text, "r#\"unterminated")
 }
 
 #[test]
 fn lexes_byte_strings_and_raw_byte_strings() -> () {
-    let source = "b\"A\\n\\xFF\" br#\"raw \\\\ text\"# br##\"quoted \"text\" and #\nnext\"##";
+    let source = \\b"A\n\xFF" br#"raw \\ text"# br##"quoted "text" and #
+        \\next"##
+    ;
     let tokens = lex(source);
     assert_token(tokens, 0, TokenKind::ByteStr, "b\"A\\n\\xFF\"", 0, 10);
     testing::assert(token_kind_equal(tokens.get(2).kind, TokenKind::RawByteStr));
     testing::assert_eq(tokens.get(2).text, "br#\"raw \\\\ text\"#");
     testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::RawByteStr));
-    testing::assert_eq(tokens.get(4).text, "br##\"quoted \"text\" and #\nnext\"##")
+    testing::assert_eq(
+        tokens.get(4).text,
+        \\br##"quoted "text" and #
+        \\next"##
+        ,
+    )
 }
 
 #[test]

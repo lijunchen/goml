@@ -4,8 +4,29 @@ use std::testing;
 
 #[test]
 fn changed_go_source_invalidates_cached_executable() -> () {
-    let old_source = "package main\n\nimport \"fmt\"\n\nfunc main() {\nLoop:\n    select {\n    default:\n        fmt.Println(\"old\")\n        break Loop\n    }\n}\n";
-    let new_source = "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"new\")\n}\n";
+    let old_source = \\package main
+        \\
+        \\import "fmt"
+        \\
+        \\func main() {
+        \\Loop:
+        \\    select {
+        \\    default:
+        \\        fmt.Println("old")
+        \\        break Loop
+        \\    }
+        \\}
+        \\
+    ;
+    let new_source = \\package main
+        \\
+        \\import "fmt"
+        \\
+        \\func main() {
+        \\    fmt.Println("new")
+        \\}
+        \\
+    ;
     testing::assert(
         execute_go_and_read_stdout(old_source, "old\n", "cache_invalidation") == "old\n",
     );

@@ -139,7 +139,12 @@ fn builtin_source_derive_expansion(source: string) -> string {
 #[test]
 fn expands_builtin_derives_from_toolchain_source_handlers() -> () {
     let expanded = builtin_source_derive_expansion(
-        "#[derive(ToString, Debug, PartialEq, Eq, Hash)]\nstruct Pair[T] { left: T, label: string }\n\n#[derive(ToString, Debug, PartialEq, Eq, Hash)]\nenum State[T] { Idle, One(T), Named { value: T, label: string } }",
+        \\#[derive(ToString, Debug, PartialEq, Eq, Hash)]
+            \\struct Pair[T] { left: T, label: string }
+            \\
+            \\#[derive(ToString, Debug, PartialEq, Eq, Hash)]
+            \\enum State[T] { Idle, One(T), Named { value: T, label: string } }
+        ,
     );
     testing::assert(expanded.contains("impl[T] ToString for Pair[T]"));
     testing::assert(expanded.contains("impl[T] Debug for Pair[T]"));
@@ -172,7 +177,13 @@ fn builtin_derives_require_builtin_source_exports() -> () {
 #[test]
 fn parses_module_paths_and_package_names() -> () {
     match manifest_module_path(
-        "[build]\ntarget-dir = \"out\"\n\n[module]\npath = \"alice::tools\"\n",
+        \\[build]
+            \\target-dir = "out"
+            \\
+            \\[module]
+            \\path = "alice::tools"
+            \\
+        ,
     ) {
         Some(value) => testing::assert_eq(value, "alice::tools"),
         None => testing::fail("expected module path"),
@@ -188,7 +199,12 @@ fn parses_module_paths_and_package_names() -> () {
 #[test]
 fn parses_module_paths_with_inline_comments() -> () {
     match manifest_module_path(
-        "[build] # output settings\n\n[module] # package identity\npath = \"alice::tools\" # canonical path\n",
+        \\[build] # output settings
+            \\
+            \\[module] # package identity
+            \\path = "alice::tools" # canonical path
+            \\
+        ,
     ) {
         Some(value) => testing::assert_eq(value, "alice::tools"),
         None => testing::fail("expected module path"),
@@ -197,10 +213,29 @@ fn parses_module_paths_with_inline_comments() -> () {
 
 #[test]
 fn parses_only_exact_module_path_keys() -> () {
-    testing::assert(manifest_module_path("[module]\npathology = \"wrong::path\"\n").is_none());
-    testing::assert(manifest_module_path("[module]\npath_suffix = \"wrong::suffix\"\n").is_none());
+    testing::assert(
+        manifest_module_path(
+            \\[module]
+        \\pathology = "wrong::path"
+        \\
+            ,
+        ).is_none(),
+    );
+    testing::assert(
+        manifest_module_path(
+            \\[module]
+        \\path_suffix = "wrong::suffix"
+        \\
+            ,
+        ).is_none(),
+    );
     match manifest_module_path(
-        "[module]\npathology = \"wrong::path\"\npath_suffix = \"wrong::suffix\"\npath = \"alice::tools\" # canonical path\n",
+        \\[module]
+            \\pathology = "wrong::path"
+            \\path_suffix = "wrong::suffix"
+            \\path = "alice::tools" # canonical path
+            \\
+        ,
     ) {
         Some(value) => testing::assert_eq(value, "alice::tools"),
         None => testing::fail("expected exact module path"),
@@ -266,13 +301,27 @@ fn analyzes_and_navigates_module_root_imports() -> () {
     }
     for completion_source in Vec::from_array(
         [
-            "package main;\nuse module::",
+            \\package main;
+                \\use module::
+            ,
             "package main;\nuse\tmodule::",
-            "package main;\nuse  module::",
-            "package main;\nuse\nmodule::",
-            "package main;\nuse // package path\nmodule::",
-            "package main;\nuse module ::",
-            "package main;\npub use module::",
+            \\package main;
+                \\use  module::
+            ,
+            \\package main;
+                \\use
+                \\module::
+            ,
+            \\package main;
+                \\use // package path
+                \\module::
+            ,
+            \\package main;
+                \\use module ::
+            ,
+            \\package main;
+                \\pub use module::
+            ,
         ],
     ) {
         let completion_analysis = analyze(main_path, completion_source);
@@ -280,14 +329,18 @@ fn analyzes_and_navigates_module_root_imports() -> () {
         testing::assert(has_completion(items, "data"));
         testing::assert(has_completion(items, "service"))
     }
-    let scope_source = "package main;\nuse module::service; fn main() -> () { pri }";
+    let scope_source = \\package main;
+        \\use module::service; fn main() -> () { pri }
+    ;
     match last_substring(scope_source, "pri") {
         Some(offset) => testing::assert(
             has_completion(completions(analyze(main_path, scope_source), offset + 3), "println"),
         ),
         None => testing::fail("expected scope completion prefix"),
     }
-    let package_scope_source = "package main;\nuse module::service; fn main() -> () { ser }";
+    let package_scope_source = \\package main;
+        \\use module::service; fn main() -> () { ser }
+    ;
     match last_substring(package_scope_source, "ser") {
         Some(offset) => testing::assert(
             has_completion(
@@ -861,7 +914,10 @@ fn keeps_signature_names_for_canonical_cross_package_targets() -> () {
     let main_source = "package main; use module::left as left; use module::right as right; fn main() -> () { let left_value = left::Item {}; let right_value = right::Item {}; println(left_value.choose(1)); println(right_value.choose(2)); println(left::call(3)); println(right::call(4)); println(left::external_call(\"value\")); println(left::Choose::choose(left_value, \"trait\")) }";
     write_query_fixture(
         root + "/goml.toml",
-        "[module]\npath = \"query::signature_owner_collision\"\n",
+        \\[module]
+            \\path = "query::signature_owner_collision"
+            \\
+        ,
     );
     write_query_fixture(left_path, left_source);
     write_query_fixture(right_path, right_source);
@@ -954,7 +1010,12 @@ fn returns_inlay_hints_for_unannotated_let_bindings() -> () {
 
 #[test]
 fn filters_inlay_hints_to_source_ranges() -> () {
-    let source = "fn main() -> () {\n    let first = 1;\n    let second = 2;\n    ()\n}";
+    let source = \\fn main() -> () {
+        \\    let first = 1;
+        \\    let second = 2;
+        \\    ()
+        \\}
+    ;
     match last_substring(source, "second") {
         Some(start) => {
             let hints = inlay_hints_in_range(analyze("main.gom", source), start, source.byte_len());
@@ -1029,7 +1090,13 @@ fn separates_members_for_same_named_types_across_packages() -> () {
     let left_source = "package shared; use module::right as right; pub struct Item { pub left_only: isize, } impl Item { pub fn left_method(self: Item) -> isize { self.left_only } pub fn common(self: Item, value: isize) -> isize { value } } pub fn accept_right(value: right::Item) -> () { () }";
     let right_source = "package shared; pub struct Item { pub right_only: isize, } impl Item { pub fn right_method(self: Item) -> isize { self.right_only } pub fn common(self: Item, value: string) -> string { value } }";
     let main_source = "package main; use module::left as left; use module::right as right; fn main() -> () { let left_value = left::Item { left_only: 1 }; let right_value = right::Item { right_only: 2 }; println(left_value.left_only); println(right_value.right_only) }";
-    write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::owner_collision\"\n");
+    write_query_fixture(
+        root + "/goml.toml",
+        \\[module]
+        \\path = "query::owner_collision"
+        \\
+        ,
+    );
     write_query_fixture(left_path, left_source);
     write_query_fixture(right_path, right_source);
     write_query_fixture(main_path, main_source);
@@ -1103,7 +1170,13 @@ fn filters_member_completion_visibility_and_receivers() -> () {
     let main_path = root + "/main.gom";
     let lib_source = "package lib; pub struct Item { pub shown: isize, hidden: isize, } impl Item { pub fn new() -> Item { Item { shown: 1, hidden: 2 } } pub fn shown_method(self: Item) -> isize { self.shown } fn hidden_method(self: Item) -> isize { self.hidden } } pub trait Describe { fn describe(self: Self) -> string; fn kind() -> string; } impl Describe for Item { fn describe(self: Item) -> string { self.shown.to_string() } fn kind() -> string { \"item\" } } #[allow(unused_function)] fn inspect(value: Item) -> () { println(value.shown); println(value.describe()) }";
     let main_source = "package main; use module::lib; use lib::Describe; fn main() -> () { let value = lib::Item::new(); println(value.shown); println(value.shown_method()); println(value.describe()); let _ = lib::Item::new(); () }";
-    write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::member_visibility\"\n");
+    write_query_fixture(
+        root + "/goml.toml",
+        \\[module]
+        \\path = "query::member_visibility"
+        \\
+        ,
+    );
     write_query_fixture(lib_path, lib_source);
     write_query_fixture(main_path, main_source);
     let external = analyze(main_path, main_source);
@@ -1181,21 +1254,27 @@ fn completes_incomplete_member_and_enum_paths() -> () {
 
 #[test]
 fn completes_standard_library_import_paths() -> () {
-    let root_source = "package main;\nuse st";
+    let root_source = \\package main;
+        \\use st
+    ;
     testing::assert(
         has_completion(
             completions(analyze("/tmp/import-main.gom", root_source), root_source.byte_len()),
             "std",
         ),
     );
-    let child_source = "package main;\nuse std::";
+    let child_source = \\package main;
+        \\use std::
+    ;
     let children = completions(
         analyze("/tmp/import-main.gom", child_source),
         child_source.byte_len(),
     );
     testing::assert(has_completion(children, "io"));
     testing::assert(has_completion(children, "path"));
-    let item_source = "package main;\nuse std::io::pri";
+    let item_source = \\package main;
+        \\use std::io::pri
+    ;
     testing::assert(
         has_completion(
             completions(analyze("/tmp/import-main.gom", item_source), item_source.byte_len()),
@@ -1344,7 +1423,9 @@ fn completes_imported_package_namespaces() -> () {
 
 #[test]
 fn filters_completion_scope_and_suggests_keywords() -> () {
-    let source = "fn first() -> i32 { let hidden = 1; hidden }\nfn second() -> i32 { let visible = 2; vis }";
+    let source = \\fn first() -> i32 { let hidden = 1; hidden }
+        \\fn second() -> i32 { let visible = 2; vis }
+    ;
     match last_substring(source, "vis") {
         Some(offset) => {
             let items = completions(analyze("main.gom", source), offset + 3);
@@ -1485,7 +1566,9 @@ fn returns_hover_from_typecheck_facts() -> () {
 
 #[test]
 fn returns_function_hover_on_declarations_and_calls() -> () {
-    let source = "fn add(x: i32, y: i32) -> i32 { x + y }\nfn main() -> i32 { add(1, 2) }";
+    let source = \\fn add(x: i32, y: i32) -> i32 { x + y }
+        \\fn main() -> i32 { add(1, 2) }
+    ;
     match hover(analyze("main.gom", source), 3) {
         Some(result) => {
             testing::assert_eq(result.contents, "(i32, i32) -> i32")
@@ -1592,7 +1675,13 @@ fn keeps_hover_types_for_canonical_declarations() -> () {
     let right_path = right_dir + "/right.gom";
     let left_source = "package left; use module::right; type Label = isize; const answer: Label = 1; trait Choose { fn choose(self: Self, trait_value: string) -> string; } struct Item {} impl Choose for Item { fn choose(self: Item, implementation_value: string) -> string { implementation_value } } impl Item { fn choose(self: Item, inherent_value: isize) -> isize { inherent_value } } struct TraitOnly {} impl Choose for TraitOnly { fn choose(self: TraitOnly, trait_only_value: string) -> string { trait_only_value } } pub fn select(value: isize) -> isize { value } pub fn use_right(value: string) -> string { right::select(value) } #[allow(unused_function)] fn use_item(value: Item) -> isize { value.choose(1) } #[allow(unused_function)] fn use_trait(value: TraitOnly) -> string { value.choose(\"trait\") }";
     let right_source = "package right; pub type Label = string; pub const answer: Label = \"right\"; pub fn select(value: string) -> string { value }";
-    write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::hover_owner_collision\"\n");
+    write_query_fixture(
+        root + "/goml.toml",
+        \\[module]
+        \\path = "query::hover_owner_collision"
+        \\
+        ,
+    );
     write_query_fixture(left_path, left_source);
     write_query_fixture(right_path, right_source);
     let analysis = analyze(left_path, left_source);
@@ -1686,7 +1775,11 @@ fn indexes_completes_and_hovers_type_aliases_and_constants() -> () {
 
 #[test]
 fn discovers_internal_and_external_test_items() -> () {
-    let source = "package value;\n#[test]\nfn works() -> () { () }\n";
+    let source = \\package value;
+        \\#[test]
+        \\fn works() -> () { () }
+        \\
+    ;
     let internal = test_items("/tmp/value_test.gom", source);
     testing::assert_eq(internal.len(), 1);
     testing::assert_eq(internal.get(0).name, "works");
@@ -1736,19 +1829,52 @@ fn resolves_external_registry_packages_with_mvs() -> () {
     }
     write_query_fixture(
         registry + "/index.toml",
-        "[modules.\"alice::http\"]\nlatest = \"1.0.0\"\nversions = [\"1.0.0\"]\n\n[modules.\"alice::shared\"]\nlatest = \"2.0.0\"\nversions = [\"1.0.0\", \"2.0.0\"]\n",
+        \\[modules."alice::http"]
+            \\latest = "1.0.0"
+            \\versions = ["1.0.0"]
+            \\
+            \\[modules."alice::shared"]
+            \\latest = "2.0.0"
+            \\versions = ["1.0.0", "2.0.0"]
+            \\
+        ,
     );
     write_query_fixture(
         project + "/goml.toml",
-        "[module]\npath = \"test::app\"\n\n[dependencies]\n\"alice::http\" = \"1.0.0\"\n\"alice::shared\" = \"1.0.0\"\n",
+        \\[module]
+            \\path = "test::app"
+            \\
+            \\[dependencies]
+            \\"alice::http" = "1.0.0"
+            \\"alice::shared" = "1.0.0"
+            \\
+        ,
     );
     write_query_fixture(
         http + "/goml.toml",
-        "[module]\npath = \"alice::http\"\n\n[dependencies]\n\"alice::shared\" = \"2.0.0\"\n",
+        \\[module]
+            \\path = "alice::http"
+            \\
+            \\[dependencies]
+            \\"alice::shared" = "2.0.0"
+            \\
+        ,
     );
     write_query_fixture(http + "/http.gom", "package http; pub fn status() -> i32 { 200 }");
-    write_query_fixture(shared_one + "/goml.toml", "[module]\npath = \"alice::shared\"\n");
-    write_query_fixture(shared_two + "/goml.toml", "[module]\npath = \"alice::shared\"\n");
+    write_query_fixture(
+        shared_one + "/goml.toml",
+        \\[module]
+        \\path = "alice::shared"
+        \\
+        ,
+    );
+    write_query_fixture(
+        shared_two + "/goml.toml",
+        \\[module]
+        \\path = "alice::shared"
+        \\
+        ,
+    );
     write_query_fixture(shared_one + "/shared.gom", "package shared; pub fn version() -> i32 { 1 }");
     write_query_fixture(shared_two + "/shared.gom", "package shared; pub fn version() -> i32 { 2 }");
     match external_package_sources_at(registry, project, "alice::http", Vec::new()) {

@@ -67,7 +67,10 @@ fn formats_the_latest_unicode_document() -> () {
     let server = new_server();
     let uri = "file:///tmp/formatting.gom";
     formatting_document(server, uri, "package main;\n");
-    let source = "package main;\nfn main( )->string{let value=0xFF; // keep\n\"😀\"}";
+    let source = \\package main;
+        \\fn main( )->string{let value=0xFF; // keep
+        \\"😀"}
+    ;
     change_document(server, uri, source, 2);
     let edits = formatting_result(server, uri);
     testing::assert_eq(edits.len(), 1);
@@ -76,7 +79,14 @@ fn formats_the_latest_unicode_document() -> () {
         Some(value) => match json::as_string(value) {
             Some(value) => testing::assert_eq(
                 value,
-                "package main;\n\nfn main() -> string {\n    let value = 0xFF; // keep\n    \"😀\"\n}\n",
+                \\package main;
+                    \\
+                    \\fn main() -> string {
+                    \\    let value = 0xFF; // keep
+                    \\    "😀"
+                    \\}
+                    \\
+                ,
             ),
             None => testing::fail("formatted text must be a string"),
         },
@@ -107,11 +117,25 @@ fn formats_the_latest_unicode_document() -> () {
 fn returns_no_edits_for_formatted_or_invalid_source() -> () {
     let formatted_server = new_server();
     let formatted_uri = "file:///tmp/formatted.gom";
-    formatting_document(formatted_server, formatted_uri, "package main;\n\nfn main() -> () {}\n");
+    formatting_document(
+        formatted_server,
+        formatted_uri,
+        \\package main;
+        \\
+        \\fn main() -> () {}
+        \\
+        ,
+    );
     testing::assert_eq(formatting_result(formatted_server, formatted_uri).len(), 0);
     let invalid_server = new_server();
     let invalid_uri = "file:///tmp/invalid.gom";
-    formatting_document(invalid_server, invalid_uri, "package main;\nfn broken( {");
+    formatting_document(
+        invalid_server,
+        invalid_uri,
+        \\package main;
+        \\fn broken( {
+        ,
+    );
     testing::assert_eq(formatting_result(invalid_server, invalid_uri).len(), 0)
 }
 
@@ -119,12 +143,29 @@ fn returns_no_edits_for_formatted_or_invalid_source() -> () {
 fn formats_redundant_unit_tail() -> () {
     let server = new_server();
     let uri = "file:///tmp/redundant-().gom";
-    formatting_document(server, uri, "package main;\n\nfn main() -> () {\n    ()\n}\n");
+    formatting_document(
+        server,
+        uri,
+        \\package main;
+        \\
+        \\fn main() -> () {
+        \\    ()
+        \\}
+        \\
+        ,
+    );
     let edits = formatting_result(server, uri);
     testing::assert_eq(edits.len(), 1);
     match json::field(edits.get(0), "newText") {
         Some(value) => match json::as_string(value) {
-            Some(value) => testing::assert_eq(value, "package main;\n\nfn main() -> () {}\n"),
+            Some(value) => testing::assert_eq(
+                value,
+                \\package main;
+                \\
+                \\fn main() -> () {}
+                \\
+                ,
+            ),
             None => testing::fail("formatted text must be a string"),
         },
         None => testing::fail("missing formatted text"),

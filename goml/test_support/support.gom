@@ -177,6 +177,12 @@ pub fn write_basic_project(root: string, module_path: string) -> () {
     write_file(path::join(root, "goml.toml"), "[module]\npath = \"" + module_path + "\"\n");
     write_file(
         path::join(root, "main.gom"),
-        "package main;\n\nfn main() -> () {\n    println(\"hello\")\n}\n",
+        \\package main;
+            \\
+            \\fn main() -> () {
+            \\    println("hello")
+            \\}
+            \\
+        ,
     )
 }

@@ -54,12 +54,36 @@ fn package_command(command: string) -> bool {
 }
 
 fn top_level_help() -> string {
-    "Usage: gomlc <COMMAND>\n\nCommands:\n  check          \n  test-check     \n  build          \n  test-build     \n  link           \n  test-link      \n  package-info   \n  run-single     \n  version        \n  help           Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
+    \\Usage: gomlc <COMMAND>
+        \\
+        \\Commands:
+        \\  check          
+        \\  test-check     
+        \\  build          
+        \\  test-build     
+        \\  link           
+        \\  test-link      
+        \\  package-info   
+        \\  run-single     
+        \\  version        
+        \\  help           Print this message or the help of the given subcommand(s)
+        \\
+        \\Options:
+        \\  -h, --help  Print help
 }
 
 fn package_command_help(command: string) -> string {
     "Usage: gomlc " + command
-        + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>\n\nOptions:\n      --package <PACKAGE>                \n      --module <MODULE>                  \n      --input <INPUT>...                 \n      --interface-path <INTERFACE_FILE>  \n      --output <OUTPUT>                  \n  -h, --help                             Print help"
+        + \\ [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>
+            \\
+            \\Options:
+            \\      --package <PACKAGE>                
+            \\      --module <MODULE>                  
+            \\      --input <INPUT>...                 
+            \\      --interface-path <INTERFACE_FILE>  
+            \\      --output <OUTPUT>                  
+            \\  -h, --help                             Print help
+
 }
 
 fn command_help(command: string) -> Option[string] {
@@ -68,22 +92,71 @@ fn command_help(command: string) -> Option[string] {
             package_command_help(command),
         ),
         LINK_COMMAND => Option::Some(
-            "Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>\n\nOptions:\n      --input <INPUT>...  \n      --entry <ENTRY>     \n      --output <OUTPUT>   \n  -h, --help              Print help",
+            \\Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>
+                \\
+                \\Options:
+                \\      --input <INPUT>...  
+                \\      --entry <ENTRY>     
+                \\      --output <OUTPUT>   
+                \\  -h, --help              Print help
+            ,
         ),
         TEST_LINK_COMMAND => Option::Some(
-            "Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help",
+            \\Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>
+                \\
+                \\Options:
+                \\      --input <INPUT>...     
+                \\      --package <PACKAGE>    
+                \\      --output <OUTPUT>      
+                \\      --manifest <MANIFEST>  
+                \\  -h, --help                 Print help
+            ,
         ),
         PACKAGE_INFO_COMMAND => Option::Some(
-            "Usage: gomlc package-info [OPTIONS] --input <INPUT>...\n\nOptions:\n      --input <INPUT>...  \n      --format <FORMAT>   [default: json] [possible values: json]\n  -h, --help              Print help",
+            \\Usage: gomlc package-info [OPTIONS] --input <INPUT>...
+                \\
+                \\Options:
+                \\      --input <INPUT>...  
+                \\      --format <FORMAT>   [default: json] [possible values: json]
+                \\  -h, --help              Print help
+            ,
         ),
         RUN_SINGLE_COMMAND => Option::Some(
-            "Usage: gomlc run-single [OPTIONS] <FILE>\n\nArguments:\n  <FILE>  \n\nOptions:\n      --dump-ast           \n      --dump-expanded-ast  \n      --dump-hir           \n      --dump-tast          \n      --dump-ctir          \n      --dump-core          \n      --dump-mono          \n      --dump-lift          \n      --dump-anf           \n      --dump-go            \n  -h, --help               Print help",
+            \\Usage: gomlc run-single [OPTIONS] <FILE>
+                \\
+                \\Arguments:
+                \\  <FILE>  
+                \\
+                \\Options:
+                \\      --dump-ast           
+                \\      --dump-expanded-ast  
+                \\      --dump-hir           
+                \\      --dump-tast          
+                \\      --dump-ctir          
+                \\      --dump-core          
+                \\      --dump-mono          
+                \\      --dump-lift          
+                \\      --dump-anf           
+                \\      --dump-go            
+                \\  -h, --help               Print help
+            ,
         ),
         VERSION_COMMAND => Option::Some(
-            "Usage: gomlc version [OPTIONS]\n\nOptions:\n      --format <FORMAT>  [default: text] [possible values: text, json]\n  -h, --help             Print help",
+            \\Usage: gomlc version [OPTIONS]
+                \\
+                \\Options:
+                \\      --format <FORMAT>  [default: text] [possible values: text, json]
+                \\  -h, --help             Print help
+            ,
         ),
         HELP_COMMAND => Option::Some(
-            "Print this message or the help of the given subcommand(s)\n\nUsage: gomlc help [COMMAND]...\n\nArguments:\n  [COMMAND]...  Print help for the subcommand(s)",
+            \\Print this message or the help of the given subcommand(s)
+                \\
+                \\Usage: gomlc help [COMMAND]...
+                \\
+                \\Arguments:
+                \\  [COMMAND]...  Print help for the subcommand(s)
+            ,
         ),
         _ => Option::None,
     }
@@ -559,7 +632,12 @@ fn similar_subcommand_tip(values: Vec[string]) -> string {
 fn unknown_subcommand_error(command: string) -> string {
     let tip = similar_subcommand_tip(similar_cli_subcommands(command));
     "error: unrecognized subcommand '" + command + "'" + tip
-        + "\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'."
+        + \\
+            \\
+            \\Usage: gomlc <COMMAND>
+            \\
+            \\For more information, try '--help'.
+
 }
 
 fn fail_cli(message: string) -> () {

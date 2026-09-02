@@ -48,9 +48,13 @@ fn config_registry_source() -> Result[string, string] {
     let config = config_path()?;
     if !fs::is_file(config) {
         ensure_home_layout()?;
-        fs::write_file_structured(config, "[registry]\ndefault = \"\"\n").map_err(
-            |error| error.to_string(),
-        )?
+        fs::write_file_structured(
+            config,
+            \\[registry]
+            \\default = ""
+            \\
+            ,
+        ).map_err(|error| error.to_string())?
     }
     let source = fs::read_file_structured(config).map_err(|error| error.to_string())?;
     let mut section = "";
