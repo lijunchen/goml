@@ -29,6 +29,18 @@ fn format_binary(value: Builder, node: LocatedNode) -> BuiltDoc {
     let right = format_node(value, children[1]);
     let content = if token_is(operator, lexer::TokenKind::Dot) {
         concat(Vec::from_array([left.doc, token_doc(operator), right.doc]))
+    } else if left.trailing_lines > 0 {
+        let separator = if right.starts_with_line {
+            nil()
+        } else {
+            text(" ")
+        };
+        concat2(
+            left.doc,
+            indent(concat(Vec::from_array([token_doc(operator), separator, right.doc]))),
+        )
+    } else if right.starts_with_line {
+        concat(Vec::from_array([left.doc, text(" "), token_doc(operator), right.doc]))
     } else {
         concat(
             Vec::from_array(
@@ -45,7 +57,13 @@ fn format_binary(value: Builder, node: LocatedNode) -> BuiltDoc {
             ),
         )
     };
-    built(value.docs.group(content).doc, left.first, right.last)
+    BuiltDoc {
+        doc: value.docs.group(content).doc,
+        first: left.first,
+        last: right.last,
+        starts_with_line: left.starts_with_line,
+        trailing_lines: right.trailing_lines,
+    }
 }
 
 fn format_prefix(value: Builder, node: LocatedNode) -> BuiltDoc {
@@ -60,20 +78,22 @@ fn format_prefix(value: Builder, node: LocatedNode) -> BuiltDoc {
         return format_generic(value, node)
     };
     let operand = format_node(value, children[0]);
-    built(
-        concat2(token_doc(operator), operand.doc),
-        Option::Some(operator.token.kind),
-        operand.last,
-    )
+    BuiltDoc {
+        doc: concat2(token_doc(operator), operand.doc),
+        first: Option::Some(operator.token.kind),
+        last: operand.last,
+        starts_with_line: false,
+        trailing_lines: operand.trailing_lines,
+    }
 }
 
 fn format_multiline_string(node: LocatedNode) -> BuiltDoc {
     match first_significant_token(node) {
         Some(token) => BuiltDoc {
-            doc: concat2(verbatim(token.token.text), Doc::HardLine),
+            doc: multiline_string(token.token.text),
             first: Option::Some(token.token.kind),
             last: Option::Some(token.token.kind),
-            starts_with_line: false,
+            starts_with_line: true,
             trailing_lines: 1,
         },
         None => empty_built(),

@@ -72,6 +72,7 @@ fn flat_width(value: Doc, broken_groups: collections::BitSet, limit: isize) -> i
                 width
             }
         },
+        MultilineString(_) => limit + 1,
         Concat(values) => {
             let width: Ref[isize] = Ref::new(0);
             for child in values {
@@ -159,6 +160,26 @@ fn write_verbatim(value: Renderer, content: string) -> () {
     }
 }
 
+fn write_multiline_string(value: Renderer, lines: Vec[string]) -> () {
+    if lines.is_empty() {} else {
+        let nested = !value.line_start.get();
+        if nested {
+            write_newline(value);
+            value.indent_level.set(value.indent_level.get() + 1)
+        }
+        for index in 0..lines.len() {
+            if index > 0 {
+                write_newline(value)
+            }
+            write_text(value, lines[index], codepoint_width(lines[index]))
+        }
+        write_newline(value);
+        if nested {
+            value.indent_level.set(value.indent_level.get() - 1)
+        }
+    }
+}
+
 fn flush_suffixes(value: Renderer) -> () {
     while !value.suffixes.is_empty() {
         if let Some(suffix) = value.suffixes.pop_front() {
@@ -202,6 +223,7 @@ fn render_doc(value: Renderer, doc: Doc, mode: RenderMode) -> () {
         Nil => (),
         Text(content, width) => write_text(value, content, width),
         Verbatim(content) => write_verbatim(value, content),
+        MultilineString(lines) => write_multiline_string(value, lines),
         Concat(values) => for child in values {
             render_doc(value, child, mode)
         },

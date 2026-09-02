@@ -2,7 +2,7 @@
 
 `gomlfmt` is the canonical formatter for GoML source code. It parses source into the lossless concrete syntax tree, converts that tree into a document describing possible line breaks, and renders the document at a fixed width.
 
-Formatting never uses the lowered AST. Comments, identifiers, numeric spelling, character and byte escapes, strings, multiline strings, and interpolated-string text are emitted from their original lexer tokens.
+Formatting never uses the lowered AST. Comments, identifiers, numeric spelling, character and byte escapes, strings, and interpolated-string text are emitted from their original lexer tokens. Multiline strings retain their marker and content text while the layout indentation before each marker is normalized.
 
 ## Fixed settings
 
@@ -102,7 +102,14 @@ first
 
 Comments inside a list force a line break. A trailing comment is not wrapped or rewritten.
 
-All literal token text is preserved byte for byte, including radix prefixes, numeric separators, escapes, multiline string contents, and interpolated-string text.
+Literal token text is preserved byte for byte, including radix prefixes, numeric separators, escapes, and interpolated-string text. A multiline string starts on a new line, all of its `\\` markers are aligned, and the terminating syntax returns to the enclosing indentation. Only spaces and tabs before a `\\` marker are rewritten; content after the marker is preserved byte for byte.
+
+```goml
+let poem =
+    \\roses are red
+    \\violets are blue
+;
+```
 
 ## Errors
 

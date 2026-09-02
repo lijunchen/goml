@@ -4,6 +4,7 @@ pub enum Doc {
     Nil,
     Text(string, isize),
     Verbatim(string),
+    MultilineString(Vec[string]),
     Concat(Vec[Doc]),
     Group(isize, Doc),
     IfBreak(isize, Doc, Doc),
@@ -54,6 +55,10 @@ fn verbatim(value: string) -> Doc {
     } else {
         Doc::Verbatim(value)
     }
+}
+
+fn multiline_string(value: string) -> Doc {
+    Doc::MultilineString(multiline_string_lines(value))
 }
 
 fn concat(values: Vec[Doc]) -> Doc {

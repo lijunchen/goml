@@ -140,11 +140,12 @@ let quoted = br#"say "hello""#;
 
 The standard library type `std::bytes::Bytes` remains a separate buffer abstraction. It provides read-only and mutable zero-copy views plus a growable byte builder. `std::bytes::endian` provides checked endian access and matching growable and fixed-buffer readers and writers. Use `bytes::Bytes::from_vec(value)` when an API requires it.
 
-Each line of a multiline string begins with two backslashes; the indentation before the mark is removed, the lines are connected with newlines, and the content after the mark is retained as is.At the end, the next line no longer starts with two backslashes, usually written directly `;` or `}`:
+Each line of a multiline string begins with two backslashes; the indentation before the mark is removed, the lines are connected with newlines, and the content after the mark is retained as is. At the end, the next line no longer starts with two backslashes, usually written directly `;` or `}`. The formatter places the multiline string on its own indented lines:
 
 ```goml
 fn poem() -> string {
-    let text = \\roses are red
+    let text =
+        \\roses are red
         \\violets are blue
         \\"quotes" need no escaping here
     ;

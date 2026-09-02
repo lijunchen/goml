@@ -143,7 +143,7 @@ fn format_token_signature(source: string, root: LocatedNode) -> string {
             || token_is_omitted(token, omissions) {} else {
             output.write_string(lexer::token_kind_name(token.kind));
             output.write_string(":");
-            output.write_string(lexer::encode_text_hex(token.text));
+            output.write_string(lexer::encode_text_hex(format_token_text(token)));
             output.write_string("\n")
         }
         if lexer::token_kind_equal(token.kind, lexer::TokenKind::WhereKeyword) {

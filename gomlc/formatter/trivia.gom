@@ -1,6 +1,7 @@
 package formatter;
 
 use module::lexer;
+use std::text;
 
 fn whitespace_newlines(value: string) -> isize {
     let count: Ref[isize] = Ref::new(0);
@@ -10,4 +11,46 @@ fn whitespace_newlines(value: string) -> isize {
         }
     }
     count.get()
+}
+
+fn multiline_string_lines(value: string) -> Vec[string] {
+    let lines: Vec[string] = Vec::new();
+    let mut line_start = 0;
+    while line_start <= value.byte_len() {
+        let mut line_end = line_start;
+        while line_end < value.byte_len() && value.byte_get(line_end) != b'\n' {
+            line_end += 1;
+        }
+        let mut marker = line_start;
+        while marker < line_end
+            && (value.byte_get(marker) == b' ' || value.byte_get(marker) == b'\t') {
+            marker += 1;
+        }
+        lines.push(value.byte_slice(marker, line_end));
+        if line_end >= value.byte_len() {
+            break
+        }
+        line_start = line_end + 1;
+    }
+    lines
+}
+
+fn normalized_multiline_string(value: string) -> string {
+    let output = text::StringBuilder::with_capacity(value.byte_len());
+    let lines = multiline_string_lines(value);
+    for index in 0..lines.len() {
+        if index > 0 {
+            output.write_string("\n")
+        }
+        output.write_string(lines[index])
+    }
+    output.finish()
+}
+
+fn format_token_text(value: lexer::Token) -> string {
+    if lexer::token_kind_equal(value.kind, lexer::TokenKind::MultilineStr) {
+        normalized_multiline_string(value.text)
+    } else {
+        value.text
+    }
 }
