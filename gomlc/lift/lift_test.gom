@@ -68,22 +68,22 @@ fn flattens_monomorphic_blocks() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn main() -> () {
-            \\  let mtmp0 = () in
-            \\  let a/0 = (true, false, (true, false)) in
-            \\  let b/5 =
-            \\    let x1 = a/0.0 in
-            \\    let x2 = a/0.1 in
-            \\    let x3 = a/0.2 in
-            \\    let x4 = x3.0 in
-            \\    let x5 = x3.1 in
-            \\    let w/4 = x5 in
-            \\    let z/3 = x4 in
-            \\    let y/2 = x2 in
-            \\    let x/1 = x1 in
-            \\    w/4 in
-            \\  let mtmp6 = print(b/5) in
-            \\  ()
-            \\}
+        \\  let mtmp0 = () in
+        \\  let a/0 = (true, false, (true, false)) in
+        \\  let b/5 =
+        \\    let x1 = a/0.0 in
+        \\    let x2 = a/0.1 in
+        \\    let x3 = a/0.2 in
+        \\    let x4 = x3.0 in
+        \\    let x5 = x3.1 in
+        \\    let w/4 = x5 in
+        \\    let z/3 = x4 in
+        \\    let y/2 = x2 in
+        \\    let x/1 = x1 in
+        \\    w/4 in
+        \\  let mtmp6 = print(b/5) in
+        \\  ()
+        \\}
         ,
     )
 }
@@ -93,9 +93,9 @@ fn fills_empty_block_tails() -> () {
     testing::assert_eq(
         encode(lower_source("fn main() -> () { let value = 1; }")),
         \\fn main() -> () {
-            \\  let value/0 = 1 in
-            \\  ()
-            \\}
+        \\  let value/0 = 1 in
+        \\  ()
+        \\}
         ,
     )
 }
@@ -106,32 +106,32 @@ fn lifts_closures_in_enum_payloads() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn next(flag/0: bool) -> MaybeFn {
-            \\  if flag/0 {
-            \\      MaybeFn::Some(
-            \\        pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](closure_env_next_0 {})
-            \\      )
-            \\  } else {
-            \\      MaybeFn::None
-            \\  }
-            \\}
-            \\
-            \\fn main() -> () {
-            \\  let mtmp0 = next(true) in
-            \\  match mtmp0 {
-            \\    MaybeFn::Some(x1) => {
-            \\      let x1 = MaybeFn::Some._0(mtmp0) in
-            \\      let f/2 = x1 in
-            \\      println(inherent#i32#i32#to_string(f/2(41)))
-            \\    },
-            \\    MaybeFn::None => {
-            \\      println("none")
-            \\    },
-            \\  }
-            \\}
-            \\
-            \\fn inherent#closure_env_next_0#closure_env_next_0#apply(env2: closure_env_next_0, x/1: i32) -> i32 {
-            \\  (x/1 + 1)
-            \\}
+        \\  if flag/0 {
+        \\      MaybeFn::Some(
+        \\        pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](closure_env_next_0 {})
+        \\      )
+        \\  } else {
+        \\      MaybeFn::None
+        \\  }
+        \\}
+        \\
+        \\fn main() -> () {
+        \\  let mtmp0 = next(true) in
+        \\  match mtmp0 {
+        \\    MaybeFn::Some(x1) => {
+        \\      let x1 = MaybeFn::Some._0(mtmp0) in
+        \\      let f/2 = x1 in
+        \\      println(inherent#i32#i32#to_string(f/2(41)))
+        \\    },
+        \\    MaybeFn::None => {
+        \\      println("none")
+        \\    },
+        \\  }
+        \\}
+        \\
+        \\fn inherent#closure_env_next_0#closure_env_next_0#apply(env2: closure_env_next_0, x/1: i32) -> i32 {
+        \\  (x/1 + 1)
+        \\}
         ,
     )
 }
@@ -142,48 +142,48 @@ fn ignores_digits_in_monomorphic_function_names() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn main() -> () {
-            \\  grow__T_isize(1, true)
-            \\}
-            \\
-            \\fn grow__T_isize(x/0: isize, flag/1: bool) -> () {
-            \\  if flag/1 {
-            \\      grow__T_(i32)->i32(
-            \\        pack_closure[inherent#closure_env_grow_T_isize_0#closure_env_grow_T_isize_0#apply](
-            \\          closure_env_grow_T_isize_0 {}
-            \\        ),
-            \\        false
-            \\      )
-            \\  } else {
-            \\      println("done")
-            \\  }
-            \\}
-            \\
-            \\fn grow__T_(i32)->i32(x/0: (i32) -> i32, flag/1: bool) -> () {
-            \\  if flag/1 {
-            \\      grow__T_(i32)->i32(
-            \\        pack_closure[inherent#closure_env_grow_T_i32_i32_1#closure_env_grow_T_i32_i32_1#apply](
-            \\          closure_env_grow_T_i32_i32_1 {}
-            \\        ),
-            \\        false
-            \\      )
-            \\  } else {
-            \\      println("done")
-            \\  }
-            \\}
-            \\
-            \\fn inherent#closure_env_grow_T_isize_0#closure_env_grow_T_isize_0#apply(
-            \\  env0: closure_env_grow_T_isize_0,
-            \\  n/2: i32
-            \\) -> i32 {
-            \\  (n/2 + 1)
-            \\}
-            \\
-            \\fn inherent#closure_env_grow_T_i32_i32_1#closure_env_grow_T_i32_i32_1#apply(
-            \\  env1: closure_env_grow_T_i32_i32_1,
-            \\  n/2: i32
-            \\) -> i32 {
-            \\  (n/2 + 1)
-            \\}
+        \\  grow__T_isize(1, true)
+        \\}
+        \\
+        \\fn grow__T_isize(x/0: isize, flag/1: bool) -> () {
+        \\  if flag/1 {
+        \\      grow__T_(i32)->i32(
+        \\        pack_closure[inherent#closure_env_grow_T_isize_0#closure_env_grow_T_isize_0#apply](
+        \\          closure_env_grow_T_isize_0 {}
+        \\        ),
+        \\        false
+        \\      )
+        \\  } else {
+        \\      println("done")
+        \\  }
+        \\}
+        \\
+        \\fn grow__T_(i32)->i32(x/0: (i32) -> i32, flag/1: bool) -> () {
+        \\  if flag/1 {
+        \\      grow__T_(i32)->i32(
+        \\        pack_closure[inherent#closure_env_grow_T_i32_i32_1#closure_env_grow_T_i32_i32_1#apply](
+        \\          closure_env_grow_T_i32_i32_1 {}
+        \\        ),
+        \\        false
+        \\      )
+        \\  } else {
+        \\      println("done")
+        \\  }
+        \\}
+        \\
+        \\fn inherent#closure_env_grow_T_isize_0#closure_env_grow_T_isize_0#apply(
+        \\  env0: closure_env_grow_T_isize_0,
+        \\  n/2: i32
+        \\) -> i32 {
+        \\  (n/2 + 1)
+        \\}
+        \\
+        \\fn inherent#closure_env_grow_T_i32_i32_1#closure_env_grow_T_i32_i32_1#apply(
+        \\  env1: closure_env_grow_T_i32_i32_1,
+        \\  n/2: i32
+        \\) -> i32 {
+        \\  (n/2 + 1)
+        \\}
         ,
     )
 }
@@ -194,17 +194,17 @@ fn preserves_immediate_closure_calls() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn main() -> () {
-            \\  let result/1 = inherent#closure_env_main_0#closure_env_main_0#apply(closure_env_main_0 {}, 41) in
-            \\  let _wild0 = println(inherent#isize#isize#to_string(result/1)) in
-            \\  ()
-            \\}
-            \\
-            \\fn inherent#closure_env_main_0#closure_env_main_0#apply(
-            \\  env1: closure_env_main_0,
-            \\  x/0: isize
-            \\) -> isize {
-            \\  (x/0 + 1)
-            \\}
+        \\  let result/1 = inherent#closure_env_main_0#closure_env_main_0#apply(closure_env_main_0 {}, 41) in
+        \\  let _wild0 = println(inherent#isize#isize#to_string(result/1)) in
+        \\  ()
+        \\}
+        \\
+        \\fn inherent#closure_env_main_0#closure_env_main_0#apply(
+        \\  env1: closure_env_main_0,
+        \\  x/0: isize
+        \\) -> isize {
+        \\  (x/0 + 1)
+        \\}
         ,
     )
 }
@@ -215,15 +215,15 @@ fn avoids_existing_closure_environment_names() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn main() -> () {
-            \\  let mtmp0 = ClosureEnvF0 { value: 1 } in
-            \\  let f/1 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](closure_env_f_0 {}) in
-            \\  let _wild1 = println(inherent#i32#i32#to_string(f/1(2))) in
-            \\  ()
-            \\}
-            \\
-            \\fn inherent#closure_env_f_0#closure_env_f_0#apply(env2: closure_env_f_0, x/0: i32) -> i32 {
-            \\  (x/0 + 1)
-            \\}
+        \\  let mtmp0 = ClosureEnvF0 { value: 1 } in
+        \\  let f/1 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](closure_env_f_0 {}) in
+        \\  let _wild1 = println(inherent#i32#i32#to_string(f/1(2))) in
+        \\  ()
+        \\}
+        \\
+        \\fn inherent#closure_env_f_0#closure_env_f_0#apply(env2: closure_env_f_0, x/0: i32) -> i32 {
+        \\  (x/0 + 1)
+        \\}
         ,
     )
 }

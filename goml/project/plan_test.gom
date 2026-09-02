@@ -227,8 +227,8 @@ fn installed_world_compiler(root: string) -> string {
     test_support::write_file(
         compiler,
         \\#!/bin/sh
-            \\printf '%s\n' '{"driver_protocol":2,"installed_world":1}'
-            \\
+        \\printf '%s\n' '{"driver_protocol":2,"installed_world":1}'
+        \\
         ,
     );
     match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
@@ -435,21 +435,21 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> () {
     test_support::write_file(
         compiler,
         \\#!/bin/sh
-            \\case " $* " in
-            \\    *" --package slow "*)
-            \\        touch out/slow.interface
-            \\        sleep 30 &
-            \\        child=$!
-            \\        echo "$child" > slow.pid
-            \\        wait "$child"
-            \\        ;;
-            \\    *" --package fail "*)
-            \\        while [ ! -f slow.pid ]; do sleep 0.01; done
-            \\        touch out/fail.interface
-            \\        exit 1
-            \\        ;;
-            \\esac
-            \\
+        \\case " $* " in
+        \\    *" --package slow "*)
+        \\        touch out/slow.interface
+        \\        sleep 30 &
+        \\        child=$!
+        \\        echo "$child" > slow.pid
+        \\        wait "$child"
+        \\        ;;
+        \\    *" --package fail "*)
+        \\        while [ ! -f slow.pid ]; do sleep 0.01; done
+        \\        touch out/fail.interface
+        \\        exit 1
+        \\        ;;
+        \\esac
+        \\
         ,
     );
     test_support::write_file(path::join(root, "slow.input"), "slow");

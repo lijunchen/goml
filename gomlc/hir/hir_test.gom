@@ -161,19 +161,19 @@ fn indents_multiline_calls_canonically() -> () {
     testing::assert_eq(
         encode(lower(ast::lower(parser::parse(source)), "main.gom")),
         \\package main
-            \\file main.gom
-            \\  struct Box {
-            \\      value: i32,
-            \\  }
-            \\
-            \\  fn make(local/1/0: Box) -> Box {
-            \\      value/0
-            \\  }
-            \\
-            \\  fn main() -> () {
-            \\      let local/1/1 =
-            \\        Vec::new().pushed(def/1/1(Box { value: 1 })).pushed(def/1/1(Box { value: 2 }));
-            \\  }
+        \\file main.gom
+        \\  struct Box {
+        \\      value: i32,
+        \\  }
+        \\
+        \\  fn make(local/1/0: Box) -> Box {
+        \\      value/0
+        \\  }
+        \\
+        \\  fn main() -> () {
+        \\      let local/1/1 =
+        \\        Vec::new().pushed(def/1/1(Box { value: 1 })).pushed(def/1/1(Box { value: 2 }));
+        \\  }
         ,
     )
 }

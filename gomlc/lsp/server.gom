@@ -235,9 +235,9 @@ fn completion_snippet(value: query::CompletionItem) -> Option[string] {
             ),
             "priority" => Option::Some(
                 \\priority {
-                    \\    ${1:recv(channel) as value => value},
-                    \\    default => ${2:value},
-                    \\}
+                \\    ${1:recv(channel) as value => value},
+                \\    default => ${2:value},
+                \\}
                 ,
             ),
             "recv" => Option::Some("recv(${1:channel}) as ${2:value} => ${3:body}"),
@@ -247,9 +247,9 @@ fn completion_snippet(value: query::CompletionItem) -> Option[string] {
             "as" => Option::Some("as ${1:value} => ${2:body}"),
             "match" => Option::Some(
                 \\match {
-                    \\    ${1:Some(value) => value},
-                    \\    ${2:None => value},
-                    \\}
+                \\    ${1:Some(value) => value},
+                \\    ${2:None => value},
+                \\}
                 ,
             ),
             _ => Option::None,

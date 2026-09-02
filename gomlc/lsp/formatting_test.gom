@@ -67,7 +67,8 @@ fn formats_the_latest_unicode_document() -> () {
     let server = new_server();
     let uri = "file:///tmp/formatting.gom";
     formatting_document(server, uri, "package main;\n");
-    let source = \\package main;
+    let source =
+        \\package main;
         \\fn main( )->string{let value=0xFF; // keep
         \\"😀"}
     ;
@@ -80,12 +81,12 @@ fn formats_the_latest_unicode_document() -> () {
             Some(value) => testing::assert_eq(
                 value,
                 \\package main;
-                    \\
-                    \\fn main() -> string {
-                    \\    let value = 0xFF; // keep
-                    \\    "😀"
-                    \\}
-                    \\
+                \\
+                \\fn main() -> string {
+                \\    let value = 0xFF; // keep
+                \\    "😀"
+                \\}
+                \\
                 ,
             ),
             None => testing::fail("formatted text must be a string"),

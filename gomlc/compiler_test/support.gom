@@ -512,8 +512,8 @@ pub fn assert_standard_binary_stdio() -> () {
     if let Err(message) = fs::write_file_structured(
         path::join(project, "goml.toml"),
         \\[module]
-            \\path = "stdio_test"
-            \\
+        \\path = "stdio_test"
+        \\
         ,
     ) {
         testing::fail(message.to_string())
@@ -521,36 +521,36 @@ pub fn assert_standard_binary_stdio() -> () {
     if let Err(message) = fs::write_file_structured(
         path::join(project, "main.gom"),
         \\package main;
-            \\
-            \\use std::bytes;
-            \\use std::env;
-            \\use std::io;
-            \\use std::process;
-            \\
-            \\fn main() -> () {
-            \\    match env::var_structured("GOML_EMPTY") {
-            \\        Result::Ok(value) => if value != "" { process::exit(1) } else { () },
-            \\        Result::Err(_) => process::exit(1),
-            \\    };
-            \\    match env::var_structured("GOML_MISSING_ENVIRONMENT_VALUE") {
-            \\        Result::Ok(_) => process::exit(1),
-            \\        Result::Err(_) => (),
-            \\    };
-            \\    match io::read_stdin_structured() {
-            \\        Result::Ok(data) => {
-            \\            match io::write_stdout_structured(data) {
-            \\                Result::Ok(()) => (),
-            \\                Result::Err(_) => process::exit(1),
-            \\            };
-            \\            match io::write_stderr_structured(bytes::Bytes::from_string("binary stderr")) {
-            \\                Result::Ok(()) => (),
-            \\                Result::Err(_) => process::exit(1),
-            \\            }
-            \\        },
-            \\        Result::Err(_) => process::exit(1),
-            \\    }
-            \\}
-            \\
+        \\
+        \\use std::bytes;
+        \\use std::env;
+        \\use std::io;
+        \\use std::process;
+        \\
+        \\fn main() -> () {
+        \\    match env::var_structured("GOML_EMPTY") {
+        \\        Result::Ok(value) => if value != "" { process::exit(1) } else { () },
+        \\        Result::Err(_) => process::exit(1),
+        \\    };
+        \\    match env::var_structured("GOML_MISSING_ENVIRONMENT_VALUE") {
+        \\        Result::Ok(_) => process::exit(1),
+        \\        Result::Err(_) => (),
+        \\    };
+        \\    match io::read_stdin_structured() {
+        \\        Result::Ok(data) => {
+        \\            match io::write_stdout_structured(data) {
+        \\                Result::Ok(()) => (),
+        \\                Result::Err(_) => process::exit(1),
+        \\            };
+        \\            match io::write_stderr_structured(bytes::Bytes::from_string("binary stderr")) {
+        \\                Result::Ok(()) => (),
+        \\                Result::Err(_) => process::exit(1),
+        \\            }
+        \\        },
+        \\        Result::Err(_) => process::exit(1),
+        \\    }
+        \\}
+        \\
         ,
     ) {
         testing::fail(message.to_string())

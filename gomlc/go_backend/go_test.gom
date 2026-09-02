@@ -126,7 +126,7 @@ fn separates_top_level_and_local_go_names() -> () {
     testing::assert(
         output.contains(
             \\const (
-        \\    value__0 int = 42
+            \\    value__0 int = 42
             ,
         ),
     );
@@ -146,36 +146,36 @@ fn detects_yaegi_incompatible_select_control_flow() -> () {
     testing::assert(
         !yaegi_compatible(
             \\Loop_outer:
-                \\for {
-                \\    select {
-                \\    default:
-                \\        break Loop_outer
-                \\    }
-                \\}
-                \\
+            \\for {
+            \\    select {
+            \\    default:
+            \\        break Loop_outer
+            \\    }
+            \\}
+            \\
             ,
         ),
     );
     testing::assert(
         !yaegi_compatible(
             \\Loop_outer:
-                \\for {
-                \\    select {
-                \\    default:
-                \\        continue Loop_outer
-                \\    }
-                \\}
-                \\
+            \\for {
+            \\    select {
+            \\    default:
+            \\        continue Loop_outer
+            \\    }
+            \\}
+            \\
             ,
         ),
     );
     testing::assert(
         yaegi_compatible(
             \\select {
-        \\default:
-        \\    break
-        \\}
-        \\
+            \\default:
+            \\    break
+            \\}
+            \\
             ,
         ),
     );
@@ -370,7 +370,7 @@ fn emits_test_runner_entrypoint() -> () {
         string_contains(
             output,
             \\case "example::alpha":
-        \\        alpha()
+            \\        alpha()
             ,
         ),
     );
@@ -378,7 +378,7 @@ fn emits_test_runner_entrypoint() -> () {
         string_contains(
             output,
             \\case "example::beta":
-        \\        beta()
+            \\        beta()
             ,
         ),
     );
@@ -386,7 +386,7 @@ fn emits_test_runner_entrypoint() -> () {
         string_contains(
             output,
             \\default:
-                \\        _goml_runtime_std_testing_fail("unknown test id")
+            \\        _goml_runtime_std_testing_fail("unknown test id")
             ,
         ),
     );
@@ -410,7 +410,7 @@ fn emits_parameterized_test_arguments() -> () {
         string_contains(
             output,
             \\case "example::parameterized::case_123":
-                \\        parameterized("left", true)
+            \\        parameterized("left", true)
             ,
         ),
     )
@@ -422,39 +422,39 @@ fn emits_if_continuations() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\func main0() struct{} {
-            \\    var yes__3 int32
-            \\    var inline16 bool = true
-            \\    var inline17 int32 = 10
-            \\    var inline18 int32 = 99
-            \\    if inline16 {
-            \\        yes__3 = inline17
-            \\    } else {
-            \\        yes__3 = inline18
-            \\    }
-            \\    var no__4 int32
-            \\    var inline12 bool = false
-            \\    var inline13 int32 = 10
-            \\    var inline14 int32 = 99
-            \\    if inline12 {
-            \\        no__4 = inline13
-            \\    } else {
-            \\        no__4 = inline14
-            \\    }
-            \\    var t7 string = _goml_m_inherent_i_i32_i_i32_i_to__string(yes__3)
-            \\    var t8 string = "yes=" + t7
-            \\    _goml_m_println(t8)
-            \\    var t9 string = _goml_m_inherent_i_i32_i_i32_i_to__string(no__4)
-            \\    var t10 string = "no=" + t9
-            \\    _goml_m_println(t10)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\func main0() struct{} {
+        \\    var yes__3 int32
+        \\    var inline16 bool = true
+        \\    var inline17 int32 = 10
+        \\    var inline18 int32 = 99
+        \\    if inline16 {
+        \\        yes__3 = inline17
+        \\    } else {
+        \\        yes__3 = inline18
+        \\    }
+        \\    var no__4 int32
+        \\    var inline12 bool = false
+        \\    var inline13 int32 = 10
+        \\    var inline14 int32 = 99
+        \\    if inline12 {
+        \\        no__4 = inline13
+        \\    } else {
+        \\        no__4 = inline14
+        \\    }
+        \\    var t7 string = _goml_m_inherent_i_i32_i_i32_i_to__string(yes__3)
+        \\    var t8 string = "yes=" + t7
+        \\    _goml_m_println(t8)
+        \\    var t9 string = _goml_m_inherent_i_i32_i_i32_i_to__string(no__4)
+        \\    var t10 string = "no=" + t9
+        \\    _goml_m_println(t10)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -466,12 +466,12 @@ fn emits_linked_bool_to_string_runtime() -> () {
         string_contains(
             output,
             \\func _goml_runtime_core_bool_to_string(x bool) string {
-                \\    if x {
-                \\        return "true"
-                \\    } else {
-                \\        return "false"
-                \\    }
-                \\}
+            \\    if x {
+            \\        return "true"
+            \\    } else {
+            \\        return "false"
+            \\    }
+            \\}
             ,
         ),
     );
@@ -775,28 +775,28 @@ fn emits_tuple_types_and_prunes_dead_bindings() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type Tuple2_4bool_4bool struct {
-            \\    _0 bool
-            \\    _1 bool
-            \\}
-            \\
-            \\type Tuple3_4bool_4bool_18Tuple2_4bool_4bool struct {
-            \\    _0 bool
-            \\    _1 bool
-            \\    _2 Tuple2_4bool_4bool
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var x5 bool = false
-            \\    _goml_m_print(x5)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type Tuple2_4bool_4bool struct {
+        \\    _0 bool
+        \\    _1 bool
+        \\}
+        \\
+        \\type Tuple3_4bool_4bool_18Tuple2_4bool_4bool struct {
+        \\    _0 bool
+        \\    _1 bool
+        \\    _2 Tuple2_4bool_4bool
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var x5 bool = false
+        \\    _goml_m_print(x5)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -821,11 +821,11 @@ fn preserves_nested_tuple_discovery_order() -> () {
         string_contains(
             encode(lower_source(source)),
             \\type Tuple2_20Tuple2_5int32_5int32_6string struct {
-                \\    _0 Tuple2_5int32_5int32
-                \\    _1 string
-                \\}
-                \\
-                \\type Tuple2_5int32_5int32 struct
+            \\    _0 Tuple2_5int32_5int32
+            \\    _1 string
+            \\}
+            \\
+            \\type Tuple2_5int32_5int32 struct
             ,
         ),
     )
@@ -837,26 +837,26 @@ fn emits_primitive_matches() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\func main0() struct{} {
-            \\    var x__0 uint8 = 5
-            \\    var jp3 string
-            \\    switch x__0 {
-            \\    case 0:
-            \\        jp3 = "zero"
-            \\    case 1:
-            \\        jp3 = "one"
-            \\    default:
-            \\        jp3 = "other"
-            \\    }
-            \\    _goml_m_println(jp3)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\func main0() struct{} {
+        \\    var x__0 uint8 = 5
+        \\    var jp3 string
+        \\    switch x__0 {
+        \\    case 0:
+        \\        jp3 = "zero"
+        \\    case 1:
+        \\        jp3 = "one"
+        \\    default:
+        \\        jp3 = "other"
+        \\    }
+        \\    _goml_m_println(jp3)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -867,42 +867,42 @@ fn emits_breaking_while_loops() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type ref_int_x struct {
-            \\    value int
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_new(0)
-            \\    Loop_loop7:
-            \\    for {
-            \\        var t8 int = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_get(i__0)
-            \\        var t9 bool = t8 < 10
-            \\        if t9 {
-            \\            var t14 int = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_get(i__0)
-            \\            var t15 bool = t14 == 5
-            \\            if t15 {
-            \\                break Loop_loop7
-            \\            } else {
-            \\                var t11 int = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_get(i__0)
-            \\                _goml_m_println(t11)
-            \\                var t12 int = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_get(i__0)
-            \\                var t13 int = t12 + 1
-            \\                _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_set(i__0, t13)
-            \\                continue
-            \\            }
-            \\        } else {
-            \\            break Loop_loop7
-            \\        }
-            \\    }
-            \\    _goml_m_println("done")
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type ref_int_x struct {
+        \\    value int
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_new(0)
+        \\    Loop_loop7:
+        \\    for {
+        \\        var t8 int = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_get(i__0)
+        \\        var t9 bool = t8 < 10
+        \\        if t9 {
+        \\            var t14 int = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_get(i__0)
+        \\            var t15 bool = t14 == 5
+        \\            if t15 {
+        \\                break Loop_loop7
+        \\            } else {
+        \\                var t11 int = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_get(i__0)
+        \\                _goml_m_println(t11)
+        \\                var t12 int = _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_get(i__0)
+        \\                var t13 int = t12 + 1
+        \\                _goml_m_inherent_i_Ref_i_Ref_l_isize_r__i_set(i__0, t13)
+        \\                continue
+        \\            }
+        \\        } else {
+        \\            break Loop_loop7
+        \\        }
+        \\    }
+        \\    _goml_m_println("done")
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -917,7 +917,7 @@ fn emits_value_and_infinite_loops_without_expanding_continuations() -> () {
         string_contains(
             output,
             \\ = 7
-        \\            break Loop_loop_expr
+            \\            break Loop_loop_expr
             ,
         ),
     );
@@ -925,7 +925,7 @@ fn emits_value_and_infinite_loops_without_expanding_continuations() -> () {
         string_contains(
             output,
             \\func spin() int {
-        \\    for {
+            \\    for {
             ,
         ),
     );
@@ -987,7 +987,7 @@ fn recognizes_recursive_joins_independently_of_their_names() -> () {
         string_contains(
             output,
             \\func main0() struct{} {
-        \\    for {
+            \\    for {
             ,
         ),
     );
@@ -1115,7 +1115,7 @@ fn lowers_go_ffi_calls_through_abi_wrappers() -> () {
         string_contains(
             output,
             \\.Gosched()
-        \\    return struct{}{}
+            \\    return struct{}{}
             ,
         ),
     )
@@ -1158,12 +1158,12 @@ fn preserves_all_exit_while_conditions() -> () {
         string_contains(
             output,
             \\func loop_return_unit(flag__0 bool) struct{} {
-                \\    if flag__0 {
-                \\        return struct{}{}
-                \\    } else {
-                \\        return struct{}{}
-                \\    }
-                \\}
+            \\    if flag__0 {
+            \\        return struct{}{}
+            \\    } else {
+            \\        return struct{}{}
+            \\    }
+            \\}
             ,
         ),
     )
@@ -1177,7 +1177,7 @@ fn preserves_reused_loop_labels() -> () {
         string_contains(
             output,
             \\Loop_loop6:
-        \\    for {
+            \\    for {
             ,
         ),
     );
@@ -1193,26 +1193,26 @@ fn emits_vec_runtime_structs() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type _goml_vec_int32 struct {
-            \\    items []int32
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var xs__1 *_goml_vec_int32
-            \\    var inline8 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_new()
-            \\    _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_push(inline8, 1)
-            \\    xs__1 = inline8
-            \\    _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_push(xs__1, 2)
-            \\    var t6 int = _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_len(xs__1)
-            \\    _goml_m_println(t6)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type _goml_vec_int32 struct {
+        \\    items []int32
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var xs__1 *_goml_vec_int32
+        \\    var inline8 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_new()
+        \\    _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_push(inline8, 1)
+        \\    xs__1 = inline8
+        \\    _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_push(xs__1, 2)
+        \\    var t6 int = _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_len(xs__1)
+        \\    _goml_m_println(t6)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1223,74 +1223,74 @@ fn emits_hashmap_and_dyn_hash_runtime() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type ref_Dyn_Hash_x struct {
-            \\    value dyn__Hash
-            \\}
-            \\
-            \\type hashmap_Ref_8Dyn_Hash_string_x_entry struct {
-            \\    active bool
-            \\    key *ref_Dyn_Hash_x
-            \\    value string
-            \\}
-            \\
-            \\type hashmap_Ref_8Dyn_Hash_string_x struct {
-            \\    buckets map[uint64][]hashmap_Ref_8Dyn_Hash_string_x_entry
-            \\    hashes []uint64
-            \\    len int
-            \\}
-            \\
-            \\type _goml_synthetic__goml_option__string interface {
-            \\    is_goml_synthetic__goml_option__string()
-            \\}
-            \\
-            \\type _goml_synthetic__goml_option__string_Some struct {
-            \\    _0 string
-            \\}
-            \\
-            \\func (_ _goml_synthetic__goml_option__string_Some) is_goml_synthetic__goml_option__string() {}
-            \\
-            \\type _goml_synthetic__goml_option__string_None struct {}
-            \\
-            \\func (_ _goml_synthetic__goml_option__string_None) is_goml_synthetic__goml_option__string() {}
-            \\
-            \\type dyn__Hash_vtable struct {
-            \\    hash func(any) uint64
-            \\}
-            \\
-            \\type dyn__Hash struct {
-            \\    data any
-            \\    vtable *dyn__Hash_vtable
-            \\}
-            \\
-            \\func dyn__Hash__wrap__int__hash(self any) uint64 {
-            \\    return _goml_m_trait__impl_i_Hash_i_isize_i_hash(self.(int))
-            \\}
-            \\
-            \\func dyn__Hash__vtable__int() *dyn__Hash_vtable {
-            \\    return &dyn__Hash_vtable{
-            \\        hash: dyn__Hash__wrap__int__hash,
-            \\    }
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var h__2 *hashmap_Ref_8Dyn_Hash_string_x = _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_new()
-            \\    var inner__3 dyn__Hash = dyn__Hash{
-            \\        data: int(1),
-            \\        vtable: dyn__Hash__vtable__int(),
-            \\    }
-            \\    var r__4 *ref_Dyn_Hash_x = _goml_m_inherent_i_Ref_i_Ref_l_dynHash_r__i_new(inner__3)
-            \\    _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_set(h__2, r__4, "one")
-            \\    var t8 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_contains(h__2, r__4)
-            \\    var t9 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t8)
-            \\    _goml_m_println(t9)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type ref_Dyn_Hash_x struct {
+        \\    value dyn__Hash
+        \\}
+        \\
+        \\type hashmap_Ref_8Dyn_Hash_string_x_entry struct {
+        \\    active bool
+        \\    key *ref_Dyn_Hash_x
+        \\    value string
+        \\}
+        \\
+        \\type hashmap_Ref_8Dyn_Hash_string_x struct {
+        \\    buckets map[uint64][]hashmap_Ref_8Dyn_Hash_string_x_entry
+        \\    hashes []uint64
+        \\    len int
+        \\}
+        \\
+        \\type _goml_synthetic__goml_option__string interface {
+        \\    is_goml_synthetic__goml_option__string()
+        \\}
+        \\
+        \\type _goml_synthetic__goml_option__string_Some struct {
+        \\    _0 string
+        \\}
+        \\
+        \\func (_ _goml_synthetic__goml_option__string_Some) is_goml_synthetic__goml_option__string() {}
+        \\
+        \\type _goml_synthetic__goml_option__string_None struct {}
+        \\
+        \\func (_ _goml_synthetic__goml_option__string_None) is_goml_synthetic__goml_option__string() {}
+        \\
+        \\type dyn__Hash_vtable struct {
+        \\    hash func(any) uint64
+        \\}
+        \\
+        \\type dyn__Hash struct {
+        \\    data any
+        \\    vtable *dyn__Hash_vtable
+        \\}
+        \\
+        \\func dyn__Hash__wrap__int__hash(self any) uint64 {
+        \\    return _goml_m_trait__impl_i_Hash_i_isize_i_hash(self.(int))
+        \\}
+        \\
+        \\func dyn__Hash__vtable__int() *dyn__Hash_vtable {
+        \\    return &dyn__Hash_vtable{
+        \\        hash: dyn__Hash__wrap__int__hash,
+        \\    }
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var h__2 *hashmap_Ref_8Dyn_Hash_string_x = _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_new()
+        \\    var inner__3 dyn__Hash = dyn__Hash{
+        \\        data: int(1),
+        \\        vtable: dyn__Hash__vtable__int(),
+        \\    }
+        \\    var r__4 *ref_Dyn_Hash_x = _goml_m_inherent_i_Ref_i_Ref_l_dynHash_r__i_new(inner__3)
+        \\    _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_set(h__2, r__4, "one")
+        \\    var t8 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_contains(h__2, r__4)
+        \\    var t9 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t8)
+        \\    _goml_m_println(t9)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1320,10 +1320,10 @@ fn indexes_builtin_hashmap_keys_directly() -> () {
         string_contains(
             output,
             \\type hashmap_int_string_x struct {
-                \\    indices map[int]int
-                \\    entries []hashmap_int_string_x_entry
-                \\    len int
-                \\}
+            \\    indices map[int]int
+            \\    entries []hashmap_int_string_x_entry
+            \\    len int
+            \\}
             ,
         ),
     );
@@ -1364,13 +1364,13 @@ fn dispatches_trait_objects_for_enum_receivers() -> () {
         string_contains(
             encode(lower_source(source)),
             \\func dyn__Area__wrap__Shape__area(self any) int32 {
-                \\    switch v := self.(type) {
-                \\    case Shape:
-                \\        return _goml_m_trait__impl_i_Area_i_Shape_i_area(v)
-                \\    default:
-                \\        panic("unexpected type")
-                \\    }
-                \\}
+            \\    switch v := self.(type) {
+            \\    case Shape:
+            \\        return _goml_m_trait__impl_i_Area_i_Shape_i_area(v)
+            \\    default:
+            \\        panic("unexpected type")
+            \\    }
+            \\}
             ,
         ),
     )
@@ -1402,56 +1402,56 @@ fn emits_user_trait_objects_without_name_collisions() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type Box struct {
-            \\    text string
-            \\}
-            \\
-            \\type dyn__Display_vtable struct {
-            \\    display func(any) string
-            \\}
-            \\
-            \\type dyn__Display struct {
-            \\    data any
-            \\    vtable *dyn__Display_vtable
-            \\}
-            \\
-            \\func dyn__Display__wrap__Box__display(self any) string {
-            \\    return _goml_m_trait__impl_i_Display_i_Box_i_display(self.(Box))
-            \\}
-            \\
-            \\func dyn__Display__vtable__Box() *dyn__Display_vtable {
-            \\    return &dyn__Display_vtable{
-            \\        display: dyn__Display__wrap__Box__display,
-            \\    }
-            \\}
-            \\
-            \\func _goml_m_trait__impl_i_Display_i_Box_i_display(self__0 Box) string {
-            \\    var t5 string = self__0.text
-            \\    return t5
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var t7 Box = Box{
-            \\        text: "ok",
-            \\    }
-            \\    var d__1 dyn__Display = dyn__Display{
-            \\        data: t7,
-            \\        vtable: dyn__Display__vtable__Box(),
-            \\    }
-            \\    var t8 string = d__1.vtable.display(d__1.data)
-            \\    var t9 int32
-            \\    t9 = 1
-            \\    var t10 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t9)
-            \\    var t11 string = t8 + t10
-            \\    _goml_m_println(t11)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type Box struct {
+        \\    text string
+        \\}
+        \\
+        \\type dyn__Display_vtable struct {
+        \\    display func(any) string
+        \\}
+        \\
+        \\type dyn__Display struct {
+        \\    data any
+        \\    vtable *dyn__Display_vtable
+        \\}
+        \\
+        \\func dyn__Display__wrap__Box__display(self any) string {
+        \\    return _goml_m_trait__impl_i_Display_i_Box_i_display(self.(Box))
+        \\}
+        \\
+        \\func dyn__Display__vtable__Box() *dyn__Display_vtable {
+        \\    return &dyn__Display_vtable{
+        \\        display: dyn__Display__wrap__Box__display,
+        \\    }
+        \\}
+        \\
+        \\func _goml_m_trait__impl_i_Display_i_Box_i_display(self__0 Box) string {
+        \\    var t5 string = self__0.text
+        \\    return t5
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var t7 Box = Box{
+        \\        text: "ok",
+        \\    }
+        \\    var d__1 dyn__Display = dyn__Display{
+        \\        data: t7,
+        \\        vtable: dyn__Display__vtable__Box(),
+        \\    }
+        \\    var t8 string = d__1.vtable.display(d__1.data)
+        \\    var t9 int32
+        \\    t9 = 1
+        \\    var t10 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t9)
+        \\    var t11 string = t8 + t10
+        \\    _goml_m_println(t11)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1462,30 +1462,30 @@ fn emits_non_repeating_joinrec_as_straight_line_control_flow() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\func f(flag__0 int32) int32 {
-            \\    var t9 bool = flag__0 == 0
-            \\    if t9 {
-            \\        return 1
-            \\    } else {
-            \\        return 2
-            \\    }
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var t11 int32 = f(0)
-            \\    var t12 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t11)
-            \\    _goml_m_println(t12)
-            \\    var t13 int32 = f(1)
-            \\    var t14 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t13)
-            \\    _goml_m_println(t14)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\func f(flag__0 int32) int32 {
+        \\    var t9 bool = flag__0 == 0
+        \\    if t9 {
+        \\        return 1
+        \\    } else {
+        \\        return 2
+        \\    }
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var t11 int32 = f(0)
+        \\    var t12 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t11)
+        \\    _goml_m_println(t12)
+        \\    var t13 int32 = f(1)
+        \\    var t14 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t13)
+        \\    _goml_m_println(t14)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1528,28 +1528,28 @@ fn protects_user_types_from_ref_runtime_names() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type ref_int32_x struct {
-            \\    value int32
-            \\}
-            \\
-            \\type RefInt32X struct {
-            \\    value int32
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var r__1 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(3)
-            \\    var t2 int32 = 2
-            \\    var t3 int32 = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_get(r__1)
-            \\    var t4 int32 = t2 + t3
-            \\    _goml_m_println(t4)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type ref_int32_x struct {
+        \\    value int32
+        \\}
+        \\
+        \\type RefInt32X struct {
+        \\    value int32
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var r__1 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(3)
+        \\    var t2 int32 = 2
+        \\    var t3 int32 = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_get(r__1)
+        \\    var t4 int32 = t2 + t3
+        \\    _goml_m_println(t4)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1560,43 +1560,43 @@ fn emits_runtime_types_nested_in_enum_fields() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type Tuple2_12dyn__Display_5int32 struct {
-            \\    _0 dyn__Display
-            \\    _1 int32
-            \\}
-            \\
-            \\type Boxed__dynDisplay interface {
-            \\    isBoxed__dynDisplay()
-            \\}
-            \\
-            \\type One struct {
-            \\    _0 Tuple2_12dyn__Display_5int32
-            \\}
-            \\
-            \\func (_ One) isBoxed__dynDisplay() {}
-            \\
-            \\type dyn__Display_vtable struct {
-            \\    show func(any) string
-            \\}
-            \\
-            \\type dyn__Display struct {
-            \\    data any
-            \\    vtable *dyn__Display_vtable
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var t7 int32
-            \\    t7 = 7
-            \\    var t8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t7)
-            \\    _goml_m_println(t8)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type Tuple2_12dyn__Display_5int32 struct {
+        \\    _0 dyn__Display
+        \\    _1 int32
+        \\}
+        \\
+        \\type Boxed__dynDisplay interface {
+        \\    isBoxed__dynDisplay()
+        \\}
+        \\
+        \\type One struct {
+        \\    _0 Tuple2_12dyn__Display_5int32
+        \\}
+        \\
+        \\func (_ One) isBoxed__dynDisplay() {}
+        \\
+        \\type dyn__Display_vtable struct {
+        \\    show func(any) string
+        \\}
+        \\
+        \\type dyn__Display struct {
+        \\    data any
+        \\    vtable *dyn__Display_vtable
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var t7 int32
+        \\    t7 = 7
+        \\    var t8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t7)
+        \\    _goml_m_println(t8)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1609,9 +1609,9 @@ fn resolves_generic_types_in_struct_fields() -> () {
         string_contains(
             output,
             \\type Container struct {
-                \\    value Option__i32
-                \\    label string
-                \\}
+            \\    value Option__i32
+            \\    label string
+            \\}
             ,
         ),
     );
@@ -1640,55 +1640,55 @@ fn compacts_dyn_names_in_synthetic_options() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type hashmap_int32_Dyn_Display_x_entry struct {
-            \\    active bool
-            \\    key int32
-            \\    value dyn__Display
-            \\}
-            \\
-            \\type hashmap_int32_Dyn_Display_x struct {
-            \\    indices map[int32]int
-            \\    entries []hashmap_int32_Dyn_Display_x_entry
-            \\    len int
-            \\}
-            \\
-            \\type _goml_synthetic__goml_option__dynDisplay interface {
-            \\    is_goml_synthetic__goml_option__dynDisplay()
-            \\}
-            \\
-            \\type _goml_synthetic__goml_option__dynDisplay_Some struct {
-            \\    _0 dyn__Display
-            \\}
-            \\
-            \\func (_ _goml_synthetic__goml_option__dynDisplay_Some) is_goml_synthetic__goml_option__dynDisplay() {}
-            \\
-            \\type _goml_synthetic__goml_option__dynDisplay_None struct {}
-            \\
-            \\func (_ _goml_synthetic__goml_option__dynDisplay_None) is_goml_synthetic__goml_option__dynDisplay() {}
-            \\
-            \\type dyn__Display_vtable struct {
-            \\    show func(any) string
-            \\}
-            \\
-            \\type dyn__Display struct {
-            \\    data any
-            \\    vtable *dyn__Display_vtable
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var t10 int32
-            \\    _goml_m_inherent_i_HashMap_i_HashMap_l_i32_c_dynDisplay_r__i_new()
-            \\    t10 = 7
-            \\    var t11 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t10)
-            \\    _goml_m_println(t11)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type hashmap_int32_Dyn_Display_x_entry struct {
+        \\    active bool
+        \\    key int32
+        \\    value dyn__Display
+        \\}
+        \\
+        \\type hashmap_int32_Dyn_Display_x struct {
+        \\    indices map[int32]int
+        \\    entries []hashmap_int32_Dyn_Display_x_entry
+        \\    len int
+        \\}
+        \\
+        \\type _goml_synthetic__goml_option__dynDisplay interface {
+        \\    is_goml_synthetic__goml_option__dynDisplay()
+        \\}
+        \\
+        \\type _goml_synthetic__goml_option__dynDisplay_Some struct {
+        \\    _0 dyn__Display
+        \\}
+        \\
+        \\func (_ _goml_synthetic__goml_option__dynDisplay_Some) is_goml_synthetic__goml_option__dynDisplay() {}
+        \\
+        \\type _goml_synthetic__goml_option__dynDisplay_None struct {}
+        \\
+        \\func (_ _goml_synthetic__goml_option__dynDisplay_None) is_goml_synthetic__goml_option__dynDisplay() {}
+        \\
+        \\type dyn__Display_vtable struct {
+        \\    show func(any) string
+        \\}
+        \\
+        \\type dyn__Display struct {
+        \\    data any
+        \\    vtable *dyn__Display_vtable
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var t10 int32
+        \\    _goml_m_inherent_i_HashMap_i_HashMap_l_i32_c_dynDisplay_r__i_new()
+        \\    t10 = 7
+        \\    var t11 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t10)
+        \\    _goml_m_println(t11)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1751,7 +1751,8 @@ fn preserves_enums_before_field_instances() -> () {
             "enum Expr { Num(i32), Add(Option[Expr]), } fn main() -> () { let value: Option[Expr] = Option::None; match value { Option::Some(_) => (), Option::None => (), }; }",
         ),
     );
-    let prefix = \\package main
+    let prefix =
+        \\package main
         \\
         \\type Expr struct {
         \\    _node *Expr_node
@@ -1768,77 +1769,77 @@ fn protects_dyn_object_names_from_vtable_collisions() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type S struct {}
-            \\
-            \\type dyn__A_vtable struct {
-            \\    f func(any) int32
-            \\}
-            \\
-            \\type dyn__A struct {
-            \\    data any
-            \\    vtable *dyn__A_vtable
-            \\}
-            \\
-            \\type dyn__A_vtable_vtable struct {
-            \\    g func(any) int32
-            \\}
-            \\
-            \\type _goml_dyn_object_A_vtable struct {
-            \\    data any
-            \\    vtable *dyn__A_vtable_vtable
-            \\}
-            \\
-            \\func dyn__A__wrap__S__f(self any) int32 {
-            \\    return _goml_m_trait__impl_i_A_i_S_i_f(self.(S))
-            \\}
-            \\
-            \\func dyn__A__vtable__S() *dyn__A_vtable {
-            \\    return &dyn__A_vtable{
-            \\        f: dyn__A__wrap__S__f,
-            \\    }
-            \\}
-            \\
-            \\func dyn__A_vtable__wrap__S__g(self any) int32 {
-            \\    return _goml_m_trait__impl_i_A__vtable_i_S_i_g(self.(S))
-            \\}
-            \\
-            \\func dyn__A_vtable__vtable__S() *dyn__A_vtable_vtable {
-            \\    return &dyn__A_vtable_vtable{
-            \\        g: dyn__A_vtable__wrap__S__g,
-            \\    }
-            \\}
-            \\
-            \\func _goml_m_trait__impl_i_A_i_S_i_f(self__0 S) int32 {
-            \\    return 3
-            \\}
-            \\
-            \\func _goml_m_trait__impl_i_A__vtable_i_S_i_g(self__1 S) int32 {
-            \\    return 4
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var t6 S = S{}
-            \\    var left__2 dyn__A = dyn__A{
-            \\        data: t6,
-            \\        vtable: dyn__A__vtable__S(),
-            \\    }
-            \\    var t7 S = S{}
-            \\    var right__3 _goml_dyn_object_A_vtable = _goml_dyn_object_A_vtable{
-            \\        data: t7,
-            \\        vtable: dyn__A_vtable__vtable__S(),
-            \\    }
-            \\    var t8 int32 = left__2.vtable.f(left__2.data)
-            \\    var t9 int32 = right__3.vtable.g(right__3.data)
-            \\    var t10 int32 = t8 + t9
-            \\    _goml_m_println(t10)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type S struct {}
+        \\
+        \\type dyn__A_vtable struct {
+        \\    f func(any) int32
+        \\}
+        \\
+        \\type dyn__A struct {
+        \\    data any
+        \\    vtable *dyn__A_vtable
+        \\}
+        \\
+        \\type dyn__A_vtable_vtable struct {
+        \\    g func(any) int32
+        \\}
+        \\
+        \\type _goml_dyn_object_A_vtable struct {
+        \\    data any
+        \\    vtable *dyn__A_vtable_vtable
+        \\}
+        \\
+        \\func dyn__A__wrap__S__f(self any) int32 {
+        \\    return _goml_m_trait__impl_i_A_i_S_i_f(self.(S))
+        \\}
+        \\
+        \\func dyn__A__vtable__S() *dyn__A_vtable {
+        \\    return &dyn__A_vtable{
+        \\        f: dyn__A__wrap__S__f,
+        \\    }
+        \\}
+        \\
+        \\func dyn__A_vtable__wrap__S__g(self any) int32 {
+        \\    return _goml_m_trait__impl_i_A__vtable_i_S_i_g(self.(S))
+        \\}
+        \\
+        \\func dyn__A_vtable__vtable__S() *dyn__A_vtable_vtable {
+        \\    return &dyn__A_vtable_vtable{
+        \\        g: dyn__A_vtable__wrap__S__g,
+        \\    }
+        \\}
+        \\
+        \\func _goml_m_trait__impl_i_A_i_S_i_f(self__0 S) int32 {
+        \\    return 3
+        \\}
+        \\
+        \\func _goml_m_trait__impl_i_A__vtable_i_S_i_g(self__1 S) int32 {
+        \\    return 4
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var t6 S = S{}
+        \\    var left__2 dyn__A = dyn__A{
+        \\        data: t6,
+        \\        vtable: dyn__A__vtable__S(),
+        \\    }
+        \\    var t7 S = S{}
+        \\    var right__3 _goml_dyn_object_A_vtable = _goml_dyn_object_A_vtable{
+        \\        data: t7,
+        \\        vtable: dyn__A_vtable__vtable__S(),
+        \\    }
+        \\    var t8 int32 = left__2.vtable.f(left__2.data)
+        \\    var t9 int32 = right__3.vtable.g(right__3.data)
+        \\    var t10 int32 = t8 + t9
+        \\    _goml_m_println(t10)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1849,29 +1850,29 @@ fn emits_pointer_equality_helpers() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type ref_int32_x struct {
-            \\    value int32
-            \\}
-            \\
-            \\func ptr_eq__Ref_5int32(a *ref_int32_x, b *ref_int32_x) bool {
-            \\    return a == b
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var a__0 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(1)
-            \\    var c__2 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(1)
-            \\    var t3 bool = ptr_eq__Ref_5int32(a__0, a__0)
-            \\    _goml_m_println(t3)
-            \\    var t4 bool = ptr_eq__Ref_5int32(a__0, c__2)
-            \\    _goml_m_println(t4)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type ref_int32_x struct {
+        \\    value int32
+        \\}
+        \\
+        \\func ptr_eq__Ref_5int32(a *ref_int32_x, b *ref_int32_x) bool {
+        \\    return a == b
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var a__0 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(1)
+        \\    var c__2 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(1)
+        \\    var t3 bool = ptr_eq__Ref_5int32(a__0, a__0)
+        \\    _goml_m_println(t3)
+        \\    var t4 bool = ptr_eq__Ref_5int32(a__0, c__2)
+        \\    _goml_m_println(t4)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1884,10 +1885,10 @@ fn emits_missing_runtime_helpers() -> () {
         string_contains(
             output,
             \\func _goml_intrinsic_missing(s string) struct{} {
-                \\    println("missing: " + s)
-                \\    panic("")
-                \\    return struct{}{}
-                \\}
+            \\    println("missing: " + s)
+            \\    panic("")
+            \\    return struct{}{}
+            \\}
             ,
         ),
     );
@@ -1895,10 +1896,10 @@ fn emits_missing_runtime_helpers() -> () {
         string_contains(
             output,
             \\func missing__int32(s string) int32 {
-                \\    _goml_intrinsic_missing(s)
-                \\    var ret int32
-                \\    return ret
-                \\}
+            \\    _goml_intrinsic_missing(s)
+            \\    var ret int32
+            \\    return ret
+            \\}
             ,
         ),
     );
@@ -1906,10 +1907,10 @@ fn emits_missing_runtime_helpers() -> () {
         string_contains(
             output,
             \\func missing__string(s string) string {
-                \\    _goml_intrinsic_missing(s)
-                \\    var ret string
-                \\    return ret
-                \\}
+            \\    _goml_intrinsic_missing(s)
+            \\    var ret string
+            \\    return ret
+            \\}
             ,
         ),
     )
@@ -1945,20 +1946,20 @@ fn protects_go_init_from_user_functions() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\func main0() struct{} {
-            \\    var t5 int32
-            \\    var inline7 int32 = 4
-            \\    var inline8 int32 = inline7 + 1
-            \\    t5 = inline8
-            \\    _goml_m_println(t5)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\func main0() struct{} {
+        \\    var t5 int32
+        \\    var inline7 int32 = 4
+        \\    var inline8 int32 = inline7 + 1
+        \\    t5 = inline8
+        \\    _goml_m_println(t5)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -1969,16 +1970,16 @@ fn protects_entry_wrapper_from_user_main0() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\func main0__1() struct{} {
-            \\    _goml_m_println("user")
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0__1()
-            \\}
-            \\
+        \\
+        \\func main0__1() struct{} {
+        \\    _goml_m_println("user")
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0__1()
+        \\}
+        \\
         ,
     )
 }
@@ -1998,11 +1999,11 @@ fn emits_entry_wrapper_without_main() -> () {
     testing::assert_eq(
         encode(lower_source("fn helper() -> () { println(\"x\"); }")),
         \\package main
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2028,27 +2029,27 @@ fn protects_functions_from_tuple_type_names() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type Tuple2_5int32_5int32 struct {
-            \\    _0 int32
-            \\    _1 int32
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var t4 int32 = 1
-            \\    var t5 int32 = 2
-            \\    var t6 int32 = t4 + t5
-            \\    var t7 int32
-            \\    t7 = 26
-            \\    var t8 int32 = t6 + t7
-            \\    _goml_m_println(t8)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type Tuple2_5int32_5int32 struct {
+        \\    _0 int32
+        \\    _1 int32
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var t4 int32 = 1
+        \\    var t5 int32 = 2
+        \\    var t6 int32 = t4 + t5
+        \\    var t7 int32
+        \\    t7 = 26
+        \\    var t8 int32 = t6 + t7
+        \\    _goml_m_println(t8)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2059,62 +2060,62 @@ fn sorts_dyn_helpers_and_compacts_builtin_impl_names() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type ref_Dyn_Hash_x struct {
-            \\    value dyn__Hash
-            \\}
-            \\
-            \\type dyn__Hash_vtable struct {
-            \\    hash func(any) uint64
-            \\}
-            \\
-            \\type dyn__Hash struct {
-            \\    data any
-            \\    vtable *dyn__Hash_vtable
-            \\}
-            \\
-            \\func dyn__Hash__wrap__Ref_8Dyn_Hash__hash(self any) uint64 {
-            \\    return _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(self.(*ref_Dyn_Hash_x))
-            \\}
-            \\
-            \\func dyn__Hash__vtable__Ref_8Dyn_Hash() *dyn__Hash_vtable {
-            \\    return &dyn__Hash_vtable{
-            \\        hash: dyn__Hash__wrap__Ref_8Dyn_Hash__hash,
-            \\    }
-            \\}
-            \\
-            \\func dyn__Hash__wrap__int__hash(self any) uint64 {
-            \\    return _goml_m_trait__impl_i_Hash_i_isize_i_hash(self.(int))
-            \\}
-            \\
-            \\func dyn__Hash__vtable__int() *dyn__Hash_vtable {
-            \\    return &dyn__Hash_vtable{
-            \\        hash: dyn__Hash__wrap__int__hash,
-            \\    }
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var inner__0 dyn__Hash = dyn__Hash{
-            \\        data: int(1),
-            \\        vtable: dyn__Hash__vtable__int(),
-            \\    }
-            \\    var r__1 *ref_Dyn_Hash_x = _goml_m_inherent_i_Ref_i_Ref_l_dynHash_r__i_new(inner__0)
-            \\    var value__3 dyn__Hash = dyn__Hash{
-            \\        data: r__1,
-            \\        vtable: dyn__Hash__vtable__Ref_8Dyn_Hash(),
-            \\    }
-            \\    var t2 uint64 = value__3.vtable.hash(value__3.data)
-            \\    var t3 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(r__1)
-            \\    var t4 bool = t2 == t3
-            \\    var t5 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t4)
-            \\    _goml_m_println(t5)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type ref_Dyn_Hash_x struct {
+        \\    value dyn__Hash
+        \\}
+        \\
+        \\type dyn__Hash_vtable struct {
+        \\    hash func(any) uint64
+        \\}
+        \\
+        \\type dyn__Hash struct {
+        \\    data any
+        \\    vtable *dyn__Hash_vtable
+        \\}
+        \\
+        \\func dyn__Hash__wrap__Ref_8Dyn_Hash__hash(self any) uint64 {
+        \\    return _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(self.(*ref_Dyn_Hash_x))
+        \\}
+        \\
+        \\func dyn__Hash__vtable__Ref_8Dyn_Hash() *dyn__Hash_vtable {
+        \\    return &dyn__Hash_vtable{
+        \\        hash: dyn__Hash__wrap__Ref_8Dyn_Hash__hash,
+        \\    }
+        \\}
+        \\
+        \\func dyn__Hash__wrap__int__hash(self any) uint64 {
+        \\    return _goml_m_trait__impl_i_Hash_i_isize_i_hash(self.(int))
+        \\}
+        \\
+        \\func dyn__Hash__vtable__int() *dyn__Hash_vtable {
+        \\    return &dyn__Hash_vtable{
+        \\        hash: dyn__Hash__wrap__int__hash,
+        \\    }
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var inner__0 dyn__Hash = dyn__Hash{
+        \\        data: int(1),
+        \\        vtable: dyn__Hash__vtable__int(),
+        \\    }
+        \\    var r__1 *ref_Dyn_Hash_x = _goml_m_inherent_i_Ref_i_Ref_l_dynHash_r__i_new(inner__0)
+        \\    var value__3 dyn__Hash = dyn__Hash{
+        \\        data: r__1,
+        \\        vtable: dyn__Hash__vtable__Ref_8Dyn_Hash(),
+        \\    }
+        \\    var t2 uint64 = value__3.vtable.hash(value__3.data)
+        \\    var t3 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(r__1)
+        \\    var t4 bool = t2 == t3
+        \\    var t5 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t4)
+        \\    _goml_m_println(t5)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2168,59 +2169,59 @@ fn emits_builtin_tostring_vtables() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type ref_Dyn_ToString_x struct {
-            \\    value dyn__ToString
-            \\}
-            \\
-            \\type dyn__ToString_vtable struct {
-            \\    to_string func(any) string
-            \\}
-            \\
-            \\type dyn__ToString struct {
-            \\    data any
-            \\    vtable *dyn__ToString_vtable
-            \\}
-            \\
-            \\func dyn__ToString__wrap__Ref_12Dyn_ToString__to_string(self any) string {
-            \\    return _goml_m_trait__impl_i_ToString_i_Ref_l_dynToString_r__i_to__string(self.(*ref_Dyn_ToString_x))
-            \\}
-            \\
-            \\func dyn__ToString__vtable__Ref_12Dyn_ToString() *dyn__ToString_vtable {
-            \\    return &dyn__ToString_vtable{
-            \\        to_string: dyn__ToString__wrap__Ref_12Dyn_ToString__to_string,
-            \\    }
-            \\}
-            \\
-            \\func dyn__ToString__wrap__int__to_string(self any) string {
-            \\    return _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self.(int))
-            \\}
-            \\
-            \\func dyn__ToString__vtable__int() *dyn__ToString_vtable {
-            \\    return &dyn__ToString_vtable{
-            \\        to_string: dyn__ToString__wrap__int__to_string,
-            \\    }
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var inner__0 dyn__ToString = dyn__ToString{
-            \\        data: int(1),
-            \\        vtable: dyn__ToString__vtable__int(),
-            \\    }
-            \\    var r__1 *ref_Dyn_ToString_x = _goml_m_inherent_i_Ref_i_Ref_l_dynToString_r__i_new(inner__0)
-            \\    var value__2 dyn__ToString = dyn__ToString{
-            \\        data: r__1,
-            \\        vtable: dyn__ToString__vtable__Ref_12Dyn_ToString(),
-            \\    }
-            \\    var t2 string = value__2.vtable.to_string(value__2.data)
-            \\    _goml_m_println(t2)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type ref_Dyn_ToString_x struct {
+        \\    value dyn__ToString
+        \\}
+        \\
+        \\type dyn__ToString_vtable struct {
+        \\    to_string func(any) string
+        \\}
+        \\
+        \\type dyn__ToString struct {
+        \\    data any
+        \\    vtable *dyn__ToString_vtable
+        \\}
+        \\
+        \\func dyn__ToString__wrap__Ref_12Dyn_ToString__to_string(self any) string {
+        \\    return _goml_m_trait__impl_i_ToString_i_Ref_l_dynToString_r__i_to__string(self.(*ref_Dyn_ToString_x))
+        \\}
+        \\
+        \\func dyn__ToString__vtable__Ref_12Dyn_ToString() *dyn__ToString_vtable {
+        \\    return &dyn__ToString_vtable{
+        \\        to_string: dyn__ToString__wrap__Ref_12Dyn_ToString__to_string,
+        \\    }
+        \\}
+        \\
+        \\func dyn__ToString__wrap__int__to_string(self any) string {
+        \\    return _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self.(int))
+        \\}
+        \\
+        \\func dyn__ToString__vtable__int() *dyn__ToString_vtable {
+        \\    return &dyn__ToString_vtable{
+        \\        to_string: dyn__ToString__wrap__int__to_string,
+        \\    }
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var inner__0 dyn__ToString = dyn__ToString{
+        \\        data: int(1),
+        \\        vtable: dyn__ToString__vtable__int(),
+        \\    }
+        \\    var r__1 *ref_Dyn_ToString_x = _goml_m_inherent_i_Ref_i_Ref_l_dynToString_r__i_new(inner__0)
+        \\    var value__2 dyn__ToString = dyn__ToString{
+        \\        data: r__1,
+        \\        vtable: dyn__ToString__vtable__Ref_12Dyn_ToString(),
+        \\    }
+        \\    var t2 string = value__2.vtable.to_string(value__2.data)
+        \\    _goml_m_println(t2)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2231,32 +2232,32 @@ fn lowers_tag_only_enums_as_constants() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type Tuple2_3int_3int struct {
-            \\    _0 int
-            \\    _1 int
-            \\}
-            \\
-            \\type E struct{}
-            \\
-            \\func main0() struct{} {
-            \\    var tag__1 E = E{}
-            \\    switch tag__1 {
-            \\    case E{}:
-            \\        var t3 int = 10
-            \\        var t4 int = 13
-            \\        var t5 int = t3 + t4
-            \\        _goml_m_println(t5)
-            \\    default:
-            \\        panic("non-exhaustive match")
-            \\    }
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type Tuple2_3int_3int struct {
+        \\    _0 int
+        \\    _1 int
+        \\}
+        \\
+        \\type E struct{}
+        \\
+        \\func main0() struct{} {
+        \\    var tag__1 E = E{}
+        \\    switch tag__1 {
+        \\    case E{}:
+        \\        var t3 int = 10
+        \\        var t4 int = 13
+        \\        var t5 int = t3 + t4
+        \\        _goml_m_println(t5)
+        \\    default:
+        \\        panic("non-exhaustive match")
+        \\    }
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2269,10 +2270,10 @@ fn shares_enum_payload_slots_and_uses_narrow_tags() -> () {
         string_contains(
             output,
             \\type Choice struct {
-                \\    _p1 uint16
-                \\    _p0 uint8
-                \\    _tag uint8
-                \\}
+            \\    _p1 uint16
+            \\    _p0 uint8
+            \\    _tag uint8
+            \\}
             ,
         ),
     );
@@ -2339,8 +2340,8 @@ fn stores_recursive_enums_behind_node_pointers() -> () {
         string_contains(
             output,
             \\type List struct {
-        \\    _node *List_node
-        \\}
+            \\    _node *List_node
+            \\}
             ,
         ),
     );
@@ -2355,27 +2356,27 @@ fn preserves_user_structs_before_mono_instances() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type Box__i32 struct {
-            \\    value int32
-            \\}
-            \\
-            \\type Box__i32__mono1 struct {
-            \\    value int32
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var t1 int32 = 10
-            \\    var t2 int32 = 20
-            \\    var t3 int32 = t1 + t2
-            \\    _goml_m_println(t3)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type Box__i32 struct {
+        \\    value int32
+        \\}
+        \\
+        \\type Box__i32__mono1 struct {
+        \\    value int32
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var t1 int32 = 10
+        \\    var t2 int32 = 20
+        \\    var t3 int32 = t1 + t2
+        \\    _goml_m_println(t3)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2410,10 +2411,10 @@ fn emits_compact_builtin_sums_around_interface_payloads() -> () {
         string_contains(
             output,
             \\type Result__Payload__string struct {
-                \\    _p0 Payload
-                \\    _p1 string
-                \\    _tag uint8
-                \\}
+            \\    _p0 Payload
+            \\    _p1 string
+            \\    _tag uint8
+            \\}
             ,
         ),
     );
@@ -2437,29 +2438,29 @@ fn materializes_numeric_runtime_operands() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\func main0() struct{} {
-            \\    var a__0_lhs uint8 = 13
-            \\    var a__0_rhs uint8 = 5
-            \\    var a__0 uint8 = a__0_lhs % a__0_rhs
-            \\    var b__1_lhs uint8 = 1
-            \\    var b__1_rhs int = 7
-            \\    var b__1 uint8 = b__1_lhs << b__1_rhs
-            \\    var c__2_operand uint8 = 0
-            \\    var c__2 uint8 = ^c__2_operand
-            \\    var d__3_source int = 511
-            \\    var d__3 uint8 = uint8(int(d__3_source))
-            \\    _goml_m_println(a__0)
-            \\    _goml_m_println(b__1)
-            \\    _goml_m_println(c__2)
-            \\    _goml_m_println(d__3)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\func main0() struct{} {
+        \\    var a__0_lhs uint8 = 13
+        \\    var a__0_rhs uint8 = 5
+        \\    var a__0 uint8 = a__0_lhs % a__0_rhs
+        \\    var b__1_lhs uint8 = 1
+        \\    var b__1_rhs int = 7
+        \\    var b__1 uint8 = b__1_lhs << b__1_rhs
+        \\    var c__2_operand uint8 = 0
+        \\    var c__2 uint8 = ^c__2_operand
+        \\    var d__3_source int = 511
+        \\    var d__3 uint8 = uint8(int(d__3_source))
+        \\    _goml_m_println(a__0)
+        \\    _goml_m_println(b__1)
+        \\    _goml_m_println(c__2)
+        \\    _goml_m_println(d__3)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2520,89 +2521,89 @@ fn disambiguates_dyn_helper_names() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\package main
-            \\
-            \\type C struct {}
-            \\
-            \\type C__B struct {}
-            \\
-            \\type dyn__A_vtable struct {
-            \\    foo func(any) int32
-            \\    b__foo func(any) int32
-            \\}
-            \\
-            \\type dyn__A struct {
-            \\    data any
-            \\    vtable *dyn__A_vtable
-            \\}
-            \\
-            \\func dyn__A__wrap__C__foo(self any) int32 {
-            \\    return _goml_m_trait__impl_i_A_i_C_i_foo(self.(C))
-            \\}
-            \\
-            \\func dyn__A__wrap__C__b__foo(self any) int32 {
-            \\    return _goml_m_trait__impl_i_A_i_C_i_b____foo(self.(C))
-            \\}
-            \\
-            \\func dyn__A__vtable__C() *dyn__A_vtable {
-            \\    return &dyn__A_vtable{
-            \\        foo: dyn__A__wrap__C__foo,
-            \\        b__foo: dyn__A__wrap__C__b__foo,
-            \\    }
-            \\}
-            \\
-            \\func dyn__A__wrap__C__B__foo(self any) int32 {
-            \\    return _goml_m_trait__impl_i_A_i_C____B_i_foo(self.(C__B))
-            \\}
-            \\
-            \\func dyn__A__wrap__C__B__b__foo(self any) int32 {
-            \\    return _goml_m_trait__impl_i_A_i_C____B_i_b____foo(self.(C__B))
-            \\}
-            \\
-            \\func dyn__A__vtable__C__B() *dyn__A_vtable {
-            \\    return &dyn__A_vtable{
-            \\        foo: dyn__A__wrap__C__B__foo,
-            \\        b__foo: dyn__A__wrap__C__B__b__foo,
-            \\    }
-            \\}
-            \\
-            \\func _goml_m_trait__impl_i_A_i_C_i_foo(self__0 C) int32 {
-            \\    return 1
-            \\}
-            \\
-            \\func _goml_m_trait__impl_i_A_i_C_i_b____foo(self__1 C) int32 {
-            \\    return 2
-            \\}
-            \\
-            \\func _goml_m_trait__impl_i_A_i_C____B_i_foo(self__2 C__B) int32 {
-            \\    return 10
-            \\}
-            \\
-            \\func _goml_m_trait__impl_i_A_i_C____B_i_b____foo(self__3 C__B) int32 {
-            \\    return 20
-            \\}
-            \\
-            \\func main0() struct{} {
-            \\    var t11 C = C{}
-            \\    var left__4 dyn__A = dyn__A{
-            \\        data: t11,
-            \\        vtable: dyn__A__vtable__C(),
-            \\    }
-            \\    var t12 C__B = C__B{}
-            \\    var right__5 dyn__A = dyn__A{
-            \\        data: t12,
-            \\        vtable: dyn__A__vtable__C__B(),
-            \\    }
-            \\    var t13 int32 = left__4.vtable.b__foo(left__4.data)
-            \\    _goml_m_println(t13)
-            \\    var t14 int32 = right__5.vtable.foo(right__5.data)
-            \\    _goml_m_println(t14)
-            \\    return struct{}{}
-            \\}
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type C struct {}
+        \\
+        \\type C__B struct {}
+        \\
+        \\type dyn__A_vtable struct {
+        \\    foo func(any) int32
+        \\    b__foo func(any) int32
+        \\}
+        \\
+        \\type dyn__A struct {
+        \\    data any
+        \\    vtable *dyn__A_vtable
+        \\}
+        \\
+        \\func dyn__A__wrap__C__foo(self any) int32 {
+        \\    return _goml_m_trait__impl_i_A_i_C_i_foo(self.(C))
+        \\}
+        \\
+        \\func dyn__A__wrap__C__b__foo(self any) int32 {
+        \\    return _goml_m_trait__impl_i_A_i_C_i_b____foo(self.(C))
+        \\}
+        \\
+        \\func dyn__A__vtable__C() *dyn__A_vtable {
+        \\    return &dyn__A_vtable{
+        \\        foo: dyn__A__wrap__C__foo,
+        \\        b__foo: dyn__A__wrap__C__b__foo,
+        \\    }
+        \\}
+        \\
+        \\func dyn__A__wrap__C__B__foo(self any) int32 {
+        \\    return _goml_m_trait__impl_i_A_i_C____B_i_foo(self.(C__B))
+        \\}
+        \\
+        \\func dyn__A__wrap__C__B__b__foo(self any) int32 {
+        \\    return _goml_m_trait__impl_i_A_i_C____B_i_b____foo(self.(C__B))
+        \\}
+        \\
+        \\func dyn__A__vtable__C__B() *dyn__A_vtable {
+        \\    return &dyn__A_vtable{
+        \\        foo: dyn__A__wrap__C__B__foo,
+        \\        b__foo: dyn__A__wrap__C__B__b__foo,
+        \\    }
+        \\}
+        \\
+        \\func _goml_m_trait__impl_i_A_i_C_i_foo(self__0 C) int32 {
+        \\    return 1
+        \\}
+        \\
+        \\func _goml_m_trait__impl_i_A_i_C_i_b____foo(self__1 C) int32 {
+        \\    return 2
+        \\}
+        \\
+        \\func _goml_m_trait__impl_i_A_i_C____B_i_foo(self__2 C__B) int32 {
+        \\    return 10
+        \\}
+        \\
+        \\func _goml_m_trait__impl_i_A_i_C____B_i_b____foo(self__3 C__B) int32 {
+        \\    return 20
+        \\}
+        \\
+        \\func main0() struct{} {
+        \\    var t11 C = C{}
+        \\    var left__4 dyn__A = dyn__A{
+        \\        data: t11,
+        \\        vtable: dyn__A__vtable__C(),
+        \\    }
+        \\    var t12 C__B = C__B{}
+        \\    var right__5 dyn__A = dyn__A{
+        \\        data: t12,
+        \\        vtable: dyn__A__vtable__C__B(),
+        \\    }
+        \\    var t13 int32 = left__4.vtable.b__foo(left__4.data)
+        \\    _goml_m_println(t13)
+        \\    var t14 int32 = right__5.vtable.foo(right__5.data)
+        \\    _goml_m_println(t14)
+        \\    return struct{}{}
+        \\}
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2642,13 +2643,13 @@ fn emits_unused_non_generic_enums() -> () {
     testing::assert_eq(
         encode(lower_source("enum Status { Idle, Busy(i32), }")),
         \\package main
-            \\
-            \\type Status uint64
-            \\
-            \\func main() {
-            \\    main0()
-            \\}
-            \\
+        \\
+        \\type Status uint64
+        \\
+        \\func main() {
+        \\    main0()
+        \\}
+        \\
         ,
     )
 }
@@ -2660,10 +2661,10 @@ fn orders_runtime_types_before_tuples() -> () {
         string_contains(
             encode(lower_source(source)),
             \\type ref_int32_x struct {
-                \\    value int32
-                \\}
-                \\
-                \\type Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit struct
+            \\    value int32
+            \\}
+            \\
+            \\type Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit struct
             ,
         ),
     )

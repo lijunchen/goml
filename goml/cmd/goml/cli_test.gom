@@ -37,21 +37,21 @@ fn project_build_handles_deep_public_interface_type() -> () {
     );
     test_support::write_file(
         path::join(root, "Lib/Lib.gom"),
-        "package lib;\n\npub struct Wrap { value: " + cli_deep_ref_type(200)
-            + \\ }
-                \\
-                \\pub fn ping() -> i32 { 1 }
-                \\
+        "package lib;\n\npub struct Wrap { value: " + cli_deep_ref_type(200) +
+            \\ }
+            \\
+            \\pub fn ping() -> i32 { 1 }
+            \\
         ,
     );
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\use iface_deep::Lib;
-            \\
-            \\fn main() -> () { println(lib::ping().to_string()) }
-            \\
+        \\
+        \\use iface_deep::Lib;
+        \\
+        \\fn main() -> () { println(lib::ping().to_string()) }
+        \\
         ,
     );
     let output = cli_build(root);
@@ -67,38 +67,38 @@ fn project_build_loads_transitive_public_type_interfaces() -> () {
     test_support::write_file(
         path::join(root, "goml.toml"),
         \\[module]
-            \\path = "transitive_types"
-            \\
+        \\path = "transitive_types"
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "model/model.gom"),
         \\package model;
-            \\
-            \\pub struct Box { pub value: i32 }
-            \\
-            \\pub fn make() -> Box { Box { value: 42 } }
-            \\
+        \\
+        \\pub struct Box { pub value: i32 }
+        \\
+        \\pub fn make() -> Box { Box { value: 42 } }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "facade/facade.gom"),
         \\package facade;
-            \\
-            \\use transitive_types::model;
-            \\
-            \\pub fn make() -> model::Box { model::make() }
-            \\
+        \\
+        \\use transitive_types::model;
+        \\
+        \\pub fn make() -> model::Box { model::make() }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\use transitive_types::facade;
-            \\
-            \\fn main() -> () { println(facade::make().value.to_string()) }
-            \\
+        \\
+        \\use transitive_types::facade;
+        \\
+        \\fn main() -> () { println(facade::make().value.to_string()) }
+        \\
         ,
     );
     let output = cli_build(root);
@@ -128,8 +128,8 @@ fn project_check_checks_module_from_cwd() -> () {
     test_support::write_file(
         path::join(root, "lib/lib.gom"),
         \\package lib;
-            \\pub fn value() -> i32 { 1 }
-            \\
+        \\pub fn value() -> i32 { 1 }
+        \\
         ,
     );
     test_support::assert_success(
@@ -178,19 +178,19 @@ fn project_uses_manifest_and_cli_target_directories() -> () {
     test_support::write_file(
         path::join(root, "goml.toml"),
         \\[module]
-            \\path = "demo"
-            \\
-            \\[build]
-            \\target-dir = "out/generated"
-            \\
+        \\path = "demo"
+        \\
+        \\[build]
+        \\target-dir = "out/generated"
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\fn main() -> () { println("hello") }
-            \\
+        \\
+        \\fn main() -> () { println("hello") }
+        \\
         ,
     );
     test_support::assert_success(cli_build(root));
@@ -212,11 +212,11 @@ fn project_clean_removes_only_module_artifacts() -> () {
     test_support::write_file(
         path::join(root, "goml.toml"),
         \\[module]
-            \\path = "demo"
-            \\
-            \\[build]
-            \\target-dir = "out/generated"
-            \\
+        \\path = "demo"
+        \\
+        \\[build]
+        \\target-dir = "out/generated"
+        \\
         ,
     );
     test_support::write_file(
@@ -252,11 +252,11 @@ fn project_clean_rejects_module_directory() -> () {
     test_support::write_file(
         path::join(root, "goml.toml"),
         \\[module]
-            \\path = "demo"
-            \\
-            \\[build]
-            \\target-dir = "."
-            \\
+        \\path = "demo"
+        \\
+        \\[build]
+        \\target-dir = "."
+        \\
         ,
     );
     test_support::write_file(
@@ -289,11 +289,11 @@ fn project_check_and_build_support_std_imports() -> () {
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\use std::io;
-            \\
-            \\fn main() -> () { io::println("std-project") }
-            \\
+        \\
+        \\use std::io;
+        \\
+        \\fn main() -> () { io::println("std-project") }
+        \\
         ,
     );
     test_support::assert_success(cli_check(root));
@@ -314,16 +314,16 @@ fn project_module_path_may_contain_tests_segment() -> () {
     test_support::write_file(
         path::join(root, "events/events.gom"),
         \\package events;
-            \\pub fn value() -> i32 { 42 }
-            \\
+        \\pub fn value() -> i32 { 42 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\use tests::demo::events;
-            \\fn main() -> () { println(events::value().to_string()) }
-            \\
+        \\use tests::demo::events;
+        \\fn main() -> () { println(events::value().to_string()) }
+        \\
         ,
     );
     test_support::assert_success(cli_build(root));
@@ -468,19 +468,19 @@ fn project_build_stops_when_compiler_subcommand_fails() -> () {
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\use demo::A;
-            \\
-            \\fn main() -> () { println(A::msg()) }
-            \\
+        \\
+        \\use demo::A;
+        \\
+        \\fn main() -> () { println(A::msg()) }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "A/A.gom"),
         \\package A;
-            \\
-            \\pub fn msg() -> string { "bad" }
-            \\
+        \\
+        \\pub fn msg() -> string { "bad" }
+        \\
         ,
     );
     let output = cli_build(root);
@@ -504,19 +504,19 @@ fn project_build_preserves_entry_directory_structure() -> () {
     test_support::write_file(
         path::join(root, "src/main.gom"),
         \\package main;
-            \\
-            \\use demo::src::Lib;
-            \\
-            \\fn main() -> () { println(lib::msg()) }
-            \\
+        \\
+        \\use demo::src::Lib;
+        \\
+        \\fn main() -> () { println(lib::msg()) }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "src/Lib/Lib.gom"),
         \\package lib;
-            \\
-            \\pub fn msg() -> string { "ok" }
-            \\
+        \\
+        \\pub fn msg() -> string { "ok" }
+        \\
         ,
     );
     let output = test_support::project_command("build", "", Vec::new(), root);
@@ -537,23 +537,23 @@ fn project_build_links_every_main_package() -> () {
     test_support::write_file(
         path::join(root, "pkg/pkg.gom"),
         \\package pkg;
-            \\pub fn value() -> i32 { 1 }
-            \\
+        \\pub fn value() -> i32 { 1 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "cmd/server/main.gom"),
         \\package main;
-            \\use alice::app::pkg;
-            \\fn main() -> () { println(pkg::value().to_string()) }
-            \\
+        \\use alice::app::pkg;
+        \\fn main() -> () { println(pkg::value().to_string()) }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "cmd/client/main.gom"),
         \\package main;
-            \\fn main() -> () { println("client") }
-            \\
+        \\fn main() -> () { println("client") }
+        \\
         ,
     );
     test_support::assert_success(cli_build(root));
@@ -606,17 +606,17 @@ fn project_build_and_test_use_safe_generated_go_filename() -> () {
     test_support::write_file(
         path::join(root, "compiler_test/main.gom"),
         \\package main;
-            \\fn main() -> () { println("ok") }
-            \\
+        \\fn main() -> () { println("ok") }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "compiler_test/main_test.gom"),
         \\package main;
-            \\use std::testing;
-            \\#[test]
-            \\fn safe_name() -> () { testing::assert(true) }
-            \\
+        \\use std::testing;
+        \\#[test]
+        \\fn safe_name() -> () { testing::assert(true) }
+        \\
         ,
     );
     test_support::assert_success(cli_build(root));
@@ -645,8 +645,8 @@ fn project_build_accepts_modules_without_main_packages() -> () {
     test_support::write_file(
         path::join(root, "pkg/pkg.gom"),
         \\package pkg;
-            \\pub fn value() -> i32 { 1 }
-            \\
+        \\pub fn value() -> i32 { 1 }
+        \\
         ,
     );
     test_support::assert_success(cli_build(root));
@@ -668,29 +668,29 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> () {
     test_support::write_file(
         path::join(root, "math/math.gom"),
         \\package math;
-            \\
-            \\fn double(value: i32) -> i32 { value * 2 }
-            \\
-            \\pub fn add(left: i32, right: i32) -> i32 { left + right }
-            \\
+        \\
+        \\fn double(value: i32) -> i32 { value * 2 }
+        \\
+        \\pub fn add(left: i32, right: i32) -> i32 { left + right }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "math/math_test.gom"),
         \\package math;
-            \\
-            \\use std::testing;
-            \\
-            \\#[test]
-            \\fn add_works() -> () { testing::assert_eq(add(2, 3), 5) }
-            \\
-            \\#[test]
-            \\fn private_helper_works() -> () { testing::assert_eq(double(4), 8) }
-            \\
-            \\#[test]
-            \\#[ignore("later")]
-            \\fn ignored_case() -> () { testing::assert(true) }
-            \\
+        \\
+        \\use std::testing;
+        \\
+        \\#[test]
+        \\fn add_works() -> () { testing::assert_eq(add(2, 3), 5) }
+        \\
+        \\#[test]
+        \\fn private_helper_works() -> () { testing::assert_eq(double(4), 8) }
+        \\
+        \\#[test]
+        \\#[ignore("later")]
+        \\fn ignored_case() -> () { testing::assert(true) }
+        \\
         ,
     );
     let check = test_support::project_command("check", "", Vec::from_array(["--dry-run"]), root);
@@ -763,9 +763,9 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> () {
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\fn main() -> () { println("changed") }
-            \\
+        \\
+        \\fn main() -> () { println("changed") }
+        \\
         ,
     );
     test_support::assert_success(cli_check(root));
@@ -806,27 +806,27 @@ fn project_build_graph_reuses_unaffected_local_cache_nodes() -> () {
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\use demo::left;
-            \\
-            \\fn main() -> () { let _ = left::value(); () }
-            \\
+        \\
+        \\use demo::left;
+        \\
+        \\fn main() -> () { let _ = left::value(); () }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "left/left.gom"),
         \\package left;
-            \\
-            \\pub fn value() -> i32 { 1 }
-            \\
+        \\
+        \\pub fn value() -> i32 { 1 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "right/right.gom"),
         \\package right;
-            \\
-            \\pub fn value() -> i32 { 2 }
-            \\
+        \\
+        \\pub fn value() -> i32 { 2 }
+        \\
         ,
     );
     test_support::assert_success(cli_check(root));
@@ -849,9 +849,9 @@ fn project_build_graph_reuses_unaffected_local_cache_nodes() -> () {
     test_support::write_file(
         path::join(root, "left/left.gom"),
         \\package left;
-            \\
-            \\pub fn value() -> i32 { 3 }
-            \\
+        \\
+        \\pub fn value() -> i32 { 3 }
+        \\
         ,
     );
     test_support::assert_success(cli_check(root));
@@ -904,12 +904,12 @@ fn project_check_reports_warnings_without_failing() -> () {
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\fn main() -> () {
-            \\    return;
-            \\    println("dead")
-            \\}
-            \\
+        \\
+        \\fn main() -> () {
+        \\    return;
+        \\    println("dead")
+        \\}
+        \\
         ,
     );
     let checked = cli_check(root);
@@ -927,11 +927,11 @@ fn project_check_reports_unused_functions_without_failing() -> () {
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\
-            \\fn dead() -> () {}
-            \\
-            \\fn main() -> () {}
-            \\
+        \\
+        \\fn dead() -> () {}
+        \\
+        \\fn main() -> () {}
+        \\
         ,
     );
     let checked = cli_check(root);
@@ -955,27 +955,27 @@ fn project_test_supports_nocapture_and_timeouts() -> () {
     test_support::write_file(
         path::join(root, "checks/checks.gom"),
         \\package checks;
-            \\pub fn value() -> i32 { 1 }
-            \\
+        \\pub fn value() -> i32 { 1 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "checks/checks_test.gom"),
         \\package checks;
-            \\
-            \\use std::io;
-            \\use std::testing;
-            \\
-            \\#[test]
-            \\fn output() -> () { io::println("uncaptured marker") }
-            \\
-            \\#[test]
-            \\fn seed() -> () { testing::assert_eq(testing::seed(), 123) }
-            \\
-            \\#[test]
-            \\#[ignore("timeout case")]
-            \\fn timeout() -> () { while true { () } }
-            \\
+        \\
+        \\use std::io;
+        \\use std::testing;
+        \\
+        \\#[test]
+        \\fn output() -> () { io::println("uncaptured marker") }
+        \\
+        \\#[test]
+        \\fn seed() -> () { testing::assert_eq(testing::seed(), 123) }
+        \\
+        \\#[test]
+        \\#[ignore("timeout case")]
+        \\fn timeout() -> () { while true { () } }
+        \\
         ,
     );
     let captured = test_support::project_command("test", "", Vec::from_array(["output"]), root);
@@ -1031,25 +1031,25 @@ fn project_test_preserves_selection_order_when_workers_finish_out_of_order() -> 
     test_support::write_file(
         path::join(root, "checks/checks.gom"),
         \\package checks;
-            \\pub fn value() -> i32 { 1 }
-            \\
+        \\pub fn value() -> i32 { 1 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "checks/checks_test.gom"),
         \\package checks;
-            \\
-            \\use std::time;
-            \\
-            \\#[test]
-            \\fn a_slow() -> () { time::sleep(time::Duration::from_milliseconds(100)) }
-            \\
-            \\#[test]
-            \\fn b_fast() -> () {}
-            \\
-            \\#[test]
-            \\fn c_fast() -> () {}
-            \\
+        \\
+        \\use std::time;
+        \\
+        \\#[test]
+        \\fn a_slow() -> () { time::sleep(time::Duration::from_milliseconds(100)) }
+        \\
+        \\#[test]
+        \\fn b_fast() -> () {}
+        \\
+        \\#[test]
+        \\fn c_fast() -> () {}
+        \\
         ,
     );
     let text_output = test_support::project_command(
@@ -1120,44 +1120,44 @@ fn project_test_runs_and_aggregates_tests_from_all_packages() -> () {
     test_support::write_file(
         path::join(root, "a/a.gom"),
         \\package a;
-            \\pub fn value() -> i32 { 1 }
-            \\
+        \\pub fn value() -> i32 { 1 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "a/a_test.gom"),
         \\package a;
-            \\use std::testing;
-            \\#[test]
-            \\fn internal_a() -> () { testing::assert_eq(value(), 1) }
-            \\
+        \\use std::testing;
+        \\#[test]
+        \\fn internal_a() -> () { testing::assert_eq(value(), 1) }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "b/b.gom"),
         \\package b;
-            \\use demo::a;
-            \\pub fn value() -> i32 { a::value() + 1 }
-            \\
+        \\use demo::a;
+        \\pub fn value() -> i32 { a::value() + 1 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "b/b_test.gom"),
         \\package b;
-            \\use std::testing;
-            \\#[test]
-            \\fn internal_b() -> () { testing::assert_eq(value(), 2) }
-            \\
+        \\use std::testing;
+        \\#[test]
+        \\fn internal_b() -> () { testing::assert_eq(value(), 2) }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "b/tests/b_test.gom"),
         \\package tests;
-            \\use demo::b;
-            \\use std::testing;
-            \\#[test]
-            \\fn external_b() -> () { testing::assert_eq(b::value(), 2) }
-            \\
+        \\use demo::b;
+        \\use std::testing;
+        \\#[test]
+        \\fn external_b() -> () { testing::assert_eq(b::value(), 2) }
+        \\
         ,
     );
     let planned = test_support::project_command("test", "", Vec::from_array(["--dry-run"]), root);
@@ -1202,23 +1202,23 @@ fn project_test_runs_parent_black_box_tests() -> () {
     test_support::write_file(
         path::join(root, "math/math.gom"),
         \\package math;
-            \\
-            \\fn private_value() -> i32 { 41 }
-            \\
-            \\pub fn public_value() -> i32 { private_value() + 1 }
-            \\
+        \\
+        \\fn private_value() -> i32 { 41 }
+        \\
+        \\pub fn public_value() -> i32 { private_value() + 1 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "math/tests/math_test.gom"),
         \\package tests;
-            \\
-            \\use demo::math;
-            \\use std::testing;
-            \\
-            \\#[test]
-            \\fn black_box() -> () { testing::assert_eq(math::public_value(), 42) }
-            \\
+        \\
+        \\use demo::math;
+        \\use std::testing;
+        \\
+        \\#[test]
+        \\fn black_box() -> () { testing::assert_eq(math::public_value(), 42) }
+        \\
         ,
     );
     let checked = test_support::project_command("check", "", Vec::from_array(["--tests"]), root);
@@ -1249,16 +1249,16 @@ fn project_check_rejects_orphan_black_box_tests() -> () {
     test_support::write_file(
         path::join(root, "main.gom"),
         \\package main;
-            \\fn main() -> () { () }
-            \\
+        \\fn main() -> () { () }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "orphan/tests/orphan_test.gom"),
         \\package tests;
-            \\#[test]
-            \\fn orphan() -> () { () }
-            \\
+        \\#[test]
+        \\fn orphan() -> () { () }
+        \\
         ,
     );
     let checked = test_support::project_command("check", "", Vec::new(), root);
@@ -1279,17 +1279,17 @@ fn project_test_dry_run_and_invalid_signature_diagnostics() -> () {
     test_support::write_file(
         path::join(root, "value/value.gom"),
         \\package value;
-            \\pub fn value() -> i32 { 1 }
-            \\
+        \\pub fn value() -> i32 { 1 }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "value/value_test.gom"),
         \\package value;
-            \\
-            \\#[test]
-            \\fn invalid[T](value: T) -> bool { true }
-            \\
+        \\
+        \\#[test]
+        \\fn invalid[T](value: T) -> bool { true }
+        \\
         ,
     );
     let dry_run = test_support::project_command("test", "", Vec::from_array(["--dry-run"]), root);
@@ -1378,19 +1378,19 @@ fn test_sources_cannot_repair_a_broken_normal_package() -> () {
     test_support::write_file(
         path::join(root, "value/value.gom"),
         \\package value;
-            \\pub fn value() -> i32 { test_only_value() }
-            \\
+        \\pub fn value() -> i32 { test_only_value() }
+        \\
         ,
     );
     test_support::write_file(
         path::join(root, "value/value_test.gom"),
         \\package value;
-            \\
-            \\fn test_only_value() -> i32 { 1 }
-            \\
-            \\#[test]
-            \\fn value_works() -> () { let _ = value(); () }
-            \\
+        \\
+        \\fn test_only_value() -> i32 { 1 }
+        \\
+        \\#[test]
+        \\fn value_works() -> () { let _ = value(); () }
+        \\
         ,
     );
     // Normal check (without --tests) must fail: test-only items are not
@@ -1456,58 +1456,58 @@ fn local_registry(root: string) -> string {
     test_support::write_file(
         path::join(registry, "index.toml"),
         \\[modules."alice::http"]
-            \\latest = "1.2.0"
-            \\versions = ["1.0.0", "1.2.0"]
-            \\
-            \\[modules."alice::appdep"]
-            \\latest = "0.1.0"
-            \\versions = ["0.1.0"]
-            \\
+        \\latest = "1.2.0"
+        \\versions = ["1.0.0", "1.2.0"]
+        \\
+        \\[modules."alice::appdep"]
+        \\latest = "0.1.0"
+        \\versions = ["0.1.0"]
+        \\
         ,
     );
     test_support::write_file(
         path::join(registry, "alice/http/1.0.0/goml.toml"),
         \\[module]
-            \\path = "alice::http"
-            \\
+        \\path = "alice::http"
+        \\
         ,
     );
     test_support::write_file(
         path::join(registry, "alice/http/1.0.0/lib.gom"),
         \\package http;
-            \\pub fn version() -> string { "1.0.0" }
-            \\
+        \\pub fn version() -> string { "1.0.0" }
+        \\
         ,
     );
     test_support::write_file(
         path::join(registry, "alice/http/1.2.0/goml.toml"),
         \\[module]
-            \\path = "alice::http"
-            \\
+        \\path = "alice::http"
+        \\
         ,
     );
     test_support::write_file(
         path::join(registry, "alice/http/1.2.0/lib.gom"),
         \\package http;
-            \\pub fn version() -> string { "1.2.0" }
-            \\
+        \\pub fn version() -> string { "1.2.0" }
+        \\
         ,
     );
     test_support::write_file(
         path::join(registry, "alice/appdep/0.1.0/goml.toml"),
         \\[module]
-            \\path = "alice::appdep"
-            \\
-            \\[dependencies]
-            \\"alice::http" = "1.2.0"
-            \\
+        \\path = "alice::appdep"
+        \\
+        \\[dependencies]
+        \\"alice::http" = "1.2.0"
+        \\
         ,
     );
     test_support::write_file(
         path::join(registry, "alice/appdep/0.1.0/lib.gom"),
         \\package appdep;
-            \\pub fn marker() -> string { "appdep" }
-            \\
+        \\pub fn marker() -> string { "appdep" }
+        \\
         ,
     );
     registry_command("git", Vec::from_array(["init"]), registry);
@@ -1601,21 +1601,21 @@ fn cached_registry_dependencies_build_with_mvs_layout() -> () {
     test_support::write_file(
         path::join(project, "goml.toml"),
         \\[module]
-            \\path = "demo"
-            \\
-            \\[dependencies]
-            \\"alice::http" = "1.0.0"
-            \\"alice::appdep" = "0.1.0"
-            \\
+        \\path = "demo"
+        \\
+        \\[dependencies]
+        \\"alice::http" = "1.0.0"
+        \\"alice::appdep" = "0.1.0"
+        \\
         ,
     );
     test_support::write_file(
         path::join(project, "main.gom"),
         \\package main;
-            \\use alice::http;
-            \\use alice::appdep;
-            \\fn main() -> () { println(http::version() + ":" + appdep::marker()) }
-            \\
+        \\use alice::http;
+        \\use alice::appdep;
+        \\fn main() -> () { println(http::version() + ":" + appdep::marker()) }
+        \\
         ,
     );
     let built = run_with_home(

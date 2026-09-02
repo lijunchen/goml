@@ -165,7 +165,8 @@ fn lexes_numeric_literals() -> () {
 
 #[test]
 fn lexes_strings_chars_comments_and_multiline_strings() -> () {
-    let source = \\"héllo \n \u0041" '中' '\n' // λ
+    let source =
+        \\"héllo \n \u0041" '中' '\n' // λ
         \\\\first
         \\  \\second
         \\next
@@ -287,7 +288,8 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> () {
 
 #[test]
 fn lexes_raw_strings_and_preserves_delimiters() -> () {
-    let source = \\r"plain \\ text" r##"quoted "text" and #
+    let source =
+        \\r"plain \\ text" r##"quoted "text" and #
         \\next"## r#"unterminated
     ;
     let tokens = lex(source);
@@ -305,7 +307,8 @@ fn lexes_raw_strings_and_preserves_delimiters() -> () {
 
 #[test]
 fn lexes_byte_strings_and_raw_byte_strings() -> () {
-    let source = \\b"A\n\xFF" br#"raw \\ text"# br##"quoted "text" and #
+    let source =
+        \\b"A\n\xFF" br#"raw \\ text"# br##"quoted "text" and #
         \\next"##
     ;
     let tokens = lex(source);

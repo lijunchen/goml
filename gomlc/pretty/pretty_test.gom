@@ -37,8 +37,8 @@ fn nesting_only_changes_indentation_after_a_line() -> () {
     testing::assert_eq(
         layout(append(nest(2, append(line(), text("inside"))), append(line(), text("outside")))),
         \\
-            \\  inside
-            \\outside
+        \\  inside
+        \\outside
         ,
     );
     testing::assert_eq(layout(nest(2, line())), "\n  ")
@@ -64,8 +64,8 @@ fn text_normalizes_embedded_newlines() -> () {
                 2,
                 text(
                     \\a
-        \\b
-        \\
+                    \\b
+                    \\
                     ,
                 ),
             ),
@@ -82,7 +82,7 @@ fn text_normalizes_embedded_newlines() -> () {
             group(
                 text(
                     \\a
-        \\b
+                    \\b
                     ,
                 ),
             ),
@@ -170,8 +170,8 @@ fn concat_join_and_folddoc_cover_empty_and_nil_elements() -> () {
     testing::assert_eq(
         layout(folddoc(above, Vec::from_array([text("a"), text("b"), text("c")]))),
         \\a
-            \\b
-            \\c
+        \\b
+        \\c
         ,
     );
     testing::assert_eq(layout(folddoc(append, Vec::new())), "");
@@ -374,8 +374,8 @@ fn reproduces_wadlers_tree_example_at_width_30() -> () {
     testing::assert_eq(
         pretty(30, show_tree(paper_tree())),
         \\aaa[bbbbb[ccc, dd],
-            \\    eee,
-            \\    ffff[gg, hhh, ii]]
+        \\    eee,
+        \\    ffff[gg, hhh, ii]]
         ,
     )
 }

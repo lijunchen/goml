@@ -174,13 +174,13 @@ fn lowers_basic_functions_and_let_chains() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn take(value/0: u16) -> u16 {
-            \\  value/0
-            \\}
-            \\
-            \\fn main() -> u16 {
-            \\  let value/1 = take(1000) in
-            \\  value/1
-            \\}
+        \\  value/0
+        \\}
+        \\
+        \\fn main() -> u16 {
+        \\  let value/1 = take(1000) in
+        \\  value/1
+        \\}
         ,
     )
 }
@@ -190,8 +190,8 @@ fn folds_negative_integer_primitives() -> () {
     testing::assert_eq(
         encode(lower_source("fn main() -> i32 { -1 }")),
         \\fn main() -> i32 {
-            \\  -1
-            \\}
+        \\  -1
+        \\}
         ,
     )
 }
@@ -202,37 +202,37 @@ fn preserves_exiting_accessor_subexpressions() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn proj_case() -> i32 {
-            \\  let mtmp1 =
-            \\    {
-            \\      let _wild0 = return 1 in
-            \\      @intrinsic(compiler.missing)("")
-            \\    } in
-            \\  {
-            \\    0
-            \\  }
-            \\}
-            \\
-            \\fn index_case() -> i32 {
-            \\  let mtmp3 =
-            \\    {
-            \\      let _wild2 = return 1 in
-            \\      @intrinsic(compiler.missing)("")
-            \\    } in
-            \\  {
-            \\    0
-            \\  }
-            \\}
-            \\
-            \\fn field_case() -> i32 {
-            \\  let mtmp5 =
-            \\    {
-            \\      let _wild4 = return 1 in
-            \\      @intrinsic(compiler.missing)("")
-            \\    } in
-            \\  {
-            \\    0
-            \\  }
-            \\}
+        \\  let mtmp1 =
+        \\    {
+        \\      let _wild0 = return 1 in
+        \\      @intrinsic(compiler.missing)("")
+        \\    } in
+        \\  {
+        \\    0
+        \\  }
+        \\}
+        \\
+        \\fn index_case() -> i32 {
+        \\  let mtmp3 =
+        \\    {
+        \\      let _wild2 = return 1 in
+        \\      @intrinsic(compiler.missing)("")
+        \\    } in
+        \\  {
+        \\    0
+        \\  }
+        \\}
+        \\
+        \\fn field_case() -> i32 {
+        \\  let mtmp5 =
+        \\    {
+        \\      let _wild4 = return 1 in
+        \\      @intrinsic(compiler.missing)("")
+        \\    } in
+        \\  {
+        \\    0
+        \\  }
+        \\}
         ,
     )
 }
@@ -242,11 +242,11 @@ fn nests_discard_patterns_around_the_continuation() -> () {
     testing::assert_eq(
         encode(lower_source("fn main() -> () { let _ = (); () }")),
         \\fn main() -> () {
-            \\  let mtmp0 = () in
-            \\  {
-            \\    ()
-            \\  }
-            \\}
+        \\  let mtmp0 = () in
+        \\  {
+        \\    ()
+        \\  }
+        \\}
         ,
     )
 }
@@ -257,25 +257,25 @@ fn lowers_enum_payload_patterns_in_definition_order() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn main() -> () {
-            \\  let x/0 = Weird::Done(1) in
-            \\  match x/0 {
-            \\    Weird::Next(x0) => {
-            \\      {
-            \\        let x0 = Weird::Next._0(x/0) in
-            \\        println("next")
-            \\      }
-            \\    },
-            \\    Weird::Done(x1) => {
-            \\      {
-            \\        let x1 = Weird::Done._0(x/0) in
-            \\        {
-            \\          let v/1 = x1 in
-            \\          println(inherent#i32#i32#to_string(v/1))
-            \\        }
-            \\      }
-            \\    },
-            \\  }
-            \\}
+        \\  let x/0 = Weird::Done(1) in
+        \\  match x/0 {
+        \\    Weird::Next(x0) => {
+        \\      {
+        \\        let x0 = Weird::Next._0(x/0) in
+        \\        println("next")
+        \\      }
+        \\    },
+        \\    Weird::Done(x1) => {
+        \\      {
+        \\        let x1 = Weird::Done._0(x/0) in
+        \\        {
+        \\          let v/1 = x1 in
+        \\          println(inherent#i32#i32#to_string(v/1))
+        \\        }
+        \\      }
+        \\    },
+        \\  }
+        \\}
         ,
     )
 }
@@ -286,16 +286,16 @@ fn lowers_or_patterns_in_match_matrices() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn is_first(value/0: Flag) -> bool {
-            \\  match value/0 {
-            \\    Flag::A => {
-            \\      true
-            \\    },
-            \\    Flag::B => {
-            \\      true
-            \\    },
-            \\    _ => false,
-            \\  }
-            \\}
+        \\  match value/0 {
+        \\    Flag::A => {
+        \\      true
+        \\    },
+        \\    Flag::B => {
+        \\      true
+        \\    },
+        \\    _ => false,
+        \\  }
+        \\}
         ,
     )
 }
@@ -404,14 +404,14 @@ fn boxes_mutable_locals_captured_by_closures() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn main() -> i32 {
-            \\  let x/0 = @intrinsic(ref.new)(0) in
-            \\  let inc/1 =
-            \\    || => {
-            \\      let _wild0 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in
-            \\      @intrinsic(ref.get)(x/0)
-            \\    } in
-            \\  inc/1()
-            \\}
+        \\  let x/0 = @intrinsic(ref.new)(0) in
+        \\  let inc/1 =
+        \\    || => {
+        \\      let _wild0 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in
+        \\      @intrinsic(ref.get)(x/0)
+        \\    } in
+        \\  inc/1()
+        \\}
         ,
     )
 }
@@ -490,21 +490,21 @@ fn lowers_flat_tuple_bindings_in_matrix_order() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn split(pair/0: (i32, string)) -> string {
-            \\  let mtmp0 = pair/0 in
-            \\  {
-            \\    let x1 = mtmp0.0 in
-            \\    let x2 = mtmp0.1 in
-            \\    {
-            \\      let right/2 = x2 in
-            \\      {
-            \\        let left/1 = x1 in
-            \\        {
-            \\          right/2
-            \\        }
-            \\      }
-            \\    }
-            \\  }
-            \\}
+        \\  let mtmp0 = pair/0 in
+        \\  {
+        \\    let x1 = mtmp0.0 in
+        \\    let x2 = mtmp0.1 in
+        \\    {
+        \\      let right/2 = x2 in
+        \\      {
+        \\        let left/1 = x1 in
+        \\        {
+        \\          right/2
+        \\        }
+        \\      }
+        \\    }
+        \\  }
+        \\}
         ,
     )
 }
@@ -515,37 +515,37 @@ fn lowers_nested_boolean_enum_payload_patterns() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn choose(value/0: Pair) -> i32 {
-            \\  match value/0 {
-            \\    Pair::Values(x0, x1) => {
-            \\      {
-            \\        let x0 = Pair::Values._0(value/0) in
-            \\        let x1 = Pair::Values._1(value/0) in
-            \\        match x1 {
-            \\          true => {
-            \\            match x0 {
-            \\              true => {
-            \\                4
-            \\              },
-            \\              false => {
-            \\                3
-            \\              },
-            \\            }
-            \\          },
-            \\          false => {
-            \\            match x0 {
-            \\              true => {
-            \\                4
-            \\              },
-            \\              false => {
-            \\                2
-            \\              },
-            \\            }
-            \\          },
-            \\        }
-            \\      }
-            \\    },
-            \\  }
-            \\}
+        \\  match value/0 {
+        \\    Pair::Values(x0, x1) => {
+        \\      {
+        \\        let x0 = Pair::Values._0(value/0) in
+        \\        let x1 = Pair::Values._1(value/0) in
+        \\        match x1 {
+        \\          true => {
+        \\            match x0 {
+        \\              true => {
+        \\                4
+        \\              },
+        \\              false => {
+        \\                3
+        \\              },
+        \\            }
+        \\          },
+        \\          false => {
+        \\            match x0 {
+        \\              true => {
+        \\                4
+        \\              },
+        \\              false => {
+        \\                2
+        \\              },
+        \\            }
+        \\          },
+        \\        }
+        \\      }
+        \\    },
+        \\  }
+        \\}
         ,
     )
 }
@@ -556,31 +556,31 @@ fn lowers_for_loops_through_iterator_protocols() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn each(values/0: Vec[i32]) -> () {
-            \\  {
-            \\    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in
-            \\    while true {
-            \\        {
-            \\          let for_next1 = trait_call[Iterator::next](for_iter0) in
-            \\          match for_next1 {
-            \\            Option::None => {
-            \\              break
-            \\            },
-            \\            Option::Some(x2) => {
-            \\              {
-            \\                let x2 = Option::Some._0(for_next1) in
-            \\                {
-            \\                  let value/1 = x2 in
-            \\                  {
-            \\                    println(value/1)
-            \\                  }
-            \\                }
-            \\              }
-            \\            },
-            \\          }
-            \\        }
-            \\    }
-            \\  }
-            \\}
+        \\  {
+        \\    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in
+        \\    while true {
+        \\        {
+        \\          let for_next1 = trait_call[Iterator::next](for_iter0) in
+        \\          match for_next1 {
+        \\            Option::None => {
+        \\              break
+        \\            },
+        \\            Option::Some(x2) => {
+        \\              {
+        \\                let x2 = Option::Some._0(for_next1) in
+        \\                {
+        \\                  let value/1 = x2 in
+        \\                  {
+        \\                    println(value/1)
+        \\                  }
+        \\                }
+        \\              }
+        \\            },
+        \\          }
+        \\        }
+        \\    }
+        \\  }
+        \\}
         ,
     )
 }
@@ -624,18 +624,18 @@ fn lowers_flat_struct_bindings_in_field_order() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn right(pair/0: Pair) -> string {
-            \\  let mtmp0 = pair/0 in
-            \\  {
-            \\    let x1 = Pair.left(mtmp0) in
-            \\    let x2 = Pair.right(mtmp0) in
-            \\    {
-            \\      let right/1 = x2 in
-            \\      {
-            \\        right/1
-            \\      }
-            \\    }
-            \\  }
-            \\}
+        \\  let mtmp0 = pair/0 in
+        \\  {
+        \\    let x1 = Pair.left(mtmp0) in
+        \\    let x2 = Pair.right(mtmp0) in
+        \\    {
+        \\      let right/1 = x2 in
+        \\      {
+        \\        right/1
+        \\      }
+        \\    }
+        \\  }
+        \\}
         ,
     )
 }
@@ -667,44 +667,44 @@ fn lowers_nested_tuple_and_enum_pattern_matrices() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn equal_pair(left/0: Key, right/1: Key) -> bool {
-            \\  {
-            \\    let mtmp0 = (left/0, right/1) in
-            \\    {
-            \\      let x1 = mtmp0.0 in
-            \\      let x2 = mtmp0.1 in
-            \\      match x2 {
-            \\        Key::A => {
-            \\          match x1 {
-            \\            Key::A => {
-            \\              true
-            \\            },
-            \\            _ => false,
-            \\          }
-            \\        },
-            \\        Key::B(x3) => {
-            \\          {
-            \\            let x3 = Key::B._0(x2) in
-            \\            match x1 {
-            \\              Key::B(x5) => {
-            \\                {
-            \\                  let x5 = Key::B._0(x1) in
-            \\                  {
-            \\                    let x/2 = x5 in
-            \\                    {
-            \\                      let y/3 = x3 in
-            \\                      (x/2 == y/3)
-            \\                    }
-            \\                  }
-            \\                }
-            \\              },
-            \\              _ => false,
-            \\            }
-            \\          }
-            \\        },
-            \\      }
-            \\    }
-            \\  }
-            \\}
+        \\  {
+        \\    let mtmp0 = (left/0, right/1) in
+        \\    {
+        \\      let x1 = mtmp0.0 in
+        \\      let x2 = mtmp0.1 in
+        \\      match x2 {
+        \\        Key::A => {
+        \\          match x1 {
+        \\            Key::A => {
+        \\              true
+        \\            },
+        \\            _ => false,
+        \\          }
+        \\        },
+        \\        Key::B(x3) => {
+        \\          {
+        \\            let x3 = Key::B._0(x2) in
+        \\            match x1 {
+        \\              Key::B(x5) => {
+        \\                {
+        \\                  let x5 = Key::B._0(x1) in
+        \\                  {
+        \\                    let x/2 = x5 in
+        \\                    {
+        \\                      let y/3 = x3 in
+        \\                      (x/2 == y/3)
+        \\                    }
+        \\                  }
+        \\                }
+        \\              },
+        \\              _ => false,
+        \\            }
+        \\          }
+        \\        },
+        \\      }
+        \\    }
+        \\  }
+        \\}
         ,
     )
 }
@@ -715,47 +715,47 @@ fn lowers_ordered_and_uninhabited_patterns() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn absurd(value/0: Never) -> i32 {
-            \\  {
-            \\    let _wild0 = value/0 in
-            \\    @intrinsic(compiler.missing)("")
-            \\  }
-            \\}
-            \\
-            \\fn unwrap(value/1: Single) -> i32 {
-            \\  let mtmp1 = value/1 in
-            \\  match mtmp1 {
-            \\    Single::Only(x2) => {
-            \\      {
-            \\        let x2 = Single::Only._0(mtmp1) in
-            \\        {
-            \\          let inner/2 = x2 in
-            \\          {
-            \\            inner/2
-            \\          }
-            \\        }
-            \\      }
-            \\    },
-            \\  }
-            \\}
-            \\
-            \\fn classify(values/3: Vec[bool]) -> i32 {
-            \\  {
-            \\    let match3 = values/3 in
-            \\    if (@intrinsic(vec.len)(match3) == 0) {
-            \\        0
-            \\    } else {
-            \\        if (@intrinsic(vec.len)(match3) >= 2) {
-            \\            if (@intrinsic(vec.get)(match3, 0) == true) {
-            \\                1
-            \\            } else {
-            \\                2
-            \\            }
-            \\        } else {
-            \\            2
-            \\        }
-            \\    }
-            \\  }
-            \\}
+        \\  {
+        \\    let _wild0 = value/0 in
+        \\    @intrinsic(compiler.missing)("")
+        \\  }
+        \\}
+        \\
+        \\fn unwrap(value/1: Single) -> i32 {
+        \\  let mtmp1 = value/1 in
+        \\  match mtmp1 {
+        \\    Single::Only(x2) => {
+        \\      {
+        \\        let x2 = Single::Only._0(mtmp1) in
+        \\        {
+        \\          let inner/2 = x2 in
+        \\          {
+        \\            inner/2
+        \\          }
+        \\        }
+        \\      }
+        \\    },
+        \\  }
+        \\}
+        \\
+        \\fn classify(values/3: Vec[bool]) -> i32 {
+        \\  {
+        \\    let match3 = values/3 in
+        \\    if (@intrinsic(vec.len)(match3) == 0) {
+        \\        0
+        \\    } else {
+        \\        if (@intrinsic(vec.len)(match3) >= 2) {
+        \\            if (@intrinsic(vec.get)(match3, 0) == true) {
+        \\                1
+        \\            } else {
+        \\                2
+        \\            }
+        \\        } else {
+        \\            2
+        \\        }
+        \\    }
+        \\  }
+        \\}
         ,
     )
 }
@@ -766,20 +766,20 @@ fn preserves_scalar_pattern_precedence() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn choose(value/0: i32) -> i32 {
-            \\  match value/0 {
-            \\    1 => {
-            \\      10
-            \\    },
-            \\    2 => {
-            \\      20
-            \\    },
-            \\    _ => 20,
-            \\  }
-            \\}
-            \\
-            \\fn first(value/1: i32) -> i32 {
-            \\  50
-            \\}
+        \\  match value/0 {
+        \\    1 => {
+        \\      10
+        \\    },
+        \\    2 => {
+        \\      20
+        \\    },
+        \\    _ => 20,
+        \\  }
+        \\}
+        \\
+        \\fn first(value/1: i32) -> i32 {
+        \\  50
+        \\}
         ,
     )
 }
@@ -790,31 +790,31 @@ fn lowers_unit_columns_inside_enum_patterns() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn main() -> () {
-            \\  let value/0 = T::B(true, ()) in
-            \\  match value/0 {
-            \\    T::A => {
-            \\      println(1)
-            \\    },
-            \\    T::B(x0, x1) => {
-            \\      {
-            \\        let x0 = T::B._0(value/0) in
-            \\        let x1 = T::B._1(value/0) in
-            \\        match x1 {
-            \\          () => {
-            \\            match x0 {
-            \\              true => {
-            \\                println(2)
-            \\              },
-            \\              false => {
-            \\                println(3)
-            \\              },
-            \\            }
-            \\          },
-            \\        }
-            \\      }
-            \\    },
-            \\  }
-            \\}
+        \\  let value/0 = T::B(true, ()) in
+        \\  match value/0 {
+        \\    T::A => {
+        \\      println(1)
+        \\    },
+        \\    T::B(x0, x1) => {
+        \\      {
+        \\        let x0 = T::B._0(value/0) in
+        \\        let x1 = T::B._1(value/0) in
+        \\        match x1 {
+        \\          () => {
+        \\            match x0 {
+        \\              true => {
+        \\                println(2)
+        \\              },
+        \\              false => {
+        \\                println(3)
+        \\              },
+        \\            }
+        \\          },
+        \\        }
+        \\      }
+        \\    },
+        \\  }
+        \\}
         ,
     )
 }
@@ -825,25 +825,25 @@ fn lowers_struct_pattern_matrices_by_field_order() -> () {
     testing::assert_eq(
         encode(lower_source(source)),
         \\fn matches(value/0: Pair) -> bool {
-            \\  {
-            \\    let x0 = Pair.left(value/0) in
-            \\    let x1 = Pair.right(value/0) in
-            \\    match x1 {
-            \\      9 => {
-            \\        match x0 {
-            \\          4 => {
-            \\            true
-            \\          },
-            \\          _ => false,
-            \\        }
-            \\      },
-            \\      6 => {
-            \\        true
-            \\      },
-            \\      _ => false,
-            \\    }
-            \\  }
-            \\}
+        \\  {
+        \\    let x0 = Pair.left(value/0) in
+        \\    let x1 = Pair.right(value/0) in
+        \\    match x1 {
+        \\      9 => {
+        \\        match x0 {
+        \\          4 => {
+        \\            true
+        \\          },
+        \\          _ => false,
+        \\        }
+        \\      },
+        \\      6 => {
+        \\        true
+        \\      },
+        \\      _ => false,
+        \\    }
+        \\  }
+        \\}
         ,
     )
 }
