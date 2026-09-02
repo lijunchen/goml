@@ -37,7 +37,7 @@ fn literal_signature(source: string) -> string {
         if literal_token(token.kind) {
             output.write_string(lexer::token_kind_name(token.kind));
             output.write_string(":");
-            output.write_string(lexer::encode_text_hex(token.text));
+            output.write_string(lexer::encode_text_hex(format_token_text(token)));
             output.write_string("\n")
         }
     }
@@ -175,19 +175,19 @@ fn formatter_goldens_match() -> () {
 fn formats_basic_file() -> () {
     expect_format(
         \\package main;
-            \\use alpha::beta;
-            \\fn main( )->(){let x=call(1,2,3);x}
-            \\
+        \\use alpha::beta;
+        \\fn main( )->(){let x=call(1,2,3);x}
+        \\
         ,
         \\package main;
-            \\
-            \\use alpha::beta;
-            \\
-            \\fn main() -> () {
-            \\    let x = call(1, 2, 3);
-            \\    x
-            \\}
-            \\
+        \\
+        \\use alpha::beta;
+        \\
+        \\fn main() -> () {
+        \\    let x = call(1, 2, 3);
+        \\    x
+        \\}
+        \\
         ,
     )
 }
@@ -197,12 +197,32 @@ fn formats_empty_tuple_function_types() -> () {
     expect_format(
         "type Callback=(()) ->();fn consume(value:(),callback:Callback)->(){callback(value)}",
         \\type Callback = (()) -> ();
-            \\
-            \\fn consume(value: (), callback: Callback) -> () {
-            \\    callback(value)
-            \\}
-            \\
+        \\
+        \\fn consume(value: (), callback: Callback) -> () {
+        \\    callback(value)
+        \\}
+        \\
         ,
+    )
+}
+
+#[test]
+fn formats_multiline_strings_as_indented_blocks() -> () {
+    expect_format(
+        "fn main()->(){let poem=\\\\  first\n  \\\\second\n;println(poem)}",
+        "fn main() -> () {\n    let poem =\n        \\\\  first\n        \\\\second\n    ;\n    println(poem)\n}\n",
+    );
+    expect_format(
+        "fn poem()->string{\\\\first\n \\\\second\n}",
+        "fn poem() -> string {\n    \\\\first\n    \\\\second\n}\n",
+    );
+    expect_format(
+        "fn main()->(){consume(\\\\first\n\t\\\\second\n);}",
+        "fn main() -> () {\n    consume(\n        \\\\first\n        \\\\second\n        ,\n    );\n}\n",
+    );
+    expect_format(
+        "fn combine()->string{\"prefix\"+\\\\first\n \\\\second\n}",
+        "fn combine() -> string {\n    \"prefix\" +\n        \\\\first\n        \\\\second\n}\n",
     )
 }
 
@@ -342,7 +362,8 @@ fn normalizes_line_endings_and_empty_input() -> () {
 
 #[test]
 fn preserves_tokens_literals_comments_and_ast() -> () {
-    let source = \\fn sample() -> () { // 注释
+    let source =
+        \\fn sample() -> () { // 注释
         \\let value = Vec::from_array([0xFF_FF, 1_000]); let ch = '\u0041'; let byte = b'\xFF'; let text = f"值={value.get(0)}"; () }
         \\
     ;
@@ -358,7 +379,8 @@ fn preserves_tokens_literals_comments_and_ast() -> () {
 
 #[test]
 fn formats_block_and_byte_string_expressions_losslessly() -> () {
-    let source = \\fn bytes()->Vec[byte]{let plain=b"A\n\xFF";let raw=br#"first
+    let source =
+        \\fn bytes()->Vec[byte]{let plain=b"A\n\xFF";let raw=br#"first
         \\second"#;{let selected=raw;selected}}
         \\
     ;
@@ -405,44 +427,44 @@ fn removes_redundant_unit_expressions_and_semicolons() -> () {
     expect_format(
         "fn empty()->(){;;;()}fn control(flag:bool,values:Vec[isize])->(){while flag{();};for value in values{let _=value;()};loop{break;};if flag{()}else{();};match flag{true=>(),false=>(),};()}fn retain(flag:bool)->(){if flag{1}else{2};match flag{true=>1,false=>2,};loop{break 1};}fn boundary(values:Vec[isize])->(Vec[isize],Vec[isize]){for value in values{let _=value;};(values,values)}",
         \\fn empty() -> () {}
-            \\
-            \\fn control(flag: bool, values: Vec[isize]) -> () {
-            \\    while flag {}
-            \\    for value in values {
-            \\        let _ = value;
-            \\    }
-            \\    loop {
-            \\        break;
-            \\    }
-            \\    if flag {}
-            \\    match flag {
-            \\        true => (),
-            \\        false => (),
-            \\    };
-            \\}
-            \\
-            \\fn retain(flag: bool) -> () {
-            \\    if flag {
-            \\        1
-            \\    } else {
-            \\        2
-            \\    }
-            \\    match flag {
-            \\        true => 1,
-            \\        false => 2,
-            \\    }
-            \\    loop {
-            \\        break 1
-            \\    };
-            \\}
-            \\
-            \\fn boundary(values: Vec[isize]) -> (Vec[isize], Vec[isize]) {
-            \\    for value in values {
-            \\        let _ = value;
-            \\    };
-            \\    (values, values)
-            \\}
-            \\
+        \\
+        \\fn control(flag: bool, values: Vec[isize]) -> () {
+        \\    while flag {}
+        \\    for value in values {
+        \\        let _ = value;
+        \\    }
+        \\    loop {
+        \\        break;
+        \\    }
+        \\    if flag {}
+        \\    match flag {
+        \\        true => (),
+        \\        false => (),
+        \\    };
+        \\}
+        \\
+        \\fn retain(flag: bool) -> () {
+        \\    if flag {
+        \\        1
+        \\    } else {
+        \\        2
+        \\    }
+        \\    match flag {
+        \\        true => 1,
+        \\        false => 2,
+        \\    }
+        \\    loop {
+        \\        break 1
+        \\    };
+        \\}
+        \\
+        \\fn boundary(values: Vec[isize]) -> (Vec[isize], Vec[isize]) {
+        \\    for value in values {
+        \\        let _ = value;
+        \\    };
+        \\    (values, values)
+        \\}
+        \\
         ,
     )
 }
@@ -451,52 +473,52 @@ fn removes_redundant_unit_expressions_and_semicolons() -> () {
 fn normalizes_empty_else_and_braced_control_statements() -> () {
     expect_format(
         \\fn flow(flag:bool,ch:Channel[isize])->(){if flag{println("first")}else{};if flag{println("yes")}else{println("no")};match flag{true=>println("yes"),false=>println("no"),};select{recv(ch)as _=>(),default=>(),};println("done")}fn nested(first:bool,second:bool)->(){if first{println("first")}else if second{println("second")}else{()};}fn value(flag:bool)->(){let _=if flag{()}else{};if flag{1}else{2};}fn comments(flag:bool)->(){if flag{}else{
-            \\// keep
-            \\};}
+        \\// keep
+        \\};}
         ,
         \\fn flow(flag: bool, ch: Channel[isize]) -> () {
-            \\    if flag {
-            \\        println("first")
-            \\    }
-            \\    if flag {
-            \\        println("yes")
-            \\    } else {
-            \\        println("no")
-            \\    }
-            \\    match flag {
-            \\        true => println("yes"),
-            \\        false => println("no"),
-            \\    }
-            \\    select {
-            \\        recv(ch) as _ => (),
-            \\        default => (),
-            \\    }
-            \\    println("done")
-            \\}
-            \\
-            \\fn nested(first: bool, second: bool) -> () {
-            \\    if first {
-            \\        println("first")
-            \\    } else if second {
-            \\        println("second")
-            \\    }
-            \\}
-            \\
-            \\fn value(flag: bool) -> () {
-            \\    let _ = if flag {};
-            \\    if flag {
-            \\        1
-            \\    } else {
-            \\        2
-            \\    };
-            \\}
-            \\
-            \\fn comments(flag: bool) -> () {
-            \\    if flag {} else {
-            \\        // keep
-            \\    };
-            \\}
-            \\
+        \\    if flag {
+        \\        println("first")
+        \\    }
+        \\    if flag {
+        \\        println("yes")
+        \\    } else {
+        \\        println("no")
+        \\    }
+        \\    match flag {
+        \\        true => println("yes"),
+        \\        false => println("no"),
+        \\    }
+        \\    select {
+        \\        recv(ch) as _ => (),
+        \\        default => (),
+        \\    }
+        \\    println("done")
+        \\}
+        \\
+        \\fn nested(first: bool, second: bool) -> () {
+        \\    if first {
+        \\        println("first")
+        \\    } else if second {
+        \\        println("second")
+        \\    }
+        \\}
+        \\
+        \\fn value(flag: bool) -> () {
+        \\    let _ = if flag {};
+        \\    if flag {
+        \\        1
+        \\    } else {
+        \\        2
+        \\    };
+        \\}
+        \\
+        \\fn comments(flag: bool) -> () {
+        \\    if flag {} else {
+        \\        // keep
+        \\    };
+        \\}
+        \\
         ,
     )
 }
@@ -506,11 +528,11 @@ fn normalizes_empty_if_let_else() -> () {
     expect_format(
         "fn inspect(candidate:Option[isize])->(){if let Some(value)=candidate{println(value)}else{};}",
         \\fn inspect(candidate: Option[isize]) -> () {
-            \\    if let Some(value) = candidate {
-            \\        println(value)
-            \\    }
-            \\}
-            \\
+        \\    if let Some(value) = candidate {
+        \\        println(value)
+        \\    }
+        \\}
+        \\
         ,
     )
 }
@@ -520,33 +542,33 @@ fn preserves_control_semicolons_before_expression_continuations() -> () {
     expect_format(
         "fn if_boundary(flag:bool)->(){if flag{}else{};(println)(\"if\")}fn match_boundary(flag:bool)->(){match flag{true=>(),false=>(),};(println)(\"match\")}fn select_boundary(channel:Channel[isize])->(){select{recv(channel)as _=>(),default=>(),};(println)(\"select\")}fn select_value(channel:Channel[isize])->(){select{recv(channel)as _=>1,default=>2,};}",
         \\fn if_boundary(flag: bool) -> () {
-            \\    if flag {};
-            \\    (println)("if")
-            \\}
-            \\
-            \\fn match_boundary(flag: bool) -> () {
-            \\    match flag {
-            \\        true => (),
-            \\        false => (),
-            \\    };
-            \\    (println)("match")
-            \\}
-            \\
-            \\fn select_boundary(channel: Channel[isize]) -> () {
-            \\    select {
-            \\        recv(channel) as _ => (),
-            \\        default => (),
-            \\    };
-            \\    (println)("select")
-            \\}
-            \\
-            \\fn select_value(channel: Channel[isize]) -> () {
-            \\    select {
-            \\        recv(channel) as _ => 1,
-            \\        default => 2,
-            \\    };
-            \\}
-            \\
+        \\    if flag {};
+        \\    (println)("if")
+        \\}
+        \\
+        \\fn match_boundary(flag: bool) -> () {
+        \\    match flag {
+        \\        true => (),
+        \\        false => (),
+        \\    };
+        \\    (println)("match")
+        \\}
+        \\
+        \\fn select_boundary(channel: Channel[isize]) -> () {
+        \\    select {
+        \\        recv(channel) as _ => (),
+        \\        default => (),
+        \\    };
+        \\    (println)("select")
+        \\}
+        \\
+        \\fn select_value(channel: Channel[isize]) -> () {
+        \\    select {
+        \\        recv(channel) as _ => 1,
+        \\        default => 2,
+        \\    };
+        \\}
+        \\
         ,
     )
 }
@@ -556,17 +578,17 @@ fn preserves_semicolons_after_labeled_while_and_for_statements() -> () {
     expect_format(
         "fn main(values:Vec[isize])->(){'retry:while false{continue 'retry;};println(1);'items:for value in values{let _=value;break 'items;};println(2)}",
         \\fn main(values: Vec[isize]) -> () {
-            \\    'retry: while false {
-            \\        continue 'retry;
-            \\    };
-            \\    println(1);
-            \\    'items: for value in values {
-            \\        let _ = value;
-            \\        break 'items;
-            \\    };
-            \\    println(2)
-            \\}
-            \\
+        \\    'retry: while false {
+        \\        continue 'retry;
+        \\    };
+        \\    println(1);
+        \\    'items: for value in values {
+        \\        let _ = value;
+        \\        break 'items;
+        \\    };
+        \\    println(2)
+        \\}
+        \\
         ,
     )
 }
@@ -576,33 +598,33 @@ fn formats_enum_variants_like_rustfmt() -> () {
     expect_format(
         "enum Compact[T]{None,One{value:T},Two(T)}enum Expanded[T]{One{value:T},Pair{left:T,right:T},Other{value:T}}enum Wide{First{value:ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth},Second{value:isize}}",
         \\enum Compact[T] {
-            \\    None,
-            \\    One { value: T },
-            \\    Two(T),
-            \\}
-            \\
-            \\enum Expanded[T] {
-            \\    One {
-            \\        value: T,
-            \\    },
-            \\    Pair {
-            \\        left: T,
-            \\        right: T,
-            \\    },
-            \\    Other {
-            \\        value: T,
-            \\    },
-            \\}
-            \\
-            \\enum Wide {
-            \\    First {
-            \\        value: ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth,
-            \\    },
-            \\    Second {
-            \\        value: isize,
-            \\    },
-            \\}
-            \\
+        \\    None,
+        \\    One { value: T },
+        \\    Two(T),
+        \\}
+        \\
+        \\enum Expanded[T] {
+        \\    One {
+        \\        value: T,
+        \\    },
+        \\    Pair {
+        \\        left: T,
+        \\        right: T,
+        \\    },
+        \\    Other {
+        \\        value: T,
+        \\    },
+        \\}
+        \\
+        \\enum Wide {
+        \\    First {
+        \\        value: ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth,
+        \\    },
+        \\    Second {
+        \\        value: isize,
+        \\    },
+        \\}
+        \\
         ,
     )
 }
@@ -611,12 +633,12 @@ fn formats_enum_variants_like_rustfmt() -> () {
 fn formats_newtype_structs() -> () {
     expect_format(
         \\pub struct Wrapper [ T ] ( pub T , ) ;
-            \\struct UserId(i32);
+        \\struct UserId(i32);
         ,
         \\pub struct Wrapper[T](pub T,);
-            \\
-            \\struct UserId(i32);
-            \\
+        \\
+        \\struct UserId(i32);
+        \\
         ,
     )
 }
@@ -642,16 +664,16 @@ fn formats_select_arms_vertically() -> () {
     expect_format(
         "fn choose(input:Channel[isize],output:Channel[isize])->isize{select{recv(input)as value=>value.unwrap_or(0),send(output,1)=>2,default=>{let fallback=3;fallback},}}",
         \\fn choose(input: Channel[isize], output: Channel[isize]) -> isize {
-            \\    select {
-            \\        recv(input) as value => value.unwrap_or(0),
-            \\        send(output, 1) => 2,
-            \\        default => {
-            \\            let fallback = 3;
-            \\            fallback
-            \\        },
-            \\    }
-            \\}
-            \\
+        \\    select {
+        \\        recv(input) as value => value.unwrap_or(0),
+        \\        send(output, 1) => 2,
+        \\        default => {
+        \\            let fallback = 3;
+        \\            fallback
+        \\        },
+        \\    }
+        \\}
+        \\
         ,
     )
 }
@@ -661,16 +683,16 @@ fn formats_advanced_select_arms() -> () {
     expect_format(
         "fn choose(input:Channel[isize],output:Channel[isize])->isize{select priority{recv(input)when true match{Some(value)=>value,None=>0,},send(output,1)when false=>2,default=>3,}}",
         \\fn choose(input: Channel[isize], output: Channel[isize]) -> isize {
-            \\    select priority {
-            \\        recv(input) when true match {
-            \\            Some(value) => value,
-            \\            None => 0,
-            \\        },
-            \\        send(output, 1) when false => 2,
-            \\        default => 3,
-            \\    }
-            \\}
-            \\
+        \\    select priority {
+        \\        recv(input) when true match {
+        \\            Some(value) => value,
+        \\            None => 0,
+        \\        },
+        \\        send(output, 1) when false => 2,
+        \\        default => 3,
+        \\    }
+        \\}
+        \\
         ,
     )
 }
