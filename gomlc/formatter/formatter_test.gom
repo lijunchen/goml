@@ -45,14 +45,33 @@ fn literal_signature(source: string) -> string {
 }
 
 fn has_trailing_space(source: string) -> bool {
+    let tokens = lexer::lex(source);
     for index in 0..source.byte_len() {
         let byte = source.byte_get(index);
         if byte == 10 && index > 0 {
             let previous = source.byte_get(index - 1);
-            if previous == 32 || previous == 9 {
+            if (previous == 32 || previous == 9)
+                && !inside_multiline_or_raw_string(tokens, index - 1) {
                 return true
             }
         }
+    }
+    false
+}
+
+fn inside_multiline_or_raw_string(tokens: Vec[lexer::Token], position: isize) -> bool {
+    let mut index = 0;
+    while index < tokens.len() {
+        let token = tokens[index];
+        if token.start <= position && position < token.end {
+            match token.kind {
+                MultilineStr | RawStr | RawByteStr => {
+                    return true
+                },
+                _ => (),
+            }
+        }
+        index += 1;
     }
     false
 }
