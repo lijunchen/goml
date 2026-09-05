@@ -52,7 +52,7 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
         while end < source.byte_len() && source.byte_get(end) != b'\n' {
             end += 1;
         }
-        let line = trim_ascii(source.byte_slice(cursor, end));
+        let line = trim_ascii(strip_comment(source.byte_slice(cursor, end)));
         if line.starts_with("[") {
             in_dependencies = line == "[dependencies]";
         } else if in_dependencies {
@@ -168,7 +168,7 @@ fn registry_versions(root: string, module_name: string) -> Result[Vec[string], s
         while end < source.byte_len() && source.byte_get(end) != b'\n' {
             end += 1;
         }
-        let line = trim_ascii(source.byte_slice(cursor, end));
+        let line = trim_ascii(strip_comment(source.byte_slice(cursor, end)));
         if line.starts_with("[") {
             let names = quoted_values(line);
             selected = line.starts_with("[modules.") && !names.is_empty() && names[0] == module_name;

@@ -1,0 +1,95 @@
+package anf;
+
+use module::repr;
+
+struct VerifyScope {
+    bindings: HashMap[string, repr::Type],
+    parent: Option[VerifyScope],
+    external_functions: Vec[string],
+}
+
+fn verify_child_state(state: VerifyState) -> VerifyState {
+    VerifyState {
+        join_names: state.join_names,
+        scope: VerifyScope {
+            bindings: HashMap::new(),
+            parent: Option::Some(state.scope),
+            external_functions: Vec::new(),
+        },
+        closures: state.closures,
+        structs: state.structs,
+        enums: state.enums,
+    }
+}
+
+fn verify_bind_variable(scope: VerifyScope, name: string, ty: repr::Type) -> Result[(), string] {
+    repr::validate_type(ty)?;
+    if name == "_" {
+        Result::Ok(())
+    } else if scope.bindings.contains(name) {
+        Result::Err("duplicate variable " + name)
+    } else {
+        scope.bindings[name] = ty;
+        Result::Ok(())
+    }
+}
+
+fn verify_variable(scope: VerifyScope, name: string, ty: repr::Type) -> Result[(), string] {
+    match scope.bindings[name] {
+        Some(expected) => if repr::types_equal(ty, expected) {
+            Result::Ok(())
+        } else {
+            Result::Err(
+                "variable type does not match definition " + name + ": expected "
+                    + repr::diagnostic_type_text(expected)
+                    + ", found "
+                    + repr::diagnostic_type_text(ty),
+            )
+        },
+        None => match scope.parent {
+            Some(parent) => verify_variable(parent, name, ty),
+            None => if scope.external_functions.contains(name)
+                && match ty {
+                    Func { .. } => true,
+                    _ => false,
+                } {
+                Result::Ok(())
+            } else {
+                Result::Err("reference to out-of-scope variable " + name)
+            },
+        },
+    }
+}
+
+fn verify_join_body(state: VerifyState, value: JoinBind, joins: Vec[JoinSignature]) -> Result[
+    (),
+    string,
+] {
+    let state = verify_child_state(state);
+    for param in value.params {
+        verify_bind_variable(state.scope, param.0, param.1)?
+    }
+    verify_block(state, value.body, value.ret_ty, joins)
+}
+
+fn verify_global_scope(value: File, external_functions: Vec[string]) -> Result[VerifyScope, string] {
+    let scope = VerifyScope { bindings: HashMap::new(), parent: Option::None, external_functions };
+    for constant in value.constants {
+        verify_bind_variable(scope, constant.name, constant.ty)?
+    }
+    for value in value.statics {
+        verify_bind_variable(scope, value.name, value.ty)?
+    }
+    for function in value.functions {
+        let params: Vec[repr::Type] = Vec::with_capacity(function.params.len());
+        for param in function.params {
+            params.push(param.1)
+        }
+        verify_bind_variable(
+            scope,
+            function.name,
+            repr::Type::Func { params, ret_ty: function.ret_ty },
+        )?
+    }
+    Result::Ok(scope)
+}

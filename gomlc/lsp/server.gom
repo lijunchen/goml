@@ -43,6 +43,8 @@ const DID_CLOSE_METHOD: string = "textDocument/didClose";
 
 const DID_SAVE_METHOD: string = "textDocument/didSave";
 
+const DID_CHANGE_WATCHED_FILES_METHOD: string = "workspace/didChangeWatchedFiles";
+
 const PUBLISH_DIAGNOSTICS_METHOD: string = "textDocument/publishDiagnostics";
 
 const STATUS_METHOD: string = "goml/status";
@@ -632,6 +634,19 @@ fn did_save(server: Server, params: json::Value) -> Result[json::Value, string] 
     )
 }
 
+fn did_change_watched_files(server: Server, params: json::Value) -> Result[(), string] {
+    let Some(changes) = json::as_array(required_field(params, "changes")?) else {
+        return Result::Err("changes must be an array");
+    };
+    for change in changes {
+        let _ = uri_to_path(required_string_field(change, "uri")?)?;
+    }
+    if !changes.is_empty() {
+        invalidate_analyses(server)
+    }
+    Result::Ok(())
+}
+
 fn request_result(server: Server, message: RpcMessage) -> Result[json::Value, string] {
     match message.method {
         INITIALIZE_METHOD => Result::Ok(initialize_result()),
@@ -681,6 +696,9 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
                 },
                 DID_SAVE_METHOD => if let Ok(notification) = did_save(server, message.params) {
                     output.push(notification)
+                },
+                DID_CHANGE_WATCHED_FILES_METHOD => {
+                    let _ = did_change_watched_files(server, message.params);
                 },
                 _ => match message.id {
                     Some(id) => match request_result(server, message) {
